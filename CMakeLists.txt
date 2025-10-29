@@ -7,19 +7,21 @@ project(InterstellarOutpost
     LANGUAGES CXX
 )
 
-# Set C++20 standard
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+# Prevent in-source builds
+if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+    message(FATAL_ERROR
+        "In-source builds are not allowed. Please create a separate build directory and run cmake from there.\n"
+    "Remove CMakeCache.txt and CMakeFiles/ if they were created in the source directory.")
+endif()
 
-# Visual Studio specific settings
-add_compile_options(/W4)
-# Enable C++20++ features for Visual Studio
-add_compile_options(/std:c++latest)
-add_compile_options(/permissive)
+# Add cmake modules to the path
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-# Build configuration
-set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type")
+# Include standard project settings
+include(StandardProjectSettings)
+
+# Include compiler warnings configuration
+include(CompilerWarnings)
 
 # Add libraries
 add_subdirectory(libs/Neuron)
@@ -28,12 +30,11 @@ add_subdirectory(libs/GameLogic)
 # Add main executable
 add_subdirectory(src)
 
-# Enable testing
-enable_testing()
-add_subdirectory(tests)
+# Enable testing if requested
+if(ENABLE_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
 
-# Print configuration summary
-message(STATUS "Project: ${PROJECT_NAME} v${PROJECT_VERSION}")
-message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-message(STATUS "C++ standard: ${CMAKE_CXX_STANDARD}")
-message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID}")
+# Installation and packaging
+include(InstallConfig)

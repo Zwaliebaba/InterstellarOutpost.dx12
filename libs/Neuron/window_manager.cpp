@@ -12,13 +12,9 @@
 #include "window_manager.h"
 #include "window_manager_win32.h"
 
-#include "main.h"
-#include "renderer.h"
-
 static HINSTANCE g_hInstance;
 
 #define WH_KEYBOARD_LL 13
-#define LLKHF_ALTDOWN 0x20
 
 
 WindowManager *g_windowManager = NULL;
@@ -451,8 +447,7 @@ void WindowManager::OpenWebsite( char *_url )
 }
 
 
-int WINAPI WinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance,
-				   LPSTR _cmdLine, int _iCmdShow)
+int WINAPI wWinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance, LPWSTR _cmdLine, int _iCmdShow)
 {
 	g_hInstance = _hInstance;
 

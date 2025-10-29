@@ -1,27 +1,115 @@
 {
   "version": 8,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
   "configurePresets": [
     {
-      "name": "Visual Studio Community 2022 Release - amd64",
-      "displayName": "Visual Studio Community 2022 Release - amd64",
-      "description": "Using compilers for Visual Studio 17 2022 (x64 architecture)",
+      "name": "windows-base",
+      "hidden": true,
       "generator": "Visual Studio 17 2022",
-      "toolset": "host=x64",
-      "architecture": "x64",
+      "architecture": {
+        "value": "x64",
+        "strategy": "set"
+      },
       "binaryDir": "${sourceDir}/out/build/${presetName}",
       "cacheVariables": {
-        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_C_COMPILER": "cl.exe",
         "CMAKE_CXX_COMPILER": "cl.exe"
+      }
+    },
+    {
+      "name": "windows-debug",
+      "displayName": "Windows x64 Debug",
+      "description": "Debug build for Windows using Visual Studio 2022",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_TESTING": "ON",
+        "ENABLE_PCH": "ON",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+      }
+    },
+    {
+      "name": "windows-release",
+      "displayName": "Windows x64 Release",
+      "description": "Release build for Windows using Visual Studio 2022",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_TESTING": "OFF",
+        "ENABLE_PCH": "ON",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+      }
+    },
+    {
+      "name": "windows-relwithdebinfo",
+      "displayName": "Windows x64 RelWithDebInfo",
+      "description": "Release with Debug Info build for Windows",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "ENABLE_TESTING": "ON",
+        "ENABLE_PCH": "ON",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
       }
     }
   ],
   "buildPresets": [
     {
-      "name": "Visual Studio Community 2022 Release - amd64-debug",
-      "displayName": "Visual Studio Community 2022 Release - amd64 - Debug",
-      "configurePreset": "Visual Studio Community 2022 Release - amd64",
+      "name": "windows-debug",
+      "configurePreset": "windows-debug",
+      "displayName": "Build Windows Debug",
+      "description": "Build debug configuration",
       "configuration": "Debug"
+    },
+    {
+      "name": "windows-release",
+      "configurePreset": "windows-release",
+      "displayName": "Build Windows Release",
+      "description": "Build release configuration",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-relwithdebinfo",
+      "configurePreset": "windows-relwithdebinfo",
+      "displayName": "Build Windows RelWithDebInfo",
+      "description": "Build release with debug info configuration",
+      "configuration": "RelWithDebInfo"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "windows-debug",
+      "configurePreset": "windows-debug",
+      "displayName": "Test Windows Debug",
+      "description": "Run tests in debug mode",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-relwithdebinfo",
+      "configurePreset": "windows-relwithdebinfo",
+      "displayName": "Test Windows RelWithDebInfo",
+      "description": "Run tests in release with debug info mode",
+      "configuration": "RelWithDebInfo",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ],
+  "packagePresets": [
+    {
+      "name": "windows-release-package",
+      "configurePreset": "windows-release",
+      "displayName": "Package Windows Release",
+      "description": "Create Windows installer package"
     }
   ]
 }

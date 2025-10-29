@@ -1,89 +1,87 @@
-# Tests CMakeLists.txt
+# Tests
+# Unit and integration tests for InterstellarOutpost
 
-# Find or include a testing framework
-# For simplicity, we'll use basic C++ assertions
+# Test configuration
+set(TEST_TIMEOUT_SHORT 30)
+set(TEST_TIMEOUT_LONG 60)
+
+# Helper function to create tests with common settings
+function(add_project_test TEST_NAME)
+    set(options "")
+    set(oneValueArgs TIMEOUT)
+    set(multiValueArgs SOURCES LIBRARIES)
+    cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    
+    # Create test executable
+    add_executable(${TEST_NAME} ${ARG_SOURCES})
+    
+    # Link libraries using alias targets
+  target_link_libraries(${TEST_NAME} PRIVATE ${ARG_LIBRARIES})
+    
+    # Include directories
+    target_include_directories(${TEST_NAME}
+        PRIVATE
+   ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    
+    # Set C++20 standard
+    target_compile_features(${TEST_NAME} PRIVATE cxx_std_20)
+    
+    # Apply compiler warnings
+    set_project_warnings(${TEST_NAME})
+    
+    # Set folder for IDE
+    set_target_properties(${TEST_NAME} PROPERTIES
+    FOLDER "Tests"
+    )
+    
+    # Register with CTest
+    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+    
+    # Set timeout
+    if(ARG_TIMEOUT)
+  set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${ARG_TIMEOUT})
+    else()
+   set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT_SHORT})
+    endif()
+    
+    # Set working directory for tests
+    set_tests_properties(${TEST_NAME} PROPERTIES
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
+endfunction()
 
 # Test for Neuron library
-add_executable(test_neuron
-    test_neuron.cpp
+add_project_test(test_neuron
+    SOURCES test_neuron.cpp
+    LIBRARIES InterstellarOutpost::Neuron
+    TIMEOUT ${TEST_TIMEOUT_SHORT}
 )
 
-target_include_directories(test_neuron
-    PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../libs/Neuron>
+# Test for GameLogic library
+add_project_test(test_gamelogic
+    SOURCES test_gamelogic.cpp
+    LIBRARIES 
+   InterstellarOutpost::GameLogic
+        InterstellarOutpost::Neuron
+    TIMEOUT ${TEST_TIMEOUT_SHORT}
 )
-
-target_link_libraries(test_neuron 
-    PRIVATE 
-        Neuron
-)
-
-target_compile_features(test_neuron PRIVATE cxx_std_20)
-
-# Test for GameLogic library  
-add_executable(test_gamelogic
-    test_gamelogic.cpp
-)
-
-target_include_directories(test_gamelogic
-    PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../libs/GameLogic>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../libs/Neuron>
-)
-
-target_link_libraries(test_gamelogic 
-    PRIVATE 
-        GameLogic
-        Neuron
-)
-
-target_compile_features(test_gamelogic PRIVATE cxx_std_20)
 
 # Integration test
-add_executable(test_integration
-    test_integration.cpp
+add_project_test(test_integration
+    SOURCES test_integration.cpp
+    LIBRARIES 
+        InterstellarOutpost::GameLogic
+   InterstellarOutpost::Neuron
+    TIMEOUT ${TEST_TIMEOUT_LONG}
 )
 
-target_include_directories(test_integration
-    PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../src>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../libs/GameLogic>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../libs/Neuron>
+# Add custom test target for running all tests
+add_custom_target(run_tests
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --parallel ${CMAKE_BUILD_PARALLEL_LEVEL}
+    DEPENDS test_neuron test_gamelogic test_integration
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Running all tests..."
 )
 
-target_link_libraries(test_integration 
-    PRIVATE 
-        GameLogic
-        Neuron
-)
-
-target_compile_features(test_integration PRIVATE cxx_std_20)
-
-# Register tests with CTest
-add_test(NAME NeuronLibraryTest COMMAND test_neuron)
-add_test(NAME GameLogicLibraryTest COMMAND test_gamelogic)
-add_test(NAME IntegrationTest COMMAND test_integration)
-
-# Set test properties
-set_tests_properties(NeuronLibraryTest PROPERTIES
-    TIMEOUT 30
-)
-
-set_tests_properties(GameLogicLibraryTest PROPERTIES
-    TIMEOUT 30
-)
-
-set_tests_properties(IntegrationTest PROPERTIES
-    TIMEOUT 60
-)
-
-# Visual Studio specific settings
-if(MSVC)
-    target_compile_options(test_neuron PRIVATE /W4)
-    target_compile_options(test_gamelogic PRIVATE /W4)
-    target_compile_options(test_integration PRIVATE /W4)
-else()
-    target_compile_options(test_neuron PRIVATE -Wall -Wextra -Wpedantic)
-    target_compile_options(test_gamelogic PRIVATE -Wall -Wextra -Wpedantic)
-    target_compile_options(test_integration PRIVATE -Wall -Wextra -Wpedantic)
-endif()
+set_target_properties(run_tests PROPERTIES FOLDER "Tests")

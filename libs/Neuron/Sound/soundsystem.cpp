@@ -20,18 +20,11 @@
 #include "soundsystem.h"
 #include "string_utils.h"
 #include "text_stream_readers.h"
-#include "window_manager.h"
 #include "worldobject/entity.h"
 
 #define SOUNDSYSTEM_UPDATEPERIOD 0.05f
 
-//#define SOUNDSYSTEM_VERIFY                          // Define this to make the sound system
-// Perform a series of (very slow)
-// tests every frame for correctness
-
-//*****************************************************************************
-// Class SoundEventBlueprint
-//*****************************************************************************
+#pragma comment(lib, "winmm.lib")
 
 SoundEventBlueprint::SoundEventBlueprint()
     : m_eventName(NULL),

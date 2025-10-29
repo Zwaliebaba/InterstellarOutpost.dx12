@@ -1,43 +1,80 @@
-# GameLogic Library CMakeLists.txt
+# GameLogic Library
+# Game logic and world object management
 
-file(GLOB CPP_SOURCES *.cpp Interface/*.cpp WorldObject/*.cpp)
-file(GLOB H_SOURCES *.h Interface/*.h WorldObject/*.h)
+# Collect source files by subdirectory
+file(GLOB GAMELOGIC_CORE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+file(GLOB GAMELOGIC_CORE_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+file(GLOB GAMELOGIC_INTERFACE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/Interface/*.cpp")
+file(GLOB GAMELOGIC_INTERFACE_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/Interface/*.h")
+file(GLOB GAMELOGIC_WORLDOBJECT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/WorldObject/*.cpp")
+file(GLOB GAMELOGIC_WORLDOBJECT_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/WorldObject/*.h")
 
-# Create GameLogic library
+# Combine all sources
+set(GAMELOGIC_SOURCES
+    ${GAMELOGIC_CORE_SOURCES}
+    ${GAMELOGIC_INTERFACE_SOURCES}
+    ${GAMELOGIC_WORLDOBJECT_SOURCES}
+)
+
+set(GAMELOGIC_HEADERS
+    ${GAMELOGIC_CORE_HEADERS}
+    ${GAMELOGIC_INTERFACE_HEADERS}
+    ${GAMELOGIC_WORLDOBJECT_HEADERS}
+)
+
+# Create GameLogic static library
 add_library(GameLogic STATIC
-    ${CPP_SOURCES}
-    ${H_SOURCES} 
+    ${GAMELOGIC_SOURCES}
+    ${GAMELOGIC_HEADERS}
 )
 
-target_precompile_headers(GameLogic 
-    PRIVATE
-        "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_SOURCE_DIR}/src/pch.h>"
-)
+# Create library alias for consistent namespacing
+add_library(InterstellarOutpost::GameLogic ALIAS GameLogic)
 
-# Set target properties
-target_include_directories(GameLogic 
-    PUBLIC
+# Public include directories
+target_include_directories(GameLogic
+  PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../src>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../libs/Neuron>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../libs/GameLogic>
+        $<INSTALL_INTERFACE:include/GameLogic>
+    PRIVATE
+      # GameLogic needs access to src headers
+    ${CMAKE_SOURCE_DIR}/src
 )
 
-# Set C++20 for this target
-target_compile_features(GameLogic PUBLIC cxx_std_20)
-
-# Link with Neuron library
-target_link_libraries(GameLogic PUBLIC Neuron)
-
-# Visual Studio specific settings
-if(MSVC)
-    target_compile_options(GameLogic PRIVATE /W4)
-else()
-    target_compile_options(GameLogic PRIVATE -Wall -Wextra -Wpedantic)
+# Precompiled headers
+if(ENABLE_PCH AND EXISTS "${CMAKE_SOURCE_DIR}/src/pch.h")
+    target_precompile_headers(GameLogic
+        PRIVATE
+            "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_SOURCE_DIR}/src/pch.h>"
+    )
 endif()
 
-# Export target
+# Set C++20 standard
+target_compile_features(GameLogic PUBLIC cxx_std_20)
+
+# Link dependencies using alias
+target_link_libraries(GameLogic 
+    PUBLIC 
+      InterstellarOutpost::Neuron
+)
+
+# Apply compiler warnings
+set_project_warnings(GameLogic)
+
+# Set target properties
 set_target_properties(GameLogic PROPERTIES
     VERSION ${PROJECT_VERSION}
-    SOVERSION 1
+    SOVERSION ${PROJECT_VERSION_MAJOR}
+    FOLDER "Libraries"
+    POSITION_INDEPENDENT_CODE ON
+)
+
+# IDE source grouping for better organization
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" 
+    PREFIX "Source Files" 
+    FILES ${GAMELOGIC_SOURCES}
+)
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" 
+    PREFIX "Header Files" 
+    FILES ${GAMELOGIC_HEADERS}
 )

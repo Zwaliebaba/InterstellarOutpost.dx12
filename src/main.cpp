@@ -274,8 +274,6 @@ bool HandleCommonConditions()
   {
     if (g_app->m_gameMode == App::GameModePrologue) { g_app->SaveProfile(true, true); }
 
-    //g_app->SaveProfile( true, g_app->m_location != NULL );
-    PrintMemoryLeaks();
     Finalise();
     exit(0);
   }
@@ -881,11 +879,7 @@ void InitialiseInputManager()
   g_inputManager->addDriver(new ChordInputDriver());
   g_inputManager->addDriver(new InvertInputDriver());
   g_inputManager->addDriver(new IdleInputDriver());
-#ifdef TARGET_MSVC
   g_inputManager->addDriver(new W32InputDriver());
-
-  if (LoadLibrary("XINPUT1_3")) g_inputManager->addDriver(new XInputDriver());
-#endif
   g_inputManager->addDriver(new PrefsInputDriver());
   g_inputManager->addDriver(new ValueInputDriver());
   g_inputManager->addDriver(new AliasInputDriver());
@@ -919,83 +913,6 @@ void InitialiseInputManager()
   }
 }
 
-bool IsRunningVista()
-{
-  OSVERSIONINFOEX versionInfo;
-  ZeroMemory(&versionInfo, sizeof(OSVERSIONINFOEX));
-
-  versionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-  GetVersionEx((OSVERSIONINFO *) &versionInfo);
-
-  if (versionInfo.dwMajorVersion < 6 ||
-      versionInfo.wProductType != VER_NT_WORKSTATION) { return false; }
-
-  return true;
-}
-
-#if defined(TARGET_OS_VISTA)
-void DoVistaChecks()
-{
-  // Check to make sure the game is running on Vista
-
-  if (!IsRunningVista()) { return; }
-
-  // Check Parental Controls to make sure current user is allowed to run Darwinia
-
-  HRESULT hr = CoInitialize(NULL);
-
-  IWindowsParentalControls *wpc = NULL;
-  hr = CoCreateInstance(__uuidof(WindowsParentalControls), 0, CLSCTX_INPROC_SERVER,
-                        __uuidof(IWindowsParentalControls), (LPVOID *) &wpc);
-
-  if (FAILED(hr))
-  {
-    wprintf(L"Info:  Parental Controls interface not detected.\n");
-    wprintf(L"Info:   This is an error if on a supported SKU of Windows Vista.\n");
-  }
-  else
-  {
-    IWPCGamesSettings *wpcGamesSettings = NULL;
-    hr = wpc->GetGamesSettings(NULL, &wpcGamesSettings);
-    if (FAILED(hr))
-    {
-      wprintf(L"Warning:  Unable to obtain the Parental Controls user\n");
-      wprintf(L"          settings interface.  This is expected if the\n");
-      wprintf(L"          current user is a Protected Administrator or\n");
-      wprintf(L"          Built-In Administrator.\n");
-    }
-    else
-    {
-      GUID guidGameId;
-      guidGameId.Data1 = 0xF58175C7;
-      guidGameId.Data2 = 0xE99C;
-      guidGameId.Data3 = 0x4151;
-      guidGameId.Data4[0] = 0x80;
-      guidGameId.Data4[1] = 0x0D;
-      guidGameId.Data4[2] = 0x7B;
-      guidGameId.Data4[3] = 0xB5;
-      guidGameId.Data4[4] = 0xE8;
-      guidGameId.Data4[5] = 0x9E;
-      guidGameId.Data4[6] = 0x49;
-      guidGameId.Data4[7] = 0x60;
-
-      DWORD reasons = 0;
-      hr = wpcGamesSettings->IsBlocked(guidGameId, &reasons);
-
-      if (FAILED(hr) ||
-          reasons != WPCFLAG_ISBLOCKED_NOTBLOCKED)
-      {
-        MessageBox(NULL, LANGUAGEPHRASE("error_parental"), LANGUAGEPHRASE("darwinia_vistaedition"), MB_OK | MB_ICONERROR);
-        exit(0);
-      }
-      wpcGamesSettings->Release();
-    }
-    wpc->Release();
-  }
-}
-
-#endif
-
 void Initialise()
 {
   //
@@ -1004,19 +921,12 @@ void Initialise()
   g_systemInfo = new SystemInfo;
   InitialiseHighResTime();
 
-#ifdef TARGET_MSVC
   g_eventHandler = new W32EventHandler();
-#endif
   g_app = new App();
 
   InitialiseInputManager();
 
-#if defined(TARGET_OS_VISTA)
-  DoVistaChecks();
-#endif
-
   g_target = new TargetCursor();
-  //if( g_prefsManager->GetInt("ControlMethod")==0 ) getW32EventHandler()->BindAltTab();
   EntityBlueprint::Initialise();
   g_windowManager->HideMousePointer();
 
@@ -1051,25 +961,6 @@ void Finalise()
 
   delete g_app->m_resource;
   delete g_windowManager;
-
-#ifdef TARGET_OS_VISTA
-  // Skip if not running on a Media Center
-  if (g_mediaCenter)
-  {
-    // Get the path to Media Center
-    WCHAR szExpandedPath[MAX_PATH];
-    if (ExpandEnvironmentStringsW(L"%SystemRoot%\\ehome\\ehshell.exe", szExpandedPath, MAX_PATH))
-    {
-      // Skip if ehshell.exe doesn't exist
-      if (GetFileAttributesW(szExpandedPath) != 0xFFFFFFFF)
-      {
-        // Launch ehshell.exe
-        INT_PTR result = (INT_PTR) ShellExecuteW(NULL, L"open", szExpandedPath, NULL, NULL, SW_SHOWNORMAL);
-      }
-    }
-  }
-#endif
-
 }
 
 void RunBootLoaders()
@@ -1165,14 +1056,6 @@ void EnterLocation()
     g_app->m_camera->RequestMode(Camera::ModeFreeMovement);
 
     LocationGameLoop();
-#ifdef DEMOBUILD
-#ifndef DEMO2
-    PrintMemoryLeaks();
-    g_windowManager->OpenWebsite("http://www.darwinia.co.uk/demoend/");
-    Finalise();
-    exit(0);
-#endif // DEMO2
-#endif // DEMOBUILD
   }
 }
 

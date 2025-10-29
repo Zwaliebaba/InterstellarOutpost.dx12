@@ -1,14 +1,5 @@
 #include "pch.h"
-
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#define WIN32_LEAN_AND_MEAN
-#include <crtdbg.h>
 #include "debug_utils.h"
-
-#include "app.h"
 
 
 void DebugOut(char *_fmt, ...)
@@ -47,12 +38,7 @@ void DarwiniaReleaseAssert(bool _condition, char const *_fmt, ...)
 		}
 		ShowCursor(true);
 		MessageBox(NULL, buf, "Fatal Error", MB_OK);
-        GenerateBlackBox( buf );
-#ifndef _DEBUG
-		exit(-1);
-#else
 		_ASSERT(_condition);
-#endif
 	}
 }
 
