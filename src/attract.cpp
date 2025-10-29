@@ -1,9 +1,6 @@
 #include "pch.h"
-
-#include <eclipse.h>
-
+#include "Canvas/eclipse.h"
 #include "input/input.h"
-
 #include "app.h"
 #include "script.h"
 #include "attract.h"

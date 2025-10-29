@@ -55,9 +55,6 @@ inline float syncsfrand( float range = 1.0f ) { return (syncfrand() - 0.5f) * ra
 //	}
 //#endif
 
-
-#define clamp(a, low, high)	if (a>high) a = high; else if (a<low) a = low;
-
 #define NearlyEquals(a, b)	(fabsf((a) - (b)) < 1e-6 ? 1 : 0)
 
 float Log2(float x);

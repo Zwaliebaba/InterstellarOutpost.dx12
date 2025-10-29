@@ -1,19 +1,13 @@
 #include "pch.h"
-
-#include <string.h>
-
 #include "filesys_utils.h"
 #include "hi_res_time.h"
 #include "text_renderer.h"
 #include "input/input.h"
 #include "resource.h"
 #include "language_table.h"
-
-#include "eclipse.h"
-
+#include "Canvas/eclipse.h"
 #include "interface/scrollbar.h"
 #include "interface/filedialog.h"
-
 #include "app.h"
 
 

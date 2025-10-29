@@ -15,7 +15,7 @@
 #include "binary_stream_readers.h"
 #include "preferences.h"
 
-#include <eclipse.h>
+#include "Canvas/eclipse.h"
 
 #include "network/clienttoserver.h"
 

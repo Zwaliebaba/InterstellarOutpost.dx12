@@ -300,25 +300,6 @@ class ProfilerCreateButton : public DarwiniaButton
 };
 #endif // PROFILER_ENABLED
 
-#ifdef SOUND_EDITOR
-class SoundEditorCreateButton : public DarwiniaButton
-{
-    void MouseUp()
-    {
-        DebugKeyBindings::SoundEditorButton();
-    }
-};
-
-
-class SoundStatsCreateButton : public DarwiniaButton
-{
-    void MouseUp()
-    {
-        DebugKeyBindings::SoundStatsButton();
-    }
-};
-#endif // SOUND_EDITOR
-
 void CheatWindow::Create()
 {
     DarwiniaWindow::Create();
@@ -386,16 +367,6 @@ void CheatWindow::Create()
     profiler->SetShortProperties( "Profiler", 10, y+=20, m_w-20);
     RegisterButton( profiler );
 #endif // PROFILER_ENABLED
-
-#ifdef SOUND_EDITOR
-    SoundEditorCreateButton *soundEditor = new SoundEditorCreateButton();
-    soundEditor->SetShortProperties( "Sound Editor", 10, y+=20, m_w-20);
-    RegisterButton( soundEditor );
-
-    SoundStatsCreateButton *soundStats = new SoundStatsCreateButton();
-    soundStats->SetShortProperties( "Sound Stats", 10, y+=20, m_w-20 );
-    RegisterButton( soundStats );
-#endif // SOUND_EDITOR
 }
 
 

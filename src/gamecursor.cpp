@@ -8,7 +8,7 @@
 #include "debug_render.h"
 #include "binary_stream_readers.h"
 
-#include <eclipse.h>
+#include "Canvas/eclipse.h"
 
 #include "app.h"
 #include "global_world.h"

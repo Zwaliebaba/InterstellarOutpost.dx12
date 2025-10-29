@@ -1,15 +1,7 @@
-
-// Source file for button class
-// Part of the Eclipse interface library
-// By Christopher Delay
-
-//#include "pch.h"
-
-
+#include "pch.h"
 #include <stdio.h>
 #include <string.h>
-
-#include "eclipse.h"
+#include "Canvas/eclipse.h"
 #include "eclbutton.h"
 
 

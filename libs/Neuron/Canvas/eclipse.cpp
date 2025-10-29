@@ -1,4 +1,4 @@
- //#include "pch.h"
+#include "pch.h"
 #include "random.h"
 
 #ifdef WIN32
@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "eclipse.h"
+#include "Canvas/eclipse.h"
 #include "llist.h"
 #include "debug_utils.h"
 

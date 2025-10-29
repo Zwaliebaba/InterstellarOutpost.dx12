@@ -23,7 +23,7 @@ struct InputDetails {
 };
 
 typedef auto_vector<const InputDetails> InputDetailsList;
-typedef std::auto_ptr<InputDetails> InputDetailsPtr;
+typedef std::unique_ptr<InputDetails> InputDetailsPtr;
 
 class InputDescription {
 

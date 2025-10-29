@@ -1,22 +1,6 @@
 #include "pch.h"
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <shlobj.h>
-
-#ifdef TARGET_OS_VISTA
-#include <knownfolders.h>
-#endif
-
 #include "network/clienttoserver.h"
-
-#ifdef TARGET_OS_VISTA
-#include "poster_maker.h"
-#endif
-#include "avi_generator.h"
-#include "hi_res_time.h"
 #include "language_table.h"
-#include "mouse_cursor.h"
 #include "preferences.h"
 #include "profiler.h"
 #include "resource.h"
@@ -26,10 +10,8 @@
 #include "bitmap.h"
 #include "file_writer.h"
 #include "interface/prefs_other_window.h"
-
 #include "sound/sound_stream_decoder.h"
 #include "sound/soundsystem.h"
-
 #include "app.h"
 #include "camera.h"
 #include "effect_processor.h"
@@ -123,10 +105,6 @@ App::App()
 	// Load resources
 
     m_resource = new Resource();
-    m_resource->ParseArchive( "main.dat", NULL );
-    m_resource->ParseArchive( "sounds.dat", NULL );
-	m_resource->ParseArchive( "patch.dat", NULL );
-    m_resource->ParseArchive( "language.dat", NULL );
 
 	g_prefsManager = new PrefsManager(App::GetPreferencesPath());
 	SetPreferenceOverrides();
@@ -700,87 +678,3 @@ void App::LoadCampaign()
     g_prefsManager->SetInt( "CurrentGameMode", 1 );
     g_prefsManager->Save();
 }
-
-#ifdef TARGET_OS_VISTA
-void App::SaveRichHeader()
-{
-	if( g_app->m_editing ) return;
-	if( !m_thumbnailScreenshot ) return;
-
-	char _filename[256];
-	sprintf( _filename, "%s.dsg", m_userProfileName );
-
-	char fullFilename[256];
-    sprintf( fullFilename, "%susers/%s", g_app->GetProfileDirectory(), _filename );
-
-	RICH_GAME_MEDIA_HEADER header;
-	ZeroMemory( &header, sizeof(RICH_GAME_MEDIA_HEADER) );
-	header.dwMagicNumber = RM_MAGICNUMBER;
-	header.dwHeaderVersion = 1;
-	header.dwHeaderSize = sizeof(RICH_GAME_MEDIA_HEADER);
-	header.liThumbnailOffset.QuadPart = 0;
-	if( m_thumbnailScreenshot )
-	{
-		unsigned int size = (m_thumbnailScreenshot->m_height * m_thumbnailScreenshot->m_width * 3 ) + 54;
-		header.dwThumbnailSize = size;
-	}
-	else
-	{
-		header.dwThumbnailSize = 0;
-	}
-
-	header.guidGameId.Data1 = 0xF58175C7;
-	header.guidGameId.Data2 = 0xE99C;
-	header.guidGameId.Data3 = 0x4151;
-
-	header.guidGameId.Data4[0] = 0x80;
-	header.guidGameId.Data4[1] = 0x0D;
-	header.guidGameId.Data4[2] = 0x7B;
-	header.guidGameId.Data4[3] = 0xB5;
-	header.guidGameId.Data4[4] = 0xE8;
-	header.guidGameId.Data4[5] = 0x9E;
-	header.guidGameId.Data4[6] = 0x49;
-	header.guidGameId.Data4[7] = 0x60;
-
-	WCHAR saveName[256];
-	char filePath[256];
-	sprintf( filePath, "%susers\\%s.dsg", GetProfileDirectory(), m_userProfileName );
-
-	mbstowcs( saveName, filePath, 256 );
-
-	wcscpy(header.szGameName,  L"Darwinia");
-	wcscpy(header.szSaveName, saveName );
-	wcscpy(header.szLevelName, L"");
-	wcscpy(header.szComments, L"");
-
-	FILE *file = fopen(fullFilename, "wb");
-	fwrite( &header, sizeof(RICH_GAME_MEDIA_HEADER), 1, file );
-
-	m_thumbnailScreenshot->WritePng( file );
-	// m_thumbnailScreenshot->SavePng( "ss.bmp" );
-	delete m_thumbnailScreenshot;
-	m_thumbnailScreenshot = NULL;
-
-	fclose(file);
-
-}
-
-void App::SaveThumbnailScreenshot()
-{
-	PosterMaker pm(g_app->m_renderer->ScreenW(), g_app->m_renderer->ScreenH());
-	pm.AddFrame();
-
-	float newWidth = 256.0f;
-	float newHeight = 192.0f;
-
-	BitmapRGBA scaled(newWidth, newHeight );
-
-	scaled.Blit(0, 0, pm.GetBitmap()->m_width, pm.GetBitmap()->m_height, pm.GetBitmap(),
-							   0, 0, newWidth, newHeight, true);
-
-	m_thumbnailScreenshot = new BitmapRGBA( scaled );
-
-	m_saveThumbnail = false;
-}
-
-#endif

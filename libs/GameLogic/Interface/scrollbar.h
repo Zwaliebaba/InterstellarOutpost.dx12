@@ -12,7 +12,7 @@
 #ifndef _included_scrollbar_h
 #define _included_scrollbar_h
 
-#include "eclipse.h"
+#include "Canvas/eclipse.h"
 #include "interface/darwinia_window.h"
 
 

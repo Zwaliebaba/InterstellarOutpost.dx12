@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "updateavailable_window.h"
-#include "ambrosia.h"
 #include "window_manager.h"
 
 class GetItNowButton : public DarwiniaButton {

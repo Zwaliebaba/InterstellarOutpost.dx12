@@ -1,8 +1,25 @@
 # Neuron Library CMakeLists.txt
 
+file(GLOB CPP_SOURCES *.cpp Canvas/*.cpp Input/*.cpp Netlib/*.cpp Network/*.cpp Sound/*.cpp)
+file(GLOB H_SOURCES *.h Canvas/*.h Input/*.h Netlib/*.h Network/*.h Sound/*.h)
+
 # Create Neuron library
 add_library(Neuron STATIC
-    Neuron.cpp
+    ${CPP_SOURCES}  
+    ${H_SOURCES}
+)
+
+target_include_directories(Neuron
+    PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/Neuron>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/GameLogic>
+)
+
+target_precompile_headers(Neuron
+    PRIVATE
+        "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_SOURCE_DIR}/src/pch.h>"
 )
 
 # Set target properties

@@ -1,9 +1,6 @@
 #include "pch.h"
-
-#include "net_lib.h"
-
+#include "Netlib/net_lib.h"
 #include "network/generic.h"
-
 
 void IpToString(struct in_addr in, char *newip)
 {

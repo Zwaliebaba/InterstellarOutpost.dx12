@@ -1,6 +1,4 @@
 #include "pch.h"
-
-#if !defined USE_DIRECT3D
 #include "debug_utils.h"
 #include "ogl_extensions.h"
 
@@ -86,4 +84,3 @@ int IsOGLExtensionSupported(const char *extension)
 	}
 	return 0;
 }
-#endif // !defined USE_DIRECT3D

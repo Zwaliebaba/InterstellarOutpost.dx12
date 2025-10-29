@@ -2,7 +2,7 @@
 #define INCLUDED_WINDOW_MANAGER_H
 
 
-#include <lib/llist.h>
+#include "llist.h"
 
 
 class WindowManagerWin32;

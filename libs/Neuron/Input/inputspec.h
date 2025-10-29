@@ -32,7 +32,7 @@ public:
 	~InputSpecTokens();
 	unsigned length() const;
 	const std::string &operator[]( unsigned _index ) const;
-	std::auto_ptr<InputSpecTokens> operator()( int _start, int _end ) const;
+	std::unique_ptr<InputSpecTokens> operator()( int _start, int _end ) const;
 
 };
 

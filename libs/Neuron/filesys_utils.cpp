@@ -61,118 +61,64 @@ static bool FilterMatch( const char *_filename, const char *_filter )
 // or false for "blah.bmp"
 LList <char *> *ListDirectory( char const *_dir, char const *_filter, bool _fullFilename )
 {
-	if(_filter == NULL || _filter[0] == '\0')
+	if (_filter == nullptr || _filter[0] == '\0') { _filter = "*"; }
+
+	// Create a DArray for our results
+	LList<char*>* result = new LList<char*>();
+
+	// Now add on all files found locally
+	char searchstring[256];
+	ASSERT(strlen(_dir) + strlen(_filter) < sizeof(searchstring) - 1);
+	sprintf(searchstring, "%s%s", _dir, _filter);
+
+	WIN32_FIND_DATA thisfile;
+	HANDLE hFind = FindFirstFile(searchstring, &thisfile);
+
+	do
 	{
-		_filter = "*";
-	}
-
-    // Create a DArray for our results
-    LList <char *> *result = new LList<char *>();
-
-    // Now add on all files found locally
-#ifdef TARGET_MSVC
-	char searchstring [256];
-	DarwiniaDebugAssert(strlen(_dir) + strlen(_filter) < sizeof(searchstring) - 1);
-	sprintf( searchstring, "%s%s", _dir, _filter );
-
-	_finddata_t thisfile;
-	long fileindex = _findfirst( searchstring, &thisfile );
-
-	int exitmeplease = 0;
-
-	while( fileindex != -1 && !exitmeplease )
-	{
-        if( strcmp( thisfile.name, "." ) != 0 &&
-            strcmp( thisfile.name, ".." ) != 0 &&
-            !(thisfile.attrib & _A_SUBDIR) )
-        {
-		    char *newname = NULL;
-		    if( _fullFilename )
+		if (strcmp(thisfile.cFileName, ".") != 0 &&
+			strcmp(thisfile.cFileName, "..") != 0 &&
+			!(thisfile.dwFileAttributes & _A_SUBDIR))
+		{
+			char* newname = nullptr;
+			if (_fullFilename)
 			{
-				int len = strlen(_dir) + strlen(thisfile.name);
-				newname = new char [len + 1];
-				sprintf( newname, "%s%s", _dir, thisfile.name );
+				size_t len = strlen(_dir) + strlen(thisfile.cFileName);
+				newname = new char[len + 1];
+				sprintf(newname, "%s%s", _dir, thisfile.cFileName);
 			}
-            else
+			else
 			{
-				int len = strlen(thisfile.name);
-				newname = new char [len + 1];
-				sprintf( newname, "%s", thisfile.name );
+				int len = strlen(thisfile.cFileName);
+				newname = new char[len + 1];
+				sprintf(newname, "%s", thisfile.cFileName);
 			}
 
-            result->PutData( newname );
-        }
-
-		exitmeplease = _findnext( fileindex, &thisfile );
-	}
-#else
-	DIR *dir = opendir(_dir);
-	if (dir == NULL)
-		return result;
-	for (struct dirent *entry; (entry = readdir(dir)) != NULL; ) {
-		if (FilterMatch(entry->d_name, _filter)) {
-			char fullname[strlen(_dir) + strlen(entry->d_name) + 2];
-			sprintf(fullname, "%s%s%s",
-				_dir,
-				_dir[0] ? "/" : "",
-				entry->d_name);
-			if (!IsDirectory(fullname)) {
-				result->PutData(
-					NewStr(_fullFilename ? fullname : entry->d_name));
-			}
+			result->PutData(newname);
 		}
-	}
-	closedir(dir);
-#endif
+	} while (FindNextFile(hFind, &thisfile) != 0);
 
-    return result;
+	return result;
 }
 
 
 LList <char *> *ListSubDirectoryNames(char const *_dir)
 {
-    LList<char *> *result = new LList<char *>();
+	auto* result = new LList<char*>();
 
-#ifdef TARGET_MSVC
-	_finddata_t thisfile;
-	long fileindex = _findfirst( _dir, &thisfile );
+	WIN32_FIND_DATA thisfile;
+	HANDLE hFind = FindFirstFile(_dir, &thisfile);
 
-	int exitmeplease = 0;
-
-	while( fileindex != -1 && !exitmeplease )
+	do
 	{
-        if( strcmp( thisfile.name, "." ) != 0 &&
-            strcmp( thisfile.name, ".." ) != 0 &&
-            (thisfile.attrib & _A_SUBDIR) )
-        {
-		    char *newname = strdup( thisfile.name );
-            result->PutData( newname );
-        }
-
-		exitmeplease = _findnext( fileindex, &thisfile );
-    }
-#else
-
-	DIR *dir = opendir(_dir);
-	if (dir == NULL)
-		return result;
-	for (struct dirent *entry; (entry = readdir(dir)) != NULL; ) {
-		if (entry->d_name[0] == '.')
-			continue;
-
-		char fullname[strlen(_dir) + strlen(entry->d_name) + 2];
-		sprintf(fullname, "%s%s%s",
-			_dir,
-			_dir[0] ? "/" : "",
-			entry->d_name);
-
-		if (IsDirectory(fullname))
-			result->PutData( strdup(entry->d_name) );
-	}
-	closedir(dir);
-
-#endif
-    return result;
+		if (strcmp(thisfile.cFileName, ".") != 0 && strcmp(thisfile.cFileName, "..") != 0
+			&& (thisfile.dwFileAttributes & _A_SUBDIR))
+		{
+			char* newname = _strdup(thisfile.cFileName);
+			result->PutData(newname);
+		}
+	} while (FindNextFile(hFind, &thisfile) != 0);
+	return result;
 }
 
 

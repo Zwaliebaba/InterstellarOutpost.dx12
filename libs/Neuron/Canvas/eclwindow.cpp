@@ -1,9 +1,7 @@
-//#include "pch.h"
-
+#include "pch.h"
 #include <stdio.h>
 #include <string.h>
-
-#include "eclipse.h"
+#include "Canvas/eclipse.h"
 #include "eclwindow.h"
 
 

@@ -39,7 +39,7 @@ public:
 class ToggleInputTransform : public InputTransform {
 
 private:
-	std::auto_ptr<InputTransform> m_on, m_off;
+	std::unique_ptr<InputTransform> m_on, m_off;
 	bool m_state, m_change;
 
 	void Advance();
@@ -47,8 +47,8 @@ private:
 public:
 	ToggleInputTransform( ControlType _on, ControlType _off );
 
-	ToggleInputTransform( std::auto_ptr<InputTransform> _on,
-	                      std::auto_ptr<InputTransform> _off );
+	ToggleInputTransform( std::unique_ptr<InputTransform> _on,
+	                      std::unique_ptr<InputTransform> _off );
 
 	bool operator()();
 

@@ -19,7 +19,7 @@
 #include "text_stream_readers.h"
 #include "vector3.h"
 
-#include "eclipse.h"
+#include "Canvas/eclipse.h"
 
 #include "app.h"
 #include "camera.h"

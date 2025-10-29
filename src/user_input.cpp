@@ -1,14 +1,6 @@
 #include "pch.h"
-
-#include <stdio.h>
-#include <math.h>
-#include <float.h>
-
-#include <eclipse.h>
-
-#include "avi_generator.h"
+#include "Canvas/eclipse.h"
 #include "debug_utils.h"
-#include "hi_res_time.h"
 #include "input/input.h"
 #include "targetcursor.h"
 #include "math_utils.h"
@@ -18,23 +10,13 @@
 #include "text_renderer.h"
 #include "preferences.h"
 #include "language_table.h"
-
 #include "interface/debugmenu.h"
-
-#include "worldobject/worldobject.h"
-#include "worldobject/engineer.h"
-
 #include "network/clienttoserver.h"
-
 #include "app.h"
 #include "camera.h"
-#include "globals.h"
 #include "global_world.h"
 #include "location.h"
-#include "main.h"
 #include "renderer.h"
-#include "sound/soundsystem.h"
-#include "unit.h"
 #include "user_input.h"
 
 

@@ -1,8 +1,12 @@
 # Main Application CMakeLists.txt
 
+file(GLOB CPP_SOURCES *.cpp)
+file(GLOB H_SOURCES *.h)
+
 # Create main executable
 add_executable(InterstellarOutpost
-    main.cpp
+    ${CPP_SOURCES}
+    ${H_SOURCES}
 )
 
 # Link libraries
@@ -13,10 +17,16 @@ target_link_libraries(InterstellarOutpost
 )
 
 # Set target properties
-target_include_directories(GameLogic 
+target_include_directories(InterstellarOutpost 
     PUBLIC 
+        ${CMAKE_CURRENT_SOURCE_DIR}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../libs/Neuron>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../libs/GameLogic>
+)
+
+target_precompile_headers(InterstellarOutpost
+    PRIVATE
+        "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_SOURCE_DIR}/src/pch.h>"
 )
 
 # Set C++20 for this target

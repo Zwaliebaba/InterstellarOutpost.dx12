@@ -7,7 +7,7 @@
 #include "hi_res_time.h"
 #include "language_table.h"
 
-#include <eclipse.h>
+#include "Canvas/eclipse.h"
 
 #include "interface/mainmenus.h"
 

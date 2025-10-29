@@ -4,18 +4,12 @@
 #ifdef SOUND_EDITOR
 
 #include "interface/darwinia_window.h"
-#include "sound/pokey.h"
 
 
 struct FSOUND_STREAM;
-class PokeyGraph;
-class PokeyButton;
-
 
 class PokeyWindow : public DarwiniaWindow
 {
-friend class PokeyGraph;
-friend class PokeyButton;
 private:
 	FSOUND_STREAM *m_stream;
 	int m_selectionType;

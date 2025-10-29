@@ -8,36 +8,12 @@
 #include "hi_res_time.h"
 
 
-#define USE_PENTIUM_COUNTER 0
-
-
 static unsigned int g_ticksPerSec = 0;
 static double g_tickInterval = 1.0;
 static double g_lastGetHighResTime = 0.0;
 static double g_timeShift = 0.0;
 static bool g_usingFakeTimeMode = false;
 static double g_fakeTime;
-
-
-#pragma warning (push)
-#pragma warning (disable : 4035)	// disable no return value warning
-inline  unsigned int GetPentiumCounter()
-{
-	__asm
-	{
-		_emit 0x0F		        // Call RDTSC (Read time stamp counter) this will
-		_emit 0x31				// put a 64 bit clock cycle count in edx;eax
-
-		shr eax,6				// 64 bits are too much and the resolution is too
-								// high, so throw away the bottom 6 bits of eax
-		shl edx,26				// Now throw away everything other than the top 6 bits of edx
-		or eax,edx				// Shove the edx data into the gap in eax
-								// Return value in eax, which apparently VC is happy with
-	}
-}
-#pragma warning (pop)
-
-
 
 // *** InitialiseHighResTime
 void InitialiseHighResTime()

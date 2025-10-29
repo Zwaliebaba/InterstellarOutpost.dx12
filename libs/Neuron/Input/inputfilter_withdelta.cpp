@@ -2,7 +2,7 @@
 
 #include "input/inputfilter_withdelta.h"
 
-typedef std::auto_ptr<const InputFilterSpec> FilterSpecPtr;
+typedef std::unique_ptr<const InputFilterSpec> FilterSpecPtr;
 
 
 void InputFilterWithDelta::registerDeltaID( InputFilterSpec &spec )

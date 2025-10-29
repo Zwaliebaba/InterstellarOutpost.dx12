@@ -1,11 +1,11 @@
 #include "pch.h"
 
-#include "net_lib.h"
-#include "net_mutex.h"
-#include "net_socket.h"
-#include "net_socket_listener.h"
-#include "net_thread.h"
-#include "net_udp_packet.h"
+#include "Netlib/net_lib.h"
+#include "Netlib/net_mutex.h"
+#include "Netlib/net_socket.h"
+#include "Netlib/net_socket_listener.h"
+#include "Netlib/net_thread.h"
+#include "Netlib/net_udp_packet.h"
 
 #include "debug_utils.h"
 #include "profiler.h"

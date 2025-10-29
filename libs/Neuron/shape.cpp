@@ -16,7 +16,7 @@
 
 #ifndef EXPORTER_BUILD
 #include "resource.h"
-#include "../app.h"
+#include "app.h"
 #endif
 
 #define USE_DISPLAY_LISTS
