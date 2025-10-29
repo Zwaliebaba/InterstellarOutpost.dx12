@@ -4,7 +4,7 @@
 #include <string.h>
 #include <float.h>
 
-#include "debug_utils.h"
+
 #include "hi_res_time.h"
 #include "input/input.h"
 #include "input/movement2d.h"
@@ -1022,7 +1022,7 @@ bool Camera::AdvanceRopeModel(Vector3 &cameraTarget)
   constexpr float outsideD = 120.0;// cameraHeight / 0.36;
   const float outsideDSquared = outsideD * outsideD;
 
-  // DebugOut("2dcamdist = %f, outsideD = %f\n", B.Mag(), outsideD);
+  // DebugTrace("2dcamdist = %f, outsideD = %f\n", B.Mag(), outsideD);
   if (B.MagSquared() < outsideDSquared)
   {
     B.Normalise();
@@ -1668,9 +1668,9 @@ void Camera::SetupProjectionMatrix(float _nearPlane, float _farPlane)
 void Camera::SetupModelviewMatrix()
 {
   float dot = m_front * m_up;
-  DarwiniaDebugAssert(NearlyEquals(m_front.MagSquared(), 1.0f));
-  DarwiniaDebugAssert(NearlyEquals(m_up.MagSquared(), 1.0f));
-  DarwiniaDebugAssert(NearlyEquals(dot, 0.0f));
+  DEBUG_ASSERT(NearlyEquals(m_front.MagSquared(), 1.0f));
+  DEBUG_ASSERT(NearlyEquals(m_up.MagSquared(), 1.0f));
+  DEBUG_ASSERT(NearlyEquals(dot, 0.0f));
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -2024,7 +2024,7 @@ void Camera::Advance()
 
   ASSERT_VECTOR3_IS_SANE(m_pos);
   float dot = m_front * m_up;
-  DarwiniaDebugAssert(NearlyEquals(dot, 0.0f));
+  DEBUG_ASSERT(NearlyEquals(dot, 0.0f));
 
   g_app->m_userInput->RecalcMousePos3d();
 
@@ -2045,7 +2045,7 @@ void Camera::SetNextDebugMode()
 
 void Camera::RequestMode(int _mode)
 {
-  DarwiniaDebugAssert(_mode >= 0 && _mode < ModeNumModes);
+  DEBUG_ASSERT(_mode >= 0 && _mode < ModeNumModes);
   int screenW = g_app->m_renderer->ScreenW();
   int screenH = g_app->m_renderer->ScreenH();
 

@@ -8,7 +8,7 @@
 
 #include "app.h"
 
-#include "debug_utils.h"
+
 #include "preferences.h"
 #include "resource.h"
 #include "text_stream_readers.h"
@@ -523,7 +523,7 @@ char *PrefsManager::GetString(char const *_key, char *_default) const
 //
 //    if( stringData )
 //    {
-//        DarwiniaDebugAssert (_length * 2 == strlen(stringData));
+//        DEBUG_ASSERT (_length * 2 == strlen(stringData));
 //
 //        for( int i = 0; i < _length; ++i )
 //        {
@@ -546,7 +546,7 @@ void PrefsManager::SetString(char const *_key, char const *_string)
 	else
 	{
 		PrefsItem *item = m_items.GetData(index);
-		DarwiniaDebugAssert(item->m_type == PrefsItem::TypeString);
+		DEBUG_ASSERT(item->m_type == PrefsItem::TypeString);
 		char *newString = strdup(_string);
         free(item->m_str);
         // Note by Chris:
@@ -569,7 +569,7 @@ void PrefsManager::SetFloat(char const *_key, float _float)
 	else
 	{
 		PrefsItem *item = m_items.GetData(index);
-		DarwiniaDebugAssert(item->m_type == PrefsItem::TypeFloat);
+		DEBUG_ASSERT(item->m_type == PrefsItem::TypeFloat);
 		item->m_float = _float;
 	}
 }
@@ -587,7 +587,7 @@ void PrefsManager::SetInt(char const *_key, int _int)
 	else
 	{
 		PrefsItem *item = m_items.GetData(index);
-		DarwiniaDebugAssert(item->m_type == PrefsItem::TypeInt);
+		DEBUG_ASSERT(item->m_type == PrefsItem::TypeInt);
 		item->m_int = _int;
 	}
 }

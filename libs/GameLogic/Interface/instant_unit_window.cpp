@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "debug_utils.h"
+
 #include "language_table.h"
 
 #include "interface/input_field.h"
@@ -232,7 +232,7 @@ public:
 
 				// Create an edit window for the new instant unit
 				EclWindow *cw = EclGetWindow(LANGUAGEPHRASE("editor_instantunits"));
-				DarwiniaDebugAssert(cw);
+				DEBUG_ASSERT(cw);
 				ew = new InstantUnitEditWindow(LANGUAGEPHRASE("editor_instantuniteditor"));
 				ew->m_w = cw->m_w;
 				ew->m_h = 160;

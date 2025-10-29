@@ -366,7 +366,7 @@ bool Demo1Tutorial::AdvanceCurrentChapter()
         {
             HandleSquadDeath();
             Building *building = g_app->m_location->GetBuilding(52);
-            DarwiniaReleaseAssert( building, "Tutorial building not found" );
+            ASSERT_TEXT( building, "Tutorial building not found" );
             int numEnemies = g_app->m_location->m_entityGrid->GetNumEnemies( building->m_pos.x, building->m_pos.z, 300.0f, 2 );
             if( numEnemies <= 20 ) TriggerChapter( m_chapter+1 );
             break;
@@ -376,7 +376,7 @@ bool Demo1Tutorial::AdvanceCurrentChapter()
         {
             HandleSquadDeath();
             Building *building = g_app->m_location->GetBuilding(52);
-            DarwiniaReleaseAssert( building, "Tutorial building not found" );
+            ASSERT_TEXT( building, "Tutorial building not found" );
             int numEnemies = g_app->m_location->m_entityGrid->GetNumEnemies( building->m_pos.x, building->m_pos.z, 300.0f, 2 );
             if( numEnemies <= 5 ) TriggerChapter( m_chapter+1 );
             break;
@@ -386,7 +386,7 @@ bool Demo1Tutorial::AdvanceCurrentChapter()
         {
             HandleSquadDeath();
             Building *building = g_app->m_location->GetBuilding(52);
-            DarwiniaReleaseAssert( building, "Tutorial building not found" );
+            ASSERT_TEXT( building, "Tutorial building not found" );
             int numEnemies = g_app->m_location->m_entityGrid->GetNumEnemies( building->m_pos.x, building->m_pos.z, 300.0f, 2 );
             if( numEnemies == 0 ) TriggerChapter( 20 );
             break;
@@ -413,7 +413,7 @@ bool Demo1Tutorial::AdvanceCurrentChapter()
         {
             HandleEngineerDeath();
             Building *building = g_app->m_location->GetBuilding(52);
-            DarwiniaReleaseAssert( building, "Tutorial building not found" );
+            ASSERT_TEXT( building, "Tutorial building not found" );
             int numFound;
             WorldObjectId *ids = g_app->m_location->m_entityGrid->GetFriends( building->m_pos.x, building->m_pos.z, 150.0f, &numFound, 2 );
             bool engineerFound = false;
@@ -506,7 +506,7 @@ bool Demo1Tutorial::AdvanceCurrentChapter()
         {
             HandleSquadDeath2();
             Building *building = g_app->m_location->GetBuilding(12);
-            DarwiniaReleaseAssert( building, "Tutorial building not found" );
+            ASSERT_TEXT( building, "Tutorial building not found" );
             int numEnemies = g_app->m_location->m_entityGrid->GetNumEnemies( building->m_pos.x, building->m_pos.z, 400.0f, 2 );
             if( numEnemies == 0 )
             {

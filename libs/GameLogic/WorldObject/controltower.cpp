@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-#include "debug_utils.h"
+
 #include "file_writer.h"
 #include "matrix34.h"
 #include "profiler.h"
@@ -165,7 +165,7 @@ int ControlTower::GetAvailablePosition( Vector3 &_pos, Vector3 &_front )
 
 void ControlTower::GetConsolePosition( int _position, Vector3 &_pos )
 {
-    DarwiniaDebugAssert( _position >= 0 && _position < 3 );
+    DEBUG_ASSERT( _position >= 0 && _position < 3 );
 
     Matrix34 rootMat(m_front, g_upVector, m_pos);
     Matrix34 worldMat = m_console[_position]->GetWorldMatrix(rootMat);
@@ -176,7 +176,7 @@ void ControlTower::GetConsolePosition( int _position, Vector3 &_pos )
 
 void ControlTower::BeginReprogram( int _position )
 {
-    DarwiniaDebugAssert( !m_beingReprogrammed[_position] );
+    DEBUG_ASSERT( !m_beingReprogrammed[_position] );
     m_beingReprogrammed[_position] = true;
 }
 
@@ -243,7 +243,7 @@ bool ControlTower::Reprogram( int _teamId )
 
 void ControlTower::EndReprogram( int _position )
 {
-    DarwiniaDebugAssert( m_beingReprogrammed[_position] );
+    DEBUG_ASSERT( m_beingReprogrammed[_position] );
     m_beingReprogrammed[_position] = false;
 }
 

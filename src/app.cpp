@@ -129,7 +129,7 @@ App::App()
 	// or the data directory must exist
 
 	SoundStreamDecoder *ssd = m_resource->GetSoundStreamDecoder("sounds/ablaster");
-	DarwiniaReleaseAssert(ssd,
+	ASSERT_TEXT(ssd,
 		"Couldn't find sound resources. This is probably because\n"
 		"sounds.dat isn't in the working directory.");
 	delete ssd;
@@ -159,7 +159,7 @@ App::App()
     {
         char *defaultLang = g_systemInfo->m_localeInfo.m_language;
         char langFilename[512];
-        sprintf( langFilename, "data/language/%s.txt", defaultLang );
+        sprintf( langFilename, "gamedata/language/%s.txt", defaultLang );
         if( DoesFileExist(langFilename) )
         {
             g_prefsManager->SetString( "TextLanguage", defaultLang );
@@ -174,19 +174,7 @@ App::App()
     SetLanguage( language, g_prefsManager->GetInt( "TextLanguageTest", 0 ) );
 
 
-
-#ifdef SOUND_EDITOR
-	m_effectProcessor   = new EffectProcessor();
-#endif // SOUND_EDITOR
-
     SetProfileName( g_prefsManager->GetString("UserProfile", "none") );
-
-#ifdef TARGET_OS_VISTA
-    if( strlen( g_saveFile ) > 0 )
-    {
-        SetProfileName( g_saveFile );
-    }
-#endif
 
     m_helpSystem        = new HelpSystem();
 	m_particleSystem	= new ParticleSystem();
@@ -466,21 +454,9 @@ const char *App::GetPreferencesPath()
 	return path;
 }
 
-const char *App::GetScreenshotDirectory()
-{
-#ifdef TARGET_OS_VISTA
-    static char dir[MAX_PATH];
-    SHGetFolderPath( NULL, CSIDL_DESKTOP, NULL, SHGFP_TYPE_CURRENT, dir );
-    sprintf( dir, "%s\\", dir );
-    return dir;
-#else
-    return "";
-#endif
-}
-
 bool App::LoadProfile()
 {
-    DebugOut( "Loading profile %s\n", m_userProfileName );
+    DebugTrace( "Loading profile %s\n", m_userProfileName );
 
     if( (stricmp( m_userProfileName, "AccessAllAreas" ) == 0 ||
 		stricmp( m_userProfileName, "AttractMode" ) == 0 ) &&
@@ -532,14 +508,14 @@ bool App::SaveProfile( bool _global, bool _local )
     if( stricmp( m_userProfileName, "AccessAllAreas" ) == 0 ) return false;
 	if( stricmp( m_userProfileName, "AttractMode" ) == 0 ) return false;
 
-    DebugOut( "Saving profile %s\n", m_userProfileName );
+    DebugTrace( "Saving profile %s\n", m_userProfileName );
 
     char folderName[512];
     sprintf( folderName, "%susers/", GetProfileDirectory() );
     bool success = CreateDirectory( folderName );
     if( !success )
     {
-        DebugOut( "failed to create folder %s\n", folderName );
+        DebugTrace( "failed to create folder %s\n", folderName );
         return false;
     }
 
@@ -547,7 +523,7 @@ bool App::SaveProfile( bool _global, bool _local )
     success = CreateDirectory( folderName );
     if( !success )
     {
-        DebugOut( "failed to create folder %s\n", folderName );
+        DebugTrace( "failed to create folder %s\n", folderName );
         return false;
     }
 
@@ -561,7 +537,7 @@ bool App::SaveProfile( bool _global, bool _local )
     if( _global )
     {
         m_globalWorld->SaveGame( m_gameDataFile );
-        DebugOut( "Saved global data for profile %s\n", m_userProfileName );
+        DebugTrace( "Saved global data for profile %s\n", m_userProfileName );
     }
 
     if( _local && g_app->m_location )
@@ -576,7 +552,7 @@ bool App::SaveProfile( bool _global, bool _local )
         g_app->m_location->m_levelFile->GenerateDynamicBuildings();
         char *missionFilename = m_location->m_levelFile->m_missionFilename;
         m_location->m_levelFile->SaveMissionFile( missionFilename );
-        DebugOut( "Saved level %s for profile %s\n", missionFilename, m_userProfileName );
+        DebugTrace( "Saved level %s for profile %s\n", missionFilename, m_userProfileName );
     }
     return true;
 }

@@ -81,6 +81,8 @@ using namespace winrt;
 
 #pragma comment(lib, "ws2_32.lib")
 
+using namespace Neuron;
+
 #define DARWINIA_VERSION "1.5.11"
 #define DARWINIA_EXE_VERSION 1, 5, 11, 0
 #define STR_DARWINIA_EXE_VERSION "1, 5, 11, 0\0"

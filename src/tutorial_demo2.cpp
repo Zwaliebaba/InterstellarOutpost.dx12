@@ -57,7 +57,7 @@ void Demo2Tutorial::TriggerChapter( int _chapter )
         case 5:
         {
                         Building *building = g_app->m_location->GetBuilding(85);
-                        DarwiniaReleaseAssert(building, "Tutorial building not found" );
+                        ASSERT_TEXT(building, "Tutorial building not found" );
                         g_app->m_camera->SetTarget( building->m_pos, 400, 300 );
 		                g_app->m_camera->SetMoveDuration(2);
                         g_app->m_camera->RequestMode(Camera::ModeMoveToTarget);
@@ -135,7 +135,7 @@ void Demo2Tutorial::TriggerChapter( int _chapter )
                         g_app->m_camera->RecordCameraPosition();
                         Building *building = g_app->m_location->GetBuilding(66);
                         g_app->m_camera->RequestBuildingFocusMode( building, 150, 50 );
-                        DarwiniaReleaseAssert( building, "Tutorial building not found" );
+                        ASSERT_TEXT( building, "Tutorial building not found" );
                         g_app->m_sepulveda->Say( "launchpad_tutorial_17" );
                         g_app->m_sepulveda->Say( "launchpad_tutorial_18" );
                         g_app->m_sepulveda->Say( "launchpad_tutorial_19" );
@@ -177,7 +177,7 @@ void Demo2Tutorial::TriggerChapter( int _chapter )
         case 40:
         {
                         Building *building = g_app->m_location->GetBuilding(86);
-                        DarwiniaReleaseAssert( building, "Tutorial building not found" );
+                        ASSERT_TEXT( building, "Tutorial building not found" );
                         g_app->m_camera->RequestBuildingFocusMode( building, 200, 150 );
                         g_app->m_sepulveda->Say( "launchpad_tutorial_40" );
                         g_app->m_sepulveda->Say( "launchpad_tutorial_41" );
@@ -458,7 +458,7 @@ bool Demo2Tutorial::AdvanceCurrentChapter()
         case 13:                        // Place Engineer
         {
             Building *building = g_app->m_location->GetBuilding(129);
-            DarwiniaReleaseAssert( building, "Tutorial building not found" );
+            ASSERT_TEXT( building, "Tutorial building not found" );
             bool engineerFound = false;
             if( building )
             {
@@ -532,7 +532,7 @@ bool Demo2Tutorial::AdvanceCurrentChapter()
         case 18:                        // Wipe out virii
         {
             Building *building = g_app->m_location->GetBuilding(75);
-            DarwiniaReleaseAssert( building, "Tutorial building not found" );
+            ASSERT_TEXT( building, "Tutorial building not found" );
             int numEnemies = g_app->m_location->m_entityGrid->GetNumEnemies( building->m_pos.x, building->m_pos.z, 200.0f, 2 );
             if( numEnemies == 0 ) m_nextChapterTimer = GetHighResTime() + 5.0f;
             break;
@@ -555,7 +555,7 @@ bool Demo2Tutorial::AdvanceCurrentChapter()
         case 20:                        // Engineer near radar dish
         {
             Building *building = g_app->m_location->GetBuilding(66);
-            DarwiniaReleaseAssert( building, "Tutorial building not found" );
+            ASSERT_TEXT( building, "Tutorial building not found" );
             int numFound;
             WorldObjectId *ids = g_app->m_location->m_entityGrid->GetFriends( building->m_pos.x, building->m_pos.z, 150.0f, &numFound, 2 );
             bool engineerFound = false;
@@ -579,7 +579,7 @@ bool Demo2Tutorial::AdvanceCurrentChapter()
         case 21:                        // Radar dish reprogrammed
         {
             Building *building = g_app->m_location->GetBuilding(66);
-            DarwiniaReleaseAssert( building, "Tutorial building not found" );
+            ASSERT_TEXT( building, "Tutorial building not found" );
             if( building->m_id.GetTeamId() == 2 )
             {
                 m_nextChapterTimer = GetHighResTime() + 2.0f;
@@ -653,7 +653,7 @@ bool Demo2Tutorial::AdvanceCurrentChapter()
         case 26:                        // Wipe out virii + centipede on island 2
         {
             Building *building = g_app->m_location->GetBuilding(86);
-            DarwiniaReleaseAssert( building, "Tutorial building not found" );
+            ASSERT_TEXT( building, "Tutorial building not found" );
             int numEnemies = g_app->m_location->m_entityGrid->GetNumEnemies( building->m_pos.x, building->m_pos.z, 250.0f, 2 );
             if( numEnemies == 0 )
             {
@@ -673,7 +673,7 @@ bool Demo2Tutorial::AdvanceCurrentChapter()
         case 41:                            // Reprogrammed Incubator
         {
             Building *building = g_app->m_location->GetBuilding(86);
-            DarwiniaReleaseAssert( building, "Tutorial building not found" );
+            ASSERT_TEXT( building, "Tutorial building not found" );
             if( building->m_id.GetTeamId() == 2 )
             {
                 m_nextChapterTimer = GetHighResTime() + 5.0f;
@@ -684,7 +684,7 @@ bool Demo2Tutorial::AdvanceCurrentChapter()
         case 42:                        // First Darwinians born
         {
             Building *building = g_app->m_location->GetBuilding(86);
-            DarwiniaReleaseAssert( building, "Tutorial building not found" );
+            ASSERT_TEXT( building, "Tutorial building not found" );
             bool includeTeam[NUM_TEAMS];
             memset( includeTeam, 0, sizeof(bool) * NUM_TEAMS );
             includeTeam[0] = true;

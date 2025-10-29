@@ -41,7 +41,7 @@ public:
 // Gesture Demo Recorder
 //*****************************************************************************
 
-// Produces a file data/gesture_demos/new_gesture_demo.txt
+// Produces a file gamedata/gesture_demos/new_gesture_demo.txt
 void RecordGestureDemo();
 void GestureRecordingThread();
 

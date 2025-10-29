@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Canvas/eclipse.h"
-#include "debug_utils.h"
+
 #include "input/input.h"
 #include "targetcursor.h"
 #include "math_utils.h"
@@ -223,13 +223,13 @@ void UserInput::RecalcMousePos3d()
 		float sphereRadius = g_app->m_globalWorld->GetSize() * 40.0f;
 
         float dist = (rayStart - sphereCentre).Mag();
-        //DarwiniaDebugAssert(dist < sphereRadius);
+        //DEBUG_ASSERT(dist < sphereRadius);
 
 		rayStart += rayDir * (sphereRadius * 4.0f);
 		rayDir = -rayDir;
 		landscapeHit = RaySphereIntersection(rayStart, rayDir,
 											 sphereCentre, sphereRadius, 1e10,
 											 &m_mousePos3d);
-		//DarwiniaDebugAssert(landscapeHit);
+		//DEBUG_ASSERT(landscapeHit);
 	}
 }

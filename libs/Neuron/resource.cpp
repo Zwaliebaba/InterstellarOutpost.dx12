@@ -3,7 +3,7 @@
 #include "app.h"
 #include "binary_stream_readers.h"
 #include "bitmap.h"
-#include "debug_utils.h"
+
 #include "file_writer.h"
 #include "filesys_utils.h"
 #include "gesture_demo.h"
@@ -70,7 +70,7 @@ TextReader *Resource::GetTextReader(char const *_filename)
   TextReader *reader = NULL;
   char fullFilename[256];
 
-  sprintf(fullFilename, "data/%s", _filename);
+  sprintf(fullFilename, "gamedata/%s", _filename);
   if (DoesFileExist(fullFilename))
     reader = new TextFileReader(fullFilename);
 
@@ -82,7 +82,7 @@ BinaryReader *Resource::GetBinaryReader(char const *_filename)
   BinaryReader *reader = NULL;
   char fullFilename[256];
 
-  sprintf(fullFilename, "data/%s", _filename);
+  sprintf(fullFilename, "gamedata/%s", _filename);
   if (DoesFileExist(fullFilename)) reader = new BinaryFileReader(fullFilename);
 
   return reader;
@@ -129,7 +129,7 @@ int Resource::GetTexture(char const *_name, bool _mipMapping, bool _masked)
   {
     char errorString[512];
     sprintf(errorString, "Failed to load texture %s", _name);
-    DarwiniaReleaseAssert(false, errorString);
+    ASSERT_TEXT(false, errorString);
   }
 
   return theTexture;
@@ -206,12 +206,12 @@ Shape *Resource::GetShapeCopy(char const *_name, bool _animating)
 
   if (!theShape)
   {
-    sprintf(fullPath, "data/shapes/%s", _name);
+    sprintf(fullPath, "gamedata/shapes/%s", _name);
     strlwr(fullPath);
     if (DoesFileExist(fullPath)) theShape = new Shape(fullPath, _animating);
   }
 
-  DarwiniaReleaseAssert(theShape, "Couldn't create shape file %s", _name);
+  ASSERT_TEXT(theShape, "Couldn't create shape file %s", _name);
   return theShape;
 }
 
@@ -225,7 +225,7 @@ GestureDemo *Resource::GetGestureDemo(char const *_name)
     sprintf(fullPath, "gesture_demos/%s", _name);
     TextReader *in = GetTextReader(fullPath);
 
-    DarwiniaReleaseAssert(in && in->IsOpen(), "Couldn't find mouse gesture demo %s", _name);
+    ASSERT_TEXT(in && in->IsOpen(), "Couldn't find mouse gesture demo %s", _name);
     demo = new GestureDemo(in);
     delete in;
 
@@ -303,7 +303,7 @@ int Resource::WildCmp(char const *wild, char const *string)
 int Resource::CreateDisplayList(char const *_name)
 {
   // Make sure name isn't NULL and isn't too long
-  DarwiniaDebugAssert(_name && strlen(_name) < 20);
+  DEBUG_ASSERT(_name && strlen(_name) < 20);
 
   unsigned int id = glGenLists(1);
   m_displayLists.PutData(_name, id);
@@ -314,7 +314,7 @@ int Resource::CreateDisplayList(char const *_name)
 int Resource::GetDisplayList(char const *_name)
 {
   // Make sure name isn't NULL and isn't too long
-  DarwiniaDebugAssert(_name && strlen(_name) < 20);
+  DEBUG_ASSERT(_name && strlen(_name) < 20);
 
   return m_displayLists.GetData(_name, -1);
 }
@@ -324,7 +324,7 @@ void Resource::DeleteDisplayList(char const *_name)
   if (!_name) return;
 
   // Make sure name isn't too long
-  DarwiniaDebugAssert(strlen(_name) < 20);
+  DEBUG_ASSERT(strlen(_name) < 20);
 
   int id = m_displayLists.GetData(_name, -1);
   if (id >= 0)
@@ -451,7 +451,7 @@ char *Resource::GetBaseDirectory()
   }
   else
   {
-    sprintf(result, "data/");
+    sprintf(result, "gamedata/");
   }
 
   return result;
@@ -480,7 +480,7 @@ FileWriter *Resource::GetFileWriter(char const *_filename, bool _encrypt)
     {
       *nextSlash = 0;
       bool result = CreateDirectory(fullFilename);
-      DarwiniaReleaseAssert(result, "Failed to write to %s", fullFilename);
+      ASSERT_TEXT(result, "Failed to write to %s", fullFilename);
       *nextSlash = '/';
       ++nextSlash;
     }
@@ -488,7 +488,7 @@ FileWriter *Resource::GetFileWriter(char const *_filename, bool _encrypt)
     return new FileWriter(fullFilename, _encrypt);
   }
 
-  sprintf(fullFilename, "data/%s", _filename);
+  sprintf(fullFilename, "gamedata/%s", _filename);
   return new FileWriter(fullFilename, _encrypt);
 }
 
@@ -534,7 +534,7 @@ LList<char *> *Resource::ListResources(char const *_dir, char const *_filter, bo
   // List the base data directory
 
   char fullDirectory[256];
-  sprintf(fullDirectory, "data/%s", _dir);
+  sprintf(fullDirectory, "gamedata/%s", _dir);
   results = ListDirectory(fullDirectory, _filter, _longResults);
 
   return results;

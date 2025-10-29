@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "debug_utils.h"
+
 #include "persisting_debug_render.h"
 #include "math_utils.h"
 #include "resource.h"
@@ -26,8 +26,8 @@ EntityLeg::EntityLeg(int _legNum, Entity *_parent,
 {
 	m_shapeUpper = g_app->m_resource->GetShape(_shapeNameUpper);
     m_shapeLower = g_app->m_resource->GetShape(_shapeNameLower);
-	DarwiniaReleaseAssert(m_shapeUpper, "EntityLeg: Couldn't load leg shape %s", _shapeNameUpper);
-    DarwiniaReleaseAssert(m_shapeLower, "EntityLeg: Couldn't load leg shape %s", _shapeNameLower);
+	ASSERT_TEXT(m_shapeUpper, "EntityLeg: Couldn't load leg shape %s", _shapeNameUpper);
+    ASSERT_TEXT(m_shapeLower, "EntityLeg: Couldn't load leg shape %s", _shapeNameLower);
 
 	ShapeMarker *endMarker = m_shapeUpper->m_rootFragment->LookupMarker("MarkerEnd");
 	Matrix34 const &endMatrix = endMarker->GetWorldMatrix(Matrix34(0));
@@ -38,7 +38,7 @@ EntityLeg::EntityLeg(int _legNum, Entity *_parent,
     m_shinLen = endMatrixLower.pos.Mag();
 
 	m_rootMarker = m_parent->m_shape->m_rootFragment->LookupMarker(_rootMarkerName);
-	DarwiniaReleaseAssert(m_rootMarker, "EntityLeg: Couldn't find root marker %s", _rootMarkerName);
+	ASSERT_TEXT(m_rootMarker, "EntityLeg: Couldn't find root marker %s", _rootMarkerName);
 
 	m_foot.m_state = EntityFoot::OnGround;
 }

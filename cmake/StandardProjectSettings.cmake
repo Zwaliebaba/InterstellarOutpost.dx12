@@ -36,23 +36,23 @@ option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
 # Platform detection
 if(WIN32)
-    add_compile_definitions(PLATFORM_WINDOWS)
-    if(MSVC)
-  # Suppress specific MSVC warnings
-     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-add_compile_definitions(_SCL_SECURE_NO_WARNINGS)
+  add_compile_definitions(PLATFORM_WINDOWS)
+  if(MSVC)
+    # Suppress specific MSVC warnings
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+    add_compile_definitions(_SCL_SECURE_NO_WARNINGS)
   
-        # Enable multi-processor compilation
+    # Enable multi-processor compilation
     add_compile_options(/MP)
         
-      # Allow legacy C++ code patterns (permissive mode without strictness)
-        add_compile_options(/permissive)
+    # Allow legacy C++ code patterns (permissive mode without strictness)
+    add_compile_options(/permissive)
         
- # Enable C++20++ features for Visual Studio
-        add_compile_options(/std:c++latest)
+    # Enable C++20++ features for Visual Studio
+    add_compile_options(/std:c++latest)
         
-        # Set runtime library
-        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+    # Set runtime library
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
     endif()
 elseif(UNIX AND NOT APPLE)
     add_compile_definitions(PLATFORM_LINUX)

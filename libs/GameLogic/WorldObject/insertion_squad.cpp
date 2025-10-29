@@ -4,7 +4,7 @@
 #include "limits.h"
 
 #include "bitmap.h"
-#include "debug_utils.h"
+
 #include "math_utils.h"
 #include "resource.h"
 #include "shape.h"
@@ -365,7 +365,7 @@ Squadie::Squadie()
     m_retargetTimer(0.0f)
 {
     m_shape = g_app->m_resource->GetShape( "squad.shp" );
-    DarwiniaDebugAssert( m_shape );
+    DEBUG_ASSERT( m_shape );
 
 	m_centrePos = m_shape->CalculateCentre(g_identityMatrix34);
     m_radius = m_shape->CalculateRadius(g_identityMatrix34, m_centrePos );
@@ -420,7 +420,7 @@ void Squadie::ChangeHealth( int _amount )
 
 bool Squadie::Advance(Unit *_theUnit)
 {
-	// DebugOut( "Squadie %d, Health: %d, Dead %d\n", m_formationIndex, m_stats[StatHealth], (int)m_dead );
+	// DebugTrace( "Squadie %d, Health: %d, Dead %d\n", m_formationIndex, m_stats[StatHealth], (int)m_dead );
     if( m_secondaryTimer > 0.0f )
     {
         m_secondaryTimer -= SERVER_ADVANCE_PERIOD;
@@ -717,7 +717,7 @@ bool Squadie::HasSecondaryWeapon()
 void Squadie::FireSecondaryWeapon( Vector3 const &_pos )
 {
     InsertionSquad *squad = (InsertionSquad *) g_app->m_location->GetUnit( m_id );
-    DarwiniaDebugAssert(squad);
+    DEBUG_ASSERT(squad);
 
     if( g_app->m_globalWorld->m_research->HasResearch( squad->m_weaponType ) )
     {
@@ -805,7 +805,7 @@ Vector3 Squadie::GetSecondaryWeaponTarget()
 	double r = details.x * details.x + details.y * details.y;
 	r = sqrt(r);
 	sprintf(debugstring, "x = %d, y = %d r = %f\n", details.x, details.y, r);
-	DebugOut( debugstring );*/
+	DebugTrace( debugstring );*/
 
     // This should be dependent on distance of camera from units
     // Further away, rangeFactor = 1.0, closer rangeFactor closer to 0.66

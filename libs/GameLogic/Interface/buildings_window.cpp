@@ -1,15 +1,12 @@
 #include "pch.h"
-#include "debug_utils.h"
 #include "vector3.h"
 #include "text_renderer.h"
 #include "math_utils.h"
 #include "preferences.h"
 #include "language_table.h"
-
 #include "interface/buildings_window.h"
 #include "interface/drop_down_menu.h"
 #include "interface/input_field.h"
-
 #include "worldobject/factory.h"
 #include "worldobject/trunkport.h"
 #include "worldobject/laserfence.h"
@@ -28,7 +25,6 @@
 #include "worldobject/rocket.h"
 #include "worldobject/generichub.h"
 #include "worldobject/switch.h"
-
 #include "app.h"
 #include "camera.h"
 #include "global_world.h"
@@ -212,7 +208,7 @@ class CloneBuildingButton : public DarwiniaButton
         g_app->m_location->m_landscape.RayHit( rayStart, rayDir, &_pos );
 
         Building *building = g_app->m_location->GetBuilding(g_app->m_locationEditor->m_selectionId);
-        DarwiniaDebugAssert(building);
+        DEBUG_ASSERT(building);
 
         Building *newBuilding = Building::CreateBuilding( building->m_type );
         newBuilding->Initialise( building );
@@ -244,7 +240,7 @@ void BuildingEditWindow::Create()
 	DarwiniaWindow::Create();
 
 	Building *building = g_app->m_location->GetBuilding(g_app->m_locationEditor->m_selectionId);
-	DarwiniaDebugAssert(building);
+	DEBUG_ASSERT(building);
 
 	int buttonPitch = 18;
 	int y = 6;
@@ -508,7 +504,7 @@ void BuildingEditWindow::Render( bool hasFocus )
     DarwiniaWindow::Render( hasFocus );
 
 	Building *building = g_app->m_location->GetBuilding(g_app->m_locationEditor->m_selectionId);
-	DarwiniaDebugAssert(building);
+	DEBUG_ASSERT(building);
 
     g_editorFont.SetRenderShadow(true);
     glColor4ub( 255, 255, 150, 30 );

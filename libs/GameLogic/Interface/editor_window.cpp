@@ -53,7 +53,7 @@ public:
 		{
             //
             // If a MOD hasn't been set, don't allow this to happen
-            // as it will try to save into darwinia/data/levels, which is clearly wrong
+            // as it will try to save into gamedata/levels, which is clearly wrong
             // for the end user (but allow it for us)
 
 #ifndef TARGET_DEBUG

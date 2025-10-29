@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "debug_utils.h"
+
 
 #include "effect_processor.h"
 
@@ -226,7 +226,7 @@ void Channel::SetTimeValue(int _type, unsigned char _value, unsigned short _time
 	LList<TimeValue*> *points = &m_points[_type];
 
 	TimeValue *t = points->GetData(_index);
-	DarwiniaDebugAssert(t);
+	DEBUG_ASSERT(t);
 
 	points->RemoveData(_index);
 	t->m_time = _time;

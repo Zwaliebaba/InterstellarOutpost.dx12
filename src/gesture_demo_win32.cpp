@@ -2,7 +2,7 @@
 
 //#include <SDL_thread.h>
 
-#include "debug_utils.h"
+
 #include "text_stream_readers.h"
 
 #include "app.h"
@@ -29,6 +29,6 @@ void RecordGestureDemo()
         0,                           // use default creation flags
         &threadId);                  // returns the thread identifier
 
- 	DarwiniaReleaseAssert(threadHandle, "Couldn't create gesture recording thread");
+ 	ASSERT_TEXT(threadHandle, "Couldn't create gesture recording thread");
 	SetThreadPriority(threadHandle, THREAD_PRIORITY_TIME_CRITICAL);
 }

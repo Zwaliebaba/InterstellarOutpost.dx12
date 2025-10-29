@@ -14,7 +14,7 @@
 #include <string.h>
 #include <stdlib.h>                     // needed for errno definition
 
-#include "debug_utils.h"
+
 #include "filesys_utils.h"
 #include "string_utils.h"
 
@@ -55,9 +55,9 @@ static bool FilterMatch( const char *_filename, const char *_filter )
 }
 
 // Finds all the filenames in the specified directory that match the specified
-// filter. Directory should be like "data/textures" or "data/textures/".
+// filter. Directory should be like "gamedata/textures" or "gamedata/textures/".
 // Filter can be NULL or "" or "*.bmp" or "map_*" or "map_*.txt"
-// Set FullFilename to true if you want results like "data/textures/blah.bmp"
+// Set FullFilename to true if you want results like "gamedata/textures/blah.bmp"
 // or false for "blah.bmp"
 LList <char *> *ListDirectory( char const *_dir, char const *_filter, bool _fullFilename )
 {

@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "debug_utils.h"
+
 #include "text_renderer.h"
 //#include "input.h"
 #include "filesys_utils.h"
@@ -52,7 +52,7 @@ public:
             sew->SelectEvent( -1 );
 
             EclButton *button = m_parent->GetButton( "New Event" );
-            DarwiniaDebugAssert( button );
+            DEBUG_ASSERT( button );
 
             DropDownMenu *menu = (DropDownMenu *) button;
             menu->Empty();
@@ -112,14 +112,14 @@ public:
             sew->SelectEvent( -1 );
 
             EclButton *button = m_parent->GetButton( "[ObjectType]" );
-            DarwiniaDebugAssert( button )
+            DEBUG_ASSERT( button )
 
             ObjectTypeMenu *menu = (ObjectTypeMenu *) button;
             menu->Empty();
             strncpy(menu->m_objectGroup, m_options[optionIndex]->m_word, sizeof(menu->m_objectGroup) - 1);
 
             EclButton *newEventButton = m_parent->GetButton( "New Event" );
-            DarwiniaDebugAssert( newEventButton );
+            DEBUG_ASSERT( newEventButton );
             DropDownMenu *newEventMenu = (DropDownMenu *) newEventButton;
             newEventMenu->Empty();
 
@@ -550,7 +550,7 @@ void ConvertVolume( float &_volume )
     else if ( _volume <= 3.0f )         _volume = 8.5f;
     else                                _volume = 10.0f;
 
-    DebugOut( "Converted volume from %2.2f to %2.2f\n", oldValue, _volume );
+    DebugTrace( "Converted volume from %2.2f to %2.2f\n", oldValue, _volume );
 }
 
 class ConvertVolumesButton : public DarwiniaButton
@@ -727,9 +727,9 @@ void SoundEditorWindow::StopPlayback()
 void SoundEditorWindow::Update()
 {
 	ObjectGroupMenu *objGroupMenu = (ObjectGroupMenu*)(GetButton("[ObjectGroup]"));
-	DarwiniaDebugAssert(objGroupMenu);
+	DEBUG_ASSERT(objGroupMenu);
 	ObjectGroupMenu *objTypeMenu = (ObjectGroupMenu*)(GetButton("[ObjectType]"));
-	DarwiniaDebugAssert(objTypeMenu);
+	DEBUG_ASSERT(objTypeMenu);
 
 	// Decide whether to enable the feature whereby an object can be selected by
 	// clicking on it in the level
@@ -753,11 +753,11 @@ void SoundEditorWindow::Update()
 		if (entity)
 		{
 			bool success = objGroupMenu->SelectOption2("Entity");
-			DarwiniaDebugAssert(success);
+			DEBUG_ASSERT(success);
 
 			char *typeName = Entity::GetTypeName(entity->m_type);
 			success = objTypeMenu->SelectOption2(typeName);
-			DarwiniaDebugAssert(success);
+			DEBUG_ASSERT(success);
 
 			m_objectSelectorEnabled = false;
 		}
@@ -766,11 +766,11 @@ void SoundEditorWindow::Update()
 		if (building)
 		{
 			bool success = objGroupMenu->SelectOption2("Building");
-			DarwiniaDebugAssert(success);
+			DEBUG_ASSERT(success);
 
 			char *typeName = Building::GetTypeName(building->m_type);
 			success = objTypeMenu->SelectOption2(typeName);
-			DarwiniaDebugAssert(success);
+			DEBUG_ASSERT(success);
 
 			m_objectSelectorEnabled = false;
 		}
@@ -839,8 +839,8 @@ void SoundEditorWindow::Create()
 void SoundEditorWindow::CreateInstanceEditor()
 {
     SoundEventBlueprint *seb = GetSoundEventBlueprint();
-    DarwiniaDebugAssert( seb );
-    DarwiniaDebugAssert( seb->m_instance );
+    DEBUG_ASSERT( seb );
+    DEBUG_ASSERT( seb->m_instance );
 
 
     //
@@ -1033,9 +1033,9 @@ void SoundEditorWindow::Render( bool hasFocus )
     g_editorFont.DrawText2D( m_x + 190, m_y + 240, 11, "SourceType" );
 
 	ObjectGroupMenu *objGroupMenu = (ObjectGroupMenu*)(GetButton("[ObjectGroup]"));
-	DarwiniaDebugAssert(objGroupMenu);
+	DEBUG_ASSERT(objGroupMenu);
 	ObjectGroupMenu *objTypeMenu = (ObjectGroupMenu*)(GetButton("[ObjectType]"));
-	DarwiniaDebugAssert(objTypeMenu);
+	DEBUG_ASSERT(objTypeMenu);
 
 	bool selectorEnabled = m_objectSelectorEnabled;
 	if (g_app->m_location &&
@@ -1048,7 +1048,7 @@ void SoundEditorWindow::Render( bool hasFocus )
 	if (selectorEnabled)
 	{
 		EclButton *sob = GetButton("Select Object");
-		DarwiniaDebugAssert(sob);
+		DEBUG_ASSERT(sob);
 		int time = (float)g_gameTime * 2.0f;
 		if (time & 1)
 		{
@@ -1115,8 +1115,8 @@ SoundSourceBlueprint *SoundEditorWindow::GetSoundSourceBlueprint()
     DropDownMenu *objGroupMenu = (DropDownMenu *) GetButton( "[ObjectGroup]" );
     ObjectTypeMenu *objTypeMenu = (ObjectTypeMenu *) GetButton( "[ObjectType]" );
 
-    DarwiniaDebugAssert( objGroupMenu );
-    DarwiniaDebugAssert( objTypeMenu );
+    DEBUG_ASSERT( objGroupMenu );
+    DEBUG_ASSERT( objTypeMenu );
 
     char const *objGroup = objGroupMenu->GetSelectionName();
     char const *objType = objTypeMenu->GetSelectionName();
@@ -1174,8 +1174,8 @@ void SoundEditorWindow::GetSelectionName(char *_buf)
     DropDownMenu *objTypeMenu = (DropDownMenu *) GetButton( "[ObjectType]" );
 	strcpy(_buf, objTypeMenu->GetSelectionName());
 //
-//    DarwiniaDebugAssert( objGroupMenu );
-//    DarwiniaDebugAssert( objTypeMenu );
+//    DEBUG_ASSERT( objGroupMenu );
+//    DEBUG_ASSERT( objTypeMenu );
 //
 //    int objGroup = objGroupMenu->GetSelectionIndex();
 //    int objType = objTypeMenu->GetSelectionIndex();
@@ -1243,7 +1243,7 @@ class DspEffectTypeMenu : public DropDownMenu
 
         DropDownMenu::SelectOption( _value );
 		int optionIndex = FindValue(_value);
-        DarwiniaDebugAssert( g_app->m_soundSystem->m_filterBlueprints[ optionIndex ] );
+        DEBUG_ASSERT( g_app->m_soundSystem->m_filterBlueprints[ optionIndex ] );
         DspBlueprint *seb = g_app->m_soundSystem->m_filterBlueprints[ optionIndex ];
         DspEffectEditor *see = (DspEffectEditor *) m_parent;
 
@@ -1694,7 +1694,7 @@ public:
             {
                 char *filename = parent->m_fileList[ index ];
                 char fullFilename[256];
-                sprintf( fullFilename, "data/sounds/%s", filename );
+                sprintf( fullFilename, "gamedata/sounds/%s", filename );
                 DeleteThisFile( fullFilename );
                 parent->RefreshFileList();
                 SetCaption( "delete" );
@@ -1729,7 +1729,7 @@ class DeleteAllButton : public DarwiniaButton
             {
                 char *filename = parent->m_fileList[i];
                 char fullFilename[256];
-                sprintf( fullFilename, "data/sounds/%s", filename );
+                sprintf( fullFilename, "gamedata/sounds/%s", filename );
                 DeleteThisFile( fullFilename );
             }
             parent->RefreshFileList();
@@ -1826,7 +1826,7 @@ void PurgeSoundsWindow::RefreshFileList()
 {
     m_fileList.EmptyAndDelete();
 
-    LList<char *> *allFiles = ListDirectory( "data/sounds/", "*.*", false );
+    LList<char *> *allFiles = ListDirectory( "gamedata/sounds/", "*.*", false );
 
     for( int i = 0; i < allFiles->Size(); ++i )
     {

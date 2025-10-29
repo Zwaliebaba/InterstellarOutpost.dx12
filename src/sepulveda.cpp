@@ -157,7 +157,7 @@ void Sepulveda::Advance()
     sepulvedaCaption->m_stringId = NewStr(stringId);
     sepulvedaCaption->m_timeSync = GetHighResTime();
 
-    DarwiniaDebugAssert(ISLANGUAGEPHRASE_ANY( stringId ));
+    DEBUG_ASSERT(ISLANGUAGEPHRASE_ANY( stringId ));
 
     BuildCaption(LANGUAGEPHRASE(stringId), m_caption);
     if (m_caption[0] != '\0')

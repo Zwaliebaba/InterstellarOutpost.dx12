@@ -64,7 +64,7 @@ public:
 			}
 		}
 
-		DarwiniaDebugAssert(false);
+		DEBUG_ASSERT(false);
 	}
 };
 
@@ -94,7 +94,7 @@ public:
 			}
 		}
 
-		DarwiniaDebugAssert(false);
+		DEBUG_ASSERT(false);
 	}
 };
 
@@ -121,7 +121,7 @@ public:
 			}
 		}
 
-		DarwiniaDebugAssert(false);
+		DEBUG_ASSERT(false);
 	}
 };
 

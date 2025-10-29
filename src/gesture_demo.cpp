@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "debug_utils.h"
+
 #include "file_writer.h"
 #include "input/input.h"
 #include "targetcursor.h"
@@ -77,7 +77,7 @@ GestureMouseCoords GestureDemo::GetCoords(float _timeSinceStart)
 void GestureRecordingThread()
 {
 	FileWriter *out = g_app->m_resource->GetFileWriter("gesture_demos/new_gesture_demo.txt", false);
-	DarwiniaReleaseAssert(out, "Couldn't open file %s for writing", "gesture_demos/new_gesture_demo.txt");
+	ASSERT_TEXT(out, "Couldn't open file %s for writing", "gesture_demos/new_gesture_demo.txt");
 	float scale = 1.0f / (float)g_app->m_renderer->ScreenH();
 
 	// Wait for the start of the gesture

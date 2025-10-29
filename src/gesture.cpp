@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "debug_utils.h"
+
 #include "file_writer.h"
 #include "hi_res_time.h"
 #include "invert_matrix.h"
@@ -359,7 +359,7 @@ void Gesture::AddTrainingSample( int symbolID )
 
     newDataClass->m_trainers[newDataClass->m_nextTrainer] = m_featureSet;
     newDataClass->m_nextTrainer++;
-    DarwiniaDebugAssert( newDataClass->m_nextTrainer < GESTURE_MAX_TRAINERS );
+    DEBUG_ASSERT( newDataClass->m_nextTrainer < GESTURE_MAX_TRAINERS );
 
     TrainSystem();
 }
@@ -436,7 +436,7 @@ void Gesture::RunComparison()
 void Gesture::LoadTrainingData( char *filename )
 {
     TextReader *reader = g_app->m_resource->GetTextReader(filename);
-    DarwiniaReleaseAssert(reader && reader->IsOpen(), "Couldn't open Gesture data file");
+    ASSERT_TEXT(reader && reader->IsOpen(), "Couldn't open Gesture data file");
 
 	reader->ReadLine();
     int numSymbols = atoi(reader->GetNextToken());
@@ -558,7 +558,7 @@ void Gesture::AddSample( int x, int y )
         m_mouseSamples[m_nextMouseSample].y = y;
         m_mouseSamples[m_nextMouseSample].time = GetHighResTime() * 1000.0;
         ++m_nextMouseSample;
-        DarwiniaDebugAssert( m_nextMouseSample < GESTURE_MAX_MOUSE_SAMPLES );
+        DEBUG_ASSERT( m_nextMouseSample < GESTURE_MAX_MOUSE_SAMPLES );
     }
 }
 

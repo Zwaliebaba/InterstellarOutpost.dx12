@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Canvas/eclipse.h"
-#include "debug_utils.h"
+
 #include "hi_res_time.h"
 #include "input/input.h"
 #include "input/file_paths.h"
@@ -117,7 +117,7 @@ void UpdateAdvanceTime()
     float prevPredictionTime = g_predictionTime;
     g_predictionTime = static_cast<float>(realTime - g_lastServerAdvance) - 0.07f;
 
-    //DebugOut( "Change = %6.3f\n", g_predictionTime - prevPredictionTime );
+    //DebugTrace( "Change = %6.3f\n", g_predictionTime - prevPredictionTime );
   }
 }
 
@@ -182,7 +182,7 @@ int GetNumSlicesToAdvance()
   if (g_sliceNum != -1) numSlicesToAdvance -= g_sliceNum;
   if (g_sliceNum == -1) numSlicesToAdvance -= 10;
 
-  //DarwiniaDebugAssert( numSlicesToAdvance >= 0 );
+  //DEBUG_ASSERT( numSlicesToAdvance >= 0 );
   numSlicesToAdvance = max(numSlicesToAdvance, 0);
   numSlicesToAdvance = min(numSlicesToAdvance, 10);
 
@@ -195,7 +195,7 @@ bool ProcessServerLetters(ServerToClientLetter *letter)
   switch (letter->m_type)
   {
     case ServerToClientLetter::HelloClient:
-      if (letter->m_ip == g_app->m_clientToServer->GetOurIP_Int()) { DebugOut("CLIENT : Received HelloClient from Server\n"); }
+      if (letter->m_ip == g_app->m_clientToServer->GetOurIP_Int()) { DebugTrace("CLIENT : Received HelloClient from Server\n"); }
       return true;
 
     case ServerToClientLetter::GoodbyeClient:
@@ -349,7 +349,7 @@ unsigned char GenerateSyncValue()
   float totalValue = position.x + position.y + position.z;
 
   totalValue -= static_cast<int>(totalValue);
-  DarwiniaDebugAssert(totalValue >= 0.0f && totalValue <= 1.0f);
+  DEBUG_ASSERT(totalValue >= 0.0f && totalValue <= 1.0f);
   unsigned char syncValue = totalValue * 255;
 
   //    float unitPositionSync = ( unitPosition.x + unitPosition.y + unitPosition.z );
@@ -362,7 +362,7 @@ unsigned char GenerateSyncValue()
   //    laserPositionSync -= (int) laserPositionSync;
   //    effectsPositionSync -= (int) effectsPositionSync;
   //
-  //    DebugOut( "Frame [%3d] Sync [%3d] unit[%3d] entity[%3d] laser[%3d] effects[%3d]\n",
+  //    DebugTrace( "Frame [%3d] Sync [%3d] unit[%3d] entity[%3d] laser[%3d] effects[%3d]\n",
   //            g_lastProcessedSequenceId, syncValue,
   //            (int)(unitPositionSync*255),
   //            (int)(entityPositionSync*255),
@@ -546,10 +546,10 @@ void LocationGameLoop()
 
           if (letter)
           {
-            DarwiniaDebugAssert(letter->GetSequenceId() == g_lastProcessedSequenceId + 1);
+            DEBUG_ASSERT(letter->GetSequenceId() == g_lastProcessedSequenceId + 1);
             //g_app->m_clientToServer->m_lastServerLetterReceivedTime = GetHighResTime();
 
-            //DebugOut( "CLIENT : Processed update %d\n", letter->GetSequenceId() );
+            //DebugTrace( "CLIENT : Processed update %d\n", letter->GetSequenceId() );
             //g_app->m_clientToServer->m_lastKnownSequenceIdFromServer = letter->GetSequenceId();
             bool handled = ProcessServerLetters(letter);
             if (handled == false) { g_app->m_clientToServer->ProcessServerUpdates(letter); }
@@ -854,7 +854,7 @@ void SetPreferenceOverrides()
   long version = 0;
   Gestalt(gestaltSystemVersion, &version);
   if (version < 0x1030) g_prefsManager->SetInt("ManuallyScaleTextures", 1);
-  DarwiniaReleaseAssert(version >= 0x1020, "Darwinia requires at least Mac OS X version 10.2.x to run");
+  ASSERT_TEXT(version >= 0x1020, "Darwinia requires at least Mac OS X version 10.2.x to run");
 #endif
 
   // Fog can be an issue on certain drivers (e.g. Mac OS X - can causes FIFO hangs)
@@ -888,7 +888,7 @@ void InitialiseInputManager()
     TextReader *inputPrefsReader = g_app->m_resource->GetTextReader(InputPrefs::GetSystemPrefsPath());
     if (inputPrefsReader)
     {
-      DarwiniaReleaseAssert(inputPrefsReader->IsOpen(), "Couldn't open input preferences file: %s\n",
+      ASSERT_TEXT(inputPrefsReader->IsOpen(), "Couldn't open input preferences file: %s\n",
                             InputPrefs::GetSystemPrefsPath());
       g_inputManager->parseInputPrefs(*inputPrefsReader);
       delete inputPrefsReader;

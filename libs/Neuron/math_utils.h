@@ -60,7 +60,7 @@ inline float syncsfrand( float range = 1.0f ) { return (syncfrand() - 0.5f) * ra
 float Log2(float x);
 
 #define ASSERT_FLOAT_IS_SANE(x) \
-	DarwiniaDebugAssert((x + 1.0f) != x);
+	DEBUG_ASSERT((x + 1.0f) != x);
 #define ASSERT_VECTOR3_IS_SANE(v) \
 	ASSERT_FLOAT_IS_SANE((v).x) \
 	ASSERT_FLOAT_IS_SANE((v).y) \

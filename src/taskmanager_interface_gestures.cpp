@@ -4,7 +4,7 @@
 #include "input/input.h"
 #include "targetcursor.h"
 #include "vector2.h"
-#include "debug_utils.h"
+
 #include "resource.h"
 #include "bitmap.h"
 #include "profiler.h"
@@ -739,7 +739,7 @@ void TaskManagerInterfaceGestures::RunScreenZone( const char *_name, int _data )
         GlobalEventCondition *gec = NULL;
         if( primary ) gec = g_app->m_location->m_levelFile->m_primaryObjectives[objectiveId];
         else          gec = g_app->m_location->m_levelFile->m_secondaryObjectives[objectiveId];
-        DarwiniaDebugAssert( gec );
+        DEBUG_ASSERT( gec );
 
         g_app->m_sepulveda->ShutUp();
         if( gec->m_cutScene )

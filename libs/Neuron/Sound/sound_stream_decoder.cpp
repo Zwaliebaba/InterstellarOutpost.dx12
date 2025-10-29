@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "binary_stream_readers.h"
-#include "debug_utils.h"
+
 #include "sound/sound_stream_decoder.h"
 
 SoundStreamDecoder::SoundStreamDecoder(BinaryReader *_in)
@@ -17,7 +17,7 @@ SoundStreamDecoder::SoundStreamDecoder(BinaryReader *_in)
     m_fileType = TypeWav;
     ReadWavHeader();
   } else {
-    DarwiniaReleaseAssert(0, "Unknown sound file format %s", m_in->m_filename);
+    ASSERT_TEXT(0, "Unknown sound file format %s", m_in->m_filename);
   }
 }
 
@@ -140,12 +140,12 @@ unsigned int SoundStreamDecoder::ReadWavData(signed short *_data, unsigned int _
 unsigned int SoundStreamDecoder::Read(signed short *_data, unsigned int _numSamples) {
   switch (m_fileType) {
     case TypeUnknown:
-      DarwiniaReleaseAssert(0, "Unknown format of sound file %s", m_in->m_filename);
+      ASSERT_TEXT(0, "Unknown format of sound file %s", m_in->m_filename);
     case TypeWav:
       return ReadWavData(_data, _numSamples);
   }
 
-  DarwiniaDebugAssert(0);
+  DEBUG_ASSERT(0);
   return 0;
 }
 

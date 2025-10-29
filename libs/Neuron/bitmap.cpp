@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "binary_stream_readers.h"
 #include "bitmap.h"
-#include "debug_utils.h"
+
 #include "filesys_utils.h"
 #include "math_utils.h"
 #include "preferences.h"
@@ -71,7 +71,7 @@ void BitmapRGBA::ReadBMPFileHeader(BinaryReader *f, BitmapFileHeader *fileheader
   fileheader->bfReserved2 = f->ReadS16();
   fileheader->bfOffBits = f->ReadS32();
 
-  DarwiniaDebugAssert(fileheader->bfType == 19778);
+  DEBUG_ASSERT(fileheader->bfType == 19778);
 }
 
 // Reads information from a BMP file header.
@@ -197,12 +197,12 @@ void BitmapRGBA::LoadBmp(BinaryReader *_in)
   }
   else
   {
-    DarwiniaDebugAssert(0);
+    DEBUG_ASSERT(0);
   }
 
   Initialise(infoheader.biWidth, infoheader.biHeight);
-  DarwiniaDebugAssert(infoheader.biCompression == BMP_RGB);
-  DarwiniaDebugAssert(!_in->m_eof);
+  DEBUG_ASSERT(infoheader.biCompression == BMP_RGB);
+  DEBUG_ASSERT(!_in->m_eof);
 
   // Read the image
   for (int i = 0; i < (int) infoheader.biHeight; ++i)
@@ -219,7 +219,7 @@ void BitmapRGBA::LoadBmp(BinaryReader *_in)
         Read24BitLine(infoheader.biWidth, _in, i);
         break;
       default:
-        DarwiniaDebugAssert(0);
+        DEBUG_ASSERT(0);
         break;
     }
   }
@@ -368,7 +368,7 @@ void BitmapRGBA::Initialise(int width, int height)
   m_pixels = new RGBAColour[width * height];
   m_lines = new RGBAColour *[height];
 
-  DarwiniaDebugAssert(m_pixels && m_lines);
+  DEBUG_ASSERT(m_pixels && m_lines);
 
   for (int y = 0; y < height; ++y)
   {
@@ -381,13 +381,13 @@ void BitmapRGBA::Initialise(char const *_filename)
   BinaryFileReader in(_filename);
 
   char const *extension = GetExtensionPart(_filename);
-  DarwiniaDebugAssert(stricmp(extension, "bmp") == 0);
+  DEBUG_ASSERT(stricmp(extension, "bmp") == 0);
   LoadBmp(&in);
 }
 
 void BitmapRGBA::Initialise(BinaryReader *_reader, char const *_type)
 {
-  DarwiniaDebugAssert(stricmp(_type, "bmp") == 0);
+  DEBUG_ASSERT(stricmp(_type, "bmp") == 0);
   LoadBmp(_reader);
 }
 
@@ -499,10 +499,10 @@ void BitmapRGBA::ConvertToGreyScale()
 void BitmapRGBA::Blit(int _srcX, int _srcY, int _srcW, int _srcH, const BitmapRGBA *_srcBmp,
                       int _destX, int _destY, int _destW, int _destH, bool _bilinear)
 {
-  DarwiniaDebugAssert(_srcX + _srcW <= _srcBmp->m_width);
-  DarwiniaDebugAssert(_srcY + _srcH <= _srcBmp->m_height);
-  DarwiniaDebugAssert(_destX + _destW <= m_width);
-  DarwiniaDebugAssert(_destY + _destH <= m_height);
+  DEBUG_ASSERT(_srcX + _srcW <= _srcBmp->m_width);
+  DEBUG_ASSERT(_srcY + _srcH <= _srcBmp->m_height);
+  DEBUG_ASSERT(_destX + _destW <= m_width);
+  DEBUG_ASSERT(_destY + _destH <= m_height);
 
   float sxPitch = (float) _srcW / (float) _destW;
   float syPitch = (float) _srcH / (float) _destH;
@@ -572,8 +572,8 @@ void BitmapRGBA::ApplyBlurFilter(float _scale)
 {
   START_PROFILE(g_app->m_profiler, "ApplyBlur");
 
-  DarwiniaDebugAssert(m_width > 0 && m_width <= 1024);
-  DarwiniaDebugAssert(m_height > 0 && m_height <= 1024);
+  DEBUG_ASSERT(m_width > 0 && m_width <= 1024);
+  DEBUG_ASSERT(m_height > 0 && m_height <= 1024);
 
   RGBAColour *temp = new RGBAColour[m_width * m_height];
   memset(temp, 0, sizeof(RGBAColour) * m_width * m_height);
@@ -755,7 +755,7 @@ int BitmapRGBA::ConvertToTexture(bool _mipmapping) const
                                  scaled.m_pixels);
     }
 
-    DarwiniaReleaseAssert(result == 0,
+    ASSERT_TEXT(result == 0,
                           "ConvertToTexture failed with error : %s", gluErrorString(result));
   }
   else

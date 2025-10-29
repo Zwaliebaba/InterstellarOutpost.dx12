@@ -4830,7 +4830,7 @@ public:
     //    auto Lib0 = Collection1.CreateSubobject<CD3DX12_DXIL_LIBRARY_SUBOBJECT>();
     //    Lib0->SetDXILLibrary(&pMyAppDxilLibs[0]);
     //    Lib0->DefineExport(L"rayGenShader0"); // in practice these export listings might be
-    //                                          // data/engine driven
+    //                                          // gamedata/engine driven
     //    etc.
     //
     // Alternatively, users can instantiate sububject helpers explicitly, such as via local

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Canvas/eclipse.h"
 #include "app.h"
-#include "debug_utils.h"
+
 #include "input/control_bindings.h"
 #include "input/input_types.h"
 #include "input/inputdriver_win32.h"
@@ -87,7 +87,7 @@ bool W32InputDriver::getKeyInput(InputSpec const &spec, InputDetails &details)
 {
 
   int button = spec.control_id;
-  //DarwiniaDebugAssert(0 <= button && button < KEY_MAX);
+  //DEBUG_ASSERT(0 <= button && button < KEY_MAX);
   details.type = INPUT_TYPE_BOOL;
 
   switch (spec.condition)
@@ -352,7 +352,7 @@ LRESULT CALLBACK W32InputDriver::WndProc(HWND hWnd, UINT message,
 
     case WM_KEYUP:
     {
-      //DarwiniaDebugAssert(wParam >= 0 && wParam < KEY_MAX);
+      //DEBUG_ASSERT(wParam >= 0 && wParam < KEY_MAX);
       if (g_keys[wParam] != 0)
       {
         m_keyNewDeltas[wParam] = -1;
@@ -363,7 +363,7 @@ LRESULT CALLBACK W32InputDriver::WndProc(HWND hWnd, UINT message,
 
     case WM_KEYDOWN:
     {
-      //DarwiniaDebugAssert(wParam >= 0 && wParam < KEY_MAX);
+      //DEBUG_ASSERT(wParam >= 0 && wParam < KEY_MAX);
 
       if (g_keys[wParam] != 1)
       {

@@ -12,7 +12,7 @@
 #include "2d_array.h"
 #include "binary_stream_readers.h"
 #include "bitmap.h"
-#include "debug_utils.h"
+
 #include "hi_res_time.h"
 #include "math_utils.h"
 #include "ogl_extensions.h"
@@ -306,7 +306,7 @@ void Water::GenerateLightMap()
 
 
     double totalTime = GetHighResTime() - startTime;
-    DebugOut( "Water lightmap generation took %dms\n", int(totalTime * 1000) );
+    DebugTrace( "Water lightmap generation took %dms\n", int(totalTime * 1000) );
 }
 
 
@@ -649,8 +649,8 @@ void Water::UpdateDynamicWater()
 			float const lowZ = -landSizeZ * 0.5f;
 			int indexX = int((vertex1->m_pos.x-lowX)/m_cellSize+0.1f);
 			int indexZ = int((vertex1->m_pos.z-lowZ)/m_cellSize+0.1f);
-			DarwiniaDebugAssert(indexX < m_waveTableSizeX);
-			DarwiniaDebugAssert(indexZ + 1 < m_waveTableSizeZ);
+			DEBUG_ASSERT(indexX < m_waveTableSizeX);
+			DEBUG_ASSERT(indexZ + 1 < m_waveTableSizeZ);
 
 			// Update the height and calc brightness for FIRST vertex of the pair
 			vertex1->m_pos.y = m_waveTableX[indexX] + m_waveTableZ[indexZ];
@@ -720,11 +720,11 @@ void Water::UpdateDynamicWater()
 				&m_vertexBuffer,
 				NULL);
 
-			DarwiniaDebugAssert( hr != D3DERR_INVALIDCALL );
-			DarwiniaDebugAssert( hr != D3DERR_OUTOFVIDEOMEMORY );
-			DarwiniaDebugAssert( hr != E_OUTOFMEMORY );
-			DarwiniaDebugAssert( hr == D3D_OK );
-			DarwiniaDebugAssert( m_vertexBuffer != NULL );
+			DEBUG_ASSERT( hr != D3DERR_INVALIDCALL );
+			DEBUG_ASSERT( hr != D3DERR_OUTOFVIDEOMEMORY );
+			DEBUG_ASSERT( hr != E_OUTOFMEMORY );
+			DEBUG_ASSERT( hr == D3D_OK );
+			DEBUG_ASSERT( m_vertexBuffer != NULL );
 		}
 
 		void *data;

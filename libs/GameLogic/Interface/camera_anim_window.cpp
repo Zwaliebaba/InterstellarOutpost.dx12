@@ -201,7 +201,7 @@ public:
 		if (parent->m_newNodeArmed)
 		{
 			CameraAnimation *anim = g_app->m_location->m_levelFile->m_cameraAnimations[parent->m_animId];
-			DarwiniaDebugAssert(anim);
+			DEBUG_ASSERT(anim);
 
 			CamAnimNode *node = new CamAnimNode;
 			node->m_mountName = MAGIC_MOUNT_NAME_START_POS;

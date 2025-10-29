@@ -73,7 +73,7 @@ public:
 #include <string.h>
 
 #include "btree.h"
-#include "debug_utils.h"
+
 
 
 template <class T>
@@ -181,7 +181,7 @@ void BTree<T>::RemoveData( const char *newid )
       its own right node onto the extreme right of itself.
       */
 
-    DarwiniaDebugAssert(newid);
+    DEBUG_ASSERT(newid);
 
     if( stricmp( newid, id ) == 0 )
 	{
@@ -339,7 +339,7 @@ DArray <char *> *BTree<T>::ConvertIndexToDArray()
 template <class T>
 void BTree<T>::RecursiveConvertToDArray( DArray <T> *darray, BTree<T> *btree )
 {
-    DarwiniaDebugAssert(darray);
+    DEBUG_ASSERT(darray);
 
     if( !btree ) return;            // Base case
 
@@ -353,7 +353,7 @@ void BTree<T>::RecursiveConvertToDArray( DArray <T> *darray, BTree<T> *btree )
 template <class T>
 void BTree<T>::RecursiveConvertIndexToDArray( DArray <char *> *darray, BTree<T> *btree )
 {
-    DarwiniaDebugAssert(darray);
+    DEBUG_ASSERT(darray);
 
     if( !btree ) return;            // Base case
 
