@@ -671,7 +671,7 @@ int Entity::GetTypeId( char const *_typeName )
 {
     for( int i = 0; i < NumEntityTypes; ++i )
     {
-        if( stricmp( _typeName, GetTypeName(i) ) == 0 )
+        if( _stricmp( _typeName, GetTypeName(i) ) == 0 )
         {
             return i;
         }

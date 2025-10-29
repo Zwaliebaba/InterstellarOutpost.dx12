@@ -51,7 +51,7 @@ int SoundSourceBlueprint::GetSoundSoundType(char const *_name)
 {
   for (int i = 0; i < NumOtherSoundSources; ++i)
   {
-    if (stricmp(_name, GetSoundSourceName(i)) == 0)
+    if (_stricmp(_name, GetSoundSourceName(i)) == 0)
     {
       return i;
     }
@@ -285,7 +285,7 @@ void SoundSystem::RestartSoundLibrary()
   g_soundLibrary2d = new SoundLibrary2d;
   g_soundLibrary3d = NULL;
 
-  if (stricmp(libName, "dsound") == 0) g_soundLibrary3d = new SoundLibrary3dDirectSound();
+  if (_stricmp(libName, "dsound") == 0) g_soundLibrary3d = new SoundLibrary3dDirectSound();
 
   g_soundLibrary3d->SetMasterVolume(volume);
   g_soundLibrary3d->Initialise(mixrate, m_numChannels, hw3d, bufSize, bufSize * 10);
@@ -475,7 +475,7 @@ void SoundSystem::LoadEffects()
   {
     if (!in->TokenAvailable()) continue;
     char *effect = in->GetNextToken();
-    DEBUG_ASSERT(stricmp(effect, "EFFECT") == 0);
+    DEBUG_ASSERT(_stricmp(effect, "EFFECT") == 0);
 
     DspBlueprint *bp = new DspBlueprint();
     m_filterBlueprints.PutData(bp);
@@ -483,7 +483,7 @@ void SoundSystem::LoadEffects()
 
     in->ReadLine();
     char *param = in->GetNextToken();
-    while (stricmp(param, "END") != 0)
+    while (_stricmp(param, "END") != 0)
     {
       DspParameterBlueprint *sb = new DspParameterBlueprint();
       bp->m_params.PutData(sb);
@@ -542,7 +542,7 @@ void SoundSystem::LoadBlueprints()
     bool event = false;
     SoundSourceBlueprint *ssb = NULL;
 
-    if (stricmp(group, "ENTITY") == 0)
+    if (_stricmp(group, "ENTITY") == 0)
     {
       strncpy(objectName, type, 127);
       int entityType = Entity::GetTypeId(type);
@@ -553,7 +553,7 @@ void SoundSystem::LoadBlueprints()
       m_entityBlueprints.PutData(ssb, entityType);
       event = true;
     }
-    else if (stricmp(group, "BUILDING") == 0)
+    else if (_stricmp(group, "BUILDING") == 0)
     {
       strncpy(objectName, type, 127);
       int buildingType = Building::GetTypeId(type);
@@ -564,7 +564,7 @@ void SoundSystem::LoadBlueprints()
       m_buildingBlueprints.PutData(ssb, buildingType);
       event = true;
     }
-    else if (stricmp(group, "OTHER") == 0)
+    else if (_stricmp(group, "OTHER") == 0)
     {
       strncpy(objectName, type, 127);
       int otherType = SoundSourceBlueprint::GetSoundSoundType(type);
@@ -575,7 +575,7 @@ void SoundSystem::LoadBlueprints()
       m_otherBlueprints.PutData(ssb, otherType);
       event = true;
     }
-    else if (stricmp(group, "SAMPLEGROUP") == 0)
+    else if (_stricmp(group, "SAMPLEGROUP") == 0)
     {
       strncpy(objectName, "sample group", 127);
       SampleGroup *sampleGroup = NewSampleGroup(type);
@@ -589,8 +589,8 @@ void SoundSystem::LoadBlueprints()
         if (in->TokenAvailable())
         {
           char *word = in->GetNextToken();
-          if (stricmp(word, "END") == 0) break;
-          DEBUG_ASSERT(stricmp(word, "EVENT") == 0);
+          if (_stricmp(word, "END") == 0) break;
+          DEBUG_ASSERT(_stricmp(word, "EVENT") == 0);
           ParseSoundEvent(in, ssb, objectName);
         }
       }
@@ -737,40 +737,40 @@ void SoundSystem::ParseSoundEvent(TextReader *_in, SoundSourceBlueprint *_source
 
   _in->ReadLine();
   char *fieldName = _in->GetNextToken();
-  while (stricmp(fieldName, "END") != 0)
+  while (_stricmp(fieldName, "END") != 0)
   {
-    if (stricmp(fieldName, "SOUNDNAME") == 0)
+    if (_stricmp(fieldName, "SOUNDNAME") == 0)
     {
       char *soundName = _in->GetNextToken();
       StrToLower(soundName);
       const char *extensionRemoved = RemoveExtension(soundName);
       seb->m_instance->SetSoundName(extensionRemoved);
     }
-    else if (stricmp(fieldName, "SOURCETYPE") == 0)
+    else if (_stricmp(fieldName, "SOURCETYPE") == 0)
       seb->m_instance->m_sourceType = atoi(_in->GetNextToken());
-    else if (stricmp(fieldName, "POSITIONTYPE") == 0)
+    else if (_stricmp(fieldName, "POSITIONTYPE") == 0)
       seb->m_instance->m_positionType = atoi(_in->GetNextToken());
-    else if (stricmp(fieldName, "INSTANCETYPE") == 0)
+    else if (_stricmp(fieldName, "INSTANCETYPE") == 0)
       seb->m_instance->m_instanceType = atoi(_in->GetNextToken());
-    else if (stricmp(fieldName, "LOOPTYPE") == 0)
+    else if (_stricmp(fieldName, "LOOPTYPE") == 0)
       seb->m_instance->m_loopType = atoi(_in->GetNextToken());
-    else if (stricmp(fieldName, "PRIORITY") == 0)
+    else if (_stricmp(fieldName, "PRIORITY") == 0)
       oldUserPriority = atoi(_in->GetNextToken());
-    else if (stricmp(fieldName, "MINDISTANCE") == 0)
+    else if (_stricmp(fieldName, "MINDISTANCE") == 0)
       seb->m_instance->m_minDistance = atof(_in->GetNextToken());
-    else if (stricmp(fieldName, "VOLUME") == 0)
+    else if (_stricmp(fieldName, "VOLUME") == 0)
       seb->m_instance->m_volume.Read(_in);
-    else if (stricmp(fieldName, "FREQUENCY") == 0)
+    else if (_stricmp(fieldName, "FREQUENCY") == 0)
       seb->m_instance->m_freq.Read(_in);
-    else if (stricmp(fieldName, "ATTACK") == 0)
+    else if (_stricmp(fieldName, "ATTACK") == 0)
       seb->m_instance->m_attack.Read(_in);
-    else if (stricmp(fieldName, "SUSTAIN") == 0)
+    else if (_stricmp(fieldName, "SUSTAIN") == 0)
       seb->m_instance->m_sustain.Read(_in);
-    else if (stricmp(fieldName, "RELEASE") == 0)
+    else if (_stricmp(fieldName, "RELEASE") == 0)
       seb->m_instance->m_release.Read(_in);
-    else if (stricmp(fieldName, "LOOPDELAY") == 0)
+    else if (_stricmp(fieldName, "LOOPDELAY") == 0)
       seb->m_instance->m_loopDelay.Read(_in);
-    else if (stricmp(fieldName, "EFFECT") == 0)
+    else if (_stricmp(fieldName, "EFFECT") == 0)
       ParseSoundEffect(_in, seb);
     else
       DEBUG_ASSERT(false);
@@ -795,7 +795,7 @@ void SoundSystem::ParseSoundEffect(TextReader *_in, SoundEventBlueprint *_bluepr
   for (int i = 0; i < m_filterBlueprints.Size(); ++i)
   {
     DspBlueprint *seb = m_filterBlueprints[i];
-    if (stricmp(seb->m_name, effectName) == 0)
+    if (_stricmp(seb->m_name, effectName) == 0)
     {
       fxType = i;
       break;
@@ -812,7 +812,7 @@ void SoundSystem::ParseSoundEffect(TextReader *_in, SoundEventBlueprint *_bluepr
   {
     _in->ReadLine();
     char *paramName = _in->GetNextToken();
-    if (stricmp(paramName, "END") == 0) break;
+    if (_stricmp(paramName, "END") == 0) break;
     effect->m_params[paramIndex].Read(_in);
     ++paramIndex;
   }
@@ -825,7 +825,7 @@ void SoundSystem::ParseSampleGroup(TextReader *_in, SampleGroup *_group)
   {
     _in->ReadLine();
     char *paramType = _in->GetNextToken();
-    if (stricmp(paramType, "END") == 0)
+    if (_stricmp(paramType, "END") == 0)
     {
       break;
     }
@@ -910,7 +910,7 @@ bool SoundSystem::InitialiseSound(SoundInstance *_instance)
       {
         SoundInstance *thisInstance = m_sounds[i];
         if (thisInstance->m_instanceType != SoundInstance::Polyphonic &&
-            stricmp(thisInstance->m_eventName, _instance->m_eventName) == 0)
+            _stricmp(thisInstance->m_eventName, _instance->m_eventName) == 0)
         {
           for (int j = 0; j < _instance->m_objIds.Size(); ++j)
           {
@@ -1020,7 +1020,7 @@ void SoundSystem::TriggerEntityEvent(Entity *_entity, char *_eventName)
     for (int i = 0; i < sourceBlueprint->m_events.Size(); ++i)
     {
       SoundEventBlueprint *seb = sourceBlueprint->m_events[i];
-      if (stricmp(seb->m_eventName, _eventName) == 0)
+      if (_stricmp(seb->m_eventName, _eventName) == 0)
       {
         DEBUG_ASSERT(seb->m_instance);
         SoundInstance *instance = new SoundInstance();
@@ -1048,7 +1048,7 @@ void SoundSystem::TriggerBuildingEvent(Building *_building, char *_eventName)
     for (int i = 0; i < sourceBlueprint->m_events.Size(); ++i)
     {
       SoundEventBlueprint *seb = sourceBlueprint->m_events[i];
-      if (stricmp(seb->m_eventName, _eventName) == 0)
+      if (_stricmp(seb->m_eventName, _eventName) == 0)
       {
         DEBUG_ASSERT(seb->m_instance);
         SoundInstance *instance = new SoundInstance();
@@ -1083,7 +1083,7 @@ void SoundSystem::TriggerOtherEvent(WorldObject *_other, char *_eventName, int _
     for (int i = 0; i < sourceBlueprint->m_events.Size(); ++i)
     {
       SoundEventBlueprint *seb = sourceBlueprint->m_events[i];
-      if (stricmp(seb->m_eventName, _eventName) == 0)
+      if (_stricmp(seb->m_eventName, _eventName) == 0)
       {
         // We have a match
         DEBUG_ASSERT(seb->m_instance);
@@ -1091,8 +1091,8 @@ void SoundSystem::TriggerOtherEvent(WorldObject *_other, char *_eventName, int _
         instance->Copy(seb->m_instance);
         if (_type == musicType)
         {
-          //if( m_music && stricmp( m_music->m_eventName+6, _eventName ) == 0 )
-          if (m_music && stricmp(m_music->m_soundName, seb->m_instance->m_soundName) == 0)
+          //if( m_music && _stricmp( m_music->m_eventName+6, _eventName ) == 0 )
+          if (m_music && _stricmp(m_music->m_soundName, seb->m_instance->m_soundName) == 0)
           {
             // The music is already playing
           }
@@ -1163,7 +1163,7 @@ void SoundSystem::StopAllSounds(WorldObjectId _id, char *_eventName)
 
         if (instance->m_objId == _id)
         {
-          if (!_eventName || stricmp(instance->m_eventName, _eventName) == 0)
+          if (!_eventName || _stricmp(instance->m_eventName, _eventName) == 0)
           {
             if (instance->IsPlaying())
             {
@@ -1206,7 +1206,7 @@ int SoundSystem::NumInstancesPlaying(WorldObjectId _id, char *_eventName)
 
     if (instance &&
         instanceMatch &&
-        stricmp(instance->m_eventName, _eventName) == 0)
+        _stricmp(instance->m_eventName, _eventName) == 0)
     {
       ++result;
     }
@@ -1228,7 +1228,7 @@ int SoundSystem::NumInstances(WorldObjectId _id, char *_eventName)
 
       if (instance &&
           instanceMatch &&
-          stricmp(instance->m_eventName, _eventName) == 0)
+          _stricmp(instance->m_eventName, _eventName) == 0)
       {
         ++result;
       }
@@ -2042,7 +2042,7 @@ bool SoundSystem::IsSampleUsed(char const *_soundName)
         {
           SoundInstance *instance = eventBlueprint->m_instance;
           if (instance->m_sourceType == SoundInstance::Sample &&
-              stricmp(instance->m_soundName, _soundName) == 0)
+              _stricmp(instance->m_soundName, _soundName) == 0)
           {
             return true;
           }
@@ -2054,7 +2054,7 @@ bool SoundSystem::IsSampleUsed(char const *_soundName)
               for (int k = 0; k < group->m_samples.Size(); ++k)
               {
                 char *thisSample = group->m_samples[k];
-                if (stricmp(thisSample, _soundName) == 0)
+                if (_stricmp(thisSample, _soundName) == 0)
                 {
                   return true;
                 }
@@ -2081,7 +2081,7 @@ bool SoundSystem::IsSampleUsed(char const *_soundName)
         {
           SoundInstance *instance = eventBlueprint->m_instance;
           if (instance->m_sourceType == SoundInstance::Sample &&
-              stricmp(instance->m_soundName, _soundName) == 0)
+              _stricmp(instance->m_soundName, _soundName) == 0)
           {
             return true;
           }
@@ -2093,7 +2093,7 @@ bool SoundSystem::IsSampleUsed(char const *_soundName)
               for (int k = 0; k < group->m_samples.Size(); ++k)
               {
                 char *thisSample = group->m_samples[k];
-                if (stricmp(thisSample, _soundName) == 0)
+                if (_stricmp(thisSample, _soundName) == 0)
                 {
                   return true;
                 }
@@ -2120,7 +2120,7 @@ bool SoundSystem::IsSampleUsed(char const *_soundName)
         {
           SoundInstance *instance = eventBlueprint->m_instance;
           if (instance->m_sourceType == SoundInstance::Sample &&
-              stricmp(instance->m_soundName, _soundName) == 0)
+              _stricmp(instance->m_soundName, _soundName) == 0)
           {
             return true;
           }
@@ -2132,7 +2132,7 @@ bool SoundSystem::IsSampleUsed(char const *_soundName)
               for (int k = 0; k < group->m_samples.Size(); ++k)
               {
                 char *thisSample = group->m_samples[k];
-                if (stricmp(thisSample, _soundName) == 0)
+                if (_stricmp(thisSample, _soundName) == 0)
                 {
                   return true;
                 }

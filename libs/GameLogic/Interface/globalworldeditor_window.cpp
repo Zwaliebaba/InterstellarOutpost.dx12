@@ -62,8 +62,8 @@ class NewLocationButton : public DarwiniaButton
         LevelFile levelFile;
         sprintf( levelFile.m_mapFilename, "map_%s.txt", s_locationName );
         sprintf( levelFile.m_missionFilename, "mission_%s.txt", s_locationName );
-        strlwr( levelFile.m_mapFilename );
-        strlwr( levelFile.m_missionFilename );
+        _strlwr( levelFile.m_mapFilename );
+        _strlwr( levelFile.m_missionFilename );
 
         levelFile.Save();
 
@@ -73,8 +73,8 @@ class NewLocationButton : public DarwiniaButton
         GlobalLocation *loc = new GlobalLocation();
         sprintf( loc->m_mapFilename, "map_%s.txt", s_locationName );
         sprintf( loc->m_missionFilename, "mission_%s.txt", s_locationName );
-        strlwr( loc->m_mapFilename );
-        strlwr( loc->m_missionFilename );
+        _strlwr( loc->m_mapFilename );
+        _strlwr( loc->m_missionFilename );
         strcpy( loc->m_name, s_locationName );
         loc->m_available = true;
         loc->m_pos.Set( -96.25, -274.02, 75.16 );

@@ -314,7 +314,7 @@ DarwiniaWindow::DarwiniaWindow( char const *name )
     m_skipUpdate(false)
 {
     SetTitle((char *)name);
-    strupr( m_title );
+    _strupr( m_title );
 
 	EclSetCurrentFocus( m_name );
 }

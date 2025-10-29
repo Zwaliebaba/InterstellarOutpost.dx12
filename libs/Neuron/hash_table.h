@@ -168,7 +168,7 @@ unsigned int HashTable<T>::GetInsertPos(char const *_key) const
 	// find an empty one
 	while (m_keys[index] != NULL)
 	{
-		DEBUG_ASSERT(stricmp(m_keys[index], _key) != 0);
+		DEBUG_ASSERT(_stricmp(m_keys[index], _key) != 0);
 		index++;
 		index &= m_mask;
 		m_numCollisions++;
@@ -247,7 +247,7 @@ int HashTable<T>::GetIndex(char const *_key) const
 		return -1;
 	}
 
-	while (stricmp(m_keys[index], _key) != 0)
+	while (_stricmp(m_keys[index], _key) != 0)
 	{
 		index++;
 		index &= m_mask;

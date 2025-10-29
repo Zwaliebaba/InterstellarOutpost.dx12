@@ -1005,8 +1005,8 @@ void LocationEditor::RenderModeCameraMount()
 		for (int j = 1; j < anim->m_nodes.Size(); ++j)
 		{
 			CamAnimNode *node = anim->m_nodes.GetData(j);
-			if (stricmp(node->m_mountName, MAGIC_MOUNT_NAME_START_POS) == 0 ||
-				stricmp(lastNode->m_mountName, MAGIC_MOUNT_NAME_START_POS) == 0)
+			if (_stricmp(node->m_mountName, MAGIC_MOUNT_NAME_START_POS) == 0 ||
+				_stricmp(lastNode->m_mountName, MAGIC_MOUNT_NAME_START_POS) == 0)
 			{
 				continue;
 			}

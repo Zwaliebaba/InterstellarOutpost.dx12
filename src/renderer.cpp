@@ -545,20 +545,6 @@ void Renderer::RenderFrame(bool withFlip)
     }
   }
 
-  //
-  // Personalisation information
-
-  if (!g_app->m_taskManagerInterface->m_visible &&
-      !g_app->m_sepulveda->IsVisible() &&
-      m_renderingPoster == PosterMakerInactive &&
-      !g_app->m_camera->IsInMode(Camera::ModeSphereWorldIntro) &&
-      !g_app->m_camera->IsInMode(Camera::ModeSphereWorldOutro))
-  {
-#ifdef PROMOTIONAL_BUILD
-    RenderLogo();
-#endif
-  }
-
   if (g_app->m_startSequence) g_app->m_startSequence->Render();
 
   if (m_renderDarwinLogo >= 0.0f)

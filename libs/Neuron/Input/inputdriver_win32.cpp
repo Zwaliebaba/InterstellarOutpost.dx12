@@ -462,10 +462,10 @@ inputtype_t W32InputDriver::getMouseControlType(control_id_t control_id)
 control_id_t W32InputDriver::getKeyId(string const &keyName)
 {
   for (control_id_t i = 0; i <= KEY_TILDE; ++i)
-    if (stricmp(keyName.c_str(), getKeyNames()[i]) == 0)
+    if (_stricmp(keyName.c_str(), getKeyNames()[i]) == 0)
       return i;
 
-  if (stricmp(keyName.c_str(), "any") == 0) return KEY_ANY;
+  if (_stricmp(keyName.c_str(), "any") == 0) return KEY_ANY;
 
   return -1;
 }

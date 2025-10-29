@@ -95,9 +95,9 @@ LList <int> *TestHarness::FindAvailableMissions(GlobalWorld *_world)
 	{
 		GlobalLocation *loc = _world->m_locations[i];
 		if (loc->m_available &&
-			stricmp(loc->m_missionFilename, "null") != 0)
+			_stricmp(loc->m_missionFilename, "null") != 0)
 		{
-			if (strnicmp(loc->m_missionFilename, "cutscene", strlen("cutscene")) == 0)
+			if (_strnicmp(loc->m_missionFilename, "cutscene", strlen("cutscene")) == 0)
 			{
 				PrintError("Cutscene mission file left hanging around in %s",
 						   _world->GetLocationName(loc->m_id));

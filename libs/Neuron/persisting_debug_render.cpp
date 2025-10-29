@@ -25,7 +25,7 @@ PersistRenderItem *PersistingDebugRenderer::FindItem(char const *_label)
 	{
 		if (!m_items.ValidIndex(i)) continue;
 
-		if (strnicmp(_label, m_items[i].m_label, sizeof(m_items[i].m_label) - 1) == 0)
+		if (_strnicmp(_label, m_items[i].m_label, sizeof(m_items[i].m_label) - 1) == 0)
 		{
 			return &m_items[i];
 		}

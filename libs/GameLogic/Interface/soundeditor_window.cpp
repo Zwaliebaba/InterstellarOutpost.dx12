@@ -57,7 +57,7 @@ public:
             DropDownMenu *menu = (DropDownMenu *) button;
             menu->Empty();
 
-            if (stricmp(m_objectGroup, "Entity") == 0)
+            if (_stricmp(m_objectGroup, "Entity") == 0)
             {
                 Entity *entity = Entity::NewEntity( _option );
                 LList<char *> events;
@@ -68,7 +68,7 @@ public:
                     menu->AddOption( events[i] );
                 }
             }
-			else if (stricmp(m_objectGroup, "Building") == 0)
+			else if (_stricmp(m_objectGroup, "Building") == 0)
 			{
                 Building *building = Building::CreateBuilding( _option );
                 LList<char *> events;
@@ -123,14 +123,14 @@ public:
             DropDownMenu *newEventMenu = (DropDownMenu *) newEventButton;
             newEventMenu->Empty();
 
-            if (stricmp(m_options[optionIndex]->m_word, "Entity") == 0)
+            if (_stricmp(m_options[optionIndex]->m_word, "Entity") == 0)
             {
                 for( int i = 0; i < Entity::NumEntityTypes; ++i )
                 {
                     menu->AddOption( Entity::GetTypeName(i) );
                 }
 			}
-			else if (stricmp(m_options[optionIndex]->m_word, "Building") == 0)
+			else if (_stricmp(m_options[optionIndex]->m_word, "Building") == 0)
 			{
                 for( int i = 0; i < Building::NumBuildingTypes; ++i )
                 {
@@ -735,8 +735,8 @@ void SoundEditorWindow::Update()
 	// clicking on it in the level
 	bool selectorEnabled = m_objectSelectorEnabled;
 	if (g_app->m_location &&
-		stricmp(objGroupMenu->m_caption, "[ObjectGroup]") == 0 &&
-		stricmp(objTypeMenu->m_caption, "[ObjectType]") == 0)
+		_stricmp(objGroupMenu->m_caption, "[ObjectGroup]") == 0 &&
+		_stricmp(objTypeMenu->m_caption, "[ObjectType]") == 0)
 	{
 		selectorEnabled = true;
 	}
@@ -1039,8 +1039,8 @@ void SoundEditorWindow::Render( bool hasFocus )
 
 	bool selectorEnabled = m_objectSelectorEnabled;
 	if (g_app->m_location &&
-		stricmp(objGroupMenu->m_caption, "[ObjectGroup]") == 0 &&
-		stricmp(objTypeMenu->m_caption, "[ObjectType]") == 0)
+		_stricmp(objGroupMenu->m_caption, "[ObjectGroup]") == 0 &&
+		_stricmp(objTypeMenu->m_caption, "[ObjectType]") == 0)
 	{
 		selectorEnabled = true;
 	}
@@ -1123,7 +1123,7 @@ SoundSourceBlueprint *SoundEditorWindow::GetSoundSourceBlueprint()
 
 	if (objGroup && objType)
 	{
-		if (stricmp("Entity", objGroup) == 0)
+		if (_stricmp("Entity", objGroup) == 0)
 		{
 			int i = Entity::GetTypeId(objType);
 			if (i == -1)
@@ -1132,7 +1132,7 @@ SoundSourceBlueprint *SoundEditorWindow::GetSoundSourceBlueprint()
 			}
 			return g_app->m_soundSystem->m_entityBlueprints[i];
 		}
-		else if (stricmp("Building", objGroup) == 0)
+		else if (_stricmp("Building", objGroup) == 0)
 		{
 			int i = Building::GetTypeId(objType);
 			if (i == -1)

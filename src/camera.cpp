@@ -2165,7 +2165,7 @@ void Camera::SetTarget(const Vector3 &_pos, const Vector3 &_front, const Vector3
 
 bool Camera::SetTarget(const char *_mountName)
 {
-  if (stricmp(_mountName, MAGIC_MOUNT_NAME_START_POS) == 0)
+  if (_stricmp(_mountName, MAGIC_MOUNT_NAME_START_POS) == 0)
   {
     SetTarget(m_posBeforeAnim, m_frontBeforeAnim, m_upBeforeAnim);
     return true;
@@ -2174,7 +2174,7 @@ bool Camera::SetTarget(const char *_mountName)
   for (int i = 0; i < g_app->m_location->m_levelFile->m_cameraMounts.Size(); ++i)
   {
     CameraMount *mount = g_app->m_location->m_levelFile->m_cameraMounts[i];
-    if (stricmp(mount->m_name, _mountName) == 0)
+    if (_stricmp(mount->m_name, _mountName) == 0)
     {
       SetTarget(mount->m_pos, mount->m_front, mount->m_up);
       return true;

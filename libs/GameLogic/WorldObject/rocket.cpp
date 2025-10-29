@@ -1483,7 +1483,7 @@ int EscapeRocket::GetStateId( char *_state )
 
     for( int i = 0; i < NumStates; ++i )
     {
-        if( stricmp( stateNames[i], _state ) == 0 )
+        if( _stricmp( stateNames[i], _state ) == 0 )
         {
             return i;
         }

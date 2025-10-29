@@ -381,13 +381,13 @@ void BitmapRGBA::Initialise(char const *_filename)
   BinaryFileReader in(_filename);
 
   char const *extension = GetExtensionPart(_filename);
-  DEBUG_ASSERT(stricmp(extension, "bmp") == 0);
+  DEBUG_ASSERT(_stricmp(extension, "bmp") == 0);
   LoadBmp(&in);
 }
 
 void BitmapRGBA::Initialise(BinaryReader *_reader, char const *_type)
 {
-  DEBUG_ASSERT(stricmp(_type, "bmp") == 0);
+  DEBUG_ASSERT(_stricmp(_type, "bmp") == 0);
   LoadBmp(_reader);
 }
 
@@ -756,17 +756,12 @@ int BitmapRGBA::ConvertToTexture(bool _mipmapping) const
     }
 
     ASSERT_TEXT(result == 0,
-                          "ConvertToTexture failed with error : %s", gluErrorString(result));
+                          "ConvertToTexture failed with error : {}", (char*)gluErrorString(result));
   }
   else
   {
     glTexImage2D(GL_TEXTURE_2D, 0, 4, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_pixels);
   }
-
-  //    if (!texturingWasEnabled)
-  //    {
-  //        glDisable(GL_TEXTURE_2D);
-  //    }
 
   return (int) texId;
 }

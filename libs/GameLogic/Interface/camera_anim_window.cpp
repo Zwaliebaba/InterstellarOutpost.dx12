@@ -51,7 +51,7 @@ public:
 		LList <CameraAnimation *> *anims = &g_app->m_location->m_levelFile->m_cameraAnimations;
 		for (int i = 0; i < anims->Size(); ++i)
 		{
-			if (stricmp(anims->GetData(i)->m_name, m_name) == 0)
+			if (_stricmp(anims->GetData(i)->m_name, m_name) == 0)
 			{
 				delete anims->GetData(i);
 				anims->RemoveData(i);
@@ -263,7 +263,7 @@ public:
 		char *mountName = m_name + 7;
 		for (int i = 0; i < anim->m_nodes.Size(); ++i)
 		{
-			if (stricmp(anim->m_nodes[i]->m_mountName, mountName) == 0)
+			if (_stricmp(anim->m_nodes[i]->m_mountName, mountName) == 0)
 			{
 				anim->m_nodes.RemoveData(i);
 				break;
@@ -387,7 +387,7 @@ void CameraAnimSecondaryEditWindow::RemoveButtons()
 	for (int i = 0; i < m_buttons.Size(); ++i)
 	{
 		EclButton *but = m_buttons[i];
-		if (stricmp(but->m_name, "Close") != 0)
+		if (_stricmp(but->m_name, "Close") != 0)
 		{
 			RemoveButton(m_buttons[i]->m_name);
 			--i;

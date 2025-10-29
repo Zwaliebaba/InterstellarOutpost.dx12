@@ -155,7 +155,7 @@ App::App()
     // Determine default language if possible
 
     char *language = g_prefsManager->GetString("TextLanguage");
-    if( stricmp(language, "unknown") == 0 )
+    if( _stricmp(language, "unknown") == 0 )
     {
         char *defaultLang = g_systemInfo->m_localeInfo.m_language;
         char langFilename[512];
@@ -223,7 +223,7 @@ App::App()
     // Load mods
 
     char *modName = g_prefsManager->GetString("Mod", "none" );
-    if( stricmp( modName, "none" ) != 0 )
+    if( _stricmp( modName, "none" ) != 0 )
     {
         g_app->m_resource->LoadMod( modName );
     }
@@ -358,7 +358,7 @@ void App::SetProfileName( char *_profileName )
 {
     strcpy( m_userProfileName, _profileName );
 
-	if( stricmp( _profileName, "AttractMode" ) != 0 )
+	if( _stricmp( _profileName, "AttractMode" ) != 0 )
 	{
 		g_prefsManager->SetString( "UserProfile", m_userProfileName );
 		g_prefsManager->Save();
@@ -458,8 +458,8 @@ bool App::LoadProfile()
 {
     DebugTrace( "Loading profile %s\n", m_userProfileName );
 
-    if( (stricmp( m_userProfileName, "AccessAllAreas" ) == 0 ||
-		stricmp( m_userProfileName, "AttractMode" ) == 0 ) &&
+    if( (_stricmp( m_userProfileName, "AccessAllAreas" ) == 0 ||
+		_stricmp( m_userProfileName, "AttractMode" ) == 0 ) &&
         g_app->m_gameMode != GameModePrologue )
     {
         // Cheat username that opens all locations
@@ -504,9 +504,9 @@ bool App::LoadProfile()
 
 bool App::SaveProfile( bool _global, bool _local )
 {
-    if( stricmp( m_userProfileName, "none" ) == 0 ) return false;
-    if( stricmp( m_userProfileName, "AccessAllAreas" ) == 0 ) return false;
-	if( stricmp( m_userProfileName, "AttractMode" ) == 0 ) return false;
+    if( _stricmp( m_userProfileName, "none" ) == 0 ) return false;
+    if( _stricmp( m_userProfileName, "AccessAllAreas" ) == 0 ) return false;
+	if( _stricmp( m_userProfileName, "AttractMode" ) == 0 ) return false;
 
     DebugTrace( "Saving profile %s\n", m_userProfileName );
 

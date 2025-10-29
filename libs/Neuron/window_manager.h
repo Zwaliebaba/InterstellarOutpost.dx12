@@ -95,7 +95,7 @@ public:
 
     void SuggestDefaultRes( int *_width, int *_height, int *_refresh, int *_depth );
 
-    static void OpenWebsite( char *_url );
+    static void OpenWebsite(const char *_url );
 };
 
 

@@ -255,7 +255,7 @@ void Profiler::EndProfile(char const *_name)
 		}
 
 		DEBUG_ASSERT(m_currentElement != m_rootElement);
-		DEBUG_ASSERT(stricmp(_name, m_currentElement->m_name) == 0);
+		DEBUG_ASSERT(_stricmp(_name, m_currentElement->m_name) == 0);
 
 		m_currentElement->End();
 	}

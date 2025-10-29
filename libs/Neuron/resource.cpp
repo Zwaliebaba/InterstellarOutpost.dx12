@@ -3,10 +3,8 @@
 #include "app.h"
 #include "binary_stream_readers.h"
 #include "bitmap.h"
-
 #include "file_writer.h"
 #include "filesys_utils.h"
-#include "gesture_demo.h"
 #include "hi_res_time.h"
 #include "landscape_renderer.h"
 #include "location.h"
@@ -68,10 +66,8 @@ TextReader *Resource::GetTextReader(std::string const &_filename)
 TextReader *Resource::GetTextReader(char const *_filename)
 {
   TextReader *reader = NULL;
-  char fullFilename[256];
-
-  sprintf(fullFilename, "gamedata/%s", _filename);
-  if (DoesFileExist(fullFilename))
+  auto fullFilename = to_string(FileSys::GetHomeDirectory()) + _filename;
+  if (DoesFileExist(fullFilename.c_str()))
     reader = new TextFileReader(fullFilename);
 
   return reader;
@@ -80,10 +76,9 @@ TextReader *Resource::GetTextReader(char const *_filename)
 BinaryReader *Resource::GetBinaryReader(char const *_filename)
 {
   BinaryReader *reader = NULL;
-  char fullFilename[256];
-
-  sprintf(fullFilename, "gamedata/%s", _filename);
-  if (DoesFileExist(fullFilename)) reader = new BinaryFileReader(fullFilename);
+  auto fullFilename = to_string(FileSys::GetHomeDirectory()) + _filename;
+  if (DoesFileExist(fullFilename.c_str())) 
+    reader = new BinaryFileReader(fullFilename.c_str());
 
   return reader;
 }
@@ -110,7 +105,7 @@ int Resource::GetTexture(char const *_name, bool _mipMapping, bool _masked)
   {
     char fullPath[512];
     sprintf(fullPath, "%s", _name);
-    strlwr(fullPath);
+    _strlwr(fullPath);
     BinaryReader *reader = GetBinaryReader(fullPath);
 
     if (reader)
@@ -148,7 +143,7 @@ bool Resource::DoesTextureExist(char const *_name)
   // If we still didn't find it, try to load it from a file on the disk
   char fullPath[512];
   sprintf(fullPath, "%s", _name);
-  strlwr(fullPath);
+  _strlwr(fullPath);
   BinaryReader *reader = GetBinaryReader(fullPath);
   if (reader) return true;
 
@@ -189,7 +184,7 @@ Shape *Resource::GetShapeCopy(char const *_name, bool _animating)
   if (m_modName)
   {
     sprintf(fullPath, "%smods/%s/shapes/%s", g_app->GetProfileDirectory(), m_modName, _name);
-    strlwr(fullPath);
+    _strlwr(fullPath);
     if (DoesFileExist(fullPath)) theShape = new Shape(fullPath, _animating);
   }
 
@@ -198,7 +193,7 @@ Shape *Resource::GetShapeCopy(char const *_name, bool _animating)
   if (!theShape)
   {
     sprintf(fullPath, "mods/%s/shapes/%s", m_modName, _name);
-    strlwr(fullPath);
+    _strlwr(fullPath);
     if (DoesFileExist(fullPath)) theShape = new Shape(fullPath, _animating);
   }
 
@@ -207,32 +202,12 @@ Shape *Resource::GetShapeCopy(char const *_name, bool _animating)
   if (!theShape)
   {
     sprintf(fullPath, "gamedata/shapes/%s", _name);
-    strlwr(fullPath);
+    _strlwr(fullPath);
     if (DoesFileExist(fullPath)) theShape = new Shape(fullPath, _animating);
   }
 
   ASSERT_TEXT(theShape, "Couldn't create shape file %s", _name);
   return theShape;
-}
-
-GestureDemo *Resource::GetGestureDemo(char const *_name)
-{
-  GestureDemo *demo = m_gestureDemos.GetData(_name);
-
-  if (demo == NULL)
-  {
-    char fullPath[512];
-    sprintf(fullPath, "gesture_demos/%s", _name);
-    TextReader *in = GetTextReader(fullPath);
-
-    ASSERT_TEXT(in && in->IsOpen(), "Couldn't find mouse gesture demo %s", _name);
-    demo = new GestureDemo(in);
-    delete in;
-
-    m_gestureDemos.PutData(_name, demo);
-  }
-
-  return demo;
 }
 
 SoundStreamDecoder *Resource::GetSoundStreamDecoder(char const *_filename)
@@ -393,54 +368,6 @@ void Resource::RegenerateOpenGlState()
   }
 }
 
-char *Resource::GenerateName()
-{
-  int digits = log10f(m_nameSeed) + 1;
-  char *name = new char[digits + 1];
-  itoa(m_nameSeed, name, 10);
-  m_nameSeed++;
-
-  return name;
-}
-
-void Resource::LoadMod(char const *_modName)
-{
-#ifndef DEMOBUILD
-#ifndef PURITY_CONTROL
-  bool modsEnabled = g_prefsManager->GetInt("ModSystemEnabled", 0) != 0;
-  if (modsEnabled)
-  {
-    if (m_modName)
-    {
-      delete m_modName;
-      m_modName = NULL;
-    }
-
-    if (stricmp(_modName, "none") != 0)
-    {
-      m_modName = strdup(_modName);
-
-      FlushOpenGlState();
-      RegenerateOpenGlState();
-    }
-
-    EntityBlueprint::Initialise();
-    g_app->SetLanguage(g_prefsManager->GetString("TextLanguage", "english"), false);
-    g_prefsManager->SetString("Mod", _modName);
-    g_prefsManager->Save();
-
-    /*if( strcmp( g_app->m_userProfileName, "none" ) == 0 )
-        {
-            // new mod is being loaded - create a user profile to go with it
-            g_app->SetProfileName( m_modName );
-            g_app->LoadProfile();
-            g_app->SaveProfile( true, false );
-        }*/
-  }
-#endif
-#endif
-}
-
 char *Resource::GetBaseDirectory()
 {
   static char result[256];
@@ -455,16 +382,6 @@ char *Resource::GetBaseDirectory()
   }
 
   return result;
-}
-
-const char *Resource::GetModName()
-{
-  return m_modName;
-}
-
-bool Resource::IsModLoaded()
-{
-  return (m_modName != NULL);
 }
 
 FileWriter *Resource::GetFileWriter(char const *_filename, bool _encrypt)

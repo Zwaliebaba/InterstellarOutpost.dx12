@@ -158,7 +158,7 @@ void Script::RunCommand_LocationFocus(const char *_locationName, float _fov)
 
   Vector3 targetPos;
 
-  if (stricmp(_locationName, "heaven") == 0) { targetPos = g_zeroVector; }
+  if (_stricmp(_locationName, "heaven") == 0) { targetPos = g_zeroVector; }
   else
   {
     int locationId = g_app->m_globalWorld->GetLocationId(_locationName);
@@ -282,14 +282,14 @@ void Script::RunCommand_DemoGesture(const char *_name) { g_app->m_sepulveda->Dem
 
 void Script::RunCommand_GiveResearch(const char *_name)
 {
-  if (stricmp(_name, "modsystem") == 0)
+  if (_stricmp(_name, "modsystem") == 0)
   {
     g_prefsManager->SetInt("ModSystemEnabled", 1);
     g_prefsManager->Save();
 
     g_app->m_taskManagerInterface->SetCurrentMessage(TaskManagerInterface::MessageResearch, 999, 4.0f);
   }
-  else if (stricmp(_name, "accessallareas") == 0)
+  else if (_stricmp(_name, "accessallareas") == 0)
   {
     char folderName[512];
     sprintf(folderName, "%susers/", g_app->GetProfileDirectory());
@@ -973,7 +973,7 @@ int Script::GetOpCode(const char *_word)
 {
   DEBUG_ASSERT(sizeof(g_opCodeNames) / sizeof(char *) == OpNumOps);
 
-  for (unsigned int i = 0; i < OpNumOps; ++i) { if (stricmp(_word, g_opCodeNames[i]) == 0) { return i; } }
+  for (unsigned int i = 0; i < OpNumOps; ++i) { if (_stricmp(_word, g_opCodeNames[i]) == 0) { return i; } }
 
   return -1;
 }

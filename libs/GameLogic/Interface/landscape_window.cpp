@@ -35,12 +35,12 @@ public:
 
 	void MouseUp()
 	{
-		if (stricmp(m_name, LANGUAGEPHRASE("editor_generate")) == 0)
+		if (_stricmp(m_name, LANGUAGEPHRASE("editor_generate")) == 0)
 		{
 			LandscapeDef *def = &g_app->m_location->m_levelFile->m_landscape;
 			g_app->m_location->m_landscape.Init(def);
 		}
-		else if (stricmp(m_name, LANGUAGEPHRASE("editor_randomise")) == 0)
+		else if (_stricmp(m_name, LANGUAGEPHRASE("editor_randomise")) == 0)
 		{
 			m_def->m_randomSeed = (int)(GetHighResTime() * 1000.0f);
 			InputField *randomSeed = (InputField *)m_parent->GetButton(LANGUAGEPHRASE("editor_seed"));
@@ -51,13 +51,13 @@ public:
 			LandscapeDef *def = &g_app->m_location->m_levelFile->m_landscape;
 			g_app->m_location->m_landscape.Init(def);
 		}
-        else if( stricmp(m_name, LANGUAGEPHRASE("editor_delete")) == 0 )
+        else if( _stricmp(m_name, LANGUAGEPHRASE("editor_delete")) == 0 )
         {
             int tileId = ((LandscapeTileEditWindow *) m_parent)->m_tileId;
             g_app->m_location->m_landscape.DeleteTile( tileId );
             EclRemoveWindow( m_parent->m_name );
         }
-        else if( stricmp(m_name, LANGUAGEPHRASE("editor_clone")) == 0 )
+        else if( _stricmp(m_name, LANGUAGEPHRASE("editor_clone")) == 0 )
         {
             Vector3 rayStart;
 	        Vector3 rayDir;
@@ -83,7 +83,7 @@ public:
             g_app->m_location->m_landscape.Init(def);
 
         }
-        else if( stricmp(m_name, LANGUAGEPHRASE("editor_guidegrid")) == 0 )
+        else if( _stricmp(m_name, LANGUAGEPHRASE("editor_guidegrid")) == 0 )
         {
             int tileId = ((LandscapeTileEditWindow *) m_parent)->m_tileId;
             LandscapeGuideGridWindow *guide = new LandscapeGuideGridWindow(LANGUAGEPHRASE("editor_guidegrid"), tileId );
@@ -431,7 +431,7 @@ class GuideGridButton : public DarwiniaButton
 public:
     void MouseUp()
     {
-        if( stricmp( m_name, LANGUAGEPHRASE("editor_generate") ) == 0 )
+        if( _stricmp( m_name, LANGUAGEPHRASE("editor_generate") ) == 0 )
         {
             LandscapeGuideGridWindow *parent = (LandscapeGuideGridWindow *) m_parent;
 	        parent->m_tileDef->GuideGridSetPower(parent->m_guideGridPower);

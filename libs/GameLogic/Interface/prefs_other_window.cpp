@@ -62,7 +62,7 @@ class ApplyOtherButton : public DarwiniaButton
 
 		bool removeWindows = false;
         char *desiredLanguage = parent->m_languages[ parent->m_language ];
-        if( stricmp( desiredLanguage, g_prefsManager->GetString( OTHER_LANGUAGE ) ) != 0 )
+        if( _stricmp( desiredLanguage, g_prefsManager->GetString( OTHER_LANGUAGE ) ) != 0 )
         {
             g_prefsManager->SetString( OTHER_LANGUAGE, desiredLanguage );
             g_app->SetLanguage( desiredLanguage, false );
@@ -123,8 +123,8 @@ PrefsOtherWindow::PrefsOtherWindow()
 	m_controlHelpEnabled = g_prefsManager->GetInt( OTHER_CONTROLHELPENABLED, 1 );
 
     char *bootloader = g_prefsManager->GetString( OTHER_BOOTLOADER, "random" );
-    if      ( stricmp( bootloader, "none" ) == 0 )      m_bootLoader = 0;
-    else if ( stricmp( bootloader, "random" ) == 0 )    m_bootLoader = 1;
+    if      ( _stricmp( bootloader, "none" ) == 0 )      m_bootLoader = 0;
+    else if ( _stricmp( bootloader, "random" ) == 0 )    m_bootLoader = 1;
     else                                                m_bootLoader = 2;
 
     m_christmas = g_prefsManager->GetInt( OTHER_CHRISTMASENABLED, 1 );
@@ -144,7 +144,7 @@ PrefsOtherWindow::PrefsOtherWindow()
     m_language = -1;
     for( int i = 0; i < m_languages.Size(); ++i )
     {
-        if( stricmp( m_languages[i], g_prefsManager->GetString( OTHER_LANGUAGE ) ) == 0 )
+        if( _stricmp( m_languages[i], g_prefsManager->GetString( OTHER_LANGUAGE ) ) == 0 )
         {
             m_language = i;
         }

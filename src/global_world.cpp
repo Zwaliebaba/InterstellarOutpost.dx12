@@ -154,7 +154,7 @@ int GlobalEventCondition::GetType(char const *_typeName)
 {
 	for (int i = 0; i < NumConditions; ++i)
 	{
-		if (stricmp(_typeName, GetTypeName(i)) == 0)
+		if (_stricmp(_typeName, GetTypeName(i)) == 0)
 		{
 			return i;
 		}
@@ -261,19 +261,19 @@ void GlobalEventAction::Read( TextReader *_in )
 {
     char *action = _in->GetNextToken();
 
-    if( stricmp( action, "SetMission" ) == 0 )
+    if( _stricmp( action, "SetMission" ) == 0 )
     {
         m_type = SetMission;
         m_locationId = g_app->m_globalWorld->GetLocationId( _in->GetNextToken() );
         DEBUG_ASSERT( m_locationId != -1 );
         strcpy( m_filename, _in->GetNextToken() );
     }
-    else if( stricmp( action, "RunScript" ) == 0 )
+    else if( _stricmp( action, "RunScript" ) == 0 )
     {
         m_type = RunScript;
         strcpy( m_filename, _in->GetNextToken() );
     }
-    else if( stricmp( action, "MakeAvailable" ) == 0 )
+    else if( _stricmp( action, "MakeAvailable" ) == 0 )
     {
         m_type = MakeAvailable;
         m_locationId = g_app->m_globalWorld->GetLocationId( _in->GetNextToken() );
@@ -494,8 +494,8 @@ void GlobalEvent::Read( TextReader *_in )
         if( _in->TokenAvailable() )
         {
             char *word = _in->GetNextToken();
-            if( stricmp( word, "end" ) == 0 ) break;
-            DEBUG_ASSERT( stricmp( word, "action" ) == 0 );
+            if( _stricmp( word, "end" ) == 0 ) break;
+            DEBUG_ASSERT( _stricmp( word, "action" ) == 0 );
 
             GlobalEventAction *action = new GlobalEventAction;
             action->Read( _in );
@@ -601,7 +601,7 @@ void GlobalResearch::EvaluateLevel( int _type )
 
             char sepStringId[256];
             sprintf( sepStringId, "research_%s_v%d", GetTypeName(_type), m_researchLevel[_type] );
-            strlwr( sepStringId );
+            _strlwr( sepStringId );
 
             if( ISLANGUAGEPHRASE( sepStringId ) )
             {
@@ -638,7 +638,7 @@ void GlobalResearch::SetCurrentResearch( int _type )
 
         char sepStringId[256];
         sprintf( sepStringId, "research_%s", GetTypeName(_type) );
-        strlwr( sepStringId );
+        _strlwr( sepStringId );
 
         if( ISLANGUAGEPHRASE( sepStringId ) )
         {
@@ -722,11 +722,11 @@ void GlobalResearch::Read( TextReader *_in )
         if(!_in->TokenAvailable()) continue;
         char *word = _in->GetNextToken();
 
-        if( stricmp(word, "research_enddefinition") == 0)
+        if( _stricmp(word, "research_enddefinition") == 0)
         {
             return;
         }
-        else if( stricmp(word, "Research" ) == 0 )
+        else if( _stricmp(word, "Research" ) == 0 )
         {
             char *type = _in->GetNextToken();
             int progress = atoi( _in->GetNextToken() );
@@ -736,13 +736,13 @@ void GlobalResearch::Read( TextReader *_in )
             m_researchLevel[researchType] = level;
             SetCurrentProgress( researchType, progress );
         }
-        else if( stricmp(word, "CurrentResearch" ) == 0 )
+        else if( _stricmp(word, "CurrentResearch" ) == 0 )
         {
             char *type = _in->GetNextToken();
             int researchType = GetType( type );
             m_currentResearch = researchType;
         }
-        else if( stricmp(word, "CurrentPoints" ) == 0 )
+        else if( _stricmp(word, "CurrentPoints" ) == 0 )
         {
             int points = atoi( _in->GetNextToken() );
             m_researchPoints = points;
@@ -797,7 +797,7 @@ int GlobalResearch::GetType( char *_name )
 {
     for( int i = 0; i < NumResearchItems; ++i )
     {
-        if( stricmp( _name, GetTypeName(i) ) == 0 )
+        if( _stricmp( _name, GetTypeName(i) ) == 0 )
         {
             return i;
         }
@@ -1285,7 +1285,7 @@ void SphereWorld::RenderIslands()
 
             int numRedraws = 5;
             if( !loc->m_missionCompleted &&
-                stricmp( loc->m_missionFilename, "null" ) != 0 &&
+                _stricmp( loc->m_missionFilename, "null" ) != 0 &&
                 fmodf( g_gameTime, 1.0f ) < 0.7f ) numRedraws = 10;
 
             glBegin( GL_QUADS );
@@ -1319,7 +1319,7 @@ void SphereWorld::RenderIslands()
         {
 		    Vector3 islandPos = g_app->m_globalWorld->GetLocationPosition(loc->m_id );
             char *islandName = strdup( g_app->m_globalWorld->GetLocationNameTranslated( loc->m_id ) );
-            strupr(islandName);
+            _strupr(islandName);
 
             float size = 5.0f * sqrtf(( g_app->m_camera->GetPos() - islandPos ).Mag());
             size = 1000.0f;
@@ -1339,7 +1339,7 @@ void SphereWorld::RenderIslands()
 
             g_gameFont.SetRenderShadow( false );
             glColor4f(1.0f,1.0f,1.0f,1.0f);
-            if( stricmp(loc->m_missionFilename, "null" ) == 0 ) glColor4f(0.5f,0.5f,0.5f,1.0f);
+            if( _stricmp(loc->m_missionFilename, "null" ) == 0 ) glColor4f(0.5f,0.5f,0.5f,1.0f);
 
             g_gameFont.DrawText3DCentre(islandPos + camUp * size*1.5f, size*3.0f, islandName );
 
@@ -1621,7 +1621,7 @@ int GlobalWorld::GetLocationId( char const *_name )
     {
         GlobalLocation *loc = m_locations[i];
         DEBUG_ASSERT(loc);
-        if( stricmp(loc->m_name, _name) == 0 )
+        if( _stricmp(loc->m_name, _name) == 0 )
         {
             return loc->m_id;
         }
@@ -1783,7 +1783,7 @@ void GlobalWorld::ParseLocations( TextReader *_in )
 
 		char *word = _in->GetNextToken();
 
-		if (stricmp(word, "Locations_EndDefinition") == 0)
+		if (_stricmp(word, "Locations_EndDefinition") == 0)
 		{
 			return;
 		}
@@ -1812,7 +1812,7 @@ void GlobalWorld::ParseBuildings( TextReader *_in )
 
 		char *word = _in->GetNextToken();
 
-		if (stricmp(word, "buildings_enddefinition") == 0)
+		if (_stricmp(word, "buildings_enddefinition") == 0)
 		{
 			return;
 		}
@@ -1838,12 +1838,12 @@ void GlobalWorld::ParseEvents(TextReader *_in)
 		if (!_in->TokenAvailable()) continue;
         char *word = _in->GetNextToken();
 
-        if( stricmp(word, "events_enddefinition") == 0)
+        if( _stricmp(word, "events_enddefinition") == 0)
         {
             return;
         }
 
-        DEBUG_ASSERT( stricmp( word, "Event" ) == 0 );
+        DEBUG_ASSERT( _stricmp( word, "Event" ) == 0 );
 
         GlobalEvent *event = new GlobalEvent();
         event->Read( _in );
@@ -1898,23 +1898,23 @@ void GlobalWorld::LoadGame( char *_filename )
 			if (!in->TokenAvailable()) continue;
 		    char *word = in->GetNextToken();
 
-			if (stricmp("locations_startdefinition", word) == 0)
+			if (_stricmp("locations_startdefinition", word) == 0)
 		    {
                 ParseLocations( in );
 		    }
-            else if (stricmp("buildings_startdefinition", word) == 0)
+            else if (_stricmp("buildings_startdefinition", word) == 0)
             {
                 ParseBuildings( in );
             }
-            else if (stricmp("events_startdefinition", word) == 0)
+            else if (_stricmp("events_startdefinition", word) == 0)
             {
                 ParseEvents( in );
             }
-            else if (stricmp("research_startdefinition", word) == 0)
+            else if (_stricmp("research_startdefinition", word) == 0)
             {
                 m_research->Read( in );
             }
-            else if (stricmp("tutorial_startdefinition", word) == 0)
+            else if (_stricmp("tutorial_startdefinition", word) == 0)
             {
                 ParseTutorial( in );
             }
@@ -2003,7 +2003,7 @@ void GlobalWorld::SaveGame( char *_filename )
     FileWriter *out = NULL;
     char fullFilename[256];
 
-    if( !g_app->m_editing && stricmp( g_app->m_userProfileName, "none" ) != 0 )
+    if( !g_app->m_editing && _stricmp( g_app->m_userProfileName, "none" ) != 0 )
     {
         sprintf( fullFilename, "%susers/%s/%s", g_app->GetProfileDirectory(), g_app->m_userProfileName, _filename );
 #ifdef TARGET_DEBUG
@@ -2051,7 +2051,7 @@ void GlobalWorld::ParseTutorial(TextReader *_in)
 
 		char *word = _in->GetNextToken();
 
-		if (stricmp(word, "tutorial_enddefinition") == 0)
+		if (_stricmp(word, "tutorial_enddefinition") == 0)
 		{
 			return;
 		}

@@ -38,9 +38,6 @@ option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 if(WIN32)
   add_compile_definitions(PLATFORM_WINDOWS)
   if(MSVC)
-    # Suppress specific MSVC warnings
-    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-    add_compile_definitions(_SCL_SECURE_NO_WARNINGS)
   
     # Enable multi-processor compilation
     add_compile_options(/MP)
@@ -61,7 +58,7 @@ elseif(APPLE)
 endif()
 
 # C++ Standard Settings
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 

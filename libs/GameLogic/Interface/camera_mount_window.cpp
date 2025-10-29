@@ -56,7 +56,7 @@ public:
 		for (int i = 0; i < g_app->m_location->m_levelFile->m_cameraMounts.Size(); ++i)
 		{
 			CameraMount *mount = g_app->m_location->m_levelFile->m_cameraMounts[i];
-			if (stricmp(mount->m_name, m_mountName) == 0)
+			if (_stricmp(mount->m_name, m_mountName) == 0)
 			{
 				g_app->m_camera->SetTarget(mount->m_pos, mount->m_front, mount->m_up);
 				g_app->m_camera->CutToTarget();
@@ -81,7 +81,7 @@ public:
 		for (int i = 0; i < g_app->m_location->m_levelFile->m_cameraMounts.Size(); ++i)
 		{
 			CameraMount *mount = g_app->m_location->m_levelFile->m_cameraMounts[i];
-			if (stricmp(mount->m_name, m_mountName) == 0)
+			if (_stricmp(mount->m_name, m_mountName) == 0)
 			{
 				g_app->m_location->m_levelFile->m_cameraMounts.RemoveData(i);
 				delete mount;
@@ -111,7 +111,7 @@ public:
 		for (int i = 0; i < g_app->m_location->m_levelFile->m_cameraMounts.Size(); ++i)
 		{
 			CameraMount *mount = g_app->m_location->m_levelFile->m_cameraMounts[i];
-			if (stricmp(mount->m_name, m_mountName) == 0)
+			if (_stricmp(mount->m_name, m_mountName) == 0)
 			{
 				mount->m_pos = g_app->m_camera->GetPos();
 				mount->m_front = g_app->m_camera->GetFront();

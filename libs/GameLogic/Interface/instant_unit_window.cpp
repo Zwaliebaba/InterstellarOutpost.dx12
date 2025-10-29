@@ -34,7 +34,7 @@ public:
 
 	void MouseUp()
 	{
-		if (stricmp(m_name, LANGUAGEPHRASE("editor_move")) == 0)
+		if (_stricmp(m_name, LANGUAGEPHRASE("editor_move")) == 0)
 		{
 			g_app->m_locationEditor->m_tool = LocationEditor::ToolMove;
 		}
@@ -201,7 +201,7 @@ public:
 	{
 		for (int i = 0; i < Entity::NumEntityTypes; ++i)
 		{
-			if (stricmp(m_name, Entity::GetTypeNameTranslated(i)) == 0)
+			if (_stricmp(m_name, Entity::GetTypeNameTranslated(i)) == 0)
 			{
 				g_app->m_locationEditor->m_tool = LocationEditor::ToolMove;
 
@@ -277,8 +277,8 @@ void InstantUnitCreateWindow::Create()
 		for (int j = 0; j < Entity::NumEntityTypes; ++j)
 		{
 			char *typeName = Entity::GetTypeNameTranslated(j);
-			if (stricmp(typeName, lowerLimit) > 0 &&
-				stricmp(typeName, best) < 0)
+			if (_stricmp(typeName, lowerLimit) > 0 &&
+				_stricmp(typeName, best) < 0)
 			{
 				best = typeName;
 			}

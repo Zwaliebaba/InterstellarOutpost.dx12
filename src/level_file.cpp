@@ -55,7 +55,7 @@ int CamAnimNode::GetTransitModeId(char const *_word)
 {
 	for (int i = 0; i < TransitionNumModes; ++i)
 	{
-		if (stricmp(_word, g_transitionModeNames[i]) == 0)
+		if (_stricmp(_word, g_transitionModeNames[i]) == 0)
 		{
 			return i;
 		}
@@ -106,42 +106,42 @@ void LevelFile::ParseMissionFile(char const *_filename)
 		if (!in->TokenAvailable()) continue;
 		char *word = in->GetNextToken();
 
-		if (stricmp("Landscape_StartDefinition", word) == 0 ||
-		    stricmp("LandscapeTiles_StartDefinition", word) == 0 ||
-			stricmp("LandFlattenAreas_StartDefinition", word) == 0 ||
-			stricmp("Lights_StartDefinition", word) == 0)
+		if (_stricmp("Landscape_StartDefinition", word) == 0 ||
+		    _stricmp("LandscapeTiles_StartDefinition", word) == 0 ||
+			_stricmp("LandFlattenAreas_StartDefinition", word) == 0 ||
+			_stricmp("Lights_StartDefinition", word) == 0)
 		{
 			DEBUG_ASSERT(0);
 		}
-		else if (stricmp("CameraMounts_StartDefinition", word) == 0)
+		else if (_stricmp("CameraMounts_StartDefinition", word) == 0)
 		{
 			ParseCameraMounts(in);
 		}
-		else if (stricmp("CameraAnimations_StartDefinition", word) == 0)
+		else if (_stricmp("CameraAnimations_StartDefinition", word) == 0)
 		{
 			ParseCameraAnims(in);
 		}
-		else if (stricmp("Buildings_StartDefinition", word) == 0)
+		else if (_stricmp("Buildings_StartDefinition", word) == 0)
 		{
 			ParseBuildings(in, true);
 		}
-		else if (stricmp("InstantUnits_StartDefinition", word) == 0)
+		else if (_stricmp("InstantUnits_StartDefinition", word) == 0)
 		{
 			ParseInstantUnits(in);
 		}
-		else if (stricmp("Routes_StartDefinition", word) == 0)
+		else if (_stricmp("Routes_StartDefinition", word) == 0)
 		{
 			ParseRoutes(in);
 		}
-		else if (stricmp("PrimaryObjectives_StartDefinition", word) == 0)
+		else if (_stricmp("PrimaryObjectives_StartDefinition", word) == 0)
 		{
 			ParsePrimaryObjectives(in);
 		}
-        else if (stricmp("RunningPrograms_StartDefinition", word) == 0)
+        else if (_stricmp("RunningPrograms_StartDefinition", word) == 0)
         {
             ParseRunningPrograms(in);
         }
-		else if (stricmp("Difficulty_StartDefinition", word) == 0)
+		else if (_stricmp("Difficulty_StartDefinition", word) == 0)
 		{
 			ParseDifficulty(in);
 		}
@@ -167,23 +167,23 @@ void LevelFile::ParseMapFile(char const *_levelFilename)
 		if (!in->TokenAvailable()) continue;
 		char *word = in->GetNextToken();
 
-		if (stricmp("landscape_startDefinition", word) == 0)
+		if (_stricmp("landscape_startDefinition", word) == 0)
 		{
 			ParseLandscapeData(in);
    		}
-		else if (stricmp("landscapeTiles_startDefinition", word) == 0)
+		else if (_stricmp("landscapeTiles_startDefinition", word) == 0)
 		{
 			ParseLandscapeTiles(in);
 		}
-		else if (stricmp("landFlattenAreas_startDefinition", word) == 0)
+		else if (_stricmp("landFlattenAreas_startDefinition", word) == 0)
 		{
 			ParseLandFlattenAreas(in);
 		}
-		else if (stricmp("Buildings_StartDefinition", word) == 0)
+		else if (_stricmp("Buildings_StartDefinition", word) == 0)
 		{
 			ParseBuildings(in, false);
 		}
-		else if (stricmp("Lights_StartDefinition", word) == 0)
+		else if (_stricmp("Lights_StartDefinition", word) == 0)
 		{
 			ParseLights(in);
 		}
@@ -204,7 +204,7 @@ void LevelFile::ParseCameraMounts(TextReader *_in)
 		if (!_in->TokenAvailable()) continue;
 		char *word = _in->GetNextToken();
 
-		if (stricmp("CameraMounts_EndDefinition", word) == 0) return;
+		if (_stricmp("CameraMounts_EndDefinition", word) == 0) return;
 
 		CameraMount *cmnt = new CameraMount();
 
@@ -249,7 +249,7 @@ void LevelFile::ParseCameraAnims(TextReader *_in)
 		if (!_in->TokenAvailable()) continue;
 		char *word = _in->GetNextToken();
 
-		if (stricmp("CameraAnimations_EndDefinition", word) == 0) return;
+		if (_stricmp("CameraAnimations_EndDefinition", word) == 0) return;
 
 		CameraAnimation *anim = new CameraAnimation();
 		strncpy(anim->m_name, word, CAMERA_ANIM_MAX_NAME_LEN);
@@ -258,7 +258,7 @@ void LevelFile::ParseCameraAnims(TextReader *_in)
 		{
 			if (!_in->TokenAvailable()) continue;
 			word = _in->GetNextToken();
-			if (stricmp(word, "End") == 0)
+			if (_stricmp(word, "End") == 0)
 			{
 				break;
 			}
@@ -274,7 +274,7 @@ void LevelFile::ParseCameraAnims(TextReader *_in)
 			// Read mount name
 			word = _in->GetNextToken();
 			node->m_mountName = strdup(word);
-			if (stricmp(node->m_mountName, MAGIC_MOUNT_NAME_START_POS))
+			if (_stricmp(node->m_mountName, MAGIC_MOUNT_NAME_START_POS))
 			{
 				ASSERT_TEXT(GetCameraMount(node->m_mountName),
 						  "Bad camera animation mount name in level file %s", m_missionFilename);
@@ -306,7 +306,7 @@ void LevelFile::ParseBuildings(TextReader *_in, bool _dynamic)
 		if (!_in->TokenAvailable()) continue;
 		char *word = _in->GetNextToken();
 
-        if (stricmp("Buildings_EndDefinition", word) == 0)
+        if (_stricmp("Buildings_EndDefinition", word) == 0)
         {
             return;
         }
@@ -384,7 +384,7 @@ void LevelFile::ParseInstantUnits(TextReader *_in)
 		if (!_in->TokenAvailable()) continue;
 		char *word = _in->GetNextToken();
 
-        if (stricmp("InstantUnits_EndDefinition", word) == 0)
+        if (_stricmp("InstantUnits_EndDefinition", word) == 0)
         {
             return;
         }
@@ -471,35 +471,35 @@ void LevelFile::ParseLandscapeData(TextReader *_in)
 
 		if (_in->TokenAvailable()) secondWord = _in->GetNextToken();
 
-        if (stricmp("cellSize", word) == 0 )
+        if (_stricmp("cellSize", word) == 0 )
         {
             m_landscape.m_cellSize = atof(secondWord);
         }
-        else if (stricmp("worldSizeX", word) == 0 )
+        else if (_stricmp("worldSizeX", word) == 0 )
         {
             m_landscape.m_worldSizeX = atoi(secondWord);
         }
-        else if (stricmp("worldSizeZ", word) == 0 )
+        else if (_stricmp("worldSizeZ", word) == 0 )
         {
             m_landscape.m_worldSizeZ = atoi(secondWord);
         }
-        else if (stricmp("outsideHeight", word) == 0)
+        else if (_stricmp("outsideHeight", word) == 0)
         {
             m_landscape.m_outsideHeight = atof(secondWord);
         }
-        else if (stricmp("landColourFile", word) == 0)
+        else if (_stricmp("landColourFile", word) == 0)
         {
             strcpy( m_landscapeColourFilename, secondWord );
         }
-        else if (stricmp("wavesColourFile", word) == 0)
+        else if (_stricmp("wavesColourFile", word) == 0)
         {
             strcpy( m_wavesColourFilename, secondWord );
         }
-        else if (stricmp("waterColourFile", word) == 0)
+        else if (_stricmp("waterColourFile", word) == 0)
         {
             strcpy( m_waterColourFilename, secondWord );
         }
-        else if (stricmp("landscape_endDefinition", word) == 0)
+        else if (_stricmp("landscape_endDefinition", word) == 0)
         {
             return;
         }
@@ -514,7 +514,7 @@ void LevelFile::ParseLandscapeTiles(TextReader *_in)
 		if (!_in->TokenAvailable()) continue;
 		char *word = _in->GetNextToken();
 
-		if (stricmp(word, "landscapeTiles_endDefinition") == 0)
+		if (_stricmp(word, "landscapeTiles_endDefinition") == 0)
 		{
 			return;
 		}
@@ -572,7 +572,7 @@ void LevelFile::ParseLandFlattenAreas(TextReader *_in)
 		if (!_in->TokenAvailable()) continue;
 		char *word = _in->GetNextToken();
 
-        if (stricmp("landFlattenAreas_endDefinition", word) == 0)
+        if (_stricmp("landFlattenAreas_endDefinition", word) == 0)
         {
             return;
         }
@@ -613,7 +613,7 @@ void LevelFile::ParseLights(TextReader *_in)
 		if (!_in->TokenAvailable()) continue;
 		char *word = _in->GetNextToken();
 
-        if (stricmp("Lights_EndDefinition", word) == 0)
+        if (_stricmp("Lights_EndDefinition", word) == 0)
         {
             return;
         }
@@ -655,7 +655,7 @@ void LevelFile::ParseRoute(TextReader *_in, int _id)
 		if (!_in->TokenAvailable()) continue;
 		char *word = _in->GetNextToken();
 
-		if (stricmp("end", word) == 0) break;
+		if (_stricmp("end", word) == 0) break;
 		DEBUG_ASSERT(isdigit(word[0]));
 
 		int type = atoi(word);
@@ -697,12 +697,12 @@ void LevelFile::ParseRoutes(TextReader *_in)
 		if (!_in->TokenAvailable()) continue;
 		char *word = _in->GetNextToken();
 
-		if (stricmp("Routes_EndDefinition", word) == 0)
+		if (_stricmp("Routes_EndDefinition", word) == 0)
 		{
 			return;
 		}
 
-		if (stricmp("Route", word) == 0)
+		if (_stricmp("Route", word) == 0)
 		{
 			word = _in->GetNextToken();
 			int id = atoi(word);
@@ -719,7 +719,7 @@ void LevelFile::ParsePrimaryObjectives(TextReader *_in)
 	{
         char *word = _in->GetNextToken();
 
-        if( stricmp("PrimaryObjectives_EndDefinition", word) == 0)
+        if( _stricmp("PrimaryObjectives_EndDefinition", word) == 0)
         {
             return;
         }
@@ -1115,7 +1115,7 @@ LevelFile::LevelFile(char const *_missionFilename, char const *_mapFilename)
 	// level to what the preferences say).
 	g_app->UpdateDifficultyFromPreferences();
 
-	if (stricmp(_missionFilename, "null") != 0)
+	if (_stricmp(_missionFilename, "null") != 0)
     {
         ParseMissionFile(m_missionFilename);
     }
@@ -1223,7 +1223,7 @@ CameraMount *LevelFile::GetCameraMount(char const *_name)
     for( int i = 0; i < m_cameraMounts.Size(); ++i )
     {
         CameraMount *mount = m_cameraMounts.GetData(i);
-        if( stricmp(mount->m_name, _name) == 0)
+        if( _stricmp(mount->m_name, _name) == 0)
         {
             return mount;
         }
@@ -1237,7 +1237,7 @@ int LevelFile::GetCameraAnimId(char const *_name)
     for( int i = 0; i < m_cameraAnimations.Size(); ++i )
     {
         CameraAnimation *anim = m_cameraAnimations.GetData(i);
-        if( stricmp(anim->m_name, _name) == 0)
+        if( _stricmp(anim->m_name, _name) == 0)
         {
             return i;
         }
@@ -1622,7 +1622,7 @@ void LevelFile::ParseRunningPrograms(TextReader *_in)
 		if (!_in->TokenAvailable()) continue;
         char *word = _in->GetNextToken();
 
-        if( stricmp("RunningPrograms_EndDefinition", word) == 0)
+        if( _stricmp("RunningPrograms_EndDefinition", word) == 0)
         {
             return;
         }
@@ -1726,8 +1726,8 @@ void LevelFile::ParseDifficulty(TextReader *_in)
 		if (!_in->TokenAvailable()) continue;
 		char *word = _in->GetNextToken();
 
-		if (stricmp("Difficulty_EndDefinition", word) == 0) return;
-		else if (stricmp(word, "CreatedAsDifficulty") == 0)
+		if (_stricmp("Difficulty_EndDefinition", word) == 0) return;
+		else if (_stricmp(word, "CreatedAsDifficulty") == 0)
 		{
 			// The difficulty setting is 1-based in the file, but 0-based internally
 			m_levelDifficulty = atoi( _in->GetNextToken() ) - 1;

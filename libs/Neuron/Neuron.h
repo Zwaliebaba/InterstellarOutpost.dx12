@@ -78,6 +78,8 @@ using namespace winrt;
 
 #include "Debug.h"
 #include "DirectXHelper.h"
+#include "FileSys.h"
+#include "NeuronHelper.h"
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -95,12 +97,9 @@ using namespace Neuron;
 
 #ifdef TARGET_DEBUG
 #define DARWINIA_GAMETYPE "debug"
-#define LOCATION_EDITOR
 #define CHEATMENU_ENABLED
 #define D3D_DEBUG_INFO
 #endif
-
-//#define PROMOTIONAL_BUILD                         // Their company logo is shown on screen
 
 #if !defined(TARGET_DEBUG) &&         \
     !defined(TARGET_FULLGAME) &&      \
@@ -121,20 +120,6 @@ using namespace Neuron;
 #define DARWINIA_VERSION_STRING DARWINIA_PLATFORM "-" DARWINIA_GAMETYPE "-" DARWINIA_VERSION DARWINIA_VERSION_PROFILER
 
 #ifdef TARGET_MSVC
-
-#include <crtdbg.h>
-#define snprintf _snprintf
-
-// Visual studio 2005 insists that we use the underscored versions
-#include <string.h>
-#define stricmp _stricmp
-#define strupr _strupr
-#define strnicmp _strnicmp
-#define strlwr _strlwr
-#define strdup _strdup
-
-#include <stdlib.h>
-#define itoa _itoa
 
 #define DARWINIA_PLATFORM "win32"
 

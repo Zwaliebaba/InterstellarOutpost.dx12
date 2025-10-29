@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "Canvas/eclipse.h"
-
 #include "hi_res_time.h"
 #include "input/input.h"
 #include "input/file_paths.h"
@@ -970,7 +969,7 @@ void RunBootLoaders()
   {
     char *loaderName = g_prefsManager->GetString("BootLoader", "none");
 
-    if (stricmp(loaderName, "firsttime") == 0)
+    if (_stricmp(loaderName, "firsttime") == 0)
     {
       g_app->m_startSequence = new StartSequence();
       while (true)

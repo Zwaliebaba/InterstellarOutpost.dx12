@@ -591,7 +591,7 @@ void TaskManagerInterfaceGestures::AdvanceScreenZones()
                 for( int i = 0; i < m_screenZones.Size(); ++i )
                 {
                     ScreenZone *zone = m_screenZones[i];
-                    if( stricmp( zone->m_name, "SelectTask" ) == 0 && zone->m_data == taskIndex )
+                    if( _stricmp( zone->m_name, "SelectTask" ) == 0 && zone->m_data == taskIndex )
                     {
                         m_currentScreenZone = i;
                         found = true;
@@ -611,7 +611,7 @@ void TaskManagerInterfaceGestures::AdvanceScreenZones()
     if( m_currentScreenZone != -1 )
     {
         ScreenZone *currentZone = m_screenZones[m_currentScreenZone];
-        if( stricmp( currentZone->m_name, "SelectTask" ) == 0 &&
+        if( _stricmp( currentZone->m_name, "SelectTask" ) == 0 &&
             g_app->m_taskManager->m_tasks.ValidIndex(currentZone->m_data) )
         {
             Task *task = g_app->m_taskManager->m_tasks[currentZone->m_data];
@@ -652,7 +652,7 @@ void TaskManagerInterfaceGestures::RunScreenZone( const char *_name, int _data )
     //
     // New task buttons
 
-    if( stricmp( _name, "NewTask" ) == 0 )
+    if( _stricmp( _name, "NewTask" ) == 0 )
     {
         if( g_app->m_globalWorld->m_research->HasResearch( _data ) )
         {
@@ -670,7 +670,7 @@ void TaskManagerInterfaceGestures::RunScreenZone( const char *_name, int _data )
     //
     // Select task buttons
 
-    if( stricmp( _name, "SelectTask" ) == 0 )
+    if( _stricmp( _name, "SelectTask" ) == 0 )
     {
         if( g_app->m_taskManager->m_tasks.ValidIndex(_data) )
         {
@@ -684,7 +684,7 @@ void TaskManagerInterfaceGestures::RunScreenZone( const char *_name, int _data )
     //
     // Select weapon buttons
 
-    if( stricmp( _name, "SelectWeapon" ) == 0 )
+    if( _stricmp( _name, "SelectWeapon" ) == 0 )
     {
         if( g_app->m_globalWorld->m_research->HasResearch( _data ) )
         {
@@ -703,7 +703,7 @@ void TaskManagerInterfaceGestures::RunScreenZone( const char *_name, int _data )
     //
     // Show screen
 
-    if( stricmp( _name, "ShowScreen" ) == 0 )
+    if( _stricmp( _name, "ShowScreen" ) == 0 )
     {
         m_screenId = _data;
 
@@ -720,7 +720,7 @@ void TaskManagerInterfaceGestures::RunScreenZone( const char *_name, int _data )
     //
     // Research
 
-    if( stricmp( _name, "Research" ) == 0 )
+    if( _stricmp( _name, "Research" ) == 0 )
     {
         g_app->m_globalWorld->m_research->SetCurrentResearch( _data );
     }
@@ -729,7 +729,7 @@ void TaskManagerInterfaceGestures::RunScreenZone( const char *_name, int _data )
     //
     // Objectives
 
-    if( stricmp( _name, "Objective" ) == 0 )
+    if( _stricmp( _name, "Objective" ) == 0 )
     {
         bool primary = _data > 0;
         int objectiveId = _data;
@@ -874,7 +874,7 @@ void TaskManagerInterfaceGestures::RenderTooltip()
         for( int i = 0; i < m_keyboardShortcuts.Size(); ++i )
         {
             KeyboardShortcut *shortcut = m_keyboardShortcuts[i];
-            if( stricmp( shortcut->name(), zone->m_name ) == 0 &&
+            if( _stricmp( shortcut->name(), zone->m_name ) == 0 &&
                 shortcut->data() == zone->m_data )
             {
                 keyPress = shortcut;

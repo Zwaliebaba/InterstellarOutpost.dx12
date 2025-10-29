@@ -235,10 +235,10 @@ void ScriptTrigger::Read( TextReader *_in, bool _dynamic )
     strcpy( m_scriptFilename, _in->GetNextToken() );
 
     char *entityType = _in->GetNextToken();
-    if      ( stricmp( entityType, "always" ) == 0 )    m_entityType = SCRIPTRIGGER_RUNALWAYS;
-    else if ( stricmp( entityType, "never" ) == 0 )     m_entityType = SCRIPTRIGGER_RUNNEVER;
-    else if ( stricmp( entityType, "camenter" ) == 0 )  m_entityType = SCRIPTRIGGER_RUNCAMENTER;
-    else if ( stricmp( entityType, "camview" ) == 0 )   m_entityType = SCRIPTRIGGER_RUNCAMVIEW;
+    if      ( _stricmp( entityType, "always" ) == 0 )    m_entityType = SCRIPTRIGGER_RUNALWAYS;
+    else if ( _stricmp( entityType, "never" ) == 0 )     m_entityType = SCRIPTRIGGER_RUNNEVER;
+    else if ( _stricmp( entityType, "camenter" ) == 0 )  m_entityType = SCRIPTRIGGER_RUNCAMENTER;
+    else if ( _stricmp( entityType, "camview" ) == 0 )   m_entityType = SCRIPTRIGGER_RUNCAMVIEW;
     else     m_entityType = Entity::GetTypeId( entityType );
 }
 
