@@ -1,14 +1,14 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <math.h>
 #include <memory.h>
 
-#include "matrix33.h"
-#include "matrix34.h"
+#include "lib/matrix33.h"
+#include "lib/matrix34.h"
+#include "lib/debug_utils.h"
 
 
-
-float Matrix34::m_openGLFormat[16];
+double Matrix34::m_openGLFormat[16];
 
 Matrix34 const g_identityMatrix34(0);
 
@@ -77,12 +77,12 @@ void Matrix34::OrientFU( Vector3 const & _f, Vector3 const & _u )
 	u = f ^ r;
 }
 
-Matrix34 const &Matrix34::RotateAroundR( float angle )
+Matrix34 const &Matrix34::RotateAroundR( double angle )
 {
-	float c = (float)cos( angle );
-	float s = (float)sin( angle );
+	double c = (double)iv_cos( angle );
+	double s = (double)iv_sin( angle );
 
-	float t;
+	double t;
 
 	t = u.x *  c + f.x * s;
 	f.x = u.x * -s + f.x * c;
@@ -99,12 +99,12 @@ Matrix34 const &Matrix34::RotateAroundR( float angle )
 	return *this;
 }
 
-Matrix34 const &Matrix34::RotateAroundU( float angle )
+Matrix34 const &Matrix34::RotateAroundU( double angle )
 {
-	float c = (float)cos( angle );
-	float s = (float)sin( angle );
+	double c = (double)iv_cos( angle );
+	double s = (double)iv_sin( angle );
 
-	float t;
+	double t;
 
 	t =	f.x * c + r.x * s;
 	r.x = f.x * -s + r.x * c;
@@ -121,12 +121,12 @@ Matrix34 const &Matrix34::RotateAroundU( float angle )
 	return *this;
 }
 
-Matrix34 const &Matrix34::RotateAroundF( float angle )
+Matrix34 const &Matrix34::RotateAroundF( double angle )
 {
-	float c = (float)cos( angle );
-	float s = (float)sin( angle );
+	double c = (double)iv_cos( angle );
+	double s = (double)iv_sin( angle );
 
-	float t;
+	double t;
 
 	t =	  r.x *  c + u.x * s;
 	u.x = r.x * -s + u.x * c;
@@ -143,12 +143,12 @@ Matrix34 const &Matrix34::RotateAroundF( float angle )
 	return *this;
 }
 
-Matrix34 const &Matrix34::RotateAroundX( float angle )
+Matrix34 const &Matrix34::RotateAroundX( double angle )
 {
-	float c = (float)cos( angle );
-	float s = (float)sin( angle );
+	double c = (double)iv_cos( angle );
+	double s = (double)iv_sin( angle );
 
-	float t;
+	double t;
 
 	t = r.y *  c + r.z * s;
 	r.z = r.y * -s + r.z * c;
@@ -165,12 +165,12 @@ Matrix34 const &Matrix34::RotateAroundX( float angle )
 	return *this;
 }
 
-Matrix34 const &Matrix34::RotateAroundY( float angle )
+Matrix34 const &Matrix34::RotateAroundY( double angle )
 {
-	float c = (float)cos( angle );
-	float s = (float)sin( angle );
+	double c = (double)iv_cos( angle );
+	double s = (double)iv_sin( angle );
 
-	float t;
+	double t;
 
 	t = r.z *  c + r.x * s;
 	r.x = r.z * -s + r.x * c;
@@ -187,12 +187,12 @@ Matrix34 const &Matrix34::RotateAroundY( float angle )
 	return *this;
 }
 
-Matrix34 const &Matrix34::RotateAroundZ( float angle )
+Matrix34 const &Matrix34::RotateAroundZ( double angle )
 {
-	float c = (float)cos( angle );
-	float s = (float)sin( angle );
+	double c = (double)iv_cos( angle );
+	double s = (double)iv_sin( angle );
 
-	float t;
+	double t;
 
 	t = r.x *  c + r.y * s;
 	r.y = r.x * -s + r.y * c;
@@ -213,23 +213,23 @@ Matrix34 const &Matrix34::RotateAroundZ( float angle )
 // when you want to do a rotation based on the result of a cross product
 Matrix34 const &Matrix34::RotateAround( Vector3 const &_rotationAxis )
 {
-	float magSquared = _rotationAxis.MagSquared();
-	if (magSquared < 0.00001f * 0.00001f)
+	double magSquared = _rotationAxis.MagSquared();
+	if (magSquared < 0.00001 * 0.00001)
 	{
 		return *this;
 	}
 
-	float mag = sqrtf(magSquared);
+	double mag = iv_sqrt(magSquared);
 	return FastRotateAround(_rotationAxis/mag, mag);
 }
 
 // Assumes normal is already normalised
-Matrix34 const &Matrix34::FastRotateAround( Vector3 const & _norm, float _angle )
+Matrix34 const &Matrix34::FastRotateAround( Vector3 const & _norm, double _angle )
 {
-	float s = (float)sin(_angle);
-	float c = (float)cos(_angle);
+	double s = (double)iv_sin(_angle);
+	double c = (double)iv_cos(_angle);
 
-	float dot = r * _norm;
+	double dot = r * _norm;
 	Vector3 a = _norm * dot;
 	Vector3 n1 = r - a;
 	Vector3 n2 = _norm ^ n1;
@@ -250,14 +250,14 @@ Matrix34 const &Matrix34::FastRotateAround( Vector3 const & _norm, float _angle 
 	return *this;
 }
 
-Matrix34 const &Matrix34::RotateAround( Vector3 const & _onorm, float _angle )
+Matrix34 const &Matrix34::RotateAround( Vector3 const & _onorm, double _angle )
 {
 	Vector3 norm = _onorm;
 	norm.Normalise();
-	float s = (float)sin(_angle);
-	float c = (float)cos(_angle);
+	double s = (double)iv_sin(_angle);
+	double c = (double)iv_cos(_angle);
 
-	float dot = r * norm;
+	double dot = r * norm;
 	Vector3 a = norm * dot;
 	Vector3 n1 = r - a;
 	Vector3 n2 = norm ^ n1;
@@ -282,7 +282,7 @@ Matrix34 const &Matrix34::Transpose()
 {
 	pos = *this * -pos;
 
-	float t = r.y;
+	double t = r.y;
 	r.y = u.x;
 	u.x = t;
 	t = r.z;
@@ -298,52 +298,52 @@ Matrix34 const &Matrix34::Transpose()
 Vector3 Matrix34::DecomposeToYDR() const
 {
 	//x = dive, y = yaw, z = roll
-	float x,y,z;
+	double x,y,z;
 	DecomposeToYDR( &x, &y, &z );
 	return Vector3( x, y, z );
 }
 
-void Matrix34::DecomposeToYDR( float *_y, float *_d, float *_r ) const
+void Matrix34::DecomposeToYDR( double *_y, double *_d, double *_r ) const
 {
 	//work with a copy..
 	Matrix34 workingMat( *this );
 
 	//get the yaw
-	*_y = -(float)atan2( workingMat.f.x, workingMat.f.z );
+	*_y = -(double)atan2( workingMat.f.x, workingMat.f.z );
 
 	//get the dive
 	//	can't use asin( workingMat.f.y ) 'cos occasionally we get
 	//	blasted precision problems. this sorts us out..
-	*_d = (float)atan2( workingMat.f.y, workingMat.u.y );
+	*_d = (double)atan2( workingMat.f.y, workingMat.u.y );
 
 	//rotate the matrix back by -yaw and -dive (one at a time)
 	workingMat.RotateAroundY( -*_y );
 	workingMat.RotateAroundX( -*_d );
 
 	//now the roll
-	*_r = -(float)atan2( workingMat.r.y, workingMat.r.x );
+	*_r = -(double)atan2( workingMat.r.y, workingMat.r.x );
 }
 
 void Matrix34::SetToIdentity()
 {
 	memset(this, 0, sizeof(Matrix34));
-	r.x = 1.0f;
-	u.y = 1.0f;
-	f.z = 1.0f;
+	r.x = 1.0;
+	u.y = 1.0;
+	f.z = 1.0;
 }
 
 bool Matrix34::IsNormalised()
 {
-    float lenR = r.MagSquared();
-    if (lenR < 0.999f || lenR > 1.001f) return false;
-    float lenU = u.MagSquared();
-    if (lenU < 0.999f || lenU > 1.001f) return false;
-    float lenF = f.MagSquared();
-    if (lenF < 0.999f || lenF > 1.001f) return false;
+    double lenR = r.MagSquared();
+    if (lenR < 0.999 || lenR > 1.001) return false;
+    double lenU = u.MagSquared();
+    if (lenU < 0.999 || lenU > 1.001) return false;
+    double lenF = f.MagSquared();
+    if (lenF < 0.999 || lenF > 1.001) return false;
 
-    if (fabsf(r * u) > 0.001f) return false;
-    if (fabsf(r * f) > 0.001f) return false;
-    if (fabsf(f * u) > 0.001f) return false;
+    if (fabsf(r * u) > 0.001) return false;
+    if (fabsf(r * f) > 0.001) return false;
+    if (fabsf(f * u) > 0.001) return false;
 
     return true;
 }
@@ -368,10 +368,10 @@ Vector3	Matrix34::InverseMultiplyVector(Vector3 const &s) const
 
 void Matrix34::WriteToDebugStream()
 {
-    DebugTrace("%5.2f %5.2f %5.2f\n", r.x, r.y, r.z);
-    DebugTrace("%5.2f %5.2f %5.2f\n", u.x, u.y, u.z);
-    DebugTrace("%5.2f %5.2f %5.2f\n", f.x, f.y, f.z);
-    DebugTrace("%5.2f %5.2f %5.2f\n\n", pos.x, pos.y, pos.z);
+    AppDebugOut("%5.2 %5.2 %5.2\n", r.x, r.y, r.z);
+    AppDebugOut("%5.2 %5.2 %5.2\n", u.x, u.y, u.z);
+    AppDebugOut("%5.2 %5.2 %5.2\n", f.x, f.y, f.z);
+    AppDebugOut("%5.2 %5.2 %5.2\n\n", pos.x, pos.y, pos.z);
 }
 
 
@@ -380,7 +380,7 @@ void Matrix34::Test()
     Matrix34 a(Vector3(0,0,1), g_upVector, g_zeroVector);
     Matrix34 b(Vector3(0,0,1), g_upVector, g_zeroVector);
     Matrix34 c=a*b;
-    DebugTrace("c = a * b\n");
+    AppDebugOut("c = a * b\n");
     c.WriteToDebugStream();
 
     Vector3 front(10,20,2);
@@ -391,11 +391,11 @@ void Matrix34::Test()
     up = front ^ right;
     up.Normalise();
     Matrix34 d(front, up, Vector3(-1,2,-3));
-    DebugTrace("d = \n");
+    AppDebugOut("d = \n");
     d.WriteToDebugStream();
 
     Matrix34 e = d * d;
-    DebugTrace("e = d * d\n");
+    AppDebugOut("e = d * d\n");
     e.WriteToDebugStream();
 }
 

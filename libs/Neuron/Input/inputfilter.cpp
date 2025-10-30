@@ -1,6 +1,6 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-#include "input/inputfilter.h"
+#include "lib/input/inputfilter.h"
 
 
 void InputFilter::setName( std::string const &name )

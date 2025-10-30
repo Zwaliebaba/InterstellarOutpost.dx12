@@ -1,8 +1,6 @@
 #ifndef _included_profilewindow_h
 #define _included_profilewindow_h
 
-#ifdef PROFILER_ENABLED
-
 
 #include "interface/darwinia_window.h"
 
@@ -18,9 +16,9 @@ class ProfileWindow : public DarwiniaWindow
 {
 protected:
 	int		m_yPos;
-
-	void RenderElementProfile(ProfiledElement *_pe, unsigned int _indent);
-
+	
+	void RenderElementProfile   (ProfiledElement *_pe, unsigned int _indent);
+    void RenderFrameTimes       ( float x, float y, float w, float h );
 
 public:
 	bool	m_totalPerSecond;
@@ -33,7 +31,5 @@ public:
 	void Remove();
 };
 
-
-#endif // PROFILER_ENABLED
 
 #endif

@@ -9,24 +9,24 @@
 
 class SporeGenerator : public Entity
 {
-public:
-    float       m_retargetTimer;
-    float       m_eggTimer;
+public:    
+    double       m_retargetTimer;
+    double       m_eggTimer;
     Vector3     m_targetPos;
     int         m_spiritId;
-
-protected:
+    
+protected:    
     bool    SearchForRandomPos      ();
     bool    SearchForSpirits        ();
 
-    bool    AdvanceToTargetPosition ();
+    bool    AdvanceToTargetPosition ();                
     bool    AdvanceIdle             ();
     bool    AdvanceEggLaying        ();
     bool    AdvancePanic            ();
+    
+    void    RenderTail( Vector3 const &_from, Vector3 const &_to, double _size );
 
-    void    RenderTail( Vector3 const &_from, Vector3 const &_to, float _size );
-
-protected:
+protected:    
     ShapeMarker     *m_eggMarker;
     ShapeMarker     *m_tail[SPOREGENERATOR_NUMTAILS];
 
@@ -43,11 +43,11 @@ public:
 
     void Begin          ();
     bool Advance        ( Unit *_unit );
-    void ChangeHealth   ( int _amount );
+    bool ChangeHealth   ( int _amount, int _damageType );
 
     bool IsInView           ();
-    void Render             ( float _predictionTime );
-    bool RenderPixelEffect  ( float _predictionTime );
+    void Render             ( double _predictionTime );
+    bool RenderPixelEffect  ( double _predictionTime );
 
     void ListSoundEvents    ( LList<char *> *_list );
 };

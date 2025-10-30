@@ -16,17 +16,17 @@ protected:
 
 public:
     Powerstation		();
-
+	
 	void Initialise		(Building *_template);
 
     bool Advance		();
-    void Render			(float predictionTime);
+    void Render			(double predictionTime);
 
-    int  GetBuildingLink();
+    int  GetBuildingLink();                 
     void SetBuildingLink(int _buildingId);
 
 	void Read( TextReader *_in, bool _dynamic );
-	void Write( FileWriter *out );
+	void Write( TextWriter *out );
 };
 
 

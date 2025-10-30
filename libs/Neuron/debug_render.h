@@ -11,9 +11,10 @@ void RenderSquare2d(float x, float y, float size, RGBAColour const &_col=RGBACol
 void RenderCube(Vector3 const &_centre, float _sizeX, float _sizeY, float _sizeZ, RGBAColour const &_col=RGBAColour(255,255,255));
 void RenderSphereRings(Vector3 const &_centre, float _radius, RGBAColour const &_col=RGBAColour(255,255,255));
 void RenderSphere(Vector3 const &_centre, float _radius, RGBAColour const &_col=RGBAColour(255,255,255));
+void RenderSphereFilled(Vector3 const &_centre, float _radius, RGBAColour const &_col=RGBAColour(255,255,255));
 
 void RenderVerticalCylinder(Vector3 const &_centreBase, Vector3 const &_verticalAxis,
-							float _height, float _radius,
+							float _height, float _radius, 
 							RGBAColour const &_col=RGBAColour(255,255,255));
 
 void RenderArrow(Vector3 const &start, Vector3 const &end, float width, RGBAColour const &_col=RGBAColour(255,255,255));

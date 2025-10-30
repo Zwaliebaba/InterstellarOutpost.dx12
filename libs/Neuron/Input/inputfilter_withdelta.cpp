@@ -1,8 +1,8 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-#include "input/inputfilter_withdelta.h"
+#include "lib/input/inputfilter_withdelta.h"
 
-typedef std::unique_ptr<const InputFilterSpec> FilterSpecPtr;
+typedef std::auto_ptr<const InputFilterSpec> FilterSpecPtr;
 
 
 void InputFilterWithDelta::registerDeltaID( InputFilterSpec &spec )

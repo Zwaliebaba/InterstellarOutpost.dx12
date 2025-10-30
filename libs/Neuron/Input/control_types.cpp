@@ -1,14 +1,14 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-#include "input/input_types.h"
-#include "input/control_bindings.h"
+#include "lib/input/input_types.h"
+#include "lib/input/control_bindings.h"
 
 static ControlAction s_actions[] = {
 
 	#define DEF_CONTROL_TYPE(x,y) "x", y,
-	#include "input/control_types.inc"
+	#include "lib/input/control_types.inc"
 	#undef DEF_CONTROL_TYPE
-
+	
 	"",                                  INPUT_TYPE_ANY,
 
 	NULL,                                NULL

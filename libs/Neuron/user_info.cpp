@@ -1,6 +1,6 @@
-#include "pch.h"
-#include "text_stream_readers.h"
-
+#include "lib/universal_include.h"
+#include "lib/filesys/text_stream_readers.h"
+#include "lib/debug_utils.h"
 
 #include <string.h>
 
@@ -16,15 +16,15 @@ bool GetUserInfoData( char const *_userInfoFilename, char const **_username, cha
         TextFileReader fileReader( _userInfoFilename );
         if( fileReader.IsOpen() )
         {
-            fileReader.ReadLine();
-
-            ASSERT_TEXT( _stricmp( fileReader.GetNextToken(), "Username" ) == 0, "Failed to parse %s", _userInfoFilename );
-
+            fileReader.ReadLine();            
+            
+            AppReleaseAssert( stricmp( fileReader.GetNextToken(), "Username" ) == 0, "Failed to parse %s", _userInfoFilename );
+            
             s_username = strdup( fileReader.GetRestOfLine() );
 
             fileReader.ReadLine();
-
-            ASSERT_TEXT( _stricmp( fileReader.GetNextToken(), "Email" ) == 0, "Failed to parse %s", _userInfoFilename );
+            
+            AppReleaseAssert( stricmp( fileReader.GetNextToken(), "Email" ) == 0, "Failed to parse %s", _userInfoFilename );
 
             s_email = strdup( fileReader.GetRestOfLine() );
         }

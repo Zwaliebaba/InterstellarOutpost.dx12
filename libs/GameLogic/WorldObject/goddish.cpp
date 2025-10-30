@@ -1,7 +1,7 @@
-#include "pch.h"
-#include "resource.h"
-#include "math_utils.h"
-#include "preferences.h"
+#include "lib/universal_include.h"
+#include "lib/resource.h"
+#include "lib/math_utils.h"
+#include "lib/preferences.h"
 
 #include "worldobject/goddish.h"
 #include "worldobject/spam.h"
@@ -10,7 +10,9 @@
 
 #include "app.h"
 #include "globals.h"
-#include "sepulveda.h"
+#ifdef USE_SEPULVEDA_HELP_TUTORIAL
+    #include "sepulveda.h"
+#endif
 #include "global_world.h"
 #include "location.h"
 #include "team.h"
@@ -23,7 +25,7 @@
 
 GodDish::GodDish()
 :   Building(),
-    m_timer(0.0f),
+    m_timer(0.0),
     m_numSpawned(0),
     m_spawnSpam(false),
     m_activated(false)
@@ -40,14 +42,14 @@ void GodDish::Initialise( Building *_template )
 
 
 bool GodDish::Advance()
-{
+{    
     if( m_activated )
     {
         m_timer += SERVER_ADVANCE_PERIOD;
     }
     else
     {
-        m_timer *= ( 1.0f - SERVER_ADVANCE_PERIOD * 2.0f );
+        m_timer *= ( 1.0 - SERVER_ADVANCE_PERIOD * 2.0 );
     }
 
     return Building::Advance();
@@ -62,19 +64,19 @@ bool GodDish::IsInView()
 }
 
 
-void GodDish::Render( float _predictionTime )
-{
+void GodDish::Render( double _predictionTime )
+{    
     Building::Render( _predictionTime );
 }
 
 
-void GodDish::RenderAlphas( float _predictionTime )
+void GodDish::RenderAlphas( double _predictionTime )
 {
-    Building::RenderAlphas( _predictionTime );
-
+    Building::RenderAlphas( _predictionTime );   
+    
     Vector3 camUp = g_app->m_camera->GetUp();
     Vector3 camRight = g_app->m_camera->GetRight();
-
+        
     glDepthMask     ( false );
     glEnable        ( GL_BLEND );
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
@@ -82,43 +84,43 @@ void GodDish::RenderAlphas( float _predictionTime )
     glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/cloudyglow.bmp" ) );
     glDisable       ( GL_DEPTH_TEST );
 
-    float timeIndex = g_gameTime * 2;
+    double timeIndex = g_gameTime * 2;
 
     int buildingDetail = g_prefsManager->GetInt( "RenderBuildingDetail", 1 );
     int maxBlobs = 50;
     if( buildingDetail == 2 ) maxBlobs = 25;
     if( buildingDetail == 3 ) maxBlobs = 10;
-
+    
 
     //
     // Calculate alpha value
 
-    float alpha = m_timer * 0.1f;
-    alpha = min( alpha, 1.0f );
-
+    double alpha = m_timer * 0.1;
+    alpha = min( alpha, 1.0 );
+    
     //
     // Central glow effect
 
     for( int i = 0; i < maxBlobs; ++i )
-    {
+    {        
         Vector3 pos = m_centrePos;
-        pos.x += sinf(timeIndex+i) * i * 1.7f;
-        pos.y += fabs(cosf(timeIndex+i) * cosf(i*20) * 64);
-        pos.z += cosf(timeIndex+i) * i * 1.7f;
+        pos.x += iv_sin(timeIndex+i) * i * 1.7;
+        pos.y += iv_abs(iv_cos(timeIndex+i) * iv_cos(i*20) * 64);
+        pos.z += iv_cos(timeIndex+i) * i * 1.7;
 
-        float size = 20.0f * sinf(timeIndex+i*13);
-        size = max( size, 5.0f );
-
-        glColor4f( 0.6f, 0.2f, 0.1f, alpha);
+        double size = 20.0 * iv_sin(timeIndex+i*13);
+        size = max( size, 5.0 );
+        
+        glColor4f( 0.6, 0.2, 0.1, alpha);        
         glBegin( GL_QUADS );
-            glTexCoord2i(0,0);      glVertex3fv( (pos - camRight * size + camUp * size).GetData() );
-            glTexCoord2i(1,0);      glVertex3fv( (pos + camRight * size + camUp * size).GetData() );
-            glTexCoord2i(1,1);      glVertex3fv( (pos + camRight * size - camUp * size).GetData() );
-            glTexCoord2i(0,1);      glVertex3fv( (pos - camRight * size - camUp * size).GetData() );
+            glTexCoord2i(0,0);      glVertex3dv( (pos - camRight * size + camUp * size).GetData() );
+            glTexCoord2i(1,0);      glVertex3dv( (pos + camRight * size + camUp * size).GetData() );
+            glTexCoord2i(1,1);      glVertex3dv( (pos + camRight * size - camUp * size).GetData() );
+            glTexCoord2i(0,1);      glVertex3dv( (pos - camRight * size - camUp * size).GetData() );
         glEnd();
     }
 
-
+    
     //
     // Central starbursts
 
@@ -127,23 +129,23 @@ void GodDish::RenderAlphas( float _predictionTime )
     int numStars = 10;
     if( buildingDetail == 2 ) numStars = 5;
     if( buildingDetail == 3 ) numStars = 2;
-
+    
     for( int i = 0; i < numStars; ++i )
     {
         Vector3 pos = m_centrePos;
-        pos.x += sinf(timeIndex+i) * i * 1.7f;
-        pos.y += fabs(cosf(timeIndex+i) * cosf(i*20) * 64);
-        pos.z += cosf(timeIndex+i) * i * 1.7f;
+        pos.x += iv_sin(timeIndex+i) * i * 1.7;
+        pos.y += iv_abs(iv_cos(timeIndex+i) * iv_cos(i*20) * 64);
+        pos.z += iv_cos(timeIndex+i) * i * 1.7;
 
-        float size = i * 30.0f;
-
-        glColor4f( 1.0f, 0.4f, 0.2f, alpha );
+        double size = i * 30.0;
+        
+        glColor4f( 1.0, 0.4, 0.2, alpha );
 
         glBegin( GL_QUADS );
-            glTexCoord2i(0,0);      glVertex3fv( (pos - camRight * size + camUp * size).GetData() );
-            glTexCoord2i(1,0);      glVertex3fv( (pos + camRight * size + camUp * size).GetData() );
-            glTexCoord2i(1,1);      glVertex3fv( (pos + camRight * size - camUp * size).GetData() );
-            glTexCoord2i(0,1);      glVertex3fv( (pos - camRight * size - camUp * size).GetData() );
+            glTexCoord2i(0,0);      glVertex3dv( (pos - camRight * size + camUp * size).GetData() );
+            glTexCoord2i(1,0);      glVertex3dv( (pos + camRight * size + camUp * size).GetData() );
+            glTexCoord2i(1,1);      glVertex3dv( (pos + camRight * size - camUp * size).GetData() );
+            glTexCoord2i(0,1);      glVertex3dv( (pos - camRight * size - camUp * size).GetData() );
         glEnd();
     }
 
@@ -155,15 +157,17 @@ void GodDish::RenderAlphas( float _predictionTime )
 void GodDish::Activate()
 {
     m_activated = true;
-    m_timer = 0.0f;
+    m_timer = 0.0;
 
+#ifdef USE_SEPULVEDA_HELP_TUTORIAL
     g_app->m_sepulveda->HighlightBuilding( m_id.GetUniqueId(), "GodDish" );
+#endif
 
     //
     // Make all green darwinians watch us
 
-    Team *team = &g_app->m_location->m_teams[0];
-
+    Team *team = g_app->m_location->m_teams[0];
+    
     for( int i = 0; i < team->m_others.Size(); ++i )
     {
         if( team->m_others.ValidIndex(i) )
@@ -187,7 +191,9 @@ void GodDish::DeActivate()
 {
     m_activated = false;
 
+#ifdef USE_SEPULVEDA_HELP_TUTORIAL
     g_app->m_sepulveda->ClearHighlights( "GodDish" );
+#endif
 
     g_app->m_soundSystem->StopAllSounds( m_id, "GodDish ConnectToGod" );
     g_app->m_soundSystem->TriggerBuildingEvent( this, "DisconnectFromGod" );
@@ -203,14 +209,14 @@ void GodDish::SpawnSpam( bool _isResearch )
 
     Spam *spam = (Spam *) CreateBuilding( TypeSpam );
     spam->Initialise( &spamTemplate );
-    g_app->m_location->m_buildings.PutData( spam );
+    g_app->m_location->m_buildings.PutData( spam );    
 
     spam->SendFromHeaven();
     if( _isResearch ) spam->SetAsResearch();
-    spam->m_pos = m_pos;
-    spam->m_pos += Vector3(0,1500*0.75f,900*0.75f);
+    spam->m_pos = m_pos;                
+    spam->m_pos += Vector3(0,1500*0.75,900*0.75);
     spam->m_vel = ( m_pos - spam->m_pos );
-    spam->m_vel.SetLength( 80.0f );
+    spam->m_vel.SetLength( 80.0 );
 }
 
 

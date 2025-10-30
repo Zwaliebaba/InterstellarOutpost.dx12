@@ -18,35 +18,35 @@ protected:
     int             m_spiritLink;
     ShapeMarker     *m_spiritLocation;
 
-    LList           <float> m_spirits;
+    LList           <double> m_spirits;
 
 public:
     ReceiverBuilding();
-
-    void Initialise     ( Building *_template );
+    
+    void Initialise     ( Building *_template );    
     bool Advance        ();
-    void Render         ( float _predictionTime );
-    void RenderAlphas   ( float _predictionTime );
+    void Render         ( double _predictionTime );
+    void RenderAlphas   ( double _predictionTime );
 
     bool            IsInView            ();
     virtual Vector3 GetSpiritLocation   ();
-    virtual void    TriggerSpirit       ( float _initValue );
+    virtual void    TriggerSpirit       ( double _initValue );
 
     void ListSoundEvents( LList<char *> *_list );
 
     static SpiritProcessor *GetSpiritProcessor();
-
+    
     static void BeginRenderUnprocessedSpirits();
-    static void RenderUnprocessedSpirit( Vector3 const &_pos, float _life=1.0f ); // gl friendly
-	static void RenderUnprocessedSpirit_basic( Vector3 const &_pos, float _life=1.0f ); // dx friendly
-	static void RenderUnprocessedSpirit_detail( Vector3 const &_pos, float _life=1.0f ); // dx friendly
+    static void RenderUnprocessedSpirit( Vector3 const &_pos, double _life=1.0 ); // gl friendly
+	static void RenderUnprocessedSpirit_basic( Vector3 const &_pos, double _life=1.0 ); // dx friendly
+	static void RenderUnprocessedSpirit_detail( Vector3 const &_pos, double _life=1.0 ); // dx friendly
     static void EndRenderUnprocessedSpirits();
-
-    void Read   ( TextReader *_in, bool _dynamic );
-    void Write  ( FileWriter *_out );
-
-    int  GetBuildingLink();
-    void SetBuildingLink( int _buildingId );
+    
+    void Read   ( TextReader *_in, bool _dynamic );     
+    void Write  ( TextWriter *_out );							
+    
+    int  GetBuildingLink();                             
+    void SetBuildingLink( int _buildingId );            
 };
 
 
@@ -58,10 +58,10 @@ public:
 class SpiritProcessor : public ReceiverBuilding
 {
 protected:
-    float   m_timerSync;
+    double   m_timerSync;
     int     m_numThisSecond;
-    float   m_spawnSync;
-    float   m_throughput;
+    double   m_spawnSync;
+    double   m_throughput;
 
 public:
     LList   <UnprocessedSpirit *> m_floatingSpirits;
@@ -69,15 +69,15 @@ public:
 public:
     SpiritProcessor();
 
-    void TriggerSpirit ( float _initValue );
+    void TriggerSpirit ( double _initValue );
 
-    char *GetObjectiveCounter();
+    void GetObjectiveCounter( UnicodeString & _dest);
 
     void Initialise( Building *_building );
     bool Advance();
     bool IsInView();
-    void Render( float _predictionTime );
-    void RenderAlphas( float _predictionTime );
+    void Render( double _predictionTime );
+    void RenderAlphas( double _predictionTime );
 };
 
 
@@ -113,7 +113,7 @@ public:
 #define SPIRITRECEIVER_NUMSTATUSMARKERS 5
 
 class SpiritReceiver : public ReceiverBuilding
-{
+{    
 protected:
     ShapeMarker *m_headMarker;
     Shape       *m_headShape;
@@ -127,9 +127,9 @@ public:
 
     void Initialise     ( Building *_template );
     bool Advance        ();
-    void Render         ( float _predictionTime );
+    void Render         ( double _predictionTime );
     void RenderPorts    ();
-    void RenderAlphas   ( float _predictionTime );
+    void RenderAlphas   ( double _predictionTime );
 
 };
 
@@ -141,11 +141,11 @@ public:
 class UnprocessedSpirit : public WorldObject
 {
 protected:
-    float       m_timeSync;
-    float       m_positionOffset;                       // Used to make them float around a bit
-    float       m_xaxisRate;
-    float       m_yaxisRate;
-    float       m_zaxisRate;
+    double       m_timeSync;
+    double       m_positionOffset;                       // Used to make them double around a bit
+    double       m_xaxisRate;
+    double       m_yaxisRate;
+    double       m_zaxisRate;
 
 public:
     Vector3     m_hover;
@@ -156,12 +156,14 @@ public:
         StateUnprocessedDeath
     };
     int         m_state;
-
+    
 public:
     UnprocessedSpirit();
 
     bool Advance();
-    float GetLife();                        // Returns 0.0f-1.0f (0.0f=dead, 1.0f=alive)
+    double GetLife();                        // Returns 0.0-1.0 (0.0=dead, 1.0=alive)
+
+    void Render( double _predictionTime );
 };
 
 #endif

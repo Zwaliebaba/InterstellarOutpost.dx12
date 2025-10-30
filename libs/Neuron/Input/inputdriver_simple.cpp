@@ -1,9 +1,9 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <string>
 
-#include "input/inputspec.h"
-#include "input/inputdriver_simple.h"
+#include "lib/input/inputspec.h"
+#include "lib/input/inputdriver_simple.h"
 
 using namespace std;
 

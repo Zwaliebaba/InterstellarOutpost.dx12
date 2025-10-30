@@ -1,8 +1,8 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-#include "input/inputfiltermanager.h"
-#include "input/inputfilterspec.h"
-#include "input/input.h"
+#include "lib/input/inputfiltermanager.h"
+#include "lib/input/inputfilterspec.h"
+#include "lib/input/input.h"
 
 
 InputFilterManager *g_inputFilterManager = NULL;

@@ -25,16 +25,14 @@ public:
 	static void FollowCameraButton();
 	static void FPSButton();
 	static void InputLogButton();
-#ifdef PROFILER_ENABLED
 	static void ProfileButton();
-#endif
 #ifdef LOCATION_EDITOR
 	static void EditorButton();
 #endif
 #ifdef AVI_GENERATOR
 	static void GrabberButton();
 #endif
-#ifdef GESTURE_EDITOR
+#if defined(GESTURE_EDITOR) && defined(USE_SEPULVEDA_HELP_TUTORIAL)
     static void GestureButton();
 #endif
 #ifdef CHEATMENU_ENABLED

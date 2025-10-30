@@ -7,5 +7,6 @@
 #define SCREEN_COLOUR_DEPTH_PREFS_NAME	"ScreenColourDepth"
 #define SCREEN_Z_DEPTH_PREFS_NAME		"ScreenZDepth"
 #define SCREEN_WINDOWED_PREFS_NAME		"ScreenWindowed"
+#define SCREEN_OVERSCAN                 "ScreenOverscan"
 
 #endif // PREFERENCE_NAMES_H

@@ -1,12 +1,12 @@
-#include "pch.h"
+#include "lib/universal_include.h"
+#include "lib/debug_utils.h"
+#include "lib/text_renderer.h"
+//#include "lib/input.h"
+#include "lib/filesys/filesys_utils.h"
+#include "lib/resource.h"
 
-#include "text_renderer.h"
-//#include "input.h"
-#include "filesys_utils.h"
-#include "resource.h"
-
-#include "input/input.h"
-#include "targetcursor.h"
+#include "lib/input/input.h"
+#include "lib/targetcursor.h"
 
 #include "worldobject/entity.h"
 #include "worldobject/building.h"
@@ -31,6 +31,54 @@
 
 #ifdef SOUND_EDITOR
 
+
+class SoundEventButton : public DarwiniaButton
+{
+public:
+    int m_eventIndex;
+
+public:
+    SoundEventButton(): DarwiniaButton()
+    {
+    }
+
+    void Render( int realX, int realY, bool highlighted, bool clicked )
+    {
+        SoundEditorWindow *sew = (SoundEditorWindow *) m_parent;
+        SoundSourceBlueprint *ssb = sew->GetSoundSourceBlueprint();
+
+        int actualIndex = m_eventIndex;
+        if( sew->m_eventScrollbar ) actualIndex += sew->m_eventScrollbar->m_currentValue;
+
+        if( ssb && ssb->m_events.ValidIndex(actualIndex) )
+        {
+            SoundEventBlueprint *seb = ssb->m_events[actualIndex];
+            SetCaption( seb->m_eventName );
+
+            if( sew->m_eventIndex == actualIndex )
+            {
+                DarwiniaButton::Render( realX, realY, true, clicked );
+            }
+            else
+            {
+                DarwiniaButton::Render( realX, realY, highlighted, clicked );
+            }
+        }
+    }
+
+    void MouseUp()
+    {
+        SoundEditorWindow *sew = (SoundEditorWindow *) m_parent;        
+
+        int actualIndex = m_eventIndex;
+        if( sew->m_eventScrollbar ) actualIndex += sew->m_eventScrollbar->m_currentValue;
+
+        sew->SelectEvent( actualIndex );
+    }
+};
+
+
+
 class ObjectTypeMenu : public DropDownMenu
 {
 public:
@@ -50,14 +98,75 @@ public:
         {
             SoundEditorWindow *sew = (SoundEditorWindow *) m_parent;
             sew->SelectEvent( -1 );
-
+            
             EclButton *button = m_parent->GetButton( "New Event" );
-            DEBUG_ASSERT( button );
+            AppDebugAssert( button );
+        
+            EclButton *selectButton = m_parent->GetButton( "Select Object" );
+            AppAssert( selectButton );
+
+            //
+            // Remove existing event buttons
+
+            int i = 0;
+            while( true )
+            {
+                char name[64];
+                sprintf( name, "Event %d", i );
+                if( !m_parent->GetButton( name ) )
+                {
+                    break;
+                }
+
+                m_parent->RemoveButton( name );
+                ++i;
+            }
+
+            if( sew->m_eventScrollbar )
+            {
+                sew->m_eventScrollbar->Remove();
+                delete sew->m_eventScrollbar;
+                sew->m_eventScrollbar = NULL;
+            }
+
+            //
+            // Create the existing event buttons
+
+            SoundSourceBlueprint *ssb = sew->GetSoundSourceBlueprint();
+            int numExistingEvents = ssb->m_events.Size();
+            numExistingEvents++;
+
+            float availableSpace = ( selectButton->m_y - 200 );
+            float height = 16;
+            float gap = 3;
+            float width = 150;
+            int maxEvents = availableSpace / ( height + gap );
+
+            if( maxEvents < numExistingEvents )
+            {
+                sew->m_eventScrollbar = new ScrollBar( m_parent );
+                sew->m_eventScrollbar->Create( "EventScrollbar", 147, 190, 13, maxEvents*(height+gap), numExistingEvents + 10, maxEvents );
+                width = 135;
+            }
+
+            for( int i = 0; i < maxEvents; ++i )
+            {
+                char name[64];
+                sprintf( name, "Event %d", i );
+                SoundEventButton *event = new SoundEventButton();
+                event->SetShortProperties( name, 10, 190 + i * (height+gap), width, height, UnicodeString(name) );
+                event->m_eventIndex = i;
+                m_parent->RegisterButton( event );
+            }    
+
+
+            //
+            // Fill the event menu
 
             DropDownMenu *menu = (DropDownMenu *) button;
             menu->Empty();
-
-            if (_stricmp(m_objectGroup, "Entity") == 0)
+            
+            if (stricmp(m_objectGroup, "Entity") == 0)
             {
                 Entity *entity = Entity::NewEntity( _option );
                 LList<char *> events;
@@ -68,7 +177,7 @@ public:
                     menu->AddOption( events[i] );
                 }
             }
-			else if (_stricmp(m_objectGroup, "Building") == 0)
+			else if (stricmp(m_objectGroup, "Building") == 0)
 			{
                 Building *building = Building::CreateBuilding( _option );
                 LList<char *> events;
@@ -112,25 +221,25 @@ public:
             sew->SelectEvent( -1 );
 
             EclButton *button = m_parent->GetButton( "[ObjectType]" );
-            DEBUG_ASSERT( button )
-
+            AppDebugAssert( button );
+        
             ObjectTypeMenu *menu = (ObjectTypeMenu *) button;
             menu->Empty();
             strncpy(menu->m_objectGroup, m_options[optionIndex]->m_word, sizeof(menu->m_objectGroup) - 1);
-
+    
             EclButton *newEventButton = m_parent->GetButton( "New Event" );
-            DEBUG_ASSERT( newEventButton );
+            AppDebugAssert( newEventButton );        
             DropDownMenu *newEventMenu = (DropDownMenu *) newEventButton;
             newEventMenu->Empty();
-
-            if (_stricmp(m_options[optionIndex]->m_word, "Entity") == 0)
+            
+            if (stricmp(m_options[optionIndex]->m_word, "Entity") == 0)
             {
                 for( int i = 0; i < Entity::NumEntityTypes; ++i )
                 {
                     menu->AddOption( Entity::GetTypeName(i) );
                 }
 			}
-			else if (_stricmp(m_options[optionIndex]->m_word, "Building") == 0)
+			else if (stricmp(m_options[optionIndex]->m_word, "Building") == 0)
 			{
                 for( int i = 0; i < Building::NumBuildingTypes; ++i )
                 {
@@ -182,55 +291,17 @@ public:
 };
 
 
-class SoundEventButton : public DarwiniaButton
-{
-public:
-    int m_eventIndex;
-
-public:
-	SoundEventButton(): DarwiniaButton()
-	{
-	}
-
-    void Render( int realX, int realY, bool highlighted, bool clicked )
-    {
-        SoundEditorWindow *sew = (SoundEditorWindow *) m_parent;
-        SoundSourceBlueprint *ssb = sew->GetSoundSourceBlueprint();
-        if( ssb && ssb->m_events.ValidIndex(m_eventIndex) )
-        {
-            SoundEventBlueprint *seb = ssb->m_events[m_eventIndex];
-            SetCaption( seb->m_eventName );
-
-            if( sew->m_eventIndex == m_eventIndex )
-            {
-                DarwiniaButton::Render( realX, realY, true, clicked );
-            }
-            else
-            {
-                DarwiniaButton::Render( realX, realY, highlighted, clicked );
-            }
-        }
-    }
-
-    void MouseUp()
-    {
-        SoundEditorWindow *sew = (SoundEditorWindow *) m_parent;
-        sew->SelectEvent( m_eventIndex );
-    }
-};
-
-
 class SoundPositionButton : public DarwiniaButton
 {
 public:
     void Render( int realX, int realY, bool highlighted, bool clicked )
     {
         DarwiniaButton::Render( realX, realY, false, false );
-
+        
         //
         // Render guidelines
 
-        glColor4f( 1.0f, 1.0f, 1.0f, 0.5f );
+        glColor4f( 1.0, 1.0, 1.0, 0.5 );
         glBegin( GL_LINES );
             glVertex2i( realX + 10, realY + m_h/2 );
             glVertex2i( realX + m_w - 10, realY + m_h/2 );
@@ -239,19 +310,19 @@ public:
             glVertex2i( realX + m_w/2, realY + m_h - 10 );
         glEnd();
 
-
+        
         //
         // Render sound position
 
         Vector3 soundPos = g_app->m_soundSystem->m_editorPos;
 
-        float midX = realX + m_w/2.0f;
-        float midY = realY + m_h/2.0f;
+        float midX = realX + m_w/2.0;
+        float midY = realY + m_h/2.0;
 
-        float scale = 5.0f;
-        float size = 5.0f;
+        float scale = 5.0;
+        float size = 5.0;
 
-        glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
+        glColor4f( 1.0, 1.0, 1.0, 1.0 );
         glBegin( GL_LINE_LOOP );
             glVertex2f( midX + soundPos.x/scale - size, midY + soundPos.z/scale - size );
             glVertex2f( midX + soundPos.x/scale + size, midY + soundPos.z/scale - size );
@@ -267,20 +338,20 @@ public:
         float posZ = soundPos.z;
 
 		bool mousePressed = g_inputManager->controlEvent( ControlEclipseLMousePressed );
-        if( mousePressed && EclMouseInButton(m_parent,this) )
+        if( mousePressed && EclMouseInButton(m_parent,this) )                    
         {
-            posX = ( g_target->X() - midX ) * 5.0f;
-            posZ = ( g_target->Y() - midY ) * 5.0f;
+            posX = ( g_target->X() - midX ) * 5.0;
+            posZ = ( g_target->Y() - midY ) * 5.0;
         }
 
 
         //  BUGFIX
-        //  In the sound editor, when make a sample play looped, then stop it and then
-        //  click play or looped again no sound comes out.
+        //  In the sound editor, when make a sample play looped, then stop it and then 
+        //  click play or looped again no sound comes out. 
         //  This only occurs if the position is exactly on the camera
-        if( posX == 0.0f && posZ == 0.0f ) posZ = 0.01f;
+        if( posX == 0.0 && posZ == 0.0 ) posZ = 0.01;
 
-        g_app->m_soundSystem->m_editorPos.Set( posX, 0.01f, posZ );
+        g_app->m_soundSystem->m_editorPos.Set( posX, 0.01, posZ );
     }
 };
 
@@ -423,7 +494,7 @@ public:
                 editor->SetSize( 290, 300 );
                 editor->m_seb = seb;
                 EclRegisterWindow( editor, m_parent );
-                editor->SelectSampleGroup( seb->m_instance->m_soundName );
+                editor->SelectSampleGroup( seb->m_instance->m_soundName );                
                 break;
             }
         }
@@ -449,7 +520,7 @@ public:
             DspBlueprint *blueprint = g_app->m_soundSystem->m_filterBlueprints[effect->m_type];
             SetCaption( blueprint->m_name );
             DarwiniaButton::Render( realX, realY, highlighted, clicked );
-        }
+        }       
         else if( seb && seb->m_instance->m_dspFX.Size() == m_fxIndex )
         {
             SetCaption( "New DSP Effect" );
@@ -461,7 +532,7 @@ public:
     {
         SoundEditorWindow *sew = (SoundEditorWindow *) m_parent;
         SoundEventBlueprint *seb = sew->GetSoundEventBlueprint();
-
+        
         if( seb && seb->m_instance->m_dspFX.ValidIndex( m_fxIndex ) )
         {
             DspEffectEditor *editor = new DspEffectEditor( "Effect Editor" );
@@ -482,7 +553,7 @@ public:
                 effect->m_params[i].Recalculate();
             }
 
-            seb->m_instance->m_dspFX.PutData( effect );
+            seb->m_instance->m_dspFX.PutData( effect );             
         }
     }
 };
@@ -502,14 +573,14 @@ public:
         if( seb && seb->m_instance->m_dspFX.ValidIndex( m_fxIndex ) )
         {
             DarwiniaButton::Render( realX, realY, highlighted, clicked );
-        }
+        }       
     }
 
     void MouseUp()
     {
         SoundEditorWindow *sew = (SoundEditorWindow *) m_parent;
         SoundEventBlueprint *seb = sew->GetSoundEventBlueprint();
-
+        
         if( seb && seb->m_instance->m_dspFX.ValidIndex( m_fxIndex ) )
         {
             DspHandle *effect = seb->m_instance->m_dspFX[m_fxIndex];
@@ -539,18 +610,18 @@ void ConvertVolume( float &_volume )
 {
     float oldValue = _volume;
 
-    if      ( _volume <= 1.0f )         _volume = 0.0f;
-    else if ( _volume <= 1.25f )        _volume = 0.5f;
-    else if ( _volume <= 1.5f )         _volume = 1.8f;
-    else if ( _volume <= 1.75f )        _volume = 3.6f;
-    else if ( _volume <= 2.0f )         _volume = 5.0f;
-    else if ( _volume <= 2.25f )        _volume = 6.1f;
-    else if ( _volume <= 2.5f )         _volume = 7.0f;
-    else if ( _volume <= 2.75f )        _volume = 7.65f;
-    else if ( _volume <= 3.0f )         _volume = 8.5f;
-    else                                _volume = 10.0f;
+    if      ( _volume <= 1.0 )         _volume = 0.0;    
+    else if ( _volume <= 1.25 )        _volume = 0.5; 
+    else if ( _volume <= 1.5 )         _volume = 1.8;
+    else if ( _volume <= 1.75 )        _volume = 3.6;
+    else if ( _volume <= 2.0 )         _volume = 5.0;
+    else if ( _volume <= 2.25 )        _volume = 6.1;
+    else if ( _volume <= 2.5 )         _volume = 7.0;
+    else if ( _volume <= 2.75 )        _volume = 7.65;
+    else if ( _volume <= 3.0 )         _volume = 8.5;
+    else                                _volume = 10.0;
 
-    DebugTrace( "Converted volume from %2.2f to %2.2f\n", oldValue, _volume );
+    AppDebugOut( "Converted volume from %2.2 to %2.2\n", oldValue, _volume );
 }
 
 class ConvertVolumesButton : public DarwiniaButton
@@ -662,7 +733,8 @@ public:
 SoundEditorWindow::SoundEditorWindow( char *_name )
 :   DarwiniaWindow( _name ),
     m_eventIndex(-1),
-	m_objectSelectorEnabled(false)
+	m_objectSelectorEnabled(false),
+    m_eventScrollbar(NULL)
 {
     g_app->m_soundSystem->m_propagateBlueprints = true;
 }
@@ -684,7 +756,7 @@ void SoundEditorWindow::SelectEvent( int _eventIndex )
     {
         m_eventIndex = _eventIndex;
         CreateInstanceEditor();
-    }
+    }    
 }
 
 
@@ -695,13 +767,13 @@ void SoundEditorWindow::StartPlayback( bool looped )
     SoundEventBlueprint *seb = GetSoundEventBlueprint();
     if( seb )
     {
-        SoundInstance *instance = new SoundInstance();
+        SoundInstance *instance = new SoundInstance();        
         instance->Copy( seb->m_instance );
         instance->m_positionType = SoundInstance::TypeInEditor;
-        instance->m_loopType = looped;
+        instance->m_loopType = looped;        
         instance->m_pos = g_app->m_camera->GetPos();
         instance->m_vel = g_zeroVector;
-        bool success = g_app->m_soundSystem->InitialiseSound( instance );
+        bool success = g_app->m_soundSystem->InitialiseSound( instance );        
         if( success )
         {
             g_app->m_soundSystem->m_editorInstanceId = instance->m_id;
@@ -720,23 +792,23 @@ void SoundEditorWindow::StopPlayback()
     if( instance && instance->IsPlaying() )
     {
         instance->BeginRelease(true);
-    }
+    }  
 }
 
 
 void SoundEditorWindow::Update()
 {
 	ObjectGroupMenu *objGroupMenu = (ObjectGroupMenu*)(GetButton("[ObjectGroup]"));
-	DEBUG_ASSERT(objGroupMenu);
+	AppDebugAssert(objGroupMenu);
 	ObjectGroupMenu *objTypeMenu = (ObjectGroupMenu*)(GetButton("[ObjectType]"));
-	DEBUG_ASSERT(objTypeMenu);
+	AppDebugAssert(objTypeMenu);
 
 	// Decide whether to enable the feature whereby an object can be selected by
 	// clicking on it in the level
 	bool selectorEnabled = m_objectSelectorEnabled;
 	if (g_app->m_location &&
-		_stricmp(objGroupMenu->m_caption, "[ObjectGroup]") == 0 &&
-		_stricmp(objTypeMenu->m_caption, "[ObjectType]") == 0)
+		_wcsicmp(objGroupMenu->m_caption.m_unicodestring, L"[ObjectGroup]") == 0 &&
+		_wcsicmp(objTypeMenu->m_caption.m_unicodestring, L"[ObjectType]") == 0)
 	{
 		selectorEnabled = true;
 	}
@@ -745,19 +817,19 @@ void SoundEditorWindow::Update()
 	if (selectorEnabled && g_inputManager->controlEvent( ControlEclipseLMouseDown ) )
 	{
 		Vector3 rayStart, rayDir;
-		g_app->m_camera->GetClickRay(g_target->X(),
-									 g_target->Y(),
+		g_app->m_camera->GetClickRay(g_target->X(), 
+									 g_target->Y(), 
 									 &rayStart, &rayDir);
 
 		Entity *entity = g_app->m_location->GetEntity(rayStart, rayDir);
 		if (entity)
 		{
 			bool success = objGroupMenu->SelectOption2("Entity");
-			DEBUG_ASSERT(success);
+			AppDebugAssert(success);
 
 			char *typeName = Entity::GetTypeName(entity->m_type);
 			success = objTypeMenu->SelectOption2(typeName);
-			DEBUG_ASSERT(success);
+			AppDebugAssert(success);
 
 			m_objectSelectorEnabled = false;
 		}
@@ -766,11 +838,11 @@ void SoundEditorWindow::Update()
 		if (building)
 		{
 			bool success = objGroupMenu->SelectOption2("Building");
-			DEBUG_ASSERT(success);
+			AppDebugAssert(success);
 
 			char *typeName = Building::GetTypeName(building->m_type);
 			success = objTypeMenu->SelectOption2(typeName);
-			DEBUG_ASSERT(success);
+			AppDebugAssert(success);
 
 			m_objectSelectorEnabled = false;
 		}
@@ -781,127 +853,119 @@ void SoundEditorWindow::Update()
 void SoundEditorWindow::Create()
 {
     DarwiniaWindow::Create();
-
+    
 
     //
     // Sound Source Selectors
 
     ObjectGroupMenu *objGroup = new ObjectGroupMenu();
-    objGroup->SetShortProperties( "[ObjectGroup]", 10, 60, 150 );
+    objGroup->SetShortProperties( "[ObjectGroup]", 10, 60, 150, 20, UnicodeString("[ObjectGroup]") );
     RegisterButton( objGroup );
     objGroup->AddOption( "Entity" );
     objGroup->AddOption( "Building" );
     objGroup->AddOption( "Other" );
     objGroup->SelectOption( -1 );
-
+    
     ObjectTypeMenu *objType = new ObjectTypeMenu();
-    objType->SetShortProperties( "[ObjectType]", 10, 80, 150 );
+    objType->SetShortProperties( "[ObjectType]", 10, 85, 150, 20, UnicodeString("[ObjectType]") );
     RegisterButton( objType);
     objType->SelectOption( -1 );
 
 
     //
-    // Events
-
-    NewSoundEventMenu *newEvent = new NewSoundEventMenu();
-    newEvent->SetShortProperties( "New Event", 10, 140, 150 );
-    RegisterButton( newEvent );
-    newEvent->SelectOption(-1);
-
-    for( int i = 0; i < 18; ++i )
-    {
-        char name[64];
-        sprintf( name, "Event %d", i );
-        SoundEventButton *event = new SoundEventButton();
-        event->SetShortProperties( name, 10, 170 + i * 18, 150 );
-        event->m_eventIndex = i;
-        RegisterButton( event );
-    }
-
-
-    //
     // Control buttons
-
-    PurgeSoundsButton *purge = new PurgeSoundsButton();
-    purge->SetShortProperties( "Purge Sounds", 10, m_h - 65, 150 );
-    RegisterButton(purge);
+   
+    //PurgeSoundsButton *purge = new PurgeSoundsButton();
+    //purge->SetShortProperties( "Purge Sounds", 10, m_h - 75, 150, 20 );
+    //RegisterButton(purge);
 
 	SelectObjectButton *sob = new SelectObjectButton();
-	sob->SetShortProperties( "Select Object", 10, m_h - 45, 150 );
+	sob->SetShortProperties( "Select Object", 10, m_h - 50, 150, 20, UnicodeString("Select Object") );
 	RegisterButton(sob);
 
     SaveAllButton *save = new SaveAllButton();
-    save->SetShortProperties( "Save", 10, m_h - 25, 150 );
+    save->SetShortProperties( "SAVE", 10, m_h - 25, 150, 20, UnicodeString("Save") );
     RegisterButton( save );
+
+
+    //
+    // Events 
+
+    NewSoundEventMenu *newEvent = new NewSoundEventMenu();
+    newEvent->SetShortProperties( "New Event", 10, 160, 150, 20, UnicodeString("NEW EVENT") );
+    RegisterButton( newEvent );
+    newEvent->SelectOption(-1);
 }
 
 
 void SoundEditorWindow::CreateInstanceEditor()
 {
     SoundEventBlueprint *seb = GetSoundEventBlueprint();
-    DEBUG_ASSERT( seb );
-    DEBUG_ASSERT( seb->m_instance );
+    AppDebugAssert( seb );
+    AppDebugAssert( seb->m_instance );
 
-
+    
     //
     // Live parameters
 
-    SoundPositionButton *spb = new SoundPositionButton();
-    spb->SetShortProperties( "SoundPosition", 190, 50, 150, 100 );
-    RegisterButton( spb );
+    //SoundPositionButton *spb = new SoundPositionButton();
+    //spb->SetShortProperties( "SoundPosition", 190, 50, 150, 100 );
+    //RegisterButton( spb );
 
 
     //
     // Play controls
 
     PlayButton *play = new PlayButton();
-    play->SetShortProperties( "Play", 360, 50, 80, 20 );
+    play->SetShortProperties( "Play", 400, 50, 80, 20, UnicodeString("Play") );
     RegisterButton( play );
 
-    PlayRepeatButton *repeat = new PlayRepeatButton();
-    repeat->SetShortProperties( "Loop", 360, 80, 80, 20 );
-    RegisterButton( repeat );
+    //PlayRepeatButton *repeat = new PlayRepeatButton();
+    //repeat->SetShortProperties( "Loop", 400, 75, 80, 20 );
+    //RegisterButton( repeat );
 
     StopButton *stop = new StopButton();
-    stop->SetShortProperties( "Stop", 360, 110, 80, 20 );
+    stop->SetShortProperties( "Stop", 400, 75, 80, 20, UnicodeString("Stop") );
     RegisterButton( stop );
 
 
     int xPos = 190;
-    int yPos = 170;
-    int yDif = 20;
-    int w = 250;
+    float inset = 95;
+    int yPos = 150;
+    int yDif = 25;
+    int w = 280;
+    int h = 20;
 
 
     //
     // Inverted box
 
     InvertedBox *box = new InvertedBox();
-    box->SetProperties( "invert", xPos-10, yPos-10, w+25, 260 );
+    box->SetProperties( "invert", xPos-10, yPos-10, w+25, 340, UnicodeString("invert") );
     RegisterButton( box );
 
     //
     // Position Type
 
     DropDownMenu *soundType = new DropDownMenu(false);
-    soundType->SetShortProperties( "PositionType", xPos + 75, yPos, w - 75 );
+    soundType->SetShortProperties( "PositionType", xPos + inset, yPos, w - inset, h, UnicodeString("PositionType") );
     RegisterButton( soundType );
     for( int i = 0; i < SoundInstance::NumPositionTypes; ++i )
     {
         soundType->AddOption( SoundInstance::GetPositionTypeName(i) );
     }
-    soundType->RegisterInt( &seb->m_instance->m_positionType );
+    soundType->RegisterInt( &seb->m_instance->m_positionType );    
 
 
     //
     // Loop type
 
     DropDownMenu *loopType = new DropDownMenu(false);
-    loopType->SetShortProperties( "LoopType", xPos + 75, yPos += yDif, w - 75 );
+    loopType->SetShortProperties( "LoopType", xPos + inset, yPos += yDif, w - inset, h, UnicodeString("LoopType") );
     RegisterButton( loopType );
     for( int i = 0; i < SoundInstance::NumLoopTypes; ++i )
     {
-        loopType->AddOption( SoundInstance::GetLoopTypeName(i) );
+        loopType->AddOption( SoundInstance::GetLoopTypeName(i) );    
     }
     loopType->RegisterInt( &seb->m_instance->m_loopType );
 
@@ -910,20 +974,33 @@ void SoundEditorWindow::CreateInstanceEditor()
     // Instance type
 
     DropDownMenu *instanceType = new DropDownMenu(false);
-    instanceType->SetShortProperties( "InstanceType", xPos + 75, yPos += yDif, w - 75 );
+    instanceType->SetShortProperties( "InstanceType", xPos + inset, yPos += yDif, w - inset, h, UnicodeString("InstanceType") );
     RegisterButton( instanceType );
     for( int i = 0; i < SoundInstance::NumInstanceTypes; ++i )
     {
         instanceType->AddOption( SoundInstance::GetInstanceTypeName(i) );
     }
     instanceType->RegisterInt( &seb->m_instance->m_instanceType );
+    
+
+    //
+    // Team Match Type
+
+    DropDownMenu *teamMatchType = new DropDownMenu(false);
+    teamMatchType->SetShortProperties( "TeamMatchType", xPos + inset, yPos += yDif, w - inset, h, UnicodeString("TeamMatchType") );
+    RegisterButton( teamMatchType );
+    for( int i = 0; i < SoundInstance::NumTeamMatchTypes; ++i )
+    {
+        teamMatchType->AddOption( SoundInstance::GetTeamMatchTypeName(i) );
+    }
+    teamMatchType->RegisterInt( &seb->m_instance->m_teamMatchType );
 
 
     //
     // Source type
 
     DropDownMenu *sourceType = new DropDownMenu(false);
-    sourceType->SetShortProperties( "SourceType", xPos + 75, yPos += yDif, w - 75 );
+    sourceType->SetShortProperties( "SourceType", xPos + inset, yPos += yDif, w - inset, h, UnicodeString("SourceType") );
     RegisterButton( sourceType );
     for( int i = 0; i < SoundInstance::NumSourceTypes; ++i )
     {
@@ -931,40 +1008,44 @@ void SoundEditorWindow::CreateInstanceEditor()
     }
     sourceType->RegisterInt( &seb->m_instance->m_sourceType );
 
+
+    //
+    // Sound name
+
     SoundSelectorButton *selector = new SoundSelectorButton();
-    selector->SetShortProperties( "SoundName", xPos, yPos += yDif, w);
+    selector->SetShortProperties( "SoundName", xPos, yPos += yDif, w, h, UnicodeString("SoundName") );
     RegisterButton( selector );
 
 
     //
     // Static parameters
 
-    CreateValueControl          ( "MinDistance",  InputField::TypeFloat, &seb->m_instance->m_minDistance, yPos += yDif, 0.5f, 1.0f, 10000.0f, NULL, xPos, w );
+    CreateValueControl          ( "MinDistance",  &seb->m_instance->m_minDistance, yPos += yDif, 0.5, 1.0, 10000.0, NULL, xPos, w );
 
-    CreateSoundParameterButton  ( this, "Volume",       &seb->m_instance->m_volume, yPos += yDif, 0.0f, 10.0f, NULL, xPos, w );
-    CreateSoundParameterButton  ( this, "Frequency",    &seb->m_instance->m_freq, yPos += yDif, 0.0f, 3.0f, NULL, xPos, w );
-    CreateSoundParameterButton  ( this, "Attack",       &seb->m_instance->m_attack, yPos += yDif, 0.0f, 60.0f, NULL, xPos, w );
-    CreateSoundParameterButton  ( this, "Sustain",      &seb->m_instance->m_sustain, yPos += yDif, 0.0f, 300.0f, NULL, xPos, w );
-    CreateSoundParameterButton  ( this, "Release",      &seb->m_instance->m_release, yPos += yDif, 0.0f, 60.0f, NULL, xPos, w );
-    CreateSoundParameterButton  ( this, "LoopDelay",    &seb->m_instance->m_loopDelay, yPos += yDif, 0.0f, 60.0f, NULL, xPos, w );
+    CreateSoundParameterButton  ( this, "Volume",       &seb->m_instance->m_volume, yPos += yDif, 0.0, 10.0, NULL, xPos, w, h );
+    CreateSoundParameterButton  ( this, "Frequency",    &seb->m_instance->m_freq, yPos += yDif, 0.0, 3.0, NULL, xPos, w, h );
+    CreateSoundParameterButton  ( this, "Attack",       &seb->m_instance->m_attack, yPos += yDif, 0.0, 60.0, NULL, xPos, w, h );
+    CreateSoundParameterButton  ( this, "Sustain",      &seb->m_instance->m_sustain, yPos += yDif, 0.0, 300.0, NULL, xPos, w, h );
+    CreateSoundParameterButton  ( this, "Release",      &seb->m_instance->m_release, yPos += yDif, 0.0, 60.0, NULL, xPos, w, h );
+    CreateSoundParameterButton  ( this, "LoopDelay",    &seb->m_instance->m_loopDelay, yPos += yDif, 0.0, 60.0, NULL, xPos, w, h );
 
     //
     // Effects
 
-    yPos += 60;
-
-    for( int i = 0; i < 5; ++i )
+    yPos += 50;
+    
+    for( int i = 0; i < 3; ++i )
     {
         char name[64];
         sprintf( name, "Effect %d", i );
         DspEffectButton *button = new DspEffectButton();
-        button->SetShortProperties( name, xPos, yPos + i * 19, w-70, 17 );
+        button->SetShortProperties( name, xPos, yPos + i * 19, w-70, 17, UnicodeString(name) );
         button->m_fxIndex = i;
         RegisterButton( button );
 
         sprintf( name, "Delete %d", i );
         DeleteDspEffectButton *deleteButton = new DeleteDspEffectButton();
-        deleteButton->SetShortProperties( name, xPos + button->m_w + 10, yPos + i * 19, 60, 17, "Delete" );
+        deleteButton->SetShortProperties( name, xPos + button->m_w + 10, yPos + i * 19, 60, 17, UnicodeString("Delete") );
         deleteButton->m_fxIndex = i;
         RegisterButton( deleteButton );
     }
@@ -974,7 +1055,7 @@ void SoundEditorWindow::CreateInstanceEditor()
     // Control buttons
 
     DeleteEventButton *deleteEvent = new DeleteEventButton();
-    deleteEvent->SetShortProperties( "Delete Event", m_w - 100, m_h - 30, 90, 18 );
+    deleteEvent->SetShortProperties( "Delete Event", m_w - 100, m_h - 30, 90, 18, UnicodeString("Delete Event") );
     RegisterButton( deleteEvent );
 }
 
@@ -982,17 +1063,18 @@ void SoundEditorWindow::CreateInstanceEditor()
 void SoundEditorWindow::RemoveInstanceEditor()
 {
     RemoveButton( "SoundPosition" );
-
+    
     RemoveButton( "Play" );
     RemoveButton( "Loop" );
     RemoveButton( "Stop" );
 
     RemoveButton( "invert" );
-
+    
     RemoveButton( "PositionType" );
     RemoveButton( "InstanceType" );
     RemoveButton( "LoopType" );
     RemoveButton( "SourceType" );
+    RemoveButton( "TeamMatchType" );
 
     RemoveValueControl( "SoundName" );
     RemoveValueControl( "MinDistance" );
@@ -1021,26 +1103,30 @@ void SoundEditorWindow::RemoveInstanceEditor()
 void SoundEditorWindow::Render( bool hasFocus )
 {
     DarwiniaWindow::Render( hasFocus );
-
+    
     g_editorFont.DrawText2D( m_x + 10, m_y + 35, 20, "SOUND SOURCE" );
-    g_editorFont.DrawText2D( m_x + 10, m_y + 120, 20, "EVENTS" );
+    g_editorFont.DrawText2D( m_x + 10, m_y + 140, 20, "EVENTS" );
     g_editorFont.DrawText2D( m_x + 200, m_y + 35, 20, "PARAMETERS" );
-    g_editorFont.DrawText2D( m_x + 200, m_y + 435, 20, "EFFECTS" );
+    //g_editorFont.DrawText2D( m_x + 200, m_y + 455, 20, "EFFECTS" );
 
-    g_editorFont.DrawText2D( m_x + 190, m_y + 180, 11, "Position" );
-    g_editorFont.DrawText2D( m_x + 190, m_y + 200, 11, "LoopType" );
-    g_editorFont.DrawText2D( m_x + 190, m_y + 220, 11, "InstanceType" );
-    g_editorFont.DrawText2D( m_x + 190, m_y + 240, 11, "SourceType" );
+    float y = m_y + 160;
+    float h = 25;
 
+    g_editorFont.DrawText2D( m_x + 190, y, 11, "Position" );
+    g_editorFont.DrawText2D( m_x + 190, y += h, 11, "LoopType" );
+    g_editorFont.DrawText2D( m_x + 190, y += h, 11, "InstanceType" );
+    g_editorFont.DrawText2D( m_x + 190, y += h, 11, "TeamMatchType" );
+    g_editorFont.DrawText2D( m_x + 190, y += h, 11, "SourceType" );
+    
 	ObjectGroupMenu *objGroupMenu = (ObjectGroupMenu*)(GetButton("[ObjectGroup]"));
-	DEBUG_ASSERT(objGroupMenu);
+	AppDebugAssert(objGroupMenu);
 	ObjectGroupMenu *objTypeMenu = (ObjectGroupMenu*)(GetButton("[ObjectType]"));
-	DEBUG_ASSERT(objTypeMenu);
+	AppDebugAssert(objTypeMenu);
 
 	bool selectorEnabled = m_objectSelectorEnabled;
 	if (g_app->m_location &&
-		_stricmp(objGroupMenu->m_caption, "[ObjectGroup]") == 0 &&
-		_stricmp(objTypeMenu->m_caption, "[ObjectType]") == 0)
+		_wcsicmp(objGroupMenu->m_caption.m_unicodestring, L"[ObjectGroup]") == 0 &&
+		_wcsicmp(objTypeMenu->m_caption.m_unicodestring, L"[ObjectType]") == 0)
 	{
 		selectorEnabled = true;
 	}
@@ -1048,19 +1134,48 @@ void SoundEditorWindow::Render( bool hasFocus )
 	if (selectorEnabled)
 	{
 		EclButton *sob = GetButton("Select Object");
-		DEBUG_ASSERT(sob);
-		int time = (float)g_gameTime * 2.0f;
+		AppDebugAssert(sob);
+		int time = (float)g_gameTime * 2.0;
 		if (time & 1)
 		{
 			sob->Render( m_x + sob->m_x, m_y + sob->m_y, true, false );
 		}
 	}
 
-    glColor4f( 1.0f, 1.0f, 1.0f, 0.5f );
+    glColor4f( 1.0, 1.0, 1.0, 0.5 );
     glBegin( GL_LINES );
         glVertex2i( m_x + 170, m_y + 30 );
         glVertex2i( m_x + 170, m_y + m_h - 20 );
     glEnd();
+
+
+    //
+    // Render current editor sound
+
+    SoundInstance *instance = g_app->m_soundSystem->GetSoundInstance( g_app->m_soundSystem->m_editorInstanceId );
+
+    y = m_y + 70;
+    glColor4f( 1.0, 1.0, 1.0, 1.0 );
+
+    if( instance )
+    {
+        g_editorFont.DrawText2D( m_x + 190, y, 11, "PLAYING" );       
+        y+=5;
+        g_editorFont.DrawText2D( m_x + 190, y+=15, 11, "Sample  : %s", instance->m_soundName );
+        g_editorFont.DrawText2D( m_x + 190, y+=15, 11, "Volume  : %2.1", instance->m_channelVolume );
+
+        if( instance->m_loopType == SoundInstance::LoopedADSR )
+        {
+            g_editorFont.DrawText2D( m_x + 190, y+=15, 11, "ADSR    : %s", SoundInstance::GetADSRTypeName( instance->m_adsrState ) );
+        }
+
+        g_editorFont.DrawText2D( m_x + 190, y+=15, 11, "Freq    : %2.1", instance->m_freq.GetOutput() );
+    }
+    else
+    {
+        g_editorFont.DrawText2D( m_x + 190, y, 11, "STOPPED" );        
+    }
+
 
 
     //
@@ -1073,39 +1188,39 @@ void SoundEditorWindow::Render( bool hasFocus )
 	glTexParameteri	( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	glTexParameteri	( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
     glDepthMask     ( false );
-
+    
     for( int i = 0; i < g_app->m_soundSystem->m_numChannels; ++i )
     {
         SoundInstanceId soundId = g_app->m_soundSystem->m_channels[i];
         SoundInstance *instance = g_app->m_soundSystem->GetSoundInstance( soundId );
-        if( instance &&
+        if( instance && 
             instance->m_positionType != SoundInstance::Type2D &&
             instance->m_positionType != SoundInstance::TypeInEditor )
         {
             float distance = ( instance->m_pos - g_app->m_camera->GetPos() ).Mag();
-            float size = 0.5f * sqrtf(distance) * sqrtf(instance->m_channelVolume);
-            Vector3 up = g_app->m_camera->GetUp() * size * 0.5f;
-            Vector3 right = g_app->m_camera->GetRight() * size * -0.5f;
+            float size = 0.5 * iv_sqrt(distance) * iv_sqrt(instance->m_channelVolume);
+            Vector3 up = g_app->m_camera->GetUp() * size * 0.5;
+            Vector3 right = g_app->m_camera->GetRight() * size * -0.5;
 
             int priority = instance->m_calculatedPriority;
-            float colour = 0.5f + 0.5f * (float) priority / 10.0f;
-            if( colour > 0.9f ) colour = 0.9f;
-            glColor4f( 1.0f, 1.0f, 1.0f, colour );
+            float colour = 0.5 + 0.5 * (float) priority / 10.0;
+            if( colour > 0.9 ) colour = 0.9;
+            glColor4f( 1.0, 1.0, 1.0, colour );
 
             Vector3 pos = instance->m_pos;
 
             glBegin( GL_QUADS );
-                glTexCoord2i( 0, 0 );       glVertex3fv( (pos - up - right).GetData() );
-                glTexCoord2i( 1, 0 );       glVertex3fv( (pos - up + right).GetData() );
-                glTexCoord2i( 1, 1 );       glVertex3fv( (pos + up + right).GetData() );
-                glTexCoord2i( 0, 1 );       glVertex3fv( (pos + up - right).GetData() );
+                glTexCoord2i( 0, 0 );       glVertex3dv( (pos - up - right).GetData() );
+                glTexCoord2i( 1, 0 );       glVertex3dv( (pos - up + right).GetData() );
+                glTexCoord2i( 1, 1 );       glVertex3dv( (pos + up + right).GetData() );
+                glTexCoord2i( 0, 1 );       glVertex3dv( (pos + up - right).GetData() );
             glEnd();
         }
-    }
-
+    }    
+        
     glDepthMask     ( true );
     glDisable       ( GL_TEXTURE_2D );
-
+    
     g_app->m_renderer->SetupMatricesFor2D();
 }
 
@@ -1115,26 +1230,31 @@ SoundSourceBlueprint *SoundEditorWindow::GetSoundSourceBlueprint()
     DropDownMenu *objGroupMenu = (DropDownMenu *) GetButton( "[ObjectGroup]" );
     ObjectTypeMenu *objTypeMenu = (ObjectTypeMenu *) GetButton( "[ObjectType]" );
 
-    DEBUG_ASSERT( objGroupMenu );
-    DEBUG_ASSERT( objTypeMenu );
+    AppDebugAssert( objGroupMenu );
+    AppDebugAssert( objTypeMenu );
 
-    char const *objGroup = objGroupMenu->GetSelectionName();
-    char const *objType = objTypeMenu->GetSelectionName();
+	UnicodeString objGroup;
+	UnicodeString objType;
 
-	if (objGroup && objType)
+	objGroupMenu->GetSelectionName(objGroup);
+	objTypeMenu->GetSelectionName(objType);
+
+	if (objGroup.m_unicodestring && objType.m_unicodestring)
 	{
-		if (_stricmp("Entity", objGroup) == 0)
+		if (wcsicmp(L"Entity", objGroup.m_unicodestring) == 0)
 		{
-			int i = Entity::GetTypeId(objType);
+			const char* objTypeChar = objType.GetCharArray();
+			int i = Entity::GetTypeId(objTypeChar);
 			if (i == -1)
 			{
 				return NULL;
 			}
 			return g_app->m_soundSystem->m_entityBlueprints[i];
 		}
-		else if (_stricmp("Building", objGroup) == 0)
+		else if (wcsicmp(L"Building", objGroup.m_unicodestring) == 0)
 		{
-			int i = Building::GetTypeId(objType);
+			const char* objTypeChar = objType.GetCharArray();
+			int i = Building::GetTypeId(objTypeChar);
 			if (i == -1)
 			{
 				return NULL;
@@ -1143,7 +1263,8 @@ SoundSourceBlueprint *SoundEditorWindow::GetSoundSourceBlueprint()
 		}
 		else
 		{
-			int i = SoundSourceBlueprint::GetSoundSoundType(objType);
+			const char* objTypeChar = objType.GetCharArray();
+			int i = SoundSourceBlueprint::GetSoundSoundType(objTypeChar);
 			if (i == -1)
 			{
 				return NULL;
@@ -1172,24 +1293,26 @@ void SoundEditorWindow::GetSelectionName(char *_buf)
 {
 //    DropDownMenu *objGroupMenu = (DropDownMenu *) GetButton( "[ObjectGroup]" );
     DropDownMenu *objTypeMenu = (DropDownMenu *) GetButton( "[ObjectType]" );
-	strcpy(_buf, objTypeMenu->GetSelectionName());
+	UnicodeString temp;
+	objTypeMenu->GetSelectionName(temp);
+	strcpy(_buf, (char*)&(temp));
 //
-//    DEBUG_ASSERT( objGroupMenu );
-//    DEBUG_ASSERT( objTypeMenu );
+//    AppDebugAssert( objGroupMenu );
+//    AppDebugAssert( objTypeMenu );
 //
 //    int objGroup = objGroupMenu->GetSelectionIndex();
 //    int objType = objTypeMenu->GetSelectionIndex();
 //
 //    switch( objGroup )
 //    {
-//        case 0 :
+//        case 0 :    
 //            strcpy(_buf, Entity::GetTypeName(objType));
 //            break;
 //
 //        case 1:
 //            strcpy(_buf, Building::GetTypeName(objType));
-//            break;
-//
+//            break;    
+//            
 //        case 2:
 //			strcpy(_buf, SoundSourceBlueprint::GetSoundSourceName(objType));
 //            break;
@@ -1198,15 +1321,15 @@ void SoundEditorWindow::GetSelectionName(char *_buf)
 
 
 void SoundEditorWindow::CreateSoundParameterButton( DarwiniaWindow *_window,
-                                                    char *name, SoundParameter *parameter, int y,
+                                                    char *name, SoundParameter *parameter, int y, 
 							                        float _minOutput, float _maxOutput,
-                                                    DarwiniaButton *callback, int x, int w )
+                                                    DarwiniaButton *callback, int x, int w, int h )
 {
     if( x == -1 ) x = 10;
     if( w == -1 ) w = _window->m_w - x*2;
 
     SoundParameterButton *button = new SoundParameterButton();
-    button->SetShortProperties( name, x, y, w );
+    button->SetShortProperties( name, x, y, w, h, UnicodeString(name) );
     button->m_parameter = parameter;
     button->m_minOutput = _minOutput;
     button->m_maxOutput = _maxOutput;
@@ -1237,18 +1360,18 @@ class DspEffectTypeMenu : public DropDownMenu
             ++index;
             sprintf( name, "param %d", index);
         }
-
+        
         bool changed = m_currentOption != -1 &&
                        m_currentOption != _value;
 
         DropDownMenu::SelectOption( _value );
 		int optionIndex = FindValue(_value);
-        DEBUG_ASSERT( g_app->m_soundSystem->m_filterBlueprints[ optionIndex ] );
+        AppDebugAssert( g_app->m_soundSystem->m_filterBlueprints[ optionIndex ] );
         DspBlueprint *seb = g_app->m_soundSystem->m_filterBlueprints[ optionIndex ];
         DspEffectEditor *see = (DspEffectEditor *) m_parent;
-
+        
         for( int i = 0; i < seb->m_params.Size(); ++i )
-        {
+        {            
             char name[64];
             sprintf( name, "param %d", i );
 
@@ -1266,11 +1389,11 @@ class DspEffectTypeMenu : public DropDownMenu
 
             param->Recalculate();
 
-            SoundEditorWindow::CreateSoundParameterButton( (DarwiniaWindow *) m_parent, name,
-                                                            param, 60 + i * 20,
+            SoundEditorWindow::CreateSoundParameterButton( (DarwiniaWindow *) m_parent, name, 
+                                                            param, 60 + i * 20, 
                                                             minOutput, maxOutput );
             m_parent->GetButton( name )->SetCaption( paramName );
-        }
+        }        
     }
 };
 
@@ -1293,14 +1416,14 @@ void DspEffectEditor::Create()
     int h = 20;
 
     DspEffectTypeMenu *fxType = new DspEffectTypeMenu();
-    fxType->SetShortProperties( "Effect Type", 10, y, m_w - 20 );
+    fxType->SetShortProperties( "Effect Type", 10, y, m_w - 20, -1, UnicodeString("Effect Type") );
     RegisterButton( fxType );
     for( int i = 0; i < g_app->m_soundSystem->m_filterBlueprints.Size(); ++i )
     {
         DspBlueprint *effect = g_app->m_soundSystem->m_filterBlueprints[i];
         fxType->AddOption( effect->m_name );
     }
-
+    
     fxType->RegisterInt( &m_effect->m_type );
 }
 
@@ -1315,7 +1438,7 @@ class SampleGroupFileDialog : public FileDialog
 public:
     SampleGroup *m_group;
     int m_index;
-
+	
     SampleGroupFileDialog( char const *name, char const *parent, char const *path, char const *filter)
     :   FileDialog( name, parent, path, filter, true )
     {
@@ -1335,7 +1458,7 @@ public:
         if( m_group->m_samples.ValidIndex( m_index ) )
         {
             m_group->m_samples.RemoveData(m_index);
-
+            
             char *filenameCopy = strdup( extensionRemoved );
             m_group->m_samples.PutDataAtIndex( filenameCopy, m_index );
         }
@@ -1356,7 +1479,7 @@ public:
     void Render( int realX, int realY, bool highlighted, bool clicked )
     {
         EclButton *button = m_parent->GetButton( "SampleGroup" );
-        char *groupName = button->m_caption;
+        const char *groupName = button->m_caption;
         SampleGroup *group = g_app->m_soundSystem->GetSampleGroup( groupName );
 
         if( group && group->m_samples.ValidIndex(m_index) )
@@ -1369,7 +1492,7 @@ public:
     void MouseUp()
     {
         EclButton *button = m_parent->GetButton( "SampleGroup" );
-        char *groupName = button->m_caption;
+        const char *groupName = button->m_caption;
         SampleGroup *group = g_app->m_soundSystem->GetSampleGroup( groupName );
     }
 };
@@ -1383,7 +1506,7 @@ public:
     void Render( int realX, int realY, bool highlighted, bool clicked )
     {
         EclButton *button = m_parent->GetButton( "SampleGroup" );
-        char *groupName = button->m_caption;
+        const char *groupName = button->m_caption;
         SampleGroup *group = g_app->m_soundSystem->GetSampleGroup( groupName );
 
         int baseOffset = ((SampleGroupEditor *) m_parent)->m_scrollbar->m_currentValue;
@@ -1398,7 +1521,7 @@ public:
     void MouseUp()
     {
         EclButton *button = m_parent->GetButton( "SampleGroup" );
-        char *groupName = button->m_caption;
+        const char *groupName = button->m_caption;
         SampleGroup *group = g_app->m_soundSystem->GetSampleGroup( groupName );
 
         int baseOffset = ((SampleGroupEditor *) m_parent)->m_scrollbar->m_currentValue;
@@ -1417,9 +1540,9 @@ class SampleGroupAddSample : public DarwiniaButton
     void MouseUp()
     {
         EclButton *button = m_parent->GetButton( "SampleGroup" );
-        char *groupName = button->m_caption;
+        const char *groupName = button->m_caption;
         SampleGroup *group = g_app->m_soundSystem->GetSampleGroup( groupName );
-
+        
         if( group )
         {
             SampleGroupFileDialog *file = new SampleGroupFileDialog("SampleGroupSelectFile", m_parent->m_name, "sounds/", NULL );
@@ -1465,15 +1588,15 @@ class RenameSampleGroupCommit : public DarwiniaButton
         bool success = g_app->m_soundSystem->RenameSampleGroup( window->m_oldName, window->m_newName );
         if( success )
         {
-            EclRemoveWindow( m_parent->m_name );
+            EclRemoveWindow( m_parent->m_name );        
         }
         else
         {
 			MessageDialog *win = new MessageDialog(
-					"Failed to Rename Sample Group",
+					"Failed to Rename Sample Group", 
 					"A SampleGroup already exists with that name");
 			EclRegisterWindow(win);
-        }
+        }        
     }
 };
 
@@ -1487,14 +1610,14 @@ void RenameSampleGroupWindow::Create()
 {
     DarwiniaWindow::Create();
 
-    CreateValueControl( "Name", InputField::TypeString, m_newName, 20, 0.0f, 0.0f, 0.0f );
+    CreateValueControl( "Name", m_newName, 20, 0.0, 0.0, sizeof(m_newName) );
 
     RenameSampleGroupCommit *commit = new RenameSampleGroupCommit();
-    commit->SetShortProperties( "OK", 10, 40, 110 );
+    commit->SetShortProperties( "OK", 10, 40, 110, -1, UnicodeString("OK") );
     RegisterButton( commit );
 
     CloseButton *closeButton = new CloseButton();
-    closeButton->SetShortProperties( "Cancel", 130, 40, 110 );
+    closeButton->SetShortProperties( "Cancel", 130, 40, 110, -1, UnicodeString("Cancel") );
     RegisterButton( closeButton );
 }
 
@@ -1504,7 +1627,7 @@ class RenameSampleGroupButton : public DarwiniaButton
     void MouseUp()
     {
         EclButton *button = m_parent->GetButton( "SampleGroup" );
-        char *groupName = button->m_caption;
+        const char *groupName = button->m_caption;
 
         RenameSampleGroupWindow *window = new RenameSampleGroupWindow( "Rename Sample Group" );
         window->SetSize( 250, 75 );
@@ -1536,12 +1659,12 @@ void SampleGroupEditor::SelectSampleGroup( char *_group )
 void SampleGroupEditor::Create()
 {
     DarwiniaWindow::Create();
-
+        
     //
     // Sample group selector / new Sample Group
 
     SampleGroupSelector *sampleGroup = new SampleGroupSelector();
-    sampleGroup->SetShortProperties( "SampleGroup", 10, 20, m_w - 100, 18 );
+    sampleGroup->SetShortProperties( "SampleGroup", 10, 20, m_w - 100, 18, UnicodeString("SampleGroup") );
     RegisterButton( sampleGroup );
     for( int i = 0; i < g_app->m_soundSystem->m_sampleGroups.Size(); ++i )
     {
@@ -1551,16 +1674,16 @@ void SampleGroupEditor::Create()
             sampleGroup->AddOption( group->m_name );
         }
     }
-
+    
     NewSampleGroupButton *newGroup = new NewSampleGroupButton();
-    newGroup->SetShortProperties( "New Group", sampleGroup->m_x + sampleGroup->m_w + 10, 20, 70, 18 );
+    newGroup->SetShortProperties( "New Group", sampleGroup->m_x + sampleGroup->m_w + 10, 20, 70, 18, UnicodeString("New Group") );
     RegisterButton( newGroup );
 
     //
     // Rename group
 
     RenameSampleGroupButton *renameGroup = new RenameSampleGroupButton();
-    renameGroup->SetShortProperties( "Rename Group", 10, 50, m_w - 20, 17 );
+    renameGroup->SetShortProperties( "Rename Group", 10, 50, m_w - 20, 17, UnicodeString("Rename Group") );
     RegisterButton( renameGroup );
 
 
@@ -1568,10 +1691,10 @@ void SampleGroupEditor::Create()
     // Add Samples to group
 
     SampleGroupAddSample *addSample = new SampleGroupAddSample();
-    addSample->SetShortProperties( "Add Samples", 10, 70, m_w - 20, 17 );
+    addSample->SetShortProperties( "Add Samples", 10, 70, m_w - 20, 17, UnicodeString("Add Samples") );
     RegisterButton( addSample );
 
-
+    
     //
     // Edit / Remove Samples from group
 
@@ -1598,11 +1721,11 @@ void SampleGroupEditor::Create()
 void SampleGroupEditor::Remove()
 {
     DarwiniaWindow::Remove();
-
+    
     RemoveButton( "SampleGroup" );
     RemoveButton( "New Group" );
     RemoveButton( "Add Samples" );
-
+    
     int i = 0;
     while( true )
     {
@@ -1626,14 +1749,14 @@ void SampleGroupEditor::Render( bool _hasFocus )
     DarwiniaWindow::Render( _hasFocus );
 
     EclButton *button = GetButton( "SampleGroup" );
-    char *groupName = button->m_caption;
+    const char *groupName = button->m_caption;
     SampleGroup *group = g_app->m_soundSystem->GetSampleGroup( groupName );
 
-
+    
     //
     // Update the scrollbar
     // Draw the samples in the group
-
+    
     if( group )
     {
         m_scrollbar->SetNumRows( group->m_samples.Size() );
@@ -1653,7 +1776,7 @@ void SampleGroupEditor::Render( bool _hasFocus )
     else
     {
         m_scrollbar->SetNumRows( 0 );
-    }
+    }    
 }
 
 
@@ -1686,18 +1809,18 @@ public:
 
         if( parent->m_fileList.ValidIndex( index ) )
         {
-            if( strcmp( m_caption, "delete" ) == 0 )
+			if( _wcsicmp( m_caption.m_unicodestring, L"delete" ) == 0 )
             {
-                SetCaption( "!DELETE!" );
+                SetCaption( UnicodeString("!DELETE!") );
             }
             else
             {
                 char *filename = parent->m_fileList[ index ];
                 char fullFilename[256];
-                sprintf( fullFilename, "gamedata/sounds/%s", filename );
+                sprintf( fullFilename, "data/sounds/%s", filename );
                 DeleteThisFile( fullFilename );
                 parent->RefreshFileList();
-                SetCaption( "delete" );
+                SetCaption( UnicodeString("delete") );
             }
         }
     }
@@ -1714,13 +1837,13 @@ class RefreshFileListButton : public DarwiniaButton
 };
 
 
-class DeleteAllButton : public DarwiniaButton
+class DeleteAllButton : public DarwiniaButton 
 {
     void MouseUp()
     {
-        if( strcmp( m_caption, "Delete All" ) == 0 )
+		if( _wcsicmp( m_caption.m_unicodestring, L"Delete All" ) == 0 )
         {
-            SetCaption( "!DELETE ALL!" );
+            SetCaption( UnicodeString("!DELETE ALL!") );
         }
         else
         {
@@ -1729,11 +1852,11 @@ class DeleteAllButton : public DarwiniaButton
             {
                 char *filename = parent->m_fileList[i];
                 char fullFilename[256];
-                sprintf( fullFilename, "gamedata/sounds/%s", filename );
+                sprintf( fullFilename, "data/sounds/%s", filename );
                 DeleteThisFile( fullFilename );
             }
             parent->RefreshFileList();
-            SetCaption( "Delete All" );
+            SetCaption( UnicodeString("Delete All") );
         }
     }
 };
@@ -1764,13 +1887,13 @@ void PurgeSoundsWindow::Create()
     }
 
     RefreshFileListButton *refresh = new RefreshFileListButton();
-    refresh->SetShortProperties( "Refresh", 10, m_h - 30, (m_w - 40)/2 );
+    refresh->SetShortProperties( "Refresh", 10, m_h - 30, (m_w - 40)/2, -1, UnicodeString("Refresh") );
     RegisterButton( refresh );
 
     DeleteAllButton *deleteAll = new DeleteAllButton();
-    deleteAll->SetShortProperties( "Delete All", refresh->m_x + refresh->m_w + 10, m_h - 30, (m_w - 40)/2 );
+    deleteAll->SetShortProperties( "Delete All", refresh->m_x + refresh->m_w + 10, m_h - 30, (m_w - 40)/2, -1, UnicodeString("Delete All") );
     RegisterButton( deleteAll );
-
+    
     m_scrollBar->Create( "Scrollbar", m_w - 20, 42, 15, m_h - 75, 0, numSlots );
 
     RefreshFileList();
@@ -1780,7 +1903,7 @@ void PurgeSoundsWindow::Create()
 void PurgeSoundsWindow::Remove()
 {
     DarwiniaWindow::Remove();
-
+    
     m_fileList.EmptyAndDelete();
 
     int i = 0;
@@ -1804,7 +1927,7 @@ void PurgeSoundsWindow::Remove()
 void PurgeSoundsWindow::Render( bool _hasFocus )
 {
     DarwiniaWindow::Render( _hasFocus );
-
+    
     g_editorFont.DrawText2DCentre( m_x + m_w/2, m_y + 25, 16, "Unused Sounds : " );
 
     int baseOffset = m_scrollBar->m_currentValue;
@@ -1812,7 +1935,7 @@ void PurgeSoundsWindow::Render( bool _hasFocus )
 
     for( int i = 0; i < numSlots; ++i )
     {
-        int index = i + baseOffset;
+        int index = i + baseOffset;        
         if( m_fileList.ValidIndex(index) )
         {
             char *filename = m_fileList[index];
@@ -1826,8 +1949,8 @@ void PurgeSoundsWindow::RefreshFileList()
 {
     m_fileList.EmptyAndDelete();
 
-    LList<char *> *allFiles = ListDirectory( "gamedata/sounds/", "*.*", false );
-
+    LList<char *> *allFiles = ListDirectory( "data/sounds/", "*.*", false );
+    
     for( int i = 0; i < allFiles->Size(); ++i )
     {
         char *filename = allFiles->GetData(i);
@@ -1842,7 +1965,7 @@ void PurgeSoundsWindow::RefreshFileList()
         }
     }
 
-    delete allFiles;
+    delete allFiles;    
 
     m_scrollBar->SetNumRows( m_fileList.Size() );
 }

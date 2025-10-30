@@ -1,8 +1,8 @@
 #ifndef WORLDOBJECT_H
 #define WORLDOBJECT_H
 
-#include "rgb_colour.h"
-#include "vector3.h"
+#include "lib/rgb_colour.h"
+#include "lib/vector3.h"
 
 
 // ****************************************************************************
@@ -30,27 +30,29 @@ public:
     WorldObjectId();
     WorldObjectId( unsigned char _teamId, int _unitId, int _index, int _uniqueId );
     void			Set( unsigned char _teamId, int _unitId, int _index, int _uniqueId );
-
-    void            SetInvalid();
-
+    
+    void            SetInvalid();       
+    
 	void			SetTeamId   (unsigned char _teamId) { m_teamId = _teamId; }
 	void			SetUnitId   (int _unitId)			{ m_unitId = _unitId; }
 	void			SetIndex    (int _index)			{ m_index = _index; }
 	void			SetUniqueId (int _uniqueId)		    { m_uniqueId = _uniqueId; }
-    void            GenerateUniqueId                    ();
+    void            GenerateUniqueId                    ();                                 
 
 	unsigned char   GetTeamId   () const				{ return m_teamId; }
     int             GetUnitId   () const				{ return m_unitId; }
     int             GetIndex    () const				{ return m_index; }
     int             GetUniqueId () const				{ return m_uniqueId; }
-
+    
 	bool            IsValid() const					    { return( m_teamId != 255 ||
 														          m_unitId != -1 ||
-														          m_index != -1 ); }
+														          m_index != -1 ); }    
 
-	bool operator != (WorldObjectId const &w) const;
-	bool operator == (WorldObjectId const &w) const;
+	bool operator != (WorldObjectId const &w) const;		
+	bool operator == (WorldObjectId const &w) const;		
     WorldObjectId const &operator = (WorldObjectId const &w);
+
+	static void		ResetUniqueIdSeed();
 };
 
 
@@ -68,17 +70,25 @@ public:
         EffectThrowableAirstrikeMarker,
         EffectThrowableAirstrikeBomb,
         EffectThrowableControllerGrenade,
-        EffectGunTurretTarget,
+        EffectGunTurretTarget,                            
         EffectGunTurretShell,
-        EffectSpamInfection,
+        EffectSpamInfection,                              
         EffectBoxKite,
         EffectSnow,
         EffectRocket,
         EffectShockwave,
         EffectMuzzleFlash,
         EffectOfficerOrders,
-        EffectZombie
-    };
+        EffectOfficerOrderTrail,
+        EffectZombie,
+        EffectRandomiser,
+        EffectDustBall,
+        EffectLightning,
+        EffectPulseWave,
+        EffectFlameGrenade,
+        EffectTurretEmptyShell,
+		EffectFireball
+    };  
 
 public:
     WorldObjectId   m_id;
@@ -93,8 +103,10 @@ public:
 	void BounceOffLandscape			();
 
     virtual bool Advance			();
-    virtual void Render				( float _time );
-	virtual bool RenderPixelEffect	( float predictionTime );               // Return true if you did anything
+    virtual void Render				( double _time );
+	virtual bool RenderPixelEffect	( double predictionTime );               // Return true if you did anything
+
+    virtual char *LogState( char *_message = NULL );
 };
 
 
@@ -105,12 +117,12 @@ public:
 class Light
 {
 public:
-    float m_colour[4];	// Forth element seems irrelevant but OpenGL insists we specify it
-    float m_front[4];	// Forth element must be 0.0f to signify an infinitely distance light
+    double m_colour[4];	// Forth element seems irrelevant but OpenGL insists we specify it
+    double m_front[4];	// Forth element must be 0.0 to signify an infinitely distance light
 
     Light();
-	void SetColour(float colour[4]);
-	void SetFront(float front[4]);
+	void SetColour(double colour[4]);
+	void SetFront(double front[4]);
 	void SetFront(Vector3 front);
 	void Normalise();
 };

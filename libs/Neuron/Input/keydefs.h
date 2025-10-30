@@ -84,7 +84,7 @@
 #define KEY_F10               121
 #define KEY_F11               122
 #define KEY_F12               123
-#define KEY_NUMLOCK           144
+#define KEY_NUMLOCK           144  
 #define KEY_SCRLOCK           145
 #define KEY_COLON             186
 #define KEY_EQUALS            187
@@ -93,10 +93,10 @@
 #define KEY_STOP              190
 #define KEY_SLASH             191
 #define KEY_AT                192
-#define KEY_QUOTE             192
 #define KEY_OPENBRACE         219
 #define KEY_BACKSLASH         220
 #define KEY_CLOSEBRACE        221
+#define KEY_QUOTE             222
 #define KEY_TILDE             223
 #define KEY_META              224
 

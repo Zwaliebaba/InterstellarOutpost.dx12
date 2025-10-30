@@ -3,11 +3,11 @@
 
 #include <string>
 
-#include "auto_vector.h"
-#include "input/inputfilter.h"
-#include "input/inputfilterspec.h"
-#include "input/inputspeclist.h"
-#include "input/input_types.h"
+#include "lib/auto_vector.h"
+#include "lib/input/inputfilter.h"
+#include "lib/input/inputfilterspec.h"
+#include "lib/input/inputspeclist.h"
+#include "lib/input/input_types.h"
 
 
 // This class is in charge of storing and accessing a set of InputFilters

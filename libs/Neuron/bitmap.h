@@ -1,4 +1,4 @@
-#ifndef INCLUDED_BITMAP_H
+ #ifndef INCLUDED_BITMAP_H
 #define INCLUDED_BITMAP_H
 
 
@@ -20,8 +20,9 @@ private:
 	void Read4BitLine(int length, BinaryReader *f, RGBAColour *pal, int line);
 	void Read8BitLine(int length, BinaryReader *f, RGBAColour *pal, int line);
 	void Read24BitLine(int length, BinaryReader *f, int line);
+    void Read32BitLine(int length, BinaryReader *f, int line);
 	void LoadBmp(BinaryReader *_in);
-
+	
 	void WriteBMPFileHeader(FILE *_out);
 	void WriteWinBMPInfoHeader(FILE *_out);
 	void Write24BitLine(FILE *_out, int _y);
@@ -43,9 +44,16 @@ public:
 	void Initialise(char const *_filename);
 	void Initialise(BinaryReader *_reader, char const *_type);
 
+	void SavePng(const char *_filename, bool _saveAlpha = false);
+	void WritePng(FILE *_out, bool _saveAlpha = false);
+
+	void SaveBmp(char const *_filename);
+	void WriteBmp(FILE *_out);
+
     void Clear( RGBAColour const &colour );
 
 	void PutPixel(int x, int y, RGBAColour const &colour);
+	void PutPixelOr(int x, int y, RGBAColour const &colour);
 	RGBAColour const &GetPixel(int x, int y) const;
 
 	void PutPixelClipped(int x, int y, RGBAColour const &colour);
@@ -55,16 +63,30 @@ public:
 
 	RGBAColour GetInterpolatedPixel(float x, float y) const;
 
-	void Blit(int srcX,  int srcY,  int srcW,  int srcH, const BitmapRGBA *_srcBmp,
+	void Blit(int srcX,  int srcY,  int srcW,  int srcH, const BitmapRGBA *_srcBmp, 
 			  int destX, int destY, int destW, int destH, bool _bilinear);
 
+	void BlitOr(int srcX,  int srcY,  int srcW,  int srcH, const BitmapRGBA *_srcBmp, 
+				int destX, int destY, int destW, int destH, bool _bilinear);
+    
     void ApplyBlurFilter(float _scale);
     void ApplyDilateFilter();
 
 	void ConvertPinkToTransparent();
 	void ConvertColourToAlpha();	// Luminance of rgb data is copied into the alpha channel and the rgb data is set to 255,255,255
+    
 	void ConvertToGreyScale();		// Colour is averaged out
-	int ConvertToTexture(bool _mipmapping = true) const;
+    void ConvertToColour( RGBAColour _col, int _threshold = 0 );    // any colour in the image is replaced - white is left white and black is totally replaced
+    void ConvertColour( RGBAColour oldColour, RGBAColour newColour );
+    void ConvertRedChannel( RGBAColour newColour );
+	void SwapRB();
+	int ConvertToTexture(bool _mipmapping = true, bool _compressed = false) const;
+	int ConvertToTextureAsync(bool _mipmapping = true, bool _compressed = false) const;
+	
+	static void SetMaxTextureSize(int size);
+	static int GetMaxTextureSize(void);
+	
+	void CheckGLError() const;
 };
 
 

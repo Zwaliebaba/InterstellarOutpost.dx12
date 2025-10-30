@@ -1,7 +1,7 @@
 #ifndef SPHERE_RENDERER_H
 #define SPHERE_RENDERER_H
 
-#include "vector3.h"
+#include "lib/vector3.h"
 
 
 class Triangle
@@ -17,9 +17,14 @@ public:
 class Sphere
 {
 public:
+    static bool s_regenerateDisplayList;
+
 	Sphere();
 	void Render(Vector3 const &pos, float radius);
+    void RenderFilled(Vector3 const &pos, float radius);
 	void RenderLong();
+
+    void GenerateDisplayList();
 
 private:
 	Triangle	m_topLevelTriangle[20];

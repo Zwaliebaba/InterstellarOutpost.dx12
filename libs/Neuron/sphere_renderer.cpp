@@ -1,9 +1,9 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <math.h>
 
-#include "vector2.h"
-#include "vector3.h"
+#include "lib/vector2.h"
+#include "lib/vector3.h"
 
 #include "sphere_renderer.h"
 
@@ -23,9 +23,15 @@ Triangle::Triangle( Vector3 const &c1, Vector3 const &c2, Vector3 const &c3 )
 // * Class Sphere *
 // ****************
 
+bool Sphere::s_regenerateDisplayList = true;
+
 Sphere::Sphere()
 {
-	float const x = 0.5257311121;
+}
+
+void Sphere::GenerateDisplayList()
+{
+    float const x = 0.5257311121;
 	float const z = 0.85065080835;
 
 	Vector3 c[12];
@@ -67,11 +73,13 @@ Sphere::Sphere()
 	glNewList(m_displayListId, GL_COMPILE);
 		RenderLong();
 	glEndList();
+
+    Sphere::s_regenerateDisplayList = false;
 }
 
 void Sphere::ConsiderTriangle(int level, Vector3 const &a, Vector3 const &b, Vector3 const &c)
 {
-	if (level > 0)
+	if (level > 0) 
 	{
 		glBegin(GL_TRIANGLES);
 			glVertex3f(a.x, a.y, a.z);
@@ -82,7 +90,7 @@ void Sphere::ConsiderTriangle(int level, Vector3 const &a, Vector3 const &b, Vec
 	else
 	{
 		level++;
-
+		
 		// Three new vertices (at the midpoints of each existing edge)
 		Vector3 p = (a + b).Normalise();
 		Vector3 q = (b + c).Normalise();
@@ -95,12 +103,12 @@ void Sphere::ConsiderTriangle(int level, Vector3 const &a, Vector3 const &b, Vec
 	}
 }
 
-void Sphere::RenderLong()
+void Sphere::RenderLong() 
 {
 	// Render each top level triangle
 	for(int i = 0; i < 20; i++) {
-		ConsiderTriangle(0, m_topLevelTriangle[i].m_corner[0],
-						 m_topLevelTriangle[i].m_corner[1],
+		ConsiderTriangle(0, m_topLevelTriangle[i].m_corner[0], 
+						 m_topLevelTriangle[i].m_corner[1], 
 						 m_topLevelTriangle[i].m_corner[2]);
 	}
 }
@@ -113,8 +121,21 @@ void Sphere::Render(Vector3 const &pos, float radius)
 	glTranslatef(pos.x, pos.y, pos.z);
 	glScalef(radius, radius, radius);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glLineWidth(1.0f);
+	glLineWidth(1.0);
 	glCallList(m_displayListId);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glPopMatrix();
 }
+
+
+void Sphere::RenderFilled(Vector3 const &pos, float radius)
+{
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glTranslatef(pos.x, pos.y, pos.z);
+    glScalef(radius, radius, radius);
+    glCallList(m_displayListId);
+    glPopMatrix();
+}
+
+

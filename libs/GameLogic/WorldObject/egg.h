@@ -10,7 +10,7 @@
 class Egg : public Entity
 {
 public:
-
+    
     enum
     {
         StateDormant,
@@ -20,14 +20,14 @@ public:
 
     int     m_state;
     int     m_spiritId;
-    float   m_timer;
-
+    double   m_timer;
+    
 public:
     Egg();
 
-    void ChangeHealth   ( int amount );
+    bool ChangeHealth   ( int _amount, int _damageType = DamageTypeUnresistable );
 
-    void Render         ( float predictionTime );
+    void Render         ( double predictionTime );
     bool Advance        ( Unit *_unit );
     void Fertilise      ( int spiritId );
 };

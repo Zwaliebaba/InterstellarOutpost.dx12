@@ -1,6 +1,6 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-#include "input/eventhandler.h"
+#include "lib/input/eventhandler.h"
 
 
 EventHandler * g_eventHandler = NULL;

@@ -1,18 +1,18 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
 
+#include "lib/debug_utils.h"
+#include "lib/hi_res_time.h"
+#include "lib/input/input.h"
+#include "lib/targetcursor.h"
+#include "lib/text_renderer.h"
+#include "lib/language_table.h"
 
-#include "hi_res_time.h"
-#include "input/input.h"
-#include "targetcursor.h"
-#include "text_renderer.h"
-#include "language_table.h"
-
-#include "input/keydefs.h" // Key code definitions (bit of a hack)
+#include "lib/input/keydefs.h" // Key code definitions (bit of a hack)
 
 #include "app.h"
 #include "globals.h"
@@ -28,17 +28,21 @@
 // ****************************************************************************
 
 InputField::InputField()
-:	m_type(TypeNowt),
-	m_string(NULL),
-	m_int(NULL),
-	m_float(NULL),
-    m_char(NULL),
+:	m_value( NULL ),
+	m_type( TypeNowt ),
+	m_ownsValue( false ),
 	m_inputBoxWidth(0),
-    m_callback(NULL),
-	m_lowBound(0.0f),
-	m_highBound(1e4)
+    m_callback(NULL)
 {
-	m_buf[0] = '\0';
+}
+
+InputField::~InputField()
+{
+	if( m_ownsValue )
+	{
+		delete m_value;
+		m_value = false;
+	}
 }
 
 
@@ -50,8 +54,8 @@ void InputField::SetCallback(DarwiniaButton *button)
 
 void InputField::Render( int realX, int realY, bool highlighted, bool clicked )
 {
-    glColor4f( 0.1f, 0.0f, 0.0f, 0.5f );
-    float editAreaWidth = m_w * 0.4f;
+    glColor4f( 0.1, 0.0, 0.0, 0.5 );
+    float editAreaWidth = m_w * 0.4;
     glBegin( GL_QUADS );
         glVertex2f( realX + m_w - editAreaWidth, realY );
         glVertex2f( realX + m_w, realY );
@@ -59,7 +63,7 @@ void InputField::Render( int realX, int realY, bool highlighted, bool clicked )
         glVertex2f( realX + m_w - editAreaWidth, realY+m_h );
     glEnd();
 
-    glColor4f( 0.0f, 0.0f, 0.0f, 1.0f );
+    glColor4f( 0.0, 0.0, 0.0, 1.0 );
     glBegin( GL_LINES );                        // top
         glVertex2f( realX + m_w - editAreaWidth, realY );
         glVertex2f( realX + m_w, realY );
@@ -71,12 +75,12 @@ void InputField::Render( int realX, int realY, bool highlighted, bool clicked )
     glEnd();
 
     glColor4ub( 100, 34, 34, 150 );
-    //glColor4f( 0.9f, 0.3f, 0.3f, 0.3f );        // right
+    //glColor4f( 0.9, 0.3, 0.3, 0.3 );        // right
     glBegin( GL_LINES );
         glVertex2f( realX + m_w, realY );
         glVertex2f( realX + m_w, realY + m_h );
     glEnd();
-
+    
     glBegin( GL_LINES );                        // bottom
         glVertex2f( realX + m_w - editAreaWidth, realY+m_h );
         glVertex2f( realX + m_w, realY + m_h );
@@ -87,9 +91,9 @@ void InputField::Render( int realX, int realY, bool highlighted, bool clicked )
 	if (m_parent->m_currentTextEdit && (strcmp(m_parent->m_currentTextEdit, m_name) == 0) )
 	{
 		BorderlessButton::Render(realX, realY, true, clicked);
-		if (fmodf(GetHighResTime(), 1.0f) < 0.5f)
+		if (fmodf(GetHighResTime(), 1.0) < 0.5)
 		{
-			int cursorOffset = strlen(m_buf) * PIXELS_PER_CHAR + 2;
+			int cursorOffset = m_buf.WcsLen() * PIXELS_PER_CHAR + 2;
 			glBegin( GL_LINES );
 				glVertex2f( fieldX + cursorOffset, realY + 2 );
 				glVertex2f( fieldX + cursorOffset, realY + m_h - 2 );
@@ -104,16 +108,12 @@ void InputField::Render( int realX, int realY, bool highlighted, bool clicked )
 
     // Edit by Chris - so we don't need to keep Refreshing, just generate the Buffer here every second
 
-	if (!highlighted && fmodf(GetHighResTime(), 1.0f) < 0.5f)
+	if (!highlighted && fmodf(GetHighResTime(), 1.0) < 0.5)
 	{
-	    switch(m_type)
-	    {
-	        case TypeChar:	    sprintf(m_buf, "%d", (int) *m_char);		    break;
-	        case TypeInt:	    sprintf(m_buf, "%d", *m_int);		            break;
-	        case TypeFloat:     sprintf(m_buf, "%.2f", *m_float);               break;
-	        case TypeString:    strncpy(m_buf, m_string, sizeof(m_buf) - 1);    break;
-	    }
-		m_inputBoxWidth = strlen(m_buf) * PIXELS_PER_CHAR + 7;
+		if( m_value )
+			m_value->ToUnicodeString( m_buf );
+
+		m_inputBoxWidth = m_buf.Length() * PIXELS_PER_CHAR + 7;
     }
 	DarwiniaWindow *parent = (DarwiniaWindow *)m_parent;
 	fieldX = realX + m_w - parent->GetMenuSize(m_inputBoxWidth);
@@ -127,69 +127,54 @@ void InputField::MouseUp()
 }
 
 
-void InputField::Keypress ( int keyCode, bool shift, bool ctrl, bool alt )
+void InputField::Keypress ( int keyCode, bool shift, bool ctrl, bool alt, unsigned char ascii )
 {
 	if (strcmp(m_parent->m_currentTextEdit, "None") == 0)	return;
+    if( ascii == '%' ) return; 
 
-	int len = strlen(m_buf);
+	int len = m_buf.Length();
 	if (keyCode == KEY_BACKSPACE)
 	{
-		if (len > 0) m_buf[len - 1] = '\0';
-        if( m_type == TypeString )
+		if (len > 0) 
+			m_buf.Truncate( len );
+
+        if( m_type == TypeString ||
+            m_type == TypeUnicodeString ) 
         {
-			strcpy(m_string, m_buf);
+			if( m_value )
+				m_value->FromUnicodeString( m_buf );
             Refresh();
         }
 	}
-	else if (keyCode == KEY_ENTER)
+	else if (keyCode == KEY_ENTER || keyCode == KEY_ESC)
 	{
 		m_parent->EndTextEdit();
 
-		if (m_float)
-		{
-			*m_float = atof(m_buf);
-		}
-		else if (m_int)
-		{
-			*m_int = atoi(m_buf);
-		}
-		else if (m_string)
-		{
-			strcpy(m_string, m_buf);
-		}
-        else if(m_char)
-        {
-            *m_char = (unsigned char) atoi(m_buf);
-        }
-
-        ClampToBounds();
+		m_value->FromUnicodeString( m_buf );
         Refresh();
 	}
 	else if (keyCode == KEY_STOP)
 	{
-		if (len < sizeof(m_buf) - 1)
-		{
-			strcat(m_buf, ".");
-		}
+		m_buf = m_buf + UnicodeString( "." );
 
-        if( m_type == TypeString )
+        if( m_type == TypeString ||
+            m_type == TypeUnicodeString ) 
         {
-			strcpy(m_string, m_buf);
+			m_value->FromUnicodeString( m_buf );
             Refresh();
         }
 	}
 	else if (keyCode >= KEY_0 && keyCode <= KEY_9)
 	{
-		if (len < sizeof(m_buf) - 1)
-		{
-			char buf[2] = " ";
-			buf[0] = keyCode & 0xff;
-			strcat(m_buf, buf);
-		}
+		char buf[2] = " ";
+		buf[0] = keyCode & 0xff;
 
-        if( m_type == TypeString )
+		m_buf = m_buf + UnicodeString( buf );
+
+        if( m_type == TypeString ||
+            m_type == TypeUnicodeString ) 
         {
-			strcpy(m_string, m_buf);
+			m_value->FromUnicodeString( m_buf );
             Refresh();
         }
 	}
@@ -199,91 +184,120 @@ void InputField::Keypress ( int keyCode, bool shift, bool ctrl, bool alt )
         {
             unsigned char ascii = keyCode & 0xff;
             if( !shift ) ascii -= ( 'A' - 'a' );
-            int location = strlen(m_buf);
-            m_buf[ location ] = ascii;
-            m_buf[ location+1 ] = '\x0';
+
+			char buf[2] = " ";
+			buf[0] = ascii;
+
+			m_buf = m_buf + buf;
+        }
+        else
+        {
+            if( !ctrl )
+            {
+				wchar_t buf[2] = L" ";
+				buf[0] = keyCode;
+
+				m_buf = m_buf + buf;
+            }
         }
 
-        if( m_type == TypeString )
+        if( m_type == TypeString ||
+            m_type == TypeUnicodeString ) 
         {
-			strcpy(m_string, m_buf);
+		    m_value->FromUnicodeString( m_buf );
             Refresh();
         }
     }
 
-	m_inputBoxWidth = strlen(m_buf) * PIXELS_PER_CHAR + 7;
+	m_inputBoxWidth = m_buf.Length() * PIXELS_PER_CHAR + 7;
 }
 
-
-void InputField::RegisterChar(unsigned char *_char)
+void InputField::RegisterNetworkValue( int _type, NetworkValue * value )
 {
-	DEBUG_ASSERT(m_type == TypeNowt);
+	AppDebugAssert(m_type == TypeNowt);
+
+	m_type = _type;
+	m_value = value;
+	m_ownsValue = false;
+}
+
+void InputField::RegisterChar(unsigned char *_char, double _lowBound, double _highBound )
+{
+	AppDebugAssert(m_type == TypeNowt);
+	BoundedNetworkValue *v = new LocalChar( *_char );
+	v->SetBounds( _lowBound, _highBound );
+
+	m_value = v;	
+	m_ownsValue = true;
 	m_type = TypeChar;
-	m_char = _char;
 }
 
 
-void InputField::RegisterInt(int *_int)
+void InputField::RegisterBool(bool *_char, double _lowBound, double _highBound )
 {
-	DEBUG_ASSERT(m_type == TypeNowt);
-	m_type = TypeInt;
-	m_int = _int;
+	AppDebugAssert(m_type == TypeNowt);
+	BoundedNetworkValue *v = new LocalBool( *_char );
+	v->SetBounds( _lowBound, _highBound );
+
+	m_value = v;	
+	m_ownsValue = true;
+	m_type = TypeChar;
 }
 
 
-void InputField::RegisterFloat(float *_float)
+void InputField::RegisterInt(int *_int, double _lowBound, double _highBound)
 {
-	DEBUG_ASSERT(m_type == TypeNowt);
+	AppDebugAssert(m_type == TypeNowt);
+	BoundedNetworkValue *v = new LocalInt( *_int );
+	v->SetBounds( _lowBound, _highBound );
+
+	m_value = v;	
+	m_ownsValue = true;
+	m_type = TypeInt;	
+}
+
+
+void InputField::RegisterFloat(float *_float, double _lowBound, double _highBound)
+{
+	AppDebugAssert(m_type == TypeNowt);
+	BoundedNetworkValue *v = new LocalFloat( *_float );
+	v->SetBounds( _lowBound, _highBound );
+
+	m_value = v;	
+	m_ownsValue = true;
 	m_type = TypeFloat;
-	m_float = _float;
 }
 
-
-void InputField::RegisterString(char *_string)
+void InputField::RegisterDouble(double *_float, double _lowBound, double _highBound)
 {
-	DEBUG_ASSERT(m_type == TypeNowt);
+	AppDebugAssert(m_type == TypeNowt);
+	BoundedNetworkValue *v = new LocalDouble( *_float );
+	v->SetBounds( _lowBound, _highBound );
+
+	m_value = v;	
+	m_ownsValue = true;
+	m_type = TypeDouble;
+}
+
+void InputField::RegisterString(char *_string, int _bufSize)
+{
+	AppDebugAssert(m_type == TypeNowt);
+	m_value = new LocalString( _string, _bufSize );
+	m_ownsValue = true;
 	m_type = TypeString;
-	m_string = _string;
 }
 
-
-void InputField::ClampToBounds()
+void InputField::RegisterUnicodeString( UnicodeString &_string )
 {
-	switch(m_type)
-	{
-		case TypeChar:
-			if (*m_char > m_highBound)			*m_char = m_highBound;
-			else if (*m_char < m_lowBound)		*m_char = m_lowBound;
-			break;
-		case TypeInt:
-			if (*m_int > m_highBound)			*m_int = m_highBound;
-			else if (*m_int < m_lowBound)		*m_int = m_lowBound;
-			break;
-		case TypeFloat:
-			if (*m_float > m_highBound)			*m_float = m_highBound;
-			else if (*m_float < m_lowBound)		*m_float = m_lowBound;
-			break;
-	}
+	AppDebugAssert(m_type == TypeNowt);
+	m_value = new LocalUnicodeString( _string );
+	m_ownsValue = true;
+	m_type = TypeUnicodeString;
 }
-
 
 void InputField::Refresh()
 {
-	switch(m_type)
-	{
-		case TypeChar:
-			sprintf(m_buf, "%d", (int) *m_char);
-			break;
-		case TypeInt:
-			sprintf(m_buf, "%d", *m_int);
-			break;
-		case TypeFloat:
-			sprintf(m_buf, "%.2f", *m_float);
-			break;
-		case TypeString:
-			strncpy(m_buf, m_string, sizeof(m_buf) - 1);
-			break;
-	}
+	m_value->ToUnicodeString( m_buf );
 
     if( m_callback )
     {
@@ -299,19 +313,24 @@ void InputField::Refresh()
 InputScroller::InputScroller()
 :   DarwiniaButton(),
     m_inputField(NULL),
-    m_change(0.0f),
-    m_mouseDownStartTime(-1.0f)
+    m_change(0.0),
+    m_mouseDownStartTime(-1.0)
 {
 }
 
 
-#define INTEGER_INCREMENT_PERIOD 0.1f
+#define INTEGER_INCREMENT_PERIOD 0.1
 
 void InputScroller::Render( int realX, int realY, bool highlighted, bool clicked )
 {
     DarwiniaButton::Render( realX, realY, highlighted, clicked );
 
-    if( m_mouseDownStartTime > 0.0f &&
+	CheckInput( realX, realY );
+}
+
+void InputScroller::CheckInput( int realX, int realY )
+{
+    if( m_mouseDownStartTime > 0.0 &&
 		m_inputField &&
 		g_inputManager->controlEvent( ControlEclipseLMousePressed ) &&
 		g_target->X() >= realX &&
@@ -320,14 +339,15 @@ void InputScroller::Render( int realX, int realY, bool highlighted, bool clicked
         g_target->Y() < realY + m_h )
     {
 		float change = m_change;
-        if( g_inputManager->controlEvent( ControlScrollSpeedup ) ) change *= 5.0f;
+        if( g_inputManager->controlEvent( ControlScrollSpeedup ) ) change *= 5.0;
 
-		float timeDelta = GetHighResTime() - m_mouseDownStartTime;
+		double timeDelta = GetHighResTime() - m_mouseDownStartTime;
 		if (m_inputField->m_type == InputField::TypeChar)
 		{
 			if (timeDelta > INTEGER_INCREMENT_PERIOD)
 			{
-				*m_inputField->m_char += change;
+				NetworkChar *v = (NetworkChar *) m_inputField->m_value;
+				v->Set( v->Get() + change );
 				m_mouseDownStartTime += INTEGER_INCREMENT_PERIOD;
 			}
 		}
@@ -335,17 +355,33 @@ void InputScroller::Render( int realX, int realY, bool highlighted, bool clicked
 		{
 			if (timeDelta > INTEGER_INCREMENT_PERIOD)
 			{
-				*m_inputField->m_int += change;
+				NetworkInt *v = (NetworkInt *) m_inputField->m_value;
+                v->Set( v->Bound( v->Get() + change ) );
+				m_mouseDownStartTime += INTEGER_INCREMENT_PERIOD;
+			}
+		}
+		else if (m_inputField->m_type == InputField::TypeBool)
+		{
+			if (timeDelta > INTEGER_INCREMENT_PERIOD)
+			{
+				NetworkBool *v = (NetworkBool *) m_inputField->m_value;
+                v->Set( v->Bound( v->Get() + change ) );
 				m_mouseDownStartTime += INTEGER_INCREMENT_PERIOD;
 			}
 		}
 		else if (m_inputField->m_type == InputField::TypeFloat)
 		{
-			change = change * timeDelta * 0.2f;
-            *m_inputField->m_float += change;
+			change = change * timeDelta * 0.2;
+			NetworkFloat *v = (NetworkFloat *) m_inputField->m_value;
+			v->Set( v->Bound(v->Get() + change ));
+		}
+		else if (m_inputField->m_type == InputField::TypeDouble)
+		{
+			change = change * timeDelta * 0.2;
+			NetworkDouble *v = (NetworkDouble *) m_inputField->m_value;
+			v->Set( v->Bound(v->Get() + change ));
 		}
 
-		m_inputField->ClampToBounds();
         m_inputField->Refresh();
     }
 }
@@ -353,7 +389,7 @@ void InputScroller::Render( int realX, int realY, bool highlighted, bool clicked
 
 void InputScroller::MouseDown()
 {
-	if ( g_inputManager->controlEvent( ControlEclipseLMousePressed ) )
+	if ( g_inputManager->controlEvent( ControlEclipseLMouseDown ) )
 	{
 	    m_mouseDownStartTime = GetHighResTime() - INTEGER_INCREMENT_PERIOD;
 	}
@@ -362,7 +398,7 @@ void InputScroller::MouseDown()
 
 void InputScroller::MouseUp()
 {
-    m_mouseDownStartTime = -1.0f;
+    m_mouseDownStartTime = -1.0;
 }
 
 
@@ -395,7 +431,7 @@ void ColourWidget::Render( int realX, int realY, bool highlighted, bool clicked 
 
 void ColourWidget::MouseUp()
 {
-    ColourWindow *cw = new ColourWindow( LANGUAGEPHRASE("editor_coloureditor") );
+    ColourWindow *cw = new ColourWindow( "editor_coloureditor" );
     cw->SetSize( 200, 100 );
     cw->SetValue( m_value );
     cw->SetCallback( m_callback );
@@ -443,7 +479,7 @@ void ColourWindow::SetCallback(DarwiniaButton *button)
 void ColourWindow::Create()
 {
     DarwiniaWindow::Create();
-
+    
     int y = 25;
     int h = 18;
 
@@ -452,10 +488,10 @@ void ColourWindow::Create()
     unsigned char *b = ((unsigned char *) m_value)+2;
     unsigned char *a = ((unsigned char *) m_value)+3;
 
-    CreateValueControl( LANGUAGEPHRASE("editor_red"),   InputField::TypeChar, r, y,    1, 0, 255, m_callback, -1, m_w - 80 );
-    CreateValueControl( LANGUAGEPHRASE("editor_green"), InputField::TypeChar, g, y+=h, 1, 0, 255, m_callback, -1, m_w - 80 );
-    CreateValueControl( LANGUAGEPHRASE("editor_blue"),  InputField::TypeChar, b, y+=h, 1, 0, 255, m_callback, -1, m_w - 80 );
-    CreateValueControl( LANGUAGEPHRASE("editor_alpha"), InputField::TypeChar, a, y+=h, 1, 0, 255, m_callback, -1, m_w - 80 );
+    CreateValueControl( "editor_red", r, y,    1, 0, 255, m_callback, -1, m_w - 80 );
+    CreateValueControl( "editor_green", g, y+=h, 1, 0, 255, m_callback, -1, m_w - 80 );
+    CreateValueControl( "editor_blue", b, y+=h, 1, 0, 255, m_callback, -1, m_w - 80 );
+    CreateValueControl( "editor_alpha", a, y+=h, 1, 0, 255, m_callback, -1, m_w - 80 );
 }
 
 

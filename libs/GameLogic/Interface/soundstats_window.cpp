@@ -1,12 +1,12 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-
-#include "preferences.h"
-#include "profiler.h"
-#include "text_renderer.h"
-#include "language_table.h"
-#include "resource.h"
-#include "system_info.h"
+#include "lib/debug_utils.h"
+#include "lib/preferences.h"
+#include "lib/profiler.h"
+#include "lib/text_renderer.h"
+#include "lib/language_table.h"
+#include "lib/resource.h"
+#include "lib/system_info.h"
 
 #include "interface/scrollbar.h"
 #include "interface/soundstats_window.h"
@@ -61,6 +61,9 @@ void SoundStatsWindow::Render( bool hasFocus )
 {
     DarwiniaWindow::Render( hasFocus );
 
+    if( !g_app->m_soundSystem->IsInitialized() )
+        return;
+
 
     //
     // Card stats
@@ -68,26 +71,26 @@ void SoundStatsWindow::Render( bool hasFocus )
     int yPos = m_y + 30;
     int yDif = 11;
     int textSize = 10;
-
+      
 
     int cpuUsage                = g_soundLibrary3d->GetCPUOverhead();
     int maxChannels             = g_soundLibrary3d->GetMaxChannels();
     int currentSoundInstances   = g_app->m_soundSystem->NumSoundInstances();
     int currentChannelsUsed     = g_app->m_soundSystem->NumChannelsUsed();
     int numSoundsDiscarded      = g_app->m_soundSystem->NumSoundsDiscarded();
-
+    
     char const *hw3d = ( g_soundLibrary3d->Hardware3DSupport() && g_soundLibrary3d->m_hw3dDesired ? "Enabled" :
-                 ( g_soundLibrary3d->Hardware3DSupport() && !g_soundLibrary3d->m_hw3dDesired ? "Disabled" :
+                 ( g_soundLibrary3d->Hardware3DSupport() && !g_soundLibrary3d->m_hw3dDesired ? "Disabled" : 
                                                                                          "Unavailable" ) );
-
+    
     g_editorFont.DrawText2D( m_x + 10, yPos += yDif, textSize, "CPU Usage               : %d", cpuUsage );
     g_editorFont.DrawText2D( m_x + 10, yPos += yDif, textSize, "Channels Max            : %d", maxChannels );
-    g_editorFont.DrawText2D( m_x + 10, yPos += yDif, textSize, "Channels Used           : %d", currentChannelsUsed );
+    g_editorFont.DrawText2D( m_x + 10, yPos += yDif, textSize, "Channels Used           : %d", currentChannelsUsed );       
     g_editorFont.DrawText2D( m_x + 10, yPos += yDif, textSize, "Sounds Total            : %d", currentSoundInstances );
     g_editorFont.DrawText2D( m_x + 10, yPos += yDif, textSize, "Sounds Discarded        : %d", numSoundsDiscarded );
 
     yPos += yDif;
-
+    
     g_editorFont.DrawText2D( m_x + 10, yPos += yDif, textSize, "Hardware 3D Sound : %s", hw3d );
 
     yPos = m_y + 180;
@@ -96,14 +99,17 @@ void SoundStatsWindow::Render( bool hasFocus )
     // Sound HW available
 
 	unsigned int deviceId = g_systemInfo->m_audioInfo.m_preferredDevice;
-    char const *hwDescription = g_systemInfo->m_audioInfo.m_deviceNames[deviceId];
-    LList<char *> *wrappedDescription = WordWrapText( hwDescription, 320, textSize, true);
-    for( int i = 0; i < wrappedDescription->Size(); ++i )
-    {
-        g_editorFont.DrawText2D( m_x + 230, m_y + 40 + i * 12, textSize, wrappedDescription->GetData(i) );
-    }
-    delete wrappedDescription->GetData(0);
-    delete wrappedDescription;
+	if( deviceId != -1 )
+	{
+		char const *hwDescription = g_systemInfo->m_audioInfo.m_deviceNames[deviceId];
+		LList<char *> *wrappedDescription = WordWrapText( hwDescription, 320, textSize, true);
+		for( int i = 0; i < wrappedDescription->Size(); ++i )
+		{
+			g_editorFont.DrawText2D( m_x + 230, m_y + 40 + i * 12, textSize, wrappedDescription->GetData(i) );
+		}
+		wrappedDescription->EmptyAndDelete();
+		delete wrappedDescription;
+	}
 
     //
     // Currently playing sample on each channel
@@ -115,14 +121,14 @@ void SoundStatsWindow::Render( bool hasFocus )
     {
         int x = m_x + 20;
         int y = yPos + i * 10;
-
+        
         int channelIndex = i + firstChannel;
         if( channelIndex < g_app->m_soundSystem->m_numChannels )
         {
             float health = g_soundLibrary3d->GetChannelHealth(i);
             float green = health;
-            float red = 1.0f-health;
-            glColor4f( red, green, 0.1f, 1.0f );
+            float red = 1.0-health;
+            glColor4f( red, green, 0.1, 1.0 );
             glBegin( GL_QUADS );
                 glVertex2i( x-13, y-7 );
                 glVertex2i( x-3, y-7 );
@@ -130,7 +136,7 @@ void SoundStatsWindow::Render( bool hasFocus )
                 glVertex2i( x-13, y+1 );
             glEnd();
 
-            glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
+            glColor4f( 1.0, 1.0, 1.0, 1.0 );        
             g_editorFont.DrawText2D( x, y, 9, "%2d.", channelIndex );
 
             SoundInstanceId soundId = g_app->m_soundSystem->m_channels[channelIndex];
@@ -138,16 +144,16 @@ void SoundStatsWindow::Render( bool hasFocus )
             if( instance )
             {
                 int priority = instance->m_calculatedPriority;
-                float colour = 0.2f + (float) priority / 2.0f;
-                if( colour > 1.0f ) colour = 1.0f;
-                glColor4f( colour, colour, colour, 1.0f );
+                float colour = 0.2 + (float) priority / 2.0;
+                if( colour > 1.0 ) colour = 1.0;
+                glColor4f( colour, colour, colour, 1.0 );
 
-                g_editorFont.DrawText2D( x + 20, y, 9, "%s", instance->GetDescriptor() );
+                g_editorFont.DrawText2D( x + 20, y, 9, "%s", instance->GetDescriptor() );                
             }
         }
-    }
+    }    
 
-    glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
+    glColor4f( 1.0, 1.0, 1.0, 1.0 );
 
 //    int numRejected = g_app->m_soundSystem->m_sounds.NumUsed() - channelsPlaying;
 //    g_editorFont.DrawText2D( m_x + m_w - 150, m_y + m_h - 12, 10, "%2d sounds rejected", numRejected );

@@ -1,19 +1,20 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <math.h>
 
-#include "debug_render.h"
-
-#include "file_writer.h"
-#include "math_utils.h"
-#include "matrix34.h"
-#include "resource.h"
-#include "shape.h"
-#include "text_stream_readers.h"
-#include "preferences.h"
-#include "profiler.h"
-#include "text_renderer.h"
-#include "language_table.h"
+#include "lib/debug_render.h"
+#include "lib/debug_utils.h"
+#include "lib/filesys/text_file_writer.h"
+#include "lib/math_utils.h"
+#include "lib/matrix34.h"
+#include "lib/resource.h"
+#include "lib/shape.h"
+#include "lib/filesys/text_stream_readers.h"
+#include "lib/preferences.h"
+#include "lib/profiler.h"
+#include "lib/text_renderer.h"
+#include "lib/language_table.h"
+#include "lib/math/random_number.h"
 
 #include "app.h"
 #include "camera.h"
@@ -66,18 +67,32 @@
 #include "worldobject/switch.h"
 #include "worldobject/generichub.h"
 #include "worldobject/feedingtube.h"
-
-
+#include "worldobject/multiwiniazone.h"
+#include "worldobject/carryablebuilding.h"
+#include "worldobject/chess.h"
+#include "worldobject/clonelab.h"
+#include "worldobject/controlstation.h"
+#include "worldobject/portal.h"
+#include "worldobject/crate.h"
+#include "worldobject/statue.h"
+#include "worldobject/wallbuster.h"
+#include "worldobject/pulsebomb.h"
+#include "worldobject/restrictionzone.h"
+#include "worldobject/jumppad.h"
+#include "worldobject/aiobjective.h"
+#include "worldobject/eruptionmarker.h"
+#include "worldobject/smokemarker.h"
 
 Shape *Building::s_controlPad = NULL;
 ShapeMarker *Building::s_controlPadStatus = NULL;
 
+std::vector<WorldObjectId> Building::s_neighbours;
 
 
 Building::Building()
 :   m_front(1,0,0),
-    m_radius(13.0f),
-	m_timeOfDeath(-1.0f),
+    m_radius(13.0),
+	m_timeOfDeath(-1.0),
 	m_shape(NULL),
 	m_dynamic(false),
 	m_isGlobal(false),
@@ -86,15 +101,28 @@ Building::Building()
     if( !s_controlPad )
     {
         s_controlPad = g_app->m_resource->GetShape( "controlpad.shp" );
-        DEBUG_ASSERT( s_controlPad );
+        AppDebugAssert( s_controlPad );
 
-        s_controlPadStatus = s_controlPad->m_rootFragment->LookupMarker( "MarkerStatus" );
-        DEBUG_ASSERT( s_controlPadStatus );
+        const char controlPadStatusName[] = "MarkerStatus";
+        s_controlPadStatus = s_controlPad->m_rootFragment->LookupMarker( controlPadStatusName );
+        AppReleaseAssert( s_controlPadStatus, "Building: Can't get Marker(%s) from shape(%s), probably a corrupted file\n", controlPadStatusName, s_controlPad->m_name );
     }
 
-    m_id.SetTeamId(1);
-
+    if( g_app->IsSinglePlayer() )
+    {
+        m_id.SetTeamId(1);
+    }
+    else
+    {
+        m_id.SetTeamId(255);
+    }
+    
     m_up = g_upVector;
+}
+
+Building::~Building()
+{
+	m_ports.EmptyAndDelete();
 }
 
 void Building::Initialise( Building *_template )
@@ -111,21 +139,21 @@ void Building::Initialise( Building *_template )
     if( m_shape )
     {
         Matrix34 mat( m_front, m_up, m_pos );
-        m_centrePos = m_shape->CalculateCentre( mat );
+        m_centrePos = m_shape->CalculateCentre( mat );        
         m_radius = m_shape->CalculateRadius( mat, m_centrePos );
 
-        SetShapeLights( m_shape->m_rootFragment );
+        SetShapeLights( m_shape->m_rootFragment );  
         SetShapePorts( m_shape->m_rootFragment );
     }
     else
     {
-        m_centrePos = m_pos;
-        m_radius = 13.0f;
+        m_centrePos = m_pos;     
+        m_radius = 13.0;
     }
-
+    
     GlobalBuilding *gb = g_app->m_globalWorld->GetBuilding( m_id.GetUniqueId(), g_app->m_requestedLocationId );
     if( gb ) m_id.SetTeamId( gb->m_teamId );
-
+    
     g_app->m_soundSystem->TriggerBuildingEvent( this, "Create" );
 }
 
@@ -137,7 +165,7 @@ void Building::SetDetail( int _detail )
     if( m_shape )
     {
         Matrix34 mat( m_front, m_up, m_pos );
-        m_centrePos = m_shape->CalculateCentre( mat );
+        m_centrePos = m_shape->CalculateCentre( mat );        
         m_radius = m_shape->CalculateRadius( mat, m_centrePos );
 
         m_ports.EmptyAndDelete();
@@ -146,7 +174,7 @@ void Building::SetDetail( int _detail )
     else
     {
         m_centrePos = m_pos;
-        m_radius = 13.0f;
+        m_radius = 13.0;
     }
 }
 
@@ -200,19 +228,19 @@ void Building::SetShapePorts( ShapeFragment *_fragment )
     int i;
 
     Matrix34 buildingMat( m_front, m_up, m_pos );
-
+    
     for( i = 0; i < _fragment->m_childMarkers.Size(); ++i )
     {
         ShapeMarker *marker = _fragment->m_childMarkers[i];
         if( strstr( marker->m_name, "MarkerPort" ) )
         {
             BuildingPort *port = new BuildingPort();
-            port->m_marker = marker;
+            port->m_marker = marker;     
             port->m_mat = marker->GetWorldMatrix(buildingMat);
-            port->m_mat.pos = PushFromBuilding( port->m_mat.pos, 5.0f );
+            port->m_mat.pos = PushFromBuilding( port->m_mat.pos, 5.0 );
             port->m_mat.pos.y = g_app->m_location->m_landscape.m_heightMap->GetValue( port->m_mat.pos.x, port->m_mat.pos.z );
-
-            for( int t = 0; t < NUM_TEAMS; ++t )
+            
+            for( int t = 0; t < NUM_TEAMS; ++t )            
             {
                 port->m_counter[t] = 0;
             }
@@ -234,7 +262,7 @@ void Building::SetShapePorts( ShapeFragment *_fragment )
 }
 
 
-void Building::Reprogram( float _complete )
+void Building::Reprogram( double _complete )
 {
 }
 
@@ -248,25 +276,28 @@ void Building::ReprogramComplete()
     {
         gb->m_online = !gb->m_online;
     }
-
+    
     g_app->m_globalWorld->EvaluateEvents();
 }
 
 
 void Building::SetTeamId( int _teamId )
 {
-    m_id.SetTeamId( _teamId );
+    if( m_id.GetTeamId() != _teamId )
+    {
+        m_id.SetTeamId( _teamId );
 
-    GlobalBuilding *gb = g_app->m_globalWorld->GetBuilding( m_id.GetUniqueId(), g_app->m_locationId );
-    if( gb ) gb->m_teamId = _teamId;
-
-    g_app->m_soundSystem->TriggerBuildingEvent( this, "ChangeTeam" );
+        GlobalBuilding *gb = g_app->m_globalWorld->GetBuilding( m_id.GetUniqueId(), g_app->m_locationId );
+        if( gb ) gb->m_teamId = _teamId;
+        
+        g_app->m_soundSystem->TriggerBuildingEvent( this, "ChangeTeam" );
+    }
 }
 
 
-Vector3 Building::PushFromBuilding( Vector3 const &pos, float _radius )
+Vector3 Building::PushFromBuilding( Vector3 const &pos, double _radius )
 {
-    START_PROFILE( g_app->m_profiler, "PushFromBuilding" );
+    START_PROFILE( "PushFromBuilding" );
 
     Vector3 result = pos;
 
@@ -274,15 +305,15 @@ Vector3 Building::PushFromBuilding( Vector3 const &pos, float _radius )
     if( DoesSphereHit( result, _radius ) ) hit = true;
 
     if( hit )
-    {
-        Vector3 pushForce = (m_pos - result).SetLength(2.0f);
+    {            
+        Vector3 pushForce = (m_pos - result).SetLength(2.0);
         while( DoesSphereHit( result, _radius ) )
         {
-            result -= pushForce;
+            result -= pushForce;                
         }
     }
 
-    END_PROFILE( g_app->m_profiler, "PushFromBuilding" );
+    END_PROFILE(  "PushFromBuilding" );
 
     return result;
 }
@@ -300,14 +331,14 @@ bool Building::PerformDepthSort( Vector3 &_centrePos )
 }
 
 
-void Building::Render( float predictionTime )
+void Building::Render( double predictionTime )
 {
 #ifdef DEBUG_RENDER_ENABLED
 	if (g_app->m_editing)
 	{
 		Vector3 pos(m_pos);
-		pos.y += 5.0f;
-		RenderArrow(pos, pos + m_front * 20.0f, 4.0f);
+		pos.y += 5.0;
+		RenderArrow(pos, pos + m_front * 20.0, 4.0);
 	}
 #endif
 
@@ -315,20 +346,20 @@ void Building::Render( float predictionTime )
 	{
 		Matrix34 mat(m_front, m_up, m_pos);
 		m_shape->Render(predictionTime, mat);
-
+    
         //m_shape->RenderMarkers(mat);
 	}
 }
 
 
-void Building::RenderAlphas( float predictionTime )
+void Building::RenderAlphas( double predictionTime )
 {
     RenderLights();
     RenderPorts();
-
+    
     //RenderHitCheck();
-    //RenderSphere(m_pos, 300);
-
+    //RenderSphere(m_pos, 300);		
+        
 //	if (m_shape)
 //	{
 //		Matrix34 mat(m_front, g_upVector, m_pos);
@@ -351,17 +382,17 @@ void Building::RenderLights()
                 Matrix34 worldMat = marker->GetWorldMatrix(rootMat);
 	            Vector3 lightPos = worldMat.pos;
 
-                float signalSize = 6.0f;
+                double signalSize = 6.0;
                 Vector3 camR = g_app->m_camera->GetRight();
                 Vector3 camU = g_app->m_camera->GetUp();
 
                 if( m_id.GetTeamId() == 255 )
 	            {
-		            glColor3f( 0.5f, 0.5f, 0.5f );
+		            glColor3f( 0.5, 0.5, 0.5 );
 	            }
 	            else
 	            {
-		            glColor3ubv( g_app->m_location->m_teams[ m_id.GetTeamId() ].m_colour.GetData() );
+		            glColor3ubv( g_app->m_location->m_teams[ m_id.GetTeamId() ]->m_colour.GetData() );
 	            }
 
                 glEnable        ( GL_TEXTURE_2D );
@@ -376,12 +407,12 @@ void Building::RenderLights()
 
                 for( int i = 0; i < 10; ++i )
                 {
-                    float size = signalSize * (float) i / 10.0f;
+                    double size = signalSize * (double) i / 10.0;
                     glBegin( GL_QUADS );
-                        glTexCoord2f    ( 0.0f, 0.0f );             glVertex3fv     ( (lightPos - camR * size - camU * size).GetData() );
-                        glTexCoord2f    ( 1.0f, 0.0f );             glVertex3fv     ( (lightPos + camR * size - camU * size).GetData() );
-                        glTexCoord2f    ( 1.0f, 1.0f );             glVertex3fv     ( (lightPos + camR * size + camU * size).GetData() );
-                        glTexCoord2f    ( 0.0f, 1.0f );             glVertex3fv     ( (lightPos - camR * size + camU * size).GetData() );
+                        glTexCoord2f    ( 0.0, 0.0 );             glVertex3dv     ( (lightPos - camR * size - camU * size).GetData() );
+                        glTexCoord2f    ( 1.0, 0.0 );             glVertex3dv     ( (lightPos + camR * size - camU * size).GetData() );
+                        glTexCoord2f    ( 1.0, 1.0 );             glVertex3dv     ( (lightPos + camR * size + camU * size).GetData() );
+                        glTexCoord2f    ( 0.0, 1.0 );             glVertex3dv     ( (lightPos - camR * size + camU * size).GetData() );
                     glEnd();
                 }
 
@@ -390,7 +421,7 @@ void Building::RenderLights()
 
                 glDepthMask     ( true );
                 glEnable        ( GL_CULL_FACE );
-                glDisable       ( GL_TEXTURE_2D );
+                glDisable       ( GL_TEXTURE_2D );                    
             }
         }
     }
@@ -407,14 +438,14 @@ void Building::EvaluatePorts()
 
         //
         // Look for a valid Darwinian near the port
-
+    
         int numFound;
         if( g_app->m_location->m_entityGrid )
         {
-            WorldObjectId *ids = g_app->m_location->m_entityGrid->GetNeighbours( port->m_mat.pos.x, port->m_mat.pos.z, 5.0f, &numFound );
+            g_app->m_location->m_entityGrid->GetNeighbours( s_neighbours, port->m_mat.pos.x, port->m_mat.pos.z, 5.0, &numFound );
             for( int i = 0; i < numFound; ++i )
             {
-                WorldObjectId id = ids[i];
+                WorldObjectId id = s_neighbours[i];
                 Entity *entity = g_app->m_location->GetEntity( id );
                 if( entity && entity->m_type == Entity::TypeDarwinian )
                 {
@@ -426,7 +457,7 @@ void Building::EvaluatePorts()
                     }
                 }
             }
-        }
+        }    
 
         //
         // Update the operation counter
@@ -440,7 +471,7 @@ void Building::EvaluatePorts()
             else
             {
                 port->m_counter[t]-=4;
-                port->m_counter[t] = max( port->m_counter[t], 0 );
+                port->m_counter[t] = max( port->m_counter[t], 0 );    
             }
         }
     }
@@ -449,7 +480,7 @@ void Building::EvaluatePorts()
 
 void Building::RenderPorts()
 {
-    START_PROFILE( g_app->m_profiler, "RenderPorts" );
+    START_PROFILE( "RenderPorts" );
 
     int buildingDetail = g_prefsManager->GetInt( "RenderBuildingDetail" );
 
@@ -463,31 +494,31 @@ void Building::RenderPorts()
         //
         // Render the port shape
 
-        portPos.y = g_app->m_location->m_landscape.m_heightMap->GetValue( portPos.x, portPos.z ) + 0.5f;
+        portPos.y = g_app->m_location->m_landscape.m_heightMap->GetValue( portPos.x, portPos.z ) + 0.5;
         Vector3 portUp = g_upVector;
         Matrix34 mat( portFront, portUp, portPos );
 
         if( buildingDetail < 3 )
         {
             g_app->m_renderer->SetObjectLighting();
-            s_controlPad->Render( 0.0f, mat );
+            s_controlPad->Render( 0.0, mat );
             g_app->m_renderer->UnsetObjectLighting();
         }
-
-
+        
+        
         //
         // Render the status light
 
-        float size = 6.0f;
+        double size = 6.0;
 
         Vector3 camR = g_app->m_camera->GetRight() * size;
         Vector3 camU = g_app->m_camera->GetUp() * size;
 
         Vector3 statusPos = s_controlPadStatus->GetWorldMatrix( mat ).pos;
-
-        if( GetPortOccupant(i).IsValid() )      glColor4f( 0.3f, 1.0f, 0.3f, 1.0f );
-        else                                    glColor4f( 1.0f, 0.3f, 0.3f, 1.0f );
-
+        
+        if( GetPortOccupant(i).IsValid() )      glColor4f( 0.3, 1.0, 0.3, 1.0 );        
+        else                                    glColor4f( 1.0, 0.3, 0.3, 1.0 );
+        
         glDisable       ( GL_CULL_FACE );
         glEnable        ( GL_TEXTURE_2D );
         glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/starburst.bmp" ) );
@@ -495,10 +526,10 @@ void Building::RenderPorts()
         glEnable        ( GL_BLEND );
         glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
         glBegin( GL_QUADS );
-            glTexCoord2i( 0, 0 );           glVertex3fv( (statusPos - camR - camU).GetData() );
-            glTexCoord2i( 1, 0 );           glVertex3fv( (statusPos + camR - camU).GetData() );
-            glTexCoord2i( 1, 1 );           glVertex3fv( (statusPos + camR + camU).GetData() );
-            glTexCoord2i( 0, 1 );           glVertex3fv( (statusPos - camR + camU).GetData() );
+            glTexCoord2i( 0, 0 );           glVertex3dv( (statusPos - camR - camU).GetData() );
+            glTexCoord2i( 1, 0 );           glVertex3dv( (statusPos + camR - camU).GetData() );
+            glTexCoord2i( 1, 1 );           glVertex3dv( (statusPos + camR + camU).GetData() );
+            glTexCoord2i( 0, 1 );           glVertex3dv( (statusPos - camR + camU).GetData() );
         glEnd();
         glBlendFunc     ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
         glDisable       ( GL_BLEND );
@@ -507,7 +538,7 @@ void Building::RenderPorts()
         glEnable        ( GL_CULL_FACE );
     }
 
-    END_PROFILE( g_app->m_profiler, "RenderPorts" );
+    END_PROFILE(  "RenderPorts" );
 }
 
 
@@ -521,7 +552,7 @@ void Building::RenderHitCheck()
 	}
 	else
 	{
-		RenderSphere(m_pos, m_radius);
+		RenderSphere(m_pos, m_radius);		
 	}
 #endif
 }
@@ -537,21 +568,21 @@ void Building::RenderLink()
         if( linkBuilding )
         {
 			Vector3 start = m_pos;
-			start.y += 10.0f;
+			start.y += 10.0;
 			Vector3 end = linkBuilding->m_pos;
-			end.y += 10.0f;
-			RenderArrow(start, end, 6.0f, RGBAColour(255,0,255));
+			end.y += 10.0;
+			RenderArrow(start, end, 6.0, RGBAColour(255,0,255));
         }
     }
 #endif
 }
 
-void Building::Damage( float _damage )
+void Building::Damage( double _damage )
 {
     g_app->m_soundSystem->TriggerBuildingEvent( this, "Damage" );
 }
 
-void Building::Destroy( float _intensity )
+void Building::Destroy( double _intensity )
 {
 	m_destroyed = true;
 
@@ -560,22 +591,23 @@ void Building::Destroy( float _intensity )
 	{
 		g_explosionManager.AddExplosion( m_shape, mat );
 	}
-	g_app->m_location->Bang( m_pos, _intensity, _intensity/4.0f );
+	
+	g_app->m_location->Bang( m_pos, _intensity, _intensity/4.0 );
 
     g_app->m_soundSystem->TriggerBuildingEvent( this, "Explode" );
 
-	for( int i = 0; i < (int)(_intensity/4.0f); ++i )
+	for( int i = 0; i < (int)(_intensity/4.0); ++i )
 	{
-		Vector3 vel(0.0f,0.0f,0.0f);
-		vel.x += syncsfrand(100.0f);
-		vel.y += syncsfrand(100.0f);
-		vel.z += syncsfrand(100.0f);
-		g_app->m_particleSystem->CreateParticle(m_pos, vel, Particle::TypeExplosionCore, 100.0f);
-	}
+		Vector3 vel(0.0,0.0,0.0);
+		vel.x += syncsfrand(100.0);
+		vel.y += syncsfrand(100.0);
+		vel.z += syncsfrand(100.0);
+		g_app->m_particleSystem->CreateParticle(m_pos, vel, Particle::TypeExplosionCore, 100.0);
+	}	
 }
 
-bool Building::DoesRayHit(Vector3 const &_rayStart, Vector3 const &_rayDir,
-                          float _rayLen, Vector3 *_pos, Vector3 *norm )
+bool Building::DoesRayHit(Vector3 const &_rayStart, Vector3 const &_rayDir, 
+                          double _rayLen, Vector3 *_pos, Vector3 *norm )
 {
 	if (m_shape)
 	{
@@ -589,7 +621,7 @@ bool Building::DoesRayHit(Vector3 const &_rayStart, Vector3 const &_rayDir,
 	}
 }
 
-bool Building::DoesSphereHit(Vector3 const &_pos, float _radius)
+bool Building::DoesSphereHit(Vector3 const &_pos, double _radius)
 {
     if(m_shape)
     {
@@ -599,7 +631,7 @@ bool Building::DoesSphereHit(Vector3 const &_pos, float _radius)
     }
     else
     {
-        float distance = (_pos - m_pos).Mag();
+        double distance = (_pos - m_pos).Mag();
         return( distance <= _radius + m_radius );
     }
 }
@@ -695,9 +727,9 @@ int Building::GetPortOperatorCount( int _portId, int _teamId )
 }
 
 
-char *Building::GetObjectiveCounter()
+void Building::GetObjectiveCounter   (UnicodeString& _dest)
 {
-    return "";
+    _dest = UnicodeString();
 }
 
 
@@ -709,11 +741,11 @@ void Building::Read( TextReader *_in, bool _dynamic )
     int teamId;
 
     word = _in->GetNextToken();          buildingId  =        atoi(word);
-	word = _in->GetNextToken();          m_pos.x     = (float)atof(word);
-	word = _in->GetNextToken();			 m_pos.z     = (float)atof(word);
+	word = _in->GetNextToken();          m_pos.x     = (double)iv_atof(word);
+	word = _in->GetNextToken();			 m_pos.z     = (double)iv_atof(word);
 	word = _in->GetNextToken();			 teamId      =        atoi(word);
-    word = _in->GetNextToken();          m_front.x   = (float)atof(word);
-    word = _in->GetNextToken();          m_front.z   = (float)atof(word);
+    word = _in->GetNextToken();          m_front.x   = (double)iv_atof(word);
+    word = _in->GetNextToken();          m_front.z   = (double)iv_atof(word);
 	word = _in->GetNextToken();			 m_isGlobal  =  (bool)atoi(word);
 
 	m_front.Normalise();
@@ -721,9 +753,9 @@ void Building::Read( TextReader *_in, bool _dynamic )
 	m_dynamic = _dynamic;
 }
 
-void Building::Write( FileWriter *_out )
+void Building::Write( TextWriter *_out )
 {
-    _out->printf( "\t%-20s", GetTypeName(m_type) );
+    _out->printf( "\t%-20s", GetTypeName(m_type) );        
 
     _out->printf( "%-8d",    m_id.GetUniqueId());
 	_out->printf( "%-8.2f",  m_pos.x);
@@ -734,17 +766,64 @@ void Building::Write( FileWriter *_out )
 	_out->printf( "%-8d",	 m_isGlobal);
 }
 
+bool Building::BuildingIsBlocked( int _buildingId )
+{
+#ifdef BLOCK_OLD_DARWINIA_OBJECTS
+    return( _buildingId == Building::TypeBlueprintConsole ||
+            _buildingId == Building::TypeBlueprintRelay ||
+            _buildingId == Building::TypeBlueprintStore ||
+            _buildingId == Building::TypeBridge ||
+            _buildingId == Building::TypeCave ||
+            _buildingId == Building::TypeChessBase ||
+            _buildingId == Building::TypeChessPiece ||
+            _buildingId == Building::TypeCrate ||
+            _buildingId == Building::TypeDisplayScreen ||
+            _buildingId == Building::TypeDynamicHub ||
+            _buildingId == Building::TypeDynamicNode ||
+            _buildingId == Building::TypeFactory ||
+            _buildingId == Building::TypeFenceSwitch ||
+            _buildingId == Building::TypeGenerator ||
+            _buildingId == Building::TypeGodDish || 
+            _buildingId == Building::TypeLibrary ||
+            _buildingId == Building::TypeMine ||
+            _buildingId == Building::TypePortal ||
+            _buildingId == Building::TypePowerstation ||
+            _buildingId == Building::TypePrimaryUpgradePort ||
+            _buildingId == Building::TypeReceiverLink ||
+            _buildingId == Building::TypeReceiverSpiritSpawner ||
+            _buildingId == Building::TypeRefinery ||
+            _buildingId == Building::TypeResearchItem ||
+            _buildingId == Building::TypeSafeArea ||
+            _buildingId == Building::TypeScriptTrigger || 
+            _buildingId == Building::TypeSpam ||
+            _buildingId == Building::TypeSpiritProcessor ||
+            _buildingId == Building::TypeSpiritReceiver ||
+            _buildingId == Building::TypeStatue ||
+            _buildingId == Building::TypeTrackEnd ||
+            _buildingId == Building::TypeTrackJunction ||
+            _buildingId == Building::TypeTrackLink ||
+            _buildingId == Building::TypeTrackStart ||
+            _buildingId == Building::TypeUpgradePort ||
+            _buildingId == Building::TypeYard ||
+            _buildingId == Building::TypePylonStart ||
+            _buildingId == Building::TypeFeedingTube ||
+            _buildingId == Building::TypeAISpawnPoint );
+#endif
+    return false;
+}
+
 Building *Building::CreateBuilding( char *_name )
 {
     for( int i = 0; i < NumBuildingTypes; ++i )
     {
-        if( _stricmp( _name, GetTypeName(i) ) == 0 )
+        if( BuildingIsBlocked(i) ) continue;
+        if( stricmp( _name, GetTypeName(i) ) == 0 )
         {
             return CreateBuilding(i);
         }
     }
 
-    //DEBUG_ASSERT(false);
+    //AppDebugAssert(false);
 	return NULL;
 }
 
@@ -772,6 +851,7 @@ Building *Building::CreateBuilding( int _type )
         case TypePylonStart:            building = new PylonStart();            break;
         case TypePylonEnd:              building = new PylonEnd();              break;
         case TypeSolarPanel:            building = new SolarPanel();            break;
+        case TypePowerSplitter:         building = new PowerSplitter();         break;
         case TypeTrackLink:             building = new TrackLink();             break;
         case TypeTrackJunction:         building = new TrackJunction();         break;
         case TypeTrackStart:            building = new TrackStart();            break;
@@ -811,17 +891,38 @@ Building *Building::CreateBuilding( int _type )
         case TypeDynamicHub:            building = new DynamicHub();            break;
         case TypeDynamicNode:           building = new DynamicNode();           break;
         case TypeFeedingTube:           building = new FeedingTube();           break;
+        case TypeMultiwiniaZone:        building = new MultiwiniaZone();        break;
+        case TypeChessBase:             building = new ChessBase();             break;
+        case TypeChessPiece:            building = new ChessPiece();            break;
+        case TypeCloneLab:              building = new CloneLab();              break;
+		case TypeControlStation:		building = new ControlStation();		break;
+        case TypePortal:                building = new Portal();                break;
+        case TypeCrate:                 building = new Crate();                 break;
+        case TypeStatue:                building = new Statue();                break;
+        case TypeWallBuster:            building = new WallBuster();            break;
+        case TypePulseBomb:             building = new PulseBomb();             break;
+        case TypeRestrictionZone:       building = new RestrictionZone();       break;
+        case TypeJumpPad:               building = new JumpPad();               break;
+        case TypeAIObjective:           building = new AIObjective();           break;
+        case TypeAIObjectiveMarker:     building = new AIObjectiveMarker();     break;
+        case TypeEruptionMarker:        building = new EruptionMarker();        break;
+        case TypeSmokeMarker:           building = new SmokeMarker();           break;
     };
 
 
-    if( _type == TypeRadarDish ||
-        _type == TypeControlTower ||
-        _type == TypeTrunkPort ||
-        _type == TypeIncubator ||
-        _type == TypeDynamicHub ||
-        _type == TypeFenceSwitch )
+    if( building )
     {
-        building->m_isGlobal = true;
+        if( _type == TypeRadarDish ||
+            _type == TypeControlTower ||
+            _type == TypeTrunkPort ||
+            _type == TypeIncubator ||
+            _type == TypeDynamicHub ||
+            _type == TypeFenceSwitch )
+        {
+            building->m_isGlobal = true;
+        }
+        
+        building->m_type = _type;
     }
 
     return building;
@@ -831,7 +932,7 @@ int Building::GetTypeId( char const *_name )
 {
     for( int i = 0; i < NumBuildingTypes; ++i )
     {
-        if( _stricmp( _name, GetTypeName(i) ) == 0 )
+        if( stricmp( _name, GetTypeName(i) ) == 0 )
         {
             return i;
         }
@@ -860,6 +961,7 @@ char *Building::GetTypeName( int _type )
                                         "PylonStart",
                                         "PylonEnd",
                                         "SolarPanel",
+                                        "PowerSplitter",
                                         "TrackLink",
                                         "TrackJunction",
                                         "TrackStart",
@@ -898,7 +1000,23 @@ char *Building::GetTypeName( int _type )
                                         "FenceSwitch",
                                         "DynamicHub",
                                         "DynamicNode",
-                                        "FeedingTube"
+                                        "FeedingTube",
+                                        "MultiwiniaZone",
+                                        "ChessPiece",
+                                        "ChessBase",
+                                        "CloneLab",
+										"ControlStation",
+                                        "Portal",
+                                        "Crate",
+                                        "Statue",
+                                        "WallBuster",
+                                        "PulseBomb",
+                                        "RestrictionZone",
+                                        "JumpPad",
+                                        "AIObjective",
+                                        "AIObjectiveMarker",
+                                        "EruptionMarker",
+                                        "SmokeMarker"
                                     };
 
     if( _type >= 0 && _type < NumBuildingTypes )
@@ -907,13 +1025,13 @@ char *Building::GetTypeName( int _type )
     }
     else
     {
-        DEBUG_ASSERT(false);
+        AppDebugAssert(false);
         return NULL;
     }
 }
 
 
-char *Building::GetTypeNameTranslated( int _type )
+void Building::GetTypeNameTranslated( int _type, UnicodeString &_dest )
 {
     char *typeName = GetTypeName(_type);
 
@@ -922,11 +1040,11 @@ char *Building::GetTypeNameTranslated( int _type )
 
     if( ISLANGUAGEPHRASE( stringId ) )
     {
-        return LANGUAGEPHRASE( stringId );
+        _dest = LANGUAGEPHRASE( stringId );
     }
     else
     {
-        return typeName;
+        _dest = UnicodeString(typeName);
     }
 }
 
@@ -937,7 +1055,30 @@ void Building::ListSoundEvents( LList<char *> *_list )
     _list->PutData( "Reprogramming" );              // Remove me
     _list->PutData( "ReprogramComplete" );
     _list->PutData( "ChangeTeam" );
-    _list->PutData( "Damage" );
+    _list->PutData( "Damage" );    
 }
 
 
+char *HashDouble( double value, char *buffer );
+
+
+char *Building::LogState( char *_message )
+{
+    static char s_result[1024];
+
+    static char buf1[32], buf2[32], buf3[32], buf4[32], buf5[32], buf6[32], buf7[32];
+
+    sprintf( s_result, "%sBUILDING Type[%s] Id[%d] pos[%s,%s,%s], vel[%s] front[%s] centre[%s], radius[%s]",
+                        (_message)?_message:"",
+                        GetTypeName(m_type),
+                        m_id.GetUniqueId(),
+                        HashDouble( m_pos.x, buf1 ),
+                        HashDouble( m_pos.y, buf2 ),
+                        HashDouble( m_pos.z, buf3 ),
+                        HashDouble( m_vel.x + m_vel.y + m_vel.z, buf4 ),
+                        HashDouble( m_front.x + m_front.y + m_front.z, buf5 ),
+                        HashDouble( m_centrePos.x + m_centrePos.y + m_centrePos.z, buf6 ), 
+                        HashDouble( m_radius, buf7 ) );
+
+    return s_result;
+}

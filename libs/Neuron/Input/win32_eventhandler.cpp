@@ -1,12 +1,13 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <iostream>
+#include <algorithm>
 
-#include "input/win32_eventhandler.h"
+#include "lib/input/win32_eventhandler.h"
 
-#include "window_manager.h"
-#include "window_manager_win32.h"
-
+#include "lib/window_manager.h"
+#include "lib/window_manager_win32.h"
+#include "lib/debug_utils.h"
 
 #include "app.h"
 
@@ -14,7 +15,6 @@ using std::cerr;
 
 typedef std::vector<W32EventProcessor *> ProcList;
 typedef ProcList::iterator ProcIt;
-
 
 bool g_windowHasFocus = true;
 bool g_altTabBound = false;
@@ -28,30 +28,30 @@ LRESULT CALLBACK W32EventHandler::WndProc( HWND hWnd, UINT message,
                                            WPARAM wParam, LPARAM lParam )
 {
 	static bool s_previousFocus = false;
-	g_windowHasFocus = GetForegroundWindow() == g_windowManager->m_win32Specific->m_hWnd;
+	g_windowHasFocus = GetForegroundWindow() == (HWND)g_windowManager->Window();
 
 	if (!g_windowHasFocus || !s_previousFocus) {
-		// When switching away, ALT is often left down.
+		// When switching away, ALT is often left down. 
 		// Let's clear it.
 
 		extern signed char g_keyDeltas[KEY_MAX];
 		extern signed char g_keys[KEY_MAX];
 
-		if (g_keys[KEY_ALT]) {
+		if (g_keys[KEY_ALT]) { 
 			g_keyDeltas[KEY_ALT] = -1;
-			g_keys[KEY_ALT] = 0;
+			g_keys[KEY_ALT] = 0;		
 		}
 	}
 
 	s_previousFocus = g_windowHasFocus;
 
-	switch (message)
+	switch (message) 
 	{
+	case WM_CREATE:
+	case WM_DESTROY:
 		case WM_SIZING:
 		case WM_WINDOWPOSCHANGING:
 		case WM_WINDOWPOSCHANGED:
-		case WM_DESTROY:
-		case WM_CREATE:
 		case WM_COMMAND:
 		case WM_NCHITTEST:		// Mouse move or button
 			return -1;
@@ -61,7 +61,7 @@ LRESULT CALLBACK W32EventHandler::WndProc( HWND hWnd, UINT message,
 				POINT pt;
 				GetCursorPos(&pt);
 				LPARAM lparam = (unsigned long) (pt.x & 0xFFFF) | (unsigned long) ((pt.y & 0xFFFF) << 16);
-				if (DefWindowProc(hWnd, WM_NCHITTEST, 0, lparam) == HTCLIENT)
+				if (DefWindowProcW(hWnd, WM_NCHITTEST, 0, lparam) == HTCLIENT)
 					SetCursor(NULL);
 				else
 					return -1;
@@ -79,7 +79,7 @@ LRESULT CALLBACK W32EventHandler::WndProc( HWND hWnd, UINT message,
 			return 0;
 
 		case WM_INPUTLANGCHANGE:
-			DebugTrace( "Input language change: w = %d, l = %d\n", wParam, lParam );
+			AppDebugOut( "Input language change: w = %d, l = %d\n", wParam, lParam );
 			// Might want to reload key bindings and translations here if we can be bothered.
 			return 0;
 	}
@@ -99,14 +99,13 @@ void W32EventHandler::AddEventProcessor( W32EventProcessor *_driver )
 		w32eventprocs.push_back( _driver );
 	else
 		cerr << "AddEventProcessor: _driver is NULL\n";
-	g_hwnd = g_windowManager->m_win32Specific->m_hWnd;
+	g_hwnd = (HWND)g_windowManager->Window();
 }
 
 
 void W32EventHandler::RemoveEventProcessor( W32EventProcessor *_driver )
 {
-	for ( ProcIt i = w32eventprocs.begin(); i != w32eventprocs.end(); ++i )
-		if ( _driver == *i ) w32eventprocs.erase( i );
+	std::remove( w32eventprocs.begin(), w32eventprocs.end(), _driver );
 }
 
 
@@ -119,17 +118,17 @@ void W32EventHandler::ResetWindowHandle()
 
 void W32EventHandler::BindAltTab()
 {
-	DEBUG_ASSERT(g_windowManager->m_win32Specific->m_hWnd);
-	RegisterHotKey(g_windowManager->m_win32Specific->m_hWnd, 0, MOD_ALT, VK_TAB);
+	AppDebugAssert((HWND)g_windowManager->Window());
+	RegisterHotKey((HWND)g_windowManager->Window(), 0, MOD_ALT, VK_TAB);
     g_altTabBound = true;
 }
 
 
 void W32EventHandler::UnbindAltTab()
 {
-	DEBUG_ASSERT(g_windowManager->m_win32Specific->m_hWnd);
+	AppDebugAssert((HWND)g_windowManager->Window());
 	UnregisterHotKey(g_hwnd, 0);
-	UnregisterHotKey(g_windowManager->m_win32Specific->m_hWnd, 0);
+	UnregisterHotKey((HWND)g_windowManager->Window(), 0);
 }
 
 

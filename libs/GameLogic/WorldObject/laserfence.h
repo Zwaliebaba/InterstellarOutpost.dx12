@@ -10,22 +10,26 @@ class Shape;
 class ShapeFragment;
 class TextReader;
 
-#define LASERFENCE_RAISESPEED       0.3f
+#define LASERFENCE_RAISESPEED       0.3
 
 
 class LaserFence : public Building
 {
-protected:
-    float           m_status;                       // 0=down, 1=up
+protected:    
+    double           m_status;                       // 0=down, 1=up    
     int             m_nextLaserFenceId;
-    float           m_sparkTimer;
-
+    double           m_sparkTimer;
+    
     bool            m_radiusSet;
-
+    
     ShapeMarker     *m_marker1;
     ShapeMarker     *m_marker2;
 
 	bool			m_nextToggled;		// set to true when the fence has enabled/disabled the next fence in the line, to prevent constant enable calling
+    bool            m_solarMode;        // receiving power from solar panels, so switch off if the supply stops
+	bool			m_solarLinked;		// a laser fence that is connected to us is solar powered, which means if it shuts down, we will too
+
+    double           m_surgeReceived;
 
 public:
     enum
@@ -34,11 +38,12 @@ public:
         ModeEnabling,
         ModeEnabled,
         ModeDisabling,
-		ModeNeverOn
+		ModeNeverOn,
+        ModeAlwaysOn
     };
-    int             m_mode;
-    float           m_scale;
-
+    int             m_mode;    
+    double           m_scale;
+        
 public:
     LaserFence();
 
@@ -46,16 +51,16 @@ public:
     void SetDetail ( int _detail );
 
     bool Advance        ();
-    void Render         ( float predictionTime );
-    void RenderAlphas   ( float predictionTime );
+    void Render         ( double predictionTime );
+    void RenderAlphas   ( double predictionTime );
     void RenderLights   ();
 
     bool PerformDepthSort   ( Vector3 &_centrePos );
     bool IsInView           ();
 
     void Read   ( TextReader *_in, bool _dynamic );
-    void Write  ( FileWriter *_out );
-
+    void Write  ( TextWriter *_out );
+    
     void Enable     ();
     void Disable    ();
     void Toggle     ();
@@ -64,14 +69,18 @@ public:
     void Spark      ();
     void Electrocute( Vector3 const &_pos );
 
-    int  GetBuildingLink();
+	void SetSolarLinked();
+
+    void ProvidePower();
+
+    int  GetBuildingLink();                 
     void SetBuildingLink( int _buildingId );
 
-    float GetFenceFullHeight    ();
+    double GetFenceFullHeight    ();
 
-    bool DoesSphereHit          (Vector3 const &_pos, float _radius);
-    bool DoesRayHit             (Vector3 const &_rayStart, Vector3 const &_rayDir,
-                                 float _rayLen=1e10, Vector3 *_pos=NULL, Vector3 *_norm=NULL);
+    bool DoesSphereHit          (Vector3 const &_pos, double _radius);
+    bool DoesRayHit             (Vector3 const &_rayStart, Vector3 const &_rayDir, 
+                                 double _rayLen=1e10, Vector3 *_pos=NULL, Vector3 *_norm=NULL);
     bool DoesShapeHit           (Shape *_shape, Matrix34 _transform);
 
     void ListSoundEvents        (LList<char *> *_list );

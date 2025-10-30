@@ -14,7 +14,8 @@
 #define SIZE_ECLWINDOW_NAME     256
 #define SIZE_ECLWINDOW_TITLE    256
 
-#include "llist.h"
+#include "lib/tosser/llist.h"
+#include "lib/unicode/unicode_string.h"
 
 class EclButton;
 
@@ -24,19 +25,19 @@ class EclWindow
 
 public:
 
-    int         m_x;
-    int         m_y;
-    int         m_w;
-    int         m_h;
+    int				m_x;
+    int				m_y;
+    int				m_w;
+    int				m_h;
 
-    char        m_name  [SIZE_ECLWINDOW_NAME];
-    char        m_title [SIZE_ECLWINDOW_TITLE];
+    char			m_name  [SIZE_ECLWINDOW_NAME];
+    UnicodeString	m_title;
 
-    bool        m_movable;
-    bool        m_resizable;
-    bool        m_dirty;
+    bool			m_movable;
+    bool			m_resizable;
+    bool			m_dirty;
 
-    LList       <EclButton *> m_buttons;
+    LList			<EclButton *> m_buttons;
 
 public:
 
@@ -48,7 +49,7 @@ public:
     virtual ~EclWindow  ();
 
     void SetName                    ( char *_name );
-    void SetTitle                   ( char *_title );
+    void SetTitle                   ( const UnicodeString &_title );
     void SetPosition                ( int _x, int _y );
     void SetSize                    ( int _w, int _h );
     void SetMovable                 ( bool _movable );
@@ -68,7 +69,7 @@ public:
     virtual void Update ();
     virtual void Render ( bool hasFocus );
 
-    virtual void Keypress   ( int keyCode, bool shift, bool ctrl, bool alt );
+    virtual void Keypress   ( int keyCode, bool shift, bool ctrl, bool alt, unsigned char ascii );
     virtual void MouseEvent ( bool lmb, bool rmb, bool up, bool down );
 
 };

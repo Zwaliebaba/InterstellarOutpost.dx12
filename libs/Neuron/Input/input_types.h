@@ -3,7 +3,7 @@
 
 #include <string>
 #include <memory>
-#include "auto_vector.h"
+#include "lib/auto_vector.h"
 
 
 enum InputType {
@@ -20,10 +20,19 @@ struct InputDetails {
 	InputType type;  // Determines what we can expect in x and y
 	int x;           // Only meaningful if type is INPUT_TYPE_1D or INPUT_TYPE_2D
 	int y;           // Only meaningful if type is INPUT_TYPE_2D
+	int controller;	 // Only meaningful if set by XInput
+
+	InputDetails()
+		:	type( INPUT_TYPE_FAIL ),
+			x( 0 ),
+			y( 0 ),
+			controller( -1 )
+	{
+	}
 };
 
-typedef auto_vector<const InputDetails> InputDetailsList;
-typedef std::unique_ptr<InputDetails> InputDetailsPtr;
+typedef auto_vector<InputDetails> InputDetailsList;
+typedef std::auto_ptr<InputDetails> InputDetailsPtr;
 
 class InputDescription {
 

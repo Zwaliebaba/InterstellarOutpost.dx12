@@ -1,10 +1,10 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <stdio.h>
 #include <string.h>
 
-
-#include "language_table.h"
+#include "lib/debug_utils.h"
+#include "lib/language_table.h"
 
 #include "interface/input_field.h"
 #include "interface/instant_unit_window.h"
@@ -31,10 +31,10 @@ class EditButton: public DarwiniaButton
 {
 public:
 	EditButton() {}
-
+	
 	void MouseUp()
 	{
-		if (_stricmp(m_name, LANGUAGEPHRASE("editor_move")) == 0)
+		if (stricmp(m_name, "editor_move") == 0)
 		{
 			g_app->m_locationEditor->m_tool = LocationEditor::ToolMove;
 		}
@@ -60,7 +60,7 @@ public:
     {
 		InstantUnit *iu = g_app->m_location->m_levelFile->m_instantUnits.GetData(g_app->m_locationEditor->m_selectionId);
         if( iu )
-        {
+        {            
             iu->m_teamId = m_teamId;
         }
     }
@@ -69,7 +69,7 @@ public:
     {
 		InstantUnit *iu = g_app->m_location->m_levelFile->m_instantUnits.GetData(g_app->m_locationEditor->m_selectionId);
         if( iu )
-        {
+        {            
             if( iu->m_teamId == m_teamId )
             {
                 DarwiniaButton::Render( realX, realY, true, clicked );
@@ -86,7 +86,7 @@ public:
         }
         else
         {
-            RGBAColour col = g_app->m_location->m_teams[ m_teamId ].m_colour;
+            RGBAColour col = g_app->m_location->m_teams[ m_teamId ]->m_colour;
             glColor3ubv( col.GetData() );
         }
 
@@ -110,7 +110,7 @@ public:
     bool m_safetyCatch;
     DeleteInstantUnitButton()
         : m_safetyCatch(true){}
-
+    
     void MouseUp()
     {
         if( m_safetyCatch )
@@ -124,9 +124,42 @@ public:
 			delete iu;
 
             g_app->m_location->m_levelFile->m_instantUnits.RemoveData(g_app->m_locationEditor->m_selectionId);
-    	    EclRemoveWindow(LANGUAGEPHRASE("editor_instantuniteditor"));
+    	    EclRemoveWindow("editor_instantuniteditor");
             g_app->m_locationEditor->m_tool = LocationEditor::ToolNone;
             g_app->m_locationEditor->m_selectionId = -1;
+        }
+    }
+};
+
+class CloneInstantUnitButton : public DarwiniaButton
+{
+public:
+    void MouseUp()
+    {
+	    Vector3 rayStart;
+	    Vector3 rayDir;
+	    g_app->m_camera->GetClickRay(g_app->m_renderer->ScreenW()/2, 
+									 g_app->m_renderer->ScreenH()/2, &rayStart, &rayDir);
+        Vector3 hitPos;
+        g_app->m_location->m_landscape.RayHit( rayStart, rayDir, &hitPos );
+
+        Building *building = g_app->m_location->GetBuilding(g_app->m_locationEditor->m_selectionId);
+        AppDebugAssert(building);
+
+        InstantUnit *iu = g_app->m_location->m_levelFile->m_instantUnits.GetData(
+						g_app->m_locationEditor->m_selectionId);
+
+        if( iu )
+        {
+            InstantUnit *newIu = new InstantUnit();
+            newIu->m_number = iu->m_number;
+		    newIu->m_posX = hitPos.x;
+		    newIu->m_posZ = hitPos.z;
+            newIu->m_spread = iu->m_spread;
+            newIu->m_teamId = iu->m_teamId;
+		    newIu->m_type = iu->m_type;
+            newIu->m_inAUnit = iu->m_inAUnit;				
+		    g_app->m_location->m_levelFile->m_instantUnits.PutData(newIu);		                 
         }
     }
 };
@@ -157,22 +190,26 @@ void InstantUnitEditWindow::Create()
 	int buttonPitch = 18;
 
     EditButton *mb = new EditButton();
-	mb->SetShortProperties(LANGUAGEPHRASE("editor_move"), 10, y+=buttonPitch, m_w-20);
+	mb->SetShortProperties("editor_move", 10, y+=buttonPitch, m_w-20, -1, LANGUAGEPHRASE("editor_move"));
 	RegisterButton(mb);
 
+    CloneInstantUnitButton *cb = new CloneInstantUnitButton();
+    cb->SetShortProperties( "editor_clone", 10, y+=buttonPitch, m_w-20, -1, LANGUAGEPHRASE("editor_clone") );
+    RegisterButton(cb);
+
     DeleteInstantUnitButton *db = new DeleteInstantUnitButton();
-    db->SetShortProperties(LANGUAGEPHRASE("editor_delete"), 10, y+=buttonPitch, m_w-20);
+    db->SetShortProperties("editor_delete", 10, y+=buttonPitch, m_w-20, -1, LANGUAGEPHRASE("editor_delete"));
     RegisterButton(db);
 
 	y += buttonPitch;
 
-    for( int i = 0; i < 3; ++i )
+    for( int i = 0; i < 4; ++i )
     {
         char name[64];
-        int w = m_w/3 - 8;
+        int w = m_w/4 - 8;
         sprintf( name, "T%d", i);
         TeamButton1 *tb = new TeamButton1(i);
-        tb->SetShortProperties(name, 10 + (i*w) + (i*2), y, w);
+        tb->SetShortProperties(name, 10 + (i*w) + (i*2), y, w, -1, LANGUAGEPHRASE(name));
         RegisterButton(tb);
     }
 
@@ -180,9 +217,10 @@ void InstantUnitEditWindow::Create()
 
 	InstantUnit *iu = g_app->m_location->m_levelFile->m_instantUnits.GetData(
 						g_app->m_locationEditor->m_selectionId);
-    CreateValueControl( LANGUAGEPHRASE("editor_numentities"), InputField::TypeInt, &iu->m_number, y+=buttonPitch, 1, 1, 1000 );
-    CreateValueControl( LANGUAGEPHRASE("editor_spread"), InputField::TypeFloat, &iu->m_spread, y+=buttonPitch, 1.0f, 0.0f, 1000.0f );
-    CreateValueControl( LANGUAGEPHRASE("editor_inunit"), InputField::TypeChar, &iu->m_inAUnit, y+=buttonPitch, 1,0,1 );
+    CreateValueControl( "editor_numentities", &iu->m_number, y+=buttonPitch, 1, 1, 1000 );
+    CreateValueControl( "editor_spread", &iu->m_spread, y+=buttonPitch, 1.0, 0.0, 1000.0 );
+    CreateValueControl( "editor_inunit", &iu->m_inAUnit, y+=buttonPitch, 1,0,1 );
+    CreateValueControl( "editor_runastask", &iu->m_runAsTask, y+=buttonPitch, 1, 0, 1 );
 
 	y += 7;
 }
@@ -196,24 +234,24 @@ class CreateButton: public DarwiniaButton
 {
 public:
 	CreateButton() {}
-
+	
 	void MouseUp()
 	{
 		for (int i = 0; i < Entity::NumEntityTypes; ++i)
 		{
-			if (_stricmp(m_name, Entity::GetTypeNameTranslated(i)) == 0)
+			if (stricmp(m_name, Entity::GetTypeName(i)) == 0)
 			{
 				g_app->m_locationEditor->m_tool = LocationEditor::ToolMove;
 
 				// Where did we click?
 				Vector3 rayStart, rayDir, hitPos;
-	            g_app->m_camera->GetClickRay(g_app->m_renderer->ScreenW()/2,
-                                             g_app->m_renderer->ScreenH()/2,
+	            g_app->m_camera->GetClickRay(g_app->m_renderer->ScreenW()/2, 
+                                             g_app->m_renderer->ScreenH()/2, 
                                              &rayStart, &rayDir);
                 g_app->m_location->m_landscape.RayHit( rayStart, rayDir, &hitPos );
-
+				
 				// Make sure that any old edit window is removed
-				EclWindow *ew = EclGetWindow(LANGUAGEPHRASE("editor_instantuniteditor"));
+				EclWindow *ew = EclGetWindow("editor_instantuniteditor");
 				if (ew)
 				{
 					EclRemoveWindow(ew->m_name);
@@ -226,14 +264,14 @@ public:
 				iu->m_posZ = hitPos.z;
 				iu->m_teamId = 0;
 				iu->m_type = i;
-                iu->m_inAUnit = false;
+                iu->m_inAUnit = false;				
 				g_app->m_locationEditor->m_selectionId = g_app->m_location->m_levelFile->m_instantUnits.Size();
 				g_app->m_location->m_levelFile->m_instantUnits.PutData(iu);
 
 				// Create an edit window for the new instant unit
-				EclWindow *cw = EclGetWindow(LANGUAGEPHRASE("editor_instantunits"));
-				DEBUG_ASSERT(cw);
-				ew = new InstantUnitEditWindow(LANGUAGEPHRASE("editor_instantuniteditor"));
+				EclWindow *cw = EclGetWindow("editor_instantunits");
+				AppDebugAssert(cw);
+				ew = new InstantUnitEditWindow("editor_instantuniteditor");
 				ew->m_w = cw->m_w;
 				ew->m_h = 160;
 				ew->m_x = cw->m_x;
@@ -244,13 +282,12 @@ public:
 	}
 };
 
-
 // ****************************************************************************
 // Class InstantUnitCreateWindow
 // ****************************************************************************
 
 InstantUnitCreateWindow::InstantUnitCreateWindow( char *name )
-:	DarwiniaWindow(name)
+:	DarwiniaWindow(name) 
 {
 }
 
@@ -258,7 +295,7 @@ InstantUnitCreateWindow::InstantUnitCreateWindow( char *name )
 InstantUnitCreateWindow::~InstantUnitCreateWindow()
 {
 	g_app->m_locationEditor->RequestMode(LocationEditor::ModeNone);
-	EclRemoveWindow(LANGUAGEPHRASE("editor_instantuniteditor"));
+	EclRemoveWindow("editor_instantuniteditor");
 }
 
 
@@ -269,24 +306,27 @@ void InstantUnitCreateWindow::Create()
 	int y = 3;
 	int const buttonYPitch = 18;
 	char *lowerLimit = " ";
-	char *best;
+	char *best; 
 
 	for (int i = 0; i < Entity::NumEntityTypes; ++i)
 	{
-		best = "~~~~"; // All reasonable strings come before this when alphabetically sorted
-		for (int j = 0; j < Entity::NumEntityTypes; ++j)
-		{
-			char *typeName = Entity::GetTypeNameTranslated(j);
-			if (_stricmp(typeName, lowerLimit) > 0 &&
-				_stricmp(typeName, best) < 0)
-			{
-				best = typeName;
-			}
-		}
+	    best = "~~~~"; // All reasonable strings come before this when alphabetically sorted
+	    for (int j = 0; j < Entity::NumEntityTypes; ++j)
+	    {
+		    char *typeName = Entity::GetTypeName(j);
+		    if (stricmp(typeName, lowerLimit) > 0 &&
+			    stricmp(typeName, best) < 0)
+		    {
+			    best = typeName;
+		    }
+	    }
 		lowerLimit = best;
-		CreateButton *button = new CreateButton();
-		button->SetShortProperties(best, 10, y += buttonYPitch, m_w - 20);
-		RegisterButton(button);
+        if( !Entity::EntityIsBlocked(Entity::GetTypeId( best ) ) )
+        {
+		    CreateButton *button = new CreateButton();
+		    button->SetShortProperties(best, 10, y += buttonYPitch, m_w - 20, -1, UnicodeString(best));
+		    RegisterButton(button);
+        }
 	}
 }
 

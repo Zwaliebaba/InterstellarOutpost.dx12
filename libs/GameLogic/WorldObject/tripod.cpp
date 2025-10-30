@@ -1,14 +1,15 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <float.h>
 
-#include "hi_res_time.h"
-#include "math_utils.h"
-#include "persisting_debug_render.h"
-#include "profiler.h"
-#include "resource.h"
-#include "shape.h"
-#include "vector2.h"
+#include "lib/hi_res_time.h"
+#include "lib/math_utils.h"
+#include "lib/persisting_debug_render.h"
+#include "lib/profiler.h"
+#include "lib/resource.h"
+#include "lib/shape.h"
+#include "lib/vector2.h"
+#include "lib/math/random_number.h"
 
 #include "worldobject/entity_leg.h"
 #include "worldobject/tripod.h"
@@ -21,20 +22,20 @@
 #include "renderer.h"
 
 
-#define FOOT_MOVE_THRESHOLD	1.0f	// Lower means feet are lifted when less distant from their ideal pos, and thus smaller steps are taken
-#define IDEAL_LEG_SLOPE		0.2f
-#define LEG_LIFT			3.0f
-#define LEG_SWING_DURATION	0.5f
-#define LOOK_AHEAD_COEF		1.2f
+#define FOOT_MOVE_THRESHOLD	1.0	// Lower means feet are lifted when less distant from their ideal pos, and thus smaller steps are taken
+#define IDEAL_LEG_SLOPE		0.2
+#define LEG_LIFT			3.0
+#define LEG_SWING_DURATION	0.5
+#define LOOK_AHEAD_COEF		1.2
 
-#define ATTACK_HOVER_HEIGHT		18.0f
-#define STATIONARY_HOVER_HEIGHT 30.0f
-#define HOVER_LOWER_WITH_SPEED_FACTOR	0.2f
+#define ATTACK_HOVER_HEIGHT		18.0
+#define STATIONARY_HOVER_HEIGHT 30.0
+#define HOVER_LOWER_WITH_SPEED_FACTOR	0.2
 
-#define NAVIGATION_SEARCH_RADIUS	1000.0f
-#define ATTACK_SEARCH_RADIUS		200.0f
+#define NAVIGATION_SEARCH_RADIUS	1000.0
+#define ATTACK_SEARCH_RADIUS		200.0
 
-#define ATTACK_DURATION				7.0f
+#define ATTACK_DURATION				7.0
 
 
 //*****************************************************************************
@@ -43,12 +44,12 @@
 
 TripodNavData::TripodNavData()
 {
-	m_directions[0].x = 0.5f;	m_directions[0].y = 0.86603f;
-	m_directions[1].x = 1.0f;	m_directions[1].y = 0.0f;
-	m_directions[2].x = 0.5f;	m_directions[2].y = -0.86603f;
-	m_directions[3].x = -0.5f;	m_directions[3].y = -0.86603f;
-	m_directions[4].x = -1.0f;	m_directions[4].y = 0.0f;
-	m_directions[5].x = -0.5f;	m_directions[5].y = 0.86603f;
+	m_directions[0].x = 0.5;	m_directions[0].y = 0.86603;
+	m_directions[1].x = 1.0;	m_directions[1].y = 0.0;
+	m_directions[2].x = 0.5;	m_directions[2].y = -0.86603;
+	m_directions[3].x = -0.5;	m_directions[3].y = -0.86603;
+	m_directions[4].x = -1.0;	m_directions[4].y = 0.0;
+	m_directions[5].x = -0.5;	m_directions[5].y = 0.86603;
 }
 
 
@@ -59,16 +60,16 @@ TripodNavData::TripodNavData()
 Tripod::Tripod()
 :	m_mode(ModeWalking),
 	m_nextLegToMove(0),
-	m_speed(0.0f),
-	m_targetHoverHeight(27.0f),
+	m_speed(0.0),
+	m_targetHoverHeight(27.0),
 	m_bodyVel(0,0,0),
 	m_up(g_upVector)
 {
-	m_shape = g_app->m_resource->GetShape("tripod.shp");
-	m_modeStartTime = 0.0f;
-
+	//m_shape = g_app->m_resource->GetShape("tripod.shp");
+	m_modeStartTime = 0.0;
+	
 	// Initialise legs
-	for (int i = 0; i < 3; ++i)
+	/*for (int i = 0; i < 3; ++i)
 	{
 		char markerName[] = "MarkerLegX";
 		markerName[strlen(markerName) - 1] = '0' + i;
@@ -77,7 +78,7 @@ Tripod::Tripod()
 		m_legs[i]->m_idealLegSlope = IDEAL_LEG_SLOPE;
 		m_legs[i]->m_legSwingDuration = LEG_SWING_DURATION;
 		m_legs[i]->m_lookAheadCoef = LOOK_AHEAD_COEF;
-	}
+	}*/
 }
 
 
@@ -92,8 +93,21 @@ Tripod::~Tripod()
 
 void Tripod::Begin()
 {
-	Entity::Begin();
+    SetShape( "tripod.shp" );
+    // Initialise legs
+	for (int i = 0; i < 3; ++i)
+	{
+		char markerName[] = "MarkerLegX";
+		markerName[strlen(markerName) - 1] = '0' + i;
+		m_legs[i] = new EntityLeg(i, this, "tripod_leg_part.shp", "tripod_leg_part.shp", markerName);
+		m_legs[i]->m_legLift = LEG_LIFT;
+		m_legs[i]->m_idealLegSlope = IDEAL_LEG_SLOPE;
+		m_legs[i]->m_legSwingDuration = LEG_SWING_DURATION;
+		m_legs[i]->m_lookAheadCoef = LOOK_AHEAD_COEF;
+	}
 
+	Entity::Begin();
+	
 	for (int i = 0; i < 3; ++i)
 	{
 		m_legs[i]->LiftFoot(m_targetHoverHeight);
@@ -105,21 +119,26 @@ void Tripod::Begin()
 }
 
 
-void Tripod::ChangeHealth(int _amount)
+bool Tripod::ChangeHealth(int _amount, int _damageType)
 {
+    if( _damageType == DamageTypeLaser ) return false;
+
 	if (m_mode == ModeAttacking)
 	{
 	    bool dead = m_dead;
-
+	
 		Entity::ChangeHealth(_amount);
 
 		if (m_dead && !dead)
 		{
 			// We just died
 			Matrix34 transform( m_front, m_up, m_pos );
-			g_explosionManager.AddExplosion( m_shape, transform );
+			g_explosionManager.AddExplosion( m_shape, transform ); 
 		}
+        return true;
 	}
+
+    return false;
 }
 
 
@@ -131,13 +150,13 @@ int Tripod::CalcWhichFootToMove()
 
 	if (!allOnGround) return -1;
 
-	float bestScore = 0.0f;
-	float bestFoot = -1;
+	double bestScore = 0.0;
+	double bestFoot = -1;
 
 	for (int i = 0; i < 3; ++i)
 	{
-		float score = m_legs[i]->CalcFootsDesireToMove(m_targetHoverHeight);
-		if (score > bestScore)
+		double score = m_legs[i]->CalcFootsDesireToMove(m_targetHoverHeight);
+		if (score > bestScore) 
 		{
 			bestScore = score;
 			bestFoot = i;
@@ -177,11 +196,11 @@ void Tripod::DoFallForTwoLegs()
 
 	// Calc moment due to centre of gravity and the contact point on the ground not being vertically aligned
 	Vector3 lever(pointBetweenFeet - pointUnderBody);
-	float momentPerUnitMass = lever.Mag() * GRAVITY;
+	double momentPerUnitMass = lever.Mag() * GRAVITY;
 
 	// Calc force due to moment
 	Vector3 feetToBody(m_pos - pointBetweenFeet);
-	float feetToBodyLen = feetToBody.Mag();
+	double feetToBodyLen = feetToBody.Mag();
 	Vector3 footToFootDir(footToFoot);
 	footToFootDir.Normalise();
 	Vector3 forcePerUnitMass(m_up ^ footToFootDir);
@@ -191,11 +210,11 @@ void Tripod::DoFallForTwoLegs()
 	m_bodyVel += forcePerUnitMass * SERVER_ADVANCE_PERIOD;
 
 	// Calc change in body angle due to change in position (it is rotating around pointBetweenFeet)
-	float rotation = m_bodyVel.Mag() / feetToBodyLen; // Using small angle approximation (tan theta ~= theta)
-	Vector3 axis(footToFootDir * -rotation * 0.1f);
+	double rotation = m_bodyVel.Mag() / feetToBodyLen; // Using small angle approximation (tan theta ~= theta)
+	Vector3 axis(footToFootDir * -rotation * 0.1);
 	m_up.RotateAround(axis);
 //		m_front.RotateAround(axis);
-
+	
 	m_pos += m_bodyVel * SERVER_ADVANCE_PERIOD;
 	Vector3 newFeetToBody(m_pos - pointBetweenFeet);
 	newFeetToBody.SetLength(feetToBodyLen);
@@ -205,22 +224,22 @@ void Tripod::DoFallForTwoLegs()
 
 WorldObjectId Tripod::FindEntityToAttack()
 {
-	START_PROFILE(g_app->m_profiler, "FindEntityToA");
+	START_PROFILE( "FindEntityToA");
 
 	WorldObjectId id;
 
-	int numFound;
-	WorldObjectId *enemies = g_app->m_location->m_entityGrid->GetEnemies(m_pos.x, m_pos.z,
-																	ATTACK_SEARCH_RADIUS, &numFound, m_id.GetTeamId());
+	int numFound;	
+	g_app->m_location->m_entityGrid->GetEnemies(s_neighbours, m_pos.x, m_pos.z, 
+                                                ATTACK_SEARCH_RADIUS, &numFound, m_id.GetTeamId());
 
 	int nearest = -1;
-	float nearestDistSqrd = FLT_MAX;
+	double nearestDistSqrd = FLT_MAX;
 	for (int i = 0; i < numFound; ++i)
 	{
-		Entity *entity = g_app->m_location->GetEntity(enemies[i]);
-		float deltaX = entity->m_pos.x - m_pos.x;
-		float deltaY = entity->m_pos.z - m_pos.z;
-		float distSqrd = deltaX * deltaX + deltaY * deltaY;
+		Entity *entity = g_app->m_location->GetEntity(s_neighbours[i]);
+		double deltaX = entity->m_pos.x - m_pos.x;
+		double deltaY = entity->m_pos.z - m_pos.z;
+		double distSqrd = deltaX * deltaX + deltaY * deltaY;
 		if (distSqrd < nearestDistSqrd)
 		{
 			nearestDistSqrd = distSqrd;
@@ -230,10 +249,10 @@ WorldObjectId Tripod::FindEntityToAttack()
 
 	if (nearest != -1)
 	{
-		id = enemies[nearest];
+		id = s_neighbours[nearest];
 	}
 
-	END_PROFILE(g_app->m_profiler, "FindEntityToA");
+	END_PROFILE( "FindEntityToA");
 
 	return id;
 }
@@ -241,29 +260,29 @@ WorldObjectId Tripod::FindEntityToAttack()
 
 Vector2 Tripod::ChooseDestination()
 {
-	START_PROFILE(g_app->m_profiler, "ChooseDest");
+	START_PROFILE( "ChooseDest");
 
 	int numFound;
-	WorldObjectId *enemies = g_app->m_location->m_entityGrid->GetEnemies(m_pos.x, m_pos.z,
+	g_app->m_location->m_entityGrid->GetEnemies(s_neighbours, m_pos.x, m_pos.z, 
 																	NAVIGATION_SEARCH_RADIUS, &numFound, m_id.GetTeamId());
 	Vector2 pos;
 
 	if (numFound == 0)
 	{
 		pos = m_pos;
-		pos.x += syncsfrand(300.0f);
-		pos.y += syncsfrand(300.0f);
+		pos.x += syncsfrand(300.0);
+		pos.y += syncsfrand(300.0);
 	}
 	else
 	{
 		int i = syncrand() % numFound;
-		Entity *targetEnemy = g_app->m_location->GetEntity(enemies[i]);
+		Entity *targetEnemy = g_app->m_location->GetEntity(s_neighbours[i]);
 		pos = targetEnemy->m_pos;
-		pos.x += syncsfrand(100.0f);
-		pos.y += syncsfrand(100.0f);
+		pos.x += syncsfrand(100.0);
+		pos.y += syncsfrand(100.0);
 	}
 
-	END_PROFILE(g_app->m_profiler, "ChooseDest");
+	END_PROFILE( "ChooseDest");
 
 	return pos;
 }
@@ -271,16 +290,16 @@ Vector2 Tripod::ChooseDestination()
 
 void Tripod::DoNavigation()
 {
-	START_PROFILE(g_app->m_profiler, "DoNav");
+	START_PROFILE( "DoNav");
 
 	// If m_dir is -1 that means we aren't trying to go anywhere. We need to
 	// wait until we come to rest before we choose a new direction to travel in
 	if (m_navData.m_dir == -1)
 	{
-		float speed = m_vel.Mag();
-		if (speed > 0.5f)
+		double speed = m_vel.Mag();
+		if (speed > 0.5)
 		{
-			END_PROFILE(g_app->m_profiler, "DoNav");
+			END_PROFILE( "DoNav");
 			return;
 		}
 	}
@@ -288,8 +307,8 @@ void Tripod::DoNavigation()
 	// Have we reached our destination?
 	Vector2 pos(m_pos);
 	Vector2 delta(m_navData.m_targetPos - pos);
-	float deltaMag = delta.Mag();
-	if (deltaMag < 1.0f)
+	double deltaMag = delta.Mag();
+	if (deltaMag < 1.0)
 	{
 		m_navData.m_targetPos = ChooseDestination();
 
@@ -303,11 +322,11 @@ void Tripod::DoNavigation()
 	{
 		// Choose the best direction
 		Vector2 deltaNorm(delta / deltaMag);
-		float largestDot = m_navData.m_directions[0] * deltaNorm;
+		double largestDot = m_navData.m_directions[0] * deltaNorm;
 		unsigned int best = 0;
 		for (unsigned int i = 1; i < 6; i++)
 		{
-			float result = m_navData.m_directions[i] * deltaNorm;
+			double result = m_navData.m_directions[i] * deltaNorm;
 			if (result > largestDot)
 			{
 				largestDot = result;
@@ -318,24 +337,24 @@ void Tripod::DoNavigation()
 	}
 
 	// Should we changed direction?
-	float cross = m_navData.m_directions[m_navData.m_dir] ^ delta;
-	float theta = asinf(cross / deltaMag);
-	if (theta < -M_PI / 6.0f)
+	double cross = m_navData.m_directions[m_navData.m_dir] ^ delta;
+	double theta = iv_asin(cross / deltaMag);
+	if (theta < -M_PI / 6.0)
 	{
 		m_navData.m_dir++;
 		m_navData.m_dir = m_navData.m_dir % 6;
 	}
-	else if (theta > M_PI / 6.0f)
+	else if (theta > M_PI / 6.0)
 	{
 		m_navData.m_dir--;
 		m_navData.m_dir = m_navData.m_dir % 6;
 	}
 
 	// Apply some acceleration to move us in our chosen direction
-	m_vel.x += m_navData.m_directions[m_navData.m_dir].x * 1.0f;
-	m_vel.z += m_navData.m_directions[m_navData.m_dir].y * 1.0f;
+	m_vel.x += m_navData.m_directions[m_navData.m_dir].x * 1.0;
+	m_vel.z += m_navData.m_directions[m_navData.m_dir].y * 1.0;
 
-	END_PROFILE(g_app->m_profiler, "DoNav");
+	END_PROFILE( "DoNav");
 }
 
 
@@ -354,12 +373,12 @@ Vector3 Tripod::CalcAttackUpVector()
 
 void Tripod::AdvanceWalk()
 {
-	START_PROFILE(g_app->m_profiler, "AdvanceWalk");
+	START_PROFILE( "AdvanceWalk");
 
 	// Consider mode switch
 	{
-		float timeSinceAttack = g_gameTime - m_modeStartTime;
-		if (timeSinceAttack > 10.0f + ATTACK_DURATION)
+		double timeSinceAttack = g_gameTime - m_modeStartTime;
+		if (timeSinceAttack > 10.0 + ATTACK_DURATION)
 		{
 			WorldObjectId targetId = FindEntityToAttack();
 			if (targetId.IsValid())
@@ -368,7 +387,7 @@ void Tripod::AdvanceWalk()
 				m_attackTarget = target->m_pos;
 				m_mode = ModePreAttack;
 				m_modeStartTime = g_gameTime;
-				END_PROFILE(g_app->m_profiler, "AdvanceWalk");
+				END_PROFILE( "AdvanceWalk");
 				return;
 			}
 		}
@@ -378,7 +397,7 @@ void Tripod::AdvanceWalk()
 	// Consider choosing a different nav dest
 	if (syncrand() % 40 == 1)
 	{
-		m_navData.m_targetPos = ChooseDestination();
+		m_navData.m_targetPos = ChooseDestination();				
 	}
 
 
@@ -388,7 +407,7 @@ void Tripod::AdvanceWalk()
 
 	// Navigate
 	DoNavigation();
-
+	
 
 	// Fall
 	{
@@ -407,26 +426,26 @@ void Tripod::AdvanceWalk()
 		}
 	}
 
-	END_PROFILE(g_app->m_profiler, "AdvanceWalk");
+	END_PROFILE( "AdvanceWalk");
 }
 
 
 void Tripod::AdvancePreAttack()
 {
-	START_PROFILE(g_app->m_profiler, "AdvancePreAttack");
+	START_PROFILE( "AdvancePreAttack");
 
 	// Exit if we haven't come to a stop yet
-	if (m_vel.Mag() > 0.05f)
+	if (m_vel.Mag() > 0.05)
 	{
-		END_PROFILE(g_app->m_profiler, "AdvancePreAttack");
+		END_PROFILE( "AdvancePreAttack");
 		return;
 	}
-
+	
 	m_targetHoverHeight = ATTACK_HOVER_HEIGHT;
 
 	// See if we have achieved a full crouch yet
-	float height = m_pos.y - g_app->m_location->m_landscape.m_heightMap->GetValue(m_pos.x, m_pos.z);
-	if (height < ATTACK_HOVER_HEIGHT + 0.5f)
+	double height = m_pos.y - g_app->m_location->m_landscape.m_heightMap->GetValue(m_pos.x, m_pos.z);
+	if (height < ATTACK_HOVER_HEIGHT + 0.5)
 	{
 		m_mode = ModeAttacking;
 		m_modeStartTime = g_gameTime;
@@ -434,29 +453,29 @@ void Tripod::AdvancePreAttack()
 
 	// Blend into attack orientation
 	Vector3 desiredUp = CalcAttackUpVector();
-	float factor1 = 0.8f * SERVER_ADVANCE_PERIOD;
-	float factor2 = 1.0f - factor1;
+	double factor1 = 0.8 * SERVER_ADVANCE_PERIOD;
+	double factor2 = 1.0 - factor1;
 	m_up = factor1 * desiredUp + factor2 * m_up;
 	Vector3 right = m_up ^ m_front;
 	m_front = right ^ m_up;
 	m_front.Normalise();
 
-	END_PROFILE(g_app->m_profiler, "AdvancePreAttack");
+	END_PROFILE( "AdvancePreAttack");
 }
 
 
 void Tripod::AdvanceAttack()
 {
-	START_PROFILE(g_app->m_profiler, "AdvanceAttack");
+	START_PROFILE( "AdvanceAttack");
 
 
 	// Consider mode switch
-	float timeInAttack = g_gameTime - m_modeStartTime;
+	double timeInAttack = g_gameTime - m_modeStartTime;
 	if (timeInAttack > ATTACK_DURATION)
 	{
 		m_mode = ModePostAttack;
 		m_modeStartTime = g_gameTime;
-		END_PROFILE(g_app->m_profiler, "AdvanceAttack");
+		END_PROFILE( "AdvanceAttack");
 		return;
 	}
 
@@ -466,25 +485,25 @@ void Tripod::AdvanceAttack()
 //	m_front = m_up ^ right;
 //	m_front.Normalise();
 
-	if (timeInAttack > 1.0f)
+	if (timeInAttack > 1.0)
 	{
-		int t2 = (int)(timeInAttack * 10.0f);
+		int t2 = (int)(timeInAttack * 10.0);
 		if (t2 & 1)
 		{
 			Vector3 toEnemy = m_attackTarget - m_pos;
 			toEnemy.Normalise();
-			float const speed = 80.0f;
-			right.SetLength(4.0f);
+			double const speed = 80.0;
+			right.SetLength(4.0);
 			Vector3 pos = m_pos + right;
-			toEnemy.x += syncsfrand(0.1f);
-			toEnemy.z += syncsfrand(0.1f);
-			g_app->m_location->FireLaser(pos + toEnemy * 5.0f, toEnemy * speed, m_id.GetTeamId());
+			toEnemy.x += syncsfrand(0.1);
+			toEnemy.z += syncsfrand(0.1);
+			g_app->m_location->FireLaser(pos + toEnemy * 5.0, toEnemy * speed, m_id.GetTeamId());
 			pos = m_pos - right;
-			g_app->m_location->FireLaser(pos + toEnemy * 5.0f, toEnemy * speed, m_id.GetTeamId());
+			g_app->m_location->FireLaser(pos + toEnemy * 5.0, toEnemy * speed, m_id.GetTeamId());
 		}
 	}
 
-	END_PROFILE(g_app->m_profiler, "AdvanceAttack");
+	END_PROFILE( "AdvanceAttack");
 }
 
 
@@ -493,16 +512,16 @@ void Tripod::AdvancePostAttack()
 	m_targetHoverHeight = STATIONARY_HOVER_HEIGHT;
 
 	// Check if we have achieved full walking height yet
-	float height = m_pos.y - g_app->m_location->m_landscape.m_heightMap->GetValue(m_pos.x, m_pos.z);
-	if (height > STATIONARY_HOVER_HEIGHT - 0.5f)
+	double height = m_pos.y - g_app->m_location->m_landscape.m_heightMap->GetValue(m_pos.x, m_pos.z);
+	if (height > STATIONARY_HOVER_HEIGHT - 0.5)
 	{
 		m_mode = ModeWalking;
 		m_modeStartTime = g_gameTime;
 	}
 
 	// Blend out of attack orientation
-	float factor1 = 0.8f * SERVER_ADVANCE_PERIOD;
-	float factor2 = 1.0f - factor1;
+	double factor1 = 0.8 * SERVER_ADVANCE_PERIOD;
+	double factor2 = 1.0 - factor1;
 	m_up = factor1 * g_upVector + factor2 * m_up;
 	Vector3 right = m_up ^ m_front;
 	m_front = right ^ m_up;
@@ -524,19 +543,19 @@ bool Tripod::Advance(Unit *_unit)
 	}
 
 
-	//
+	// 
 	// Rotation
 
 	m_front.RotateAroundY(g_advanceTime * m_angVel.y);
-	m_angVel.y *= 1.0f - SERVER_ADVANCE_PERIOD * 0.5f;
+	m_angVel.y *= 1.0 - SERVER_ADVANCE_PERIOD * 0.5;
 
 
 	//
 	// Move
 
-	float factor1 = SERVER_ADVANCE_PERIOD * 1.65f;
-	float factor2 = 1.0f - factor1;
-	m_speed *= 1.0f - SERVER_ADVANCE_PERIOD * 0.5f;
+	double factor1 = SERVER_ADVANCE_PERIOD * 1.65;
+	double factor2 = 1.0 - factor1;
+	m_speed *= 1.0 - SERVER_ADVANCE_PERIOD * 0.5;
 	Vector3 frontHoriNorm = m_front;
 	frontHoriNorm.HorizontalAndNormalise();
 	m_vel = m_front * m_speed * factor1 + m_vel * factor2;
@@ -547,10 +566,10 @@ bool Tripod::Advance(Unit *_unit)
 	// Adjust body height
 
 	{
-		float targetHeight = g_app->m_location->m_landscape.m_heightMap->GetValue(m_pos.x, m_pos.z);
+		double targetHeight = g_app->m_location->m_landscape.m_heightMap->GetValue(m_pos.x, m_pos.z);
 		targetHeight += m_targetHoverHeight;
-		float factor1 = 1.0f * SERVER_ADVANCE_PERIOD;
-		float factor2 = 1.0f - factor1;
+		double factor1 = 1.0 * SERVER_ADVANCE_PERIOD;
+		double factor2 = 1.0 - factor1;
 		m_pos.y = factor1 * targetHeight + factor2 * m_pos.y;
 	}
 
@@ -569,8 +588,8 @@ bool Tripod::Advance(Unit *_unit)
 		m_legs[i]->Advance();
 	}
 
-
-	//
+	
+	// 
 	// Detect death
 
 	if (m_pos.y < g_app->m_location->m_landscape.m_heightMap->GetValue(m_pos.x, m_pos.z))
@@ -579,19 +598,19 @@ bool Tripod::Advance(Unit *_unit)
 		g_explosionManager.AddExplosion(m_shape, mat);
 		return true;
 	}
-
+	
 	return m_dead;
 }
 
 
-void Tripod::Render(float _predictionTime)
+void Tripod::Render(double _predictionTime)
 {
     glDisable( GL_TEXTURE_2D );
-
+    
 	g_app->m_renderer->SetObjectLighting();
 
 
-	//
+	// 
 	// Render body
 
 	Vector3 predictedMovement = _predictionTime * m_vel;

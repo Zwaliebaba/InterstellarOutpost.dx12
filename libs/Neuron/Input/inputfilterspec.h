@@ -1,8 +1,8 @@
 #ifndef INCLUDED_INPUTFILTERSPEC_H
 #define INCLUDED_INPUTFILTERSPEC_H
 
-#include "input/inputspec.h"
-#include "input/input_types.h"
+#include "lib/input/inputspec.h"
+#include "lib/input/input_types.h"
 
 typedef int filter_mode_t;
 typedef unsigned filterspec_id_t;

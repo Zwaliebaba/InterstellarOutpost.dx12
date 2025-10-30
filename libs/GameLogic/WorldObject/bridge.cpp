@@ -1,11 +1,12 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-
-#include "file_writer.h"
-#include "math_utils.h"
-#include "resource.h"
-#include "shape.h"
-#include "text_stream_readers.h"
+#include "lib/debug_utils.h"
+#include "lib/filesys/text_file_writer.h"
+#include "lib/math_utils.h"
+#include "lib/resource.h"
+#include "lib/shape.h"
+#include "lib/filesys/text_stream_readers.h"
+#include "lib/math/random_number.h"
 
 #include "app.h"
 #include "entity_grid.h"
@@ -20,7 +21,7 @@
 Bridge::Bridge()
 :   Teleport(),
     m_nextBridgeId(-1),
-    m_status(0.0f),
+    m_status(0.0),
     m_signal(NULL),
     m_beingOperated(false)
 {
@@ -30,9 +31,9 @@ Bridge::Bridge()
     m_shapes[0] = g_app->m_resource->GetShape( "bridgeend.shp" );
     m_shapes[1] = g_app->m_resource->GetShape( "bridgetower.shp" );
 
-    DEBUG_ASSERT( m_shapes[0] );
-    DEBUG_ASSERT( m_shapes[1] );
-
+    AppDebugAssert( m_shapes[0] );
+    AppDebugAssert( m_shapes[1] );
+    
     SetBridgeType( BridgeTypeTower );
 }
 
@@ -40,7 +41,7 @@ void Bridge::Initialise( Building *_template )
 {
     Teleport::Initialise( _template );
 
-    m_nextBridgeId = ((Bridge *)_template)->m_nextBridgeId;
+    m_nextBridgeId = ((Bridge *)_template)->m_nextBridgeId;    
     m_status = ((Bridge *)_template)->m_status;
     SetBridgeType( ((Bridge *)_template)->m_bridgeType );
 }
@@ -50,12 +51,13 @@ void Bridge::SetBridgeType ( int _type )
     m_bridgeType = _type;
     SetShape( m_shapes[m_bridgeType] );
 
-    m_signal = m_shape->m_rootFragment->LookupMarker("MarkerSignal");
-    DEBUG_ASSERT( m_signal );
+    const char signalName[] = "MarkerSignal";
+    m_signal = m_shape->m_rootFragment->LookupMarker( signalName );
+    AppReleaseAssert( m_signal, "Bridge: Can't get Marker(%s) from shape(%s), probably a corrupted file\n", signalName, m_shape->m_name );
 }
 
 
-void Bridge::Render( float predictionTime )
+void Bridge::Render( double predictionTime )
 {
     //
     // Render our shape
@@ -65,7 +67,7 @@ void Bridge::Render( float predictionTime )
 }
 
 
-void Bridge::RenderAlphas ( float predictionTime )
+void Bridge::RenderAlphas ( double predictionTime )
 {
     //
     // Render our signal
@@ -76,27 +78,27 @@ void Bridge::RenderAlphas ( float predictionTime )
         if( building && building->m_type == Building::TypeBridge )
         {
             Bridge *bridge = (Bridge *) building;
-            if( m_status > 0.0f && bridge->m_status > 0.0f )
+            if( m_status > 0.0 && bridge->m_status > 0.0 )
             {
                 Vector3 ourPos = GetStartPoint();
-                Vector3 theirPos = bridge->GetStartPoint();
-
+                Vector3 theirPos = bridge->GetStartPoint();                
+            
 		        if( m_id.GetTeamId() == 255 )
 		        {
-			        glColor4f( 0.5f, 0.5f, 0.5f, m_status / 100.0f );
+			        glColor4f( 0.5, 0.5, 0.5, m_status / 100.0 );
 		        }
 		        else
 		        {
-                    RGBAColour col = g_app->m_location->m_teams[ m_id.GetTeamId() ].m_colour;
-			        glColor4ub( col.r, col.g, col.b, (unsigned char)(255.0f * m_status / 100.0f) );
+                    RGBAColour col = g_app->m_location->m_teams[ m_id.GetTeamId() ]->m_colour;
+			        glColor4ub( col.r, col.g, col.b, (unsigned char)(255.0 * m_status / 100.0) );
 		        }
 
-                glLineWidth ( 3.0f );
+                glLineWidth ( 3.0 );
                 glEnable    ( GL_BLEND );
                 glEnable    ( GL_LINE_SMOOTH );
                 glBegin( GL_LINES );
-                    glVertex3fv( ourPos.GetData() );
-                    glVertex3fv( theirPos.GetData() );
+                    glVertex3dv( ourPos.GetData() );
+                    glVertex3dv( theirPos.GetData() );
                 glEnd();
                 glDisable   ( GL_LINE_SMOOTH );
                 glDisable   ( GL_BLEND );
@@ -110,24 +112,24 @@ void Bridge::RenderAlphas ( float predictionTime )
 
 bool Bridge::Advance()
 {
-    if( m_status < 0.0f ) return true;
+    if( m_status < 0.0 ) return true;
 
     if( m_beingOperated )
     {
-        m_status = 100.0f;
+        m_status = 100.0;
     }
     else
     {
-        m_status = 0.0f;
+        m_status = 0.0;
     }
-
+    
     return Teleport::Advance();
 }
 
 bool Bridge::GetAvailablePosition( Vector3 &_pos, Vector3 &_front )
-{
+{           
     Matrix34 ourMat(m_front, g_upVector, m_pos);
-    Matrix34 ourEngineer = m_signal->GetWorldMatrix(ourMat);
+    Matrix34 ourEngineer = m_signal->GetWorldMatrix(ourMat);             
     _pos = ourEngineer.pos;
     _front = ourEngineer.f;
 
@@ -160,37 +162,37 @@ void Bridge::SetBuildingLink( int _buildingId )
 void Bridge::Read( TextReader *_in, bool _dynamic )
 {
     Building::Read( _in, _dynamic );
-
-    char *word = _in->GetNextToken();
-    m_nextBridgeId = atoi(word);
+    
+    char *word = _in->GetNextToken();  
+    m_nextBridgeId = atoi(word);    
 
     word = _in->GetNextToken();
     m_bridgeType = atoi(word);
     SetBridgeType( m_bridgeType );
 }
 
-void Bridge::Write( FileWriter *_out )
+void Bridge::Write( TextWriter *_out )
 {
     Building::Write( _out );
 
-    _out->printf( "%-8d", m_nextBridgeId);
+    _out->printf( "%-8d", m_nextBridgeId);    
     _out->printf( "%-8d", m_bridgeType);
 }
 
 bool Bridge::ReadyToSend ()
 {
     Building *nextBridge = g_app->m_location->GetBuilding( m_nextBridgeId );
-    return( m_status > 0.0f &&
-            nextBridge &&
+    return( m_status > 0.0 &&
+            nextBridge && 
             m_bridgeType == Bridge::BridgeTypeEnd &&
-            nextBridge->m_type == Building::TypeBridge &&
+            nextBridge->m_type == Building::TypeBridge &&             
             Teleport::ReadyToSend() );
 }
 
 Vector3 Bridge::GetStartPoint()
 {
     Matrix34 ourMat(m_front, g_upVector, m_pos);
-    Matrix34 ourSignal = m_signal->GetWorldMatrix(ourMat);
+    Matrix34 ourSignal = m_signal->GetWorldMatrix(ourMat);             
     return ourSignal.pos;
 }
 
@@ -200,10 +202,10 @@ Vector3 Bridge::GetEndPoint()
     while( nextBridge->m_nextBridgeId != -1 )
     {
         nextBridge = (Bridge *) g_app->m_location->GetBuilding( nextBridge->m_nextBridgeId );
-    }
+    }  
 
     if( !nextBridge ) return g_zeroVector;
-
+    
     Vector3 theirPos = nextBridge->GetStartPoint();
 
     return theirPos;
@@ -215,7 +217,7 @@ bool Bridge::GetExit( Vector3 &_pos, Vector3 &_front )
     while( nextBridge->m_nextBridgeId != -1 )
     {
         nextBridge = (Bridge *) g_app->m_location->GetBuilding( nextBridge->m_nextBridgeId );
-    }
+    }  
 
     if( !nextBridge ) return false;
 
@@ -230,20 +232,20 @@ bool Bridge::GetExit( Vector3 &_pos, Vector3 &_front )
 
 bool Bridge::UpdateEntityInTransit( Entity *_entity )
 {
-    Building *building = g_app->m_location->GetBuilding( m_nextBridgeId );
+    Building *building = g_app->m_location->GetBuilding( m_nextBridgeId );    
     Bridge *nextBridge = (Bridge *) building;
 
     WorldObjectId id( _entity->m_id );
-
-    if( m_status > 0.0f &&
-        nextBridge &&
+    
+    if( m_status > 0.0 &&
+        nextBridge && 
         nextBridge->m_type == Building::TypeBridge &&
-        nextBridge->m_status > 0.0f )
+        nextBridge->m_status > 0.0 )
     {
         Matrix34 theirMat(nextBridge->m_front, g_upVector, nextBridge->m_pos);
         Matrix34 theirSignal = nextBridge->m_signal->GetWorldMatrix(theirMat);
         Vector3 offset = (theirSignal.pos - _entity->m_pos).Normalise();
-        float dist = ( _entity->m_pos - theirSignal.pos ).Mag();
+        double dist = ( _entity->m_pos - theirSignal.pos ).Mag();
         bool arrived = false;
 
         _entity->m_vel = offset * BRIDGE_TRANSPORTSPEED;
@@ -257,7 +259,7 @@ bool Bridge::UpdateEntityInTransit( Entity *_entity )
         _entity->m_onGround = false;
         _entity->m_enabled = false;
 
-
+        
         if( arrived )
         {
             // We are there
@@ -272,7 +274,7 @@ bool Bridge::UpdateEntityInTransit( Entity *_entity )
                 _entity->m_vel.Zero();
 
                 g_app->m_location->m_entityGrid->AddObject( id, _entity->m_pos.x, _entity->m_pos.z, _entity->m_radius );
-                return true;
+                return true;                
             }
             else if( nextBridge->m_bridgeType == Bridge::BridgeTypeTower )
             {
@@ -280,15 +282,15 @@ bool Bridge::UpdateEntityInTransit( Entity *_entity )
                 return true;
             }
         }
-
+                
         return false;
     }
     else
     {
         // Shit - we lost the carrier signal, so we die
         _entity->ChangeHealth( -500 );
-        _entity->m_enabled = true;
-        _entity->m_vel = Vector3(syncsfrand(10.0f), syncfrand(10.0f), syncsfrand(10.0f) );
+        _entity->m_enabled = true;        
+        _entity->m_vel = Vector3(SFRAND(10.0), FRAND(10.0), SFRAND(10.0) );
 
         g_app->m_location->m_entityGrid->AddObject( id, _entity->m_pos.x, _entity->m_pos.z, _entity->m_radius );
         return true;

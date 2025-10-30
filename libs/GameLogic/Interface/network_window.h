@@ -10,7 +10,9 @@ class NetworkWindow : public DarwiniaWindow
 public:
     NetworkWindow( char *name );
 
-    void Render( bool hasFocus );
+	void Create();
+	void Render( bool hasFocus );
+	
 };
 
 

@@ -1,18 +1,18 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <math.h>
 
-#include "math_utils.h"
-#include "resource.h"
-#include "matrix34.h"
-#include "shape.h"
-
-#include "text_renderer.h"
-#include "debug_render.h"
-#include "language_table.h"
-
-#include "input/input.h"
-#include "input/input_types.h"
+#include "lib/math_utils.h"
+#include "lib/resource.h"
+#include "lib/matrix34.h"
+#include "lib/shape.h"
+#include "lib/debug_utils.h"
+#include "lib/text_renderer.h"
+#include "lib/debug_render.h"
+#include "lib/language_table.h"
+#include "lib/math/random_number.h"
+#include "lib/input/input.h"
+#include "lib/input/input_types.h"
 
 #include "app.h"
 #include "explosion.h"
@@ -27,6 +27,7 @@
 #include "obstruction_grid.h"
 #include "camera.h"
 #include "main.h"
+#include "markersystem.h"
 
 #include "sound/soundsystem.h"
 
@@ -35,19 +36,23 @@
 #include "worldobject/engineer.h"
 #include "worldobject/bridge.h"
 #include "worldobject/researchitem.h"
+#include "worldobject/spawnpoint.h"
 
+
+LList<UnicodeString*> Engineer::s_buildingIds;
+LList<UnicodeString*> Engineer::s_researchIds;
 
 
 Engineer::Engineer()
 :   Entity(),
-    m_hoverHeight(15.0f),
+    m_hoverHeight(15.0),
     m_state(StateIdle),
-    m_retargetTimer(0.0f),
+    m_retargetTimer(0.0),
     m_spiritId(-1),
     m_positionId(-1),
     m_bridgeId(-1)
 {
-    m_idleRotateRate = syncsfrand(0.5f);
+    m_idleRotateRate = syncsfrand(0.5);
 
     m_shape = g_app->m_resource->GetShape( "engineer.shp" );
 
@@ -57,17 +62,38 @@ Engineer::Engineer()
 }
 
 
+Engineer::~Engineer()
+{
+    if( g_app->m_gameMode == App::GameModeMultiwinia &&
+        m_id.GetTeamId() != 255 )
+    {
+        Team *team = g_app->m_location->m_teams[ m_id.GetTeamId() ];
+        team->UnRegisterSpecial( m_id );
+    }
+}
+
+
 void Engineer::Begin()
 {
     Entity::Begin();
     m_wayPoint = m_pos;
     m_targetPos = m_wayPoint;
+
+    SetShape( "engineer.shp", true );
+
+
+    if( g_app->m_gameMode == App::GameModeMultiwinia &&
+        m_id.GetTeamId() != 255 )
+    {
+        Team *team = g_app->m_location->m_teams[ m_id.GetTeamId() ];
+        team->RegisterSpecial( m_id );
+    }
 }
 
 
 void Engineer::SetWaypoint( Vector3 const &_wayPoint )
 {
-    m_retargetTimer = 0.0f;
+    m_retargetTimer = 0.0;
     m_wayPoint = _wayPoint;
     m_state = StateToWaypoint;
 }
@@ -96,31 +122,32 @@ int Engineer::GetMaxSpirits()
 
 
 bool Engineer::SearchForSpirits()
-{
+{   
     if( m_spirits.Size() < GetMaxSpirits() )
     {
         Spirit *found = NULL;
         int spiritId = -1;
-        float closest = 999999.9f;
+        double closest = 999999.9;
 
         for( int i = 0; i < g_app->m_location->m_spirits.Size(); ++i )
         {
             if( g_app->m_location->m_spirits.ValidIndex(i) )
             {
                 Spirit *s = g_app->m_location->m_spirits.GetPointer(i);
-                float theDist = ( s->m_pos - m_pos ).Mag();
+                double theDist = ( s->m_pos - m_pos ).Mag();
 
                 if( theDist <= ENGINEER_SEARCHRANGE &&
                     theDist < closest &&
                     ( s->m_state == Spirit::StateBirth ||
-                      s->m_state == Spirit::StateFloating ) )
+                      s->m_state == Spirit::StateFloating ) &&
+                    s->m_broken < 0.0 )
                 {
                     found = s;
                     spiritId = i;
                     closest = theDist;
                 }
             }
-        }
+        }            
 
         if( found )
         {
@@ -129,7 +156,7 @@ bool Engineer::SearchForSpirits()
             return true;
         }
     }
-
+        
     return false;
 }
 
@@ -137,7 +164,7 @@ bool Engineer::SearchForSpirits()
 bool Engineer::SearchForControlTowers()
 {
     int buildingIndex = -1;
-    float closest = 99999.9f;
+    double closest = 99999.9;
 
     for( int i = 0; i < g_app->m_location->m_buildings.Size(); ++i )
     {
@@ -148,10 +175,10 @@ bool Engineer::SearchForControlTowers()
             {
                 ControlTower *ct = (ControlTower *) building;
                 Vector3 pos, front;
-                if( (ct->m_id.GetTeamId() != m_id.GetTeamId() || ct->m_ownership < 100.0f) &&
+                if( (ct->m_id.GetTeamId() != m_id.GetTeamId() || ct->m_ownership < 100.0) &&
                     ct->GetAvailablePosition(pos, front) != -1 )
                 {
-                    float theDist = (building->m_pos - m_pos).Mag();
+                    double theDist = (building->m_pos - m_pos).Mag();
                     if( theDist <= ENGINEER_SEARCHRANGE &&
                         theDist < closest )
                     {
@@ -178,7 +205,7 @@ bool Engineer::SearchForControlTowers()
 bool Engineer::SearchForBridges()
 {
     int buildingIndex = -1;
-    float closest = 99999.9f;
+    double closest = 99999.9;
 
     for( int i = 0; i < g_app->m_location->m_buildings.Size(); ++i )
     {
@@ -189,9 +216,9 @@ bool Engineer::SearchForBridges()
             {
                 Bridge *bridge = (Bridge *) building;
                 Vector3 pos, front;
-                float theDist = (building->m_pos - m_pos).Mag();
+                double theDist = (building->m_pos - m_pos).Mag();
                 if( bridge->GetAvailablePosition( pos, front ) &&
-                    bridge->m_status < 100.0f &&
+                    bridge->m_status < 100.0 &&
                     theDist <= ENGINEER_SEARCHRANGE &&
                     theDist < closest )
                 {
@@ -216,7 +243,7 @@ bool Engineer::SearchForBridges()
 
 bool Engineer::SearchForResearchItems()
 {
-    float closest = 99999.9f;
+    double closest = 99999.9;
     int buildingIndex = -1;
 
     for( int i = 0; i < g_app->m_location->m_buildings.Size(); ++i )
@@ -227,7 +254,7 @@ bool Engineer::SearchForResearchItems()
             if( building->m_type == Building::TypeResearchItem)
             {
                 ResearchItem *item = (ResearchItem *) building;
-                float theDist = (building->m_pos - m_pos).Mag();
+                double theDist = (building->m_pos - m_pos).Mag();
                 if( item->NeedsReprogram() &&
                     theDist <= ENGINEER_SEARCHRANGE &&
                     theDist < closest )
@@ -243,23 +270,25 @@ bool Engineer::SearchForResearchItems()
     {
         Building *building = g_app->m_location->m_buildings[buildingIndex];
         m_buildingId = building->m_id.GetUniqueId();
-        Vector3 usToThem = ( building->m_pos - m_pos ).SetLength( 35.0f );
+        Vector3 usToThem = ( building->m_pos - m_pos ).SetLength( 35.0 );
         m_targetPos = building->m_pos - usToThem;
-        m_targetPos.y = g_app->m_location->m_landscape.m_heightMap->GetValue( m_targetPos.x, m_targetPos.z );
+        m_targetPos.y = g_app->m_location->m_landscape.m_heightMap->GetValue( m_targetPos.x, m_targetPos.z );        
         m_targetPos.y += m_hoverHeight;
         m_state = StateToResearchItem;
         return true;
-    }
+    }     
 
     return false;
 }
 
 
-void Engineer::ChangeHealth( int amount )
+bool Engineer::ChangeHealth( int amount, int _damageType )
 {
+    if( _damageType == DamageTypeLaser ) return false;
+
     if( !m_dead )
     {
-        int healthBandBefore = int( m_stats[StatHealth] / 50.0f );
+        int healthBandBefore = int( m_stats[StatHealth] / 50.0 );
 
         if( amount < 0 )
         {
@@ -269,7 +298,7 @@ void Engineer::ChangeHealth( int amount )
         if( m_stats[StatHealth] + amount < 0 )
         {
             m_stats[StatHealth] = 0;
-            m_dead = true;
+            m_dead = true;            
             g_app->m_soundSystem->TriggerEntityEvent( this, "Die" );
         }
         else if( m_stats[StatHealth] + amount > 255 )
@@ -278,29 +307,31 @@ void Engineer::ChangeHealth( int amount )
         }
         else
         {
-            m_stats[StatHealth] += amount;
+            m_stats[StatHealth] += amount;    
             g_app->m_particleSystem->CreateParticle( m_pos, g_zeroVector, Particle::TypeMuzzleFlash );
         }
 
-        int healthBandAfter = int( m_stats[StatHealth] / 50.0f );
+        int healthBandAfter = int( m_stats[StatHealth] / 50.0 );
 
-        float fractionDead = 1.0f - m_stats[StatHealth] / (float) EntityBlueprint::GetStat( TypeEngineer, StatHealth );
-        fractionDead = max( fractionDead, 0.0f );
-        fractionDead = min( fractionDead, 1.0f );
-
-        if( fractionDead == 1.0f || healthBandAfter < healthBandBefore )
+        double fractionDead = 1.0 - m_stats[StatHealth] / (double) EntityBlueprint::GetStat( TypeEngineer, StatHealth );
+        fractionDead = max( fractionDead, 0.0 );
+        fractionDead = min( fractionDead, 1.0 );
+        
+        if( fractionDead == 1.0 || healthBandAfter < healthBandBefore )
         {
             Matrix34 transform( m_front, g_upVector, m_pos );
-            g_explosionManager.AddExplosion( m_shape, transform, fractionDead );
+            g_explosionManager.AddExplosion( m_shape, transform, fractionDead ); 
         }
     }
+
+    return true;
 }
 
 
 bool Engineer::Advance( Unit *_unit )
-{
+{   
     bool amIDead = false;
-
+    
     switch( m_state )
     {
         case StateIdle:                 amIDead = AdvanceIdle();             break;
@@ -317,9 +348,9 @@ bool Engineer::Advance( Unit *_unit )
 
     //
     // If I am now dead, handle it accordingly
-
+    
     amIDead = Entity::Advance(_unit);
-    if( amIDead )
+    if( amIDead ) 
     {
         // Drop all my spirits
         while( m_spirits.Size() > 0 )
@@ -338,9 +369,9 @@ bool Engineer::Advance( Unit *_unit )
         {
             Building *building = g_app->m_location->GetBuilding( m_buildingId );
             ControlTower *ct = (ControlTower *) building;
-            if( ct )
+            if( ct ) 
             {
-                ct->EndReprogram( m_positionId );
+                ct->EndReprogram( m_positionId );            
                 g_app->m_soundSystem->StopAllSounds( m_id, "Engineer BeginReprogramming" );
                 g_app->m_soundSystem->TriggerEntityEvent( this, "EndReprogramming" );
             }
@@ -352,17 +383,17 @@ bool Engineer::Advance( Unit *_unit )
             g_app->m_soundSystem->StopAllSounds( m_id, "Engineer BeginReprogramming" );
             g_app->m_soundSystem->TriggerEntityEvent( this, "EndReprogramming" );
         }
-
+        
         // If I was operating a bridge, stop now
         if( m_state == StateOperatingBridge )
         {
             Bridge *bridge = (Bridge *) g_app->m_location->GetBuilding( m_buildingId );
             if( bridge && bridge->m_type == Building::TypeBridge )
             {
-                bridge->EndOperation();
+                bridge->EndOperation();  
                 if( m_bridgeId == m_buildingId ) EndBridge();
-            }
-        }
+            }            
+        }    
     }
 
     //
@@ -380,7 +411,7 @@ bool Engineer::Advance( Unit *_unit )
 
     //
     // Update spirits
-
+    
     for( int i = 0; i < m_spirits.Size(); ++i )
     {
         int spiritId = m_spirits[i];
@@ -388,23 +419,25 @@ bool Engineer::Advance( Unit *_unit )
         {
             Spirit *s = g_app->m_location->m_spirits.GetPointer(spiritId);
             if( s && s->m_state == Spirit::StateAttached )
-            {
+            {            
                 if( m_positionHistory.ValidIndex(i+1) )
                 {
                     s->m_pos = *m_positionHistory[i+1];
-                    s->m_vel = (*m_positionHistory[i] - *m_positionHistory[i+1]) / SERVER_ADVANCE_PERIOD;
+                    s->m_vel = (*m_positionHistory[i] - *m_positionHistory[i+1]) / SERVER_ADVANCE_PERIOD;            
                 }
             }
         }
     }
-
+    
 
     //
     // Look to see if we've been pulled away by the player
 
     Building *building = g_app->m_location->GetBuilding( m_buildingId );
-    if( building && building->m_type == Building::TypeControlTower &&
-        m_positionId != -1 && m_state != StateReprogramming )
+    if( building && 
+        building->m_type == Building::TypeControlTower &&
+        m_positionId != -1 && 
+        m_state != StateReprogramming )
     {
         // We've been moved away from reprogramming
         // (eg user specified waypoint)
@@ -415,31 +448,34 @@ bool Engineer::Advance( Unit *_unit )
         g_app->m_soundSystem->TriggerEntityEvent( this, "EndReprogramming" );
     }
 
-    if( building && building->m_type == Building::TypeBridge
-        && m_state != StateOperatingBridge )
+    if( building && 
+        building->m_type == Building::TypeBridge && 
+        m_state != StateOperatingBridge )
     {
         // We've been moved away from building bridges
         Bridge *bridge = (Bridge *) building;
-        bridge->EndOperation();
+        bridge->EndOperation(); 
     }
 
-    if( building && building->m_type == Building::TypeResearchItem
-        && m_state != StateResearching )
+    if( building && 
+        building->m_type == Building::TypeResearchItem && 
+        m_state != StateResearching )
     {
         // We've been moved away from researching a research item
         g_app->m_soundSystem->StopAllSounds( m_id, "Engineer BeginReprogramming" );
         //g_app->m_soundSystem->TriggerEntityEvent( this, "EndReprogramming" );
     }
 
-
+    
     //
     // If we own a bridge, check to make sure we are still in range of it
 
     Bridge *bridge = (Bridge *) g_app->m_location->GetBuilding( m_bridgeId );
-    if( bridge && bridge->m_type == Building::TypeBridge )
+    if( bridge && 
+        bridge->m_type == Building::TypeBridge )
     {
-        float range = ( bridge->m_pos - m_pos ).Mag();
-        if( range > 100.0f )
+        double range = ( bridge->m_pos - m_pos ).Mag();
+        if( range > 100.0 )
         {
             EndBridge();
         }
@@ -452,31 +488,31 @@ bool Engineer::Advance( Unit *_unit )
 bool Engineer::AdvanceToTargetPos()
 {
     Vector3 distance = (m_targetPos - m_pos);
-    distance.y = 0.0f;
+    distance.y = 0.0;
 
-    if( distance.Mag() > 5.0f )
+    if( distance.Mag() > 5.0 )
     {
         Vector3 oldPos = m_pos;
 
-        float amountToTurn = SERVER_ADVANCE_PERIOD * 3.0f;
+        double amountToTurn = SERVER_ADVANCE_PERIOD * 3.0;
         Vector3 targetDir = (m_targetPos - m_pos).Normalise();
-        Vector3 actualDir = m_front * (1.0f - amountToTurn) + targetDir * amountToTurn;
+        Vector3 actualDir = m_front * (1.0 - amountToTurn) + targetDir * amountToTurn;
         actualDir.Normalise();
 
-        float desiredSpeed = distance.Mag();
-        desiredSpeed = min( desiredSpeed, m_stats[StatSpeed] );
-        if( m_state == StateIdle ) desiredSpeed *= 0.25f;
-
+        double desiredSpeed = distance.Mag();
+        desiredSpeed = min( desiredSpeed, (double)m_stats[StatSpeed] );
+        if( m_state == StateIdle ) desiredSpeed *= 0.25;
+        
         Vector3 newPos = m_pos + actualDir * desiredSpeed * SERVER_ADVANCE_PERIOD;
-        newPos = PushFromObstructions(newPos);
+        //newPos = PushFromObstructions(newPos);
 
         Vector3 moved = newPos - oldPos;
         if( moved.Mag() > desiredSpeed * SERVER_ADVANCE_PERIOD ) moved.SetLength( desiredSpeed * SERVER_ADVANCE_PERIOD );
         newPos = m_pos + moved;
 
         m_pos = newPos;
-        float targetHeight = max(g_app->m_location->m_landscape.m_heightMap->GetValue(m_pos.x, m_pos.z),
-                                 0.0f ) + m_hoverHeight;
+        double targetHeight = max(g_app->m_location->m_landscape.m_heightMap->GetValue(m_pos.x, m_pos.z),
+                                 0.0 ) + m_hoverHeight;
         m_pos.y = targetHeight;
         m_vel = (m_pos - oldPos) / SERVER_ADVANCE_PERIOD;
         m_front = m_vel;
@@ -489,18 +525,18 @@ bool Engineer::AdvanceToTargetPos()
         m_vel.Zero();
         //if( m_targetFront != g_zeroVector ) m_front = m_targetFront;
         return true;
-    }
+    }   
 }
 
 
 bool Engineer::SearchForRandomPosition()
 {
-    float distance = 30.0f;
-    float angle = syncsfrand(2.0f * M_PI);
+    double distance = 30.0;
+    double angle = syncsfrand(2.0 * M_PI);
 
-    m_targetPos = m_pos + Vector3( sinf(angle) * distance,
-                                   0.0f,
-                                   cosf(angle) * distance );
+    m_targetPos = m_pos + Vector3( iv_sin(angle) * distance,
+                                   0.0,
+                                   iv_cos(angle) * distance );
 
     return true;
 }
@@ -509,15 +545,15 @@ bool Engineer::SearchForRandomPosition()
 bool Engineer::AdvanceIdle()
 {
     m_retargetTimer -= SERVER_ADVANCE_PERIOD;
-    if( m_retargetTimer <= 0.0f )
+    if( m_retargetTimer <= 0.0 )
     {
         bool foundNewTarget = false;
 
         if( !foundNewTarget )   foundNewTarget = SearchForResearchItems();
         if( !foundNewTarget )   foundNewTarget = SearchForControlTowers();
-        if( !foundNewTarget )   foundNewTarget = SearchForBridges();
-        if( !foundNewTarget )   foundNewTarget = SearchForSpirits();
-
+        if( !foundNewTarget )   foundNewTarget = SearchForBridges();      
+        if( !foundNewTarget )   foundNewTarget = SearchForSpirits();      
+       
         if( foundNewTarget ) return false;
         m_retargetTimer = ENGINEER_RETARGETTIMER;
     }
@@ -531,15 +567,15 @@ bool Engineer::AdvanceIdle()
         bool incubatorFound = SearchForIncubator();
         if( incubatorFound )
         {
-            m_state = StateToIncubator;
+            m_state = StateToIncubator;        
             return false;
         }
     }
 
-
+    
     //
     // Just go into a holding pattern
-
+    
     bool arrived = AdvanceToTargetPos();
     if( arrived )
     {
@@ -556,7 +592,7 @@ bool Engineer::AdvanceToWaypoint()
     m_targetFront.Zero();
 
     bool arrived = AdvanceToTargetPos();
-    if( arrived ) m_state = StateIdle;
+    if( arrived ) m_state = StateIdle;    
     return false;
 }
 
@@ -568,10 +604,10 @@ bool Engineer::AdvanceToSpirit()
     {
         s = g_app->m_location->m_spirits.GetPointer(m_spiritId);
     }
-
-    if( !s ||
+    
+    if( !s || 
          s->m_state == Spirit::StateDeath ||
-         s->m_state == Spirit::StateAttached )
+         s->m_state == Spirit::StateAttached ) 
     {
         // Our spirit died while we were going for it, return to waypoint and continue looking
         m_spiritId = -1;
@@ -585,10 +621,10 @@ bool Engineer::AdvanceToSpirit()
     if( arrived )
     {
         CollectSpirit( m_spiritId );
-        m_spiritId = -1;
+        m_spiritId = -1;        
         m_state = StateIdle;
     }
-
+    
     return false;
 }
 
@@ -610,7 +646,7 @@ bool Engineer::SearchForIncubator()
 {
     //
     // Source building lost, look for another incubator to bind to
-    float nearest = 99999.9f;
+    double nearest = 99999.9;
     bool found = false;
 
     for( int i = 0; i < g_app->m_location->m_buildings.Size(); ++i )
@@ -618,19 +654,33 @@ bool Engineer::SearchForIncubator()
         if( g_app->m_location->m_buildings.ValidIndex(i) )
         {
             Building *building = g_app->m_location->m_buildings[i];
-            if( building->m_type == Building::TypeIncubator &&
+           
+            if( building->m_type == Building::TypeIncubator &&                
                 g_app->m_location->IsFriend( building->m_id.GetTeamId(), m_id.GetTeamId() ) )
             {
-                float distance = ( building->m_pos - m_pos ).Mag();
+                double distance = ( building->m_pos - m_pos ).Mag();
                 int population = ((Incubator *)building)->NumSpiritsInside();
                 distance += population * 10;
 
                 if( distance < nearest )
                 {
-                    m_buildingId = building->m_id.GetUniqueId();
+                    m_buildingId = building->m_id.GetUniqueId();                    
                     nearest = distance;
                     found = true;
-                }
+                }                    
+            }
+
+            if( building->m_type == Building::TypeSpawnPoint &&
+                g_app->m_gameMode == App::GameModeMultiwinia &&                
+                g_app->m_location->IsFriend( building->m_id.GetTeamId(), m_id.GetTeamId() ) )
+            {
+                double distance = ( building->m_pos - m_pos ).Mag();
+                if( distance < nearest )
+                {
+                    m_buildingId = building->m_id.GetUniqueId();                    
+                    nearest = distance;
+                    found = true;
+                }                    
             }
         }
     }
@@ -641,13 +691,13 @@ bool Engineer::SearchForIncubator()
 
 bool Engineer::AdvanceToIncubator()
 {
-    Incubator *incubator = (Incubator *) g_app->m_location->GetBuilding( m_buildingId );
-
-    if( !incubator )
+    Building *building = g_app->m_location->GetBuilding( m_buildingId );
+    
+    if( !building)
     {
-        bool found = SearchForIncubator();
-        incubator = (Incubator *) g_app->m_location->GetBuilding( m_buildingId );
-        if( !incubator )
+        bool found = SearchForIncubator();    
+        building = g_app->m_location->GetBuilding( m_buildingId );
+        if( !building )
         {
             // We can't find a friendly incubator, so go into holding pattern
             m_state = StateIdle;
@@ -655,29 +705,76 @@ bool Engineer::AdvanceToIncubator()
         }
     }
 
+    
+    // 
+    // Deal with incubator
 
-    incubator->GetDockPoint( m_targetPos, m_targetFront );
-    bool arrived = AdvanceToTargetPos();
-    if( arrived )
+    if( building && building->m_type == Building::TypeIncubator )
     {
-        m_front = m_targetFront;
-
-        // Arrived at our incubator, drop spirit off here one at a time
-        int spiritId = m_spirits[0];
-        if( g_app->m_location->m_spirits.ValidIndex(spiritId) )
+        Incubator *incubator = (Incubator *) building;
+        incubator->GetDockPoint( m_targetPos, m_targetFront );
+    
+        bool arrived = AdvanceToTargetPos();
+        if( arrived )
         {
-            Spirit *s = g_app->m_location->m_spirits.GetPointer( spiritId );
-            incubator->AddSpirit( s );
-            g_app->m_location->m_spirits.MarkNotUsed( spiritId );
-            m_spirits.RemoveData(0);
-        }
+            m_front = m_targetFront;
+            
+            // Arrived at our incubator, drop spirit off here one at a time
+            int spiritId = m_spirits[0];
+            if( g_app->m_location->m_spirits.ValidIndex(spiritId) )
+            {
+                Spirit *s = g_app->m_location->m_spirits.GetPointer( spiritId );
+                incubator->AddSpirit( s );
+                g_app->m_location->m_spirits.RemoveData( spiritId );
+                m_spirits.RemoveData(0);
+            }
 
-        if( m_spirits.Size() == 0 )
-        {
-            // Return to spirit field
-            m_state = StateToWaypoint;
+            if( m_spirits.Size() == 0 )
+            {
+                // Return to spirit field        
+                m_state = StateToWaypoint;
+            }
         }
     }
+
+
+    //
+    // Deal with spawn point
+
+    if( building && building->m_type == Building::TypeSpawnPoint )
+    {
+        SpawnPoint *spawnPoint = (SpawnPoint *)building;
+        m_targetPos = building->m_pos + building->m_front * 50;
+        m_targetPos = PushFromObstructions( m_targetPos, false );
+        m_targetPos.y = g_app->m_location->m_landscape.m_heightMap->GetValue( m_targetPos.x, m_targetPos.z );
+        m_targetFront = building->m_front;
+        
+        bool arrived = AdvanceToTargetPos();
+        if( arrived )
+        {
+            m_front = m_targetFront;
+
+            // Arrived at our incubator, drop spirit off here one at a time
+            int spiritId = m_spirits[0];
+            if( g_app->m_location->m_spirits.ValidIndex(spiritId) )
+            {
+                Spirit *s = g_app->m_location->m_spirits.GetPointer( spiritId );
+                g_app->m_location->m_spirits.RemoveData( spiritId );
+                m_spirits.RemoveData(0);
+
+                spawnPoint->SpawnDarwinian();   
+
+                g_app->m_soundSystem->TriggerEntityEvent( this, "DropSpirit" );
+            }
+
+            if( m_spirits.Size() == 0 )
+            {
+                // Return to spirit field        
+                m_state = StateToWaypoint;
+            }
+        }    
+    }
+
 
     return false;
 }
@@ -692,12 +789,12 @@ bool Engineer::AdvanceToControlTower ()
         return false;
     }
 
-    DEBUG_ASSERT( building->m_type == Building::TypeControlTower );
+    AppDebugAssert( building->m_type == Building::TypeControlTower );
 
     ControlTower *ct = (ControlTower *) building;
-    int positionId = ct->GetAvailablePosition( m_targetPos, m_targetFront );
+    int positionId = ct->GetAvailablePosition( m_targetPos, m_targetFront );    
 
-    if( (ct->m_id.GetTeamId() == m_id.GetTeamId() && ct->m_ownership >= 100.0f) ||
+    if( (ct->m_id.GetTeamId() == m_id.GetTeamId() && ct->m_ownership >= 100.0) ||
         positionId == -1)
     {
         // Our building is gone or is already captured or is full
@@ -716,13 +813,39 @@ bool Engineer::AdvanceToControlTower ()
             ct->BeginReprogram( m_positionId );
             g_app->m_soundSystem->TriggerEntityEvent( this, "BeginReprogramming" );
             m_state = StateReprogramming;
+
+			if( g_app->IsSinglePlayer() )
+			{
+				// On screen markers
+				bool doneAlready = false;
+				char buf[256];
+				sprintf(buf, "%d-%d", g_app->m_locationId, ct->m_id.GetUniqueId());
+				UnicodeString tempS(buf);
+				for( int i = 0; i < s_buildingIds.Size(); i++ )
+				{
+					UnicodeString* string = s_buildingIds.GetData(i);
+					if( string )
+					{
+						if( doneAlready = wcscmp(string->m_unicodestring, tempS.m_unicodestring) == 0)
+						{
+							break;
+						}
+					}
+				}
+
+				if( !doneAlready )
+				{
+					g_app->m_markerSystem->RegisterMarker_Fixed( -1, ct->m_pos, "icons/icon_engineer.bmp", false );
+					s_buildingIds.PutData(new UnicodeString(tempS));
+				}
+			}
         }
     }
     else
     {
         m_state = StateIdle;
     }
-
+    
     return false;
 }
 
@@ -733,8 +856,8 @@ bool Engineer::AdvanceResearching()
     // Make sure our research item is still available
 
     ResearchItem *item = (ResearchItem *) g_app->m_location->GetBuilding( m_buildingId );
-    if( !item ||
-        item->m_type != Building::TypeResearchItem ||
+    if( !item || 
+        item->m_type != Building::TypeResearchItem || 
         !item->NeedsReprogram() )
     {
         g_app->m_soundSystem->StopAllSounds( m_id, "Engineer BeginReprogramming" );
@@ -758,45 +881,45 @@ bool Engineer::AdvanceResearching()
         m_state = StateIdle;
         return false;
     }
-
+    
 
     //
     // Spark
 
     Vector3 end1, end2;
     item->GetEndPositions( end1, end2 );
-    float time = g_gameTime + m_id.GetIndex();
+    double time = g_gameTime + m_id.GetIndex();
     Vector3 toPos = end1;
-    toPos += ( end2 - end1 )/2.0f;
-    toPos += ( end2 - end1 ) * sinf(time) * 0.5f;
+    toPos += ( end2 - end1 )/2.0;
+    toPos += ( end2 - end1 ) * iv_sin(time) * 0.5;
 
     for( int i = 0; i < 2; ++i )
-    {
+    {        
         Vector3 particleVel = m_pos - toPos;
-        particleVel += Vector3( sfrand() * 15.0f, frand() * 10.0f, sfrand() * 15.0f );
+        particleVel += Vector3( sfrand() * 15.0, frand() * 10.0, sfrand() * 15.0 );
         g_app->m_particleSystem->CreateParticle( toPos, particleVel, Particle::TypeBlueSpark );
     }
 
 
     //
-    // Make us float around a bit while we work
-
+    // Make us double around a bit while we work
+    
     m_targetFront = (toPos - m_pos).Normalise();
     Vector3 targetFront = m_targetFront;
-    m_front = (targetFront * SERVER_ADVANCE_PERIOD) +
-              (m_front * (1.0f - SERVER_ADVANCE_PERIOD) );
+    m_front = (targetFront * SERVER_ADVANCE_PERIOD) + 
+              (m_front * (1.0 - SERVER_ADVANCE_PERIOD) );
 
     Vector3 oldPos = m_pos;
     Vector3 targetPos = m_targetPos;
     Vector3 rightAngle = m_targetFront ^ g_upVector;
-    float scale = 2.0f;
-    targetPos += m_targetFront * sinf(g_gameTime+m_id.GetUniqueId()*10.0f) * scale;
-    targetPos += rightAngle * cosf(g_gameTime+m_id.GetUniqueId()*10.0f) * scale * 1.5f;
-
+    double scale = 2.0;
+    targetPos += m_targetFront * iv_sin(GetNetworkTime()+m_id.GetUniqueId()*10.0) * scale;
+    targetPos += rightAngle * iv_cos(GetNetworkTime()+m_id.GetUniqueId()*10.0) * scale * 1.5;
+    
     m_pos = (targetPos * SERVER_ADVANCE_PERIOD) +
-            (m_pos * (1.0f - SERVER_ADVANCE_PERIOD) );
+            (m_pos * (1.0 - SERVER_ADVANCE_PERIOD) );
     m_vel = (m_pos - oldPos) / SERVER_ADVANCE_PERIOD;
-
+       
     return false;
 }
 
@@ -804,7 +927,7 @@ bool Engineer::AdvanceResearching()
 bool Engineer::AdvanceReprogramming()
 {
     Building *building = g_app->m_location->GetBuilding( m_buildingId );
-
+    
     if( !building )
     {
         m_state = StateIdle;
@@ -818,7 +941,7 @@ bool Engineer::AdvanceReprogramming()
     {
         bool finished = ct->Reprogram( m_id.GetTeamId() );
         if( finished )
-        {
+        {                                              
             g_app->m_soundSystem->StopAllSounds( m_id, "Engineer BeginReprogramming" );
             g_app->m_soundSystem->TriggerEntityEvent( this, "ReprogrammingComplete" );
             ct->EndReprogram( m_positionId );
@@ -831,35 +954,35 @@ bool Engineer::AdvanceReprogramming()
 
 
     //
-    // Make us float around a bit while we work
+    // Make us double around a bit while we work
 
     Vector3 consolePos;
     ct->GetConsolePosition( m_positionId, consolePos );
 
     Vector3 targetFront = (consolePos - m_pos).Normalise();
-    m_front = (targetFront * SERVER_ADVANCE_PERIOD) +
-              (m_front * (1.0f - SERVER_ADVANCE_PERIOD) );
+    m_front = (targetFront * SERVER_ADVANCE_PERIOD) + 
+              (m_front * (1.0 - SERVER_ADVANCE_PERIOD) );
 
     Vector3 oldPos = m_pos;
     Vector3 targetPos = m_targetPos;
     Vector3 rightAngle = m_targetFront ^ g_upVector;
-    float scale = 2.0f;
-    targetPos += m_targetFront * sinf(g_gameTime+m_id.GetUniqueId()*10.0f) * scale;
-    targetPos += rightAngle * cosf(g_gameTime+m_id.GetUniqueId()*10.0f) * scale * 1.5f;
+    double scale = 2.0;
+    targetPos += m_targetFront * iv_sin(GetNetworkTime()+m_id.GetUniqueId()*10.0) * scale;
+    targetPos += rightAngle * iv_cos(GetNetworkTime()+m_id.GetUniqueId()*10.0) * scale * 1.5;
 
     m_pos = (targetPos * SERVER_ADVANCE_PERIOD) +
-            (m_pos * (1.0f - SERVER_ADVANCE_PERIOD) );
+            (m_pos * (1.0 - SERVER_ADVANCE_PERIOD) );
     m_vel = (m_pos - oldPos) / SERVER_ADVANCE_PERIOD;
-
+    
     return false;
 }
 
 
 void Engineer::BeginBridge( Vector3 _to )
 {
-    int engineerLevel = g_app->m_globalWorld->m_research->CurrentLevel( GlobalResearch::TypeEngineer );
+    int engineerLevel = g_app->m_globalWorld->m_research->CurrentLevel( GlobalResearch::TypeEngineer );    
     if( engineerLevel < 5 ) return;
-
+    
     //
     // Shut down any existing bridges
 
@@ -870,9 +993,9 @@ void Engineer::BeginBridge( Vector3 _to )
     // Calculate the size of our bridge
 
     Vector3 bridgeSpan( _to - m_wayPoint );
-    int numComponents = int(bridgeSpan.Mag() / 80.0f);
-    Vector3 componentSpan = bridgeSpan / (float) numComponents;
-
+    int numComponents = int(bridgeSpan.Mag() / 80.0);
+    Vector3 componentSpan = bridgeSpan / (double) numComponents;
+      
     //
     // Create bridge towers
 
@@ -884,13 +1007,13 @@ void Engineer::BeginBridge( Vector3 _to )
         g_app->m_location->m_buildings.PutData(component);
         component->m_id.SetUniqueId( g_app->m_globalWorld->GenerateBuildingId() );
         component->m_nextBridgeId = linkBuildingId;
-        component->m_pos = m_wayPoint + componentSpan * (float) i;
-        component->m_pos += Vector3( syncsfrand(15.0f),0.0f,syncsfrand(15.0f) );
+        component->m_pos = m_wayPoint + componentSpan * (double) i;
+        component->m_pos += Vector3( SFRAND(15.0),0.0,SFRAND(15.0) );
         component->m_pos.y = g_app->m_location->m_landscape.m_heightMap->GetValue( component->m_pos.x, component->m_pos.z );
         component->m_front = ( _to - m_wayPoint ).Normalise();
         if( i < numComponents && i > 0 )
         {
-            component->m_front.RotateAroundY( 0.5f * M_PI );
+            component->m_front.RotateAroundY( 0.5 * M_PI );        
         }
         else if( i == numComponents )
         {
@@ -901,7 +1024,7 @@ void Engineer::BeginBridge( Vector3 _to )
 
         Vector3 right = component->m_front ^ g_upVector;
         component->m_front = right ^ g_upVector;
-
+        
         if( i == numComponents || i == 0 )
         {
             component->SetBridgeType( Bridge::BridgeTypeEnd );
@@ -924,10 +1047,10 @@ void Engineer::EndBridge()
 
     while( bridge )
     {
-        bridge->m_status = -1.0f;
+        bridge->m_status = -1.0;
         int nextBuildingId = bridge->m_nextBridgeId;
         bridge = (Bridge *) g_app->m_location->GetBuilding( nextBuildingId );
-    }
+    }            
 
     m_bridgeId = -1;
 }
@@ -943,7 +1066,7 @@ bool Engineer::AdvanceToBridge()
         if( !positionAvailable )
         {
             m_state = StateIdle;
-            m_buildingId = -1;
+            m_buildingId = -1;            
         }
         else
         {
@@ -1001,26 +1124,52 @@ bool Engineer::AdvanceToResearchItem()
     bool arrived = AdvanceToTargetPos();
     if( arrived )
     {
-        g_app->m_soundSystem->TriggerEntityEvent( this, "BeginReprogramming" );
+        g_app->m_soundSystem->TriggerEntityEvent( this, "BeginReprogramming" );        
         m_state = StateResearching;
+
+		if( g_app->IsSinglePlayer() )
+		{
+			// On screen markers
+			bool doneAlready = false;
+			char buf[256];
+			sprintf(buf, "%d-%d", g_app->m_locationId, item->m_id.GetUniqueId());
+			UnicodeString tempS(buf);
+			for( int i = 0; i < s_researchIds.Size(); i++ )
+			{
+				UnicodeString* string = s_researchIds.GetData(i);
+				if( string )
+				{
+					if( doneAlready = wcscmp(string->m_unicodestring, tempS.m_unicodestring) == 0)
+					{
+						break;
+					}
+				}
+			}
+
+			if( !doneAlready )
+			{
+				g_app->m_markerSystem->RegisterMarker_Research( item->m_id );
+				s_researchIds.PutData(new UnicodeString(tempS));
+			}
+		}
     }
 
     return false;
 }
 
 
-void Engineer::RenderShape( float predictionTime )
+void Engineer::RenderShape( double predictionTime )
 {
     Vector3 predictedPos = m_pos + m_vel * predictionTime;
     if( m_onGround )
     {
         predictedPos.y = max(g_app->m_location->m_landscape.m_heightMap->GetValue( predictedPos.x, predictedPos.z ),
-                             0.0f /*sea level*/) + m_hoverHeight;
+                             0.0 /*sea level*/) + m_hoverHeight;
     }
-
+ 
     Vector3 entityUp = g_upVector;
     Vector3 entityFront = m_front;
-    entityFront.y *= 0.5f;
+    entityFront.y *= 0.5;
     entityFront.Normalise();
     Vector3 entityRight = entityFront ^ entityUp;
     entityUp = entityRight ^ entityFront;
@@ -1032,7 +1181,7 @@ void Engineer::RenderShape( float predictionTime )
     glEnable        (GL_COLOR_MATERIAL);
     glDisable       (GL_BLEND);
 
-	if (entityFront.y > 0.5f)
+	if (entityFront.y > 0.5)
 	{
 		entityFront.Set(1,0,0);
 	}
@@ -1050,7 +1199,7 @@ void Engineer::RenderShape( float predictionTime )
 }
 
 
-void Engineer::Render( float predictionTime )
+void Engineer::Render( double predictionTime )
 {
     //
     // Work out our predicted position and orientation
@@ -1059,19 +1208,19 @@ void Engineer::Render( float predictionTime )
     if( m_onGround )
     {
         predictedPos.y = max(g_app->m_location->m_landscape.m_heightMap->GetValue( predictedPos.x, predictedPos.z ),
-                             0.0f /*sea level*/) + m_hoverHeight;
+                             0.0 /*sea level*/) + m_hoverHeight;
     }
-
+        
 
     if( !m_dead )
-    {
+    {        
 		RenderShape( predictionTime );
 
         BeginRenderShadow();
-        RenderShadow( predictedPos, 10.0f );
+        RenderShadow( predictedPos, 10.0 );
         EndRenderShadow();
     }
-
+    
     //
     // If we are reprogramming, draw some control lasers
 
@@ -1101,21 +1250,21 @@ void Engineer::Render( float predictionTime )
                 ResearchItem *item = (ResearchItem *) building;
                 Vector3 end1, end2;
                 item->GetEndPositions( end1, end2 );
-                float time = g_gameTime + m_id.GetIndex();
+                double time = g_gameTime + m_id.GetIndex();
                 toPos = end1;
-                toPos += ( end2 - end1 )/2.0f;
-                toPos += ( end2 - end1 ) * sinf(time) * 0.5f;
+                toPos += ( end2 - end1 )/2.0;
+                toPos += ( end2 - end1 ) * iv_sin(time) * 0.5;
             }
 
-
-            Vector3 midPoint        = fromPos + (toPos - fromPos)/2.0f;
+        
+            Vector3 midPoint        = fromPos + (toPos - fromPos)/2.0;
             Vector3 camToMidPoint   = g_app->m_camera->GetPos() - midPoint;
             Vector3 rightAngle      = (camToMidPoint ^ ( midPoint - toPos )).Normalise();
+    
+            rightAngle *= 0.5;
 
-            rightAngle *= 0.5f;
-
-            glColor4f( 0.2f, 0.4f, 1.0f, fabs(sinf(g_gameTime * 3.0f)) );
-
+            glColor4f( 0.2, 0.4, 1.0, iv_abs(iv_sin(g_gameTime * 3.0)) );
+    
             glEnable        ( GL_BLEND );
             glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
             glDepthMask     ( false );
@@ -1123,10 +1272,10 @@ void Engineer::Render( float predictionTime )
             glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laser.bmp" ) );
 
             glBegin( GL_QUADS );
-                glTexCoord2i(0,0);      glVertex3fv( (fromPos - rightAngle).GetData() );
-                glTexCoord2i(0,1);      glVertex3fv( (fromPos + rightAngle).GetData() );
-                glTexCoord2i(1,1);      glVertex3fv( (toPos + rightAngle).GetData() );
-                glTexCoord2i(1,0);      glVertex3fv( (toPos - rightAngle).GetData() );
+                glTexCoord2i(0,0);      glVertex3dv( (fromPos - rightAngle).GetData() );
+                glTexCoord2i(0,1);      glVertex3dv( (fromPos + rightAngle).GetData() );
+                glTexCoord2i(1,1);      glVertex3dv( (toPos + rightAngle).GetData() );                
+                glTexCoord2i(1,0);      glVertex3dv( (toPos - rightAngle).GetData() );                     
             glEnd();
 
             glBlendFunc     ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -1138,8 +1287,9 @@ void Engineer::Render( float predictionTime )
 }
 
 
-bool Engineer::RenderPixelEffect( float predictionTime )
+bool Engineer::RenderPixelEffect( double predictionTime )
 {
+    if( g_app->Multiplayer() ) return false;
     RenderShape( predictionTime );
 
     return true;
@@ -1150,22 +1300,59 @@ char *Engineer::GetCurrentAction()
 {
     switch( m_state )
     {
-        case StateIdle:                     return LANGUAGEPHRASE( "engineer_idle" );
-        case StateToWaypoint:               return LANGUAGEPHRASE( "engineer_towaypoint" );
-        case StateToSpirit:                 return LANGUAGEPHRASE( "engineer_tospirit" );
-        case StateToIncubator:              return LANGUAGEPHRASE( "engineer_toincubator" );
-
-        case StateToControlTower:
-        case StateReprogramming:            return LANGUAGEPHRASE( "engineer_reprogramming" );
+        case StateIdle:                     return  "engineer_idle" ;
+        case StateToWaypoint:               return  "engineer_towaypoint" ;        
+        case StateToSpirit:                 return  "engineer_tospirit" ;
+        case StateToIncubator:              return  "engineer_toincubator" ;
+        
+        case StateToControlTower:   
+        case StateReprogramming:            return  "engineer_reprogramming" ;
 
         case StateToResearchItem:
-        case StateResearching:              return LANGUAGEPHRASE( "engineer_researching" );
+        case StateResearching:              return  "engineer_researching" ;           
 
         case StateToBridge:
-        case StateOperatingBridge:          return LANGUAGEPHRASE( "engineer_bridge" );
+        case StateOperatingBridge:          return  "engineer_bridge" ;
     }
 
-    return LANGUAGEPHRASE( "engineer_idle" );
+    return  "engineer_idle" ;
+}
+
+bool Engineer::IsSelectable()
+{
+    return true;
+}
+
+
+void Engineer::RunAI( AI *_ai )
+{
+    m_aiTimer -= SERVER_ADVANCE_PERIOD;
+    if( m_aiTimer > 0.0f ) return;
+
+    m_aiTimer = 1.0f;
+
+    if( m_state == StateIdle )
+    {
+        double dist = FLT_MAX;
+        Vector3 pos;
+        for( int i = 0; i < g_app->m_location->m_spirits.Size(); ++i )
+        {
+            Spirit *s = g_app->m_location->GetSpirit(i);
+            if( s )
+            {
+                if( (m_pos - s->m_pos).Mag() < dist )
+                {
+                    dist = (m_pos - s->m_pos).Mag();
+                    pos = s->m_pos;
+                }
+            }
+        }
+
+        if( pos != g_zeroVector )
+        {
+            SetWaypoint( pos );
+        }
+    }
 }
 
 
@@ -1176,4 +1363,5 @@ void Engineer::ListSoundEvents( LList<char *> *_list )
     _list->PutData( "BeginReprogramming" );
     _list->PutData( "EndReprogramming" );
     _list->PutData( "ReprogrammingComplete" );
+    _list->PutData( "DropSpirit" );
 }

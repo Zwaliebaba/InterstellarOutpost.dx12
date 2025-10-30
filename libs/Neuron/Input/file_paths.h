@@ -12,6 +12,8 @@ public:
 	static const std::string & GetLocalePrefsPath();
 	static const std::string & GetUserPrefsPath();
 
+	static bool IsKeyboardFrenchLocale();
+	static std::string GetKeyboardLayout();
 };
 
 #endif // INCLUDED_INPUT_FILE_PATHS_H

@@ -1,12 +1,13 @@
 #ifndef _INCLUDED_MATRIX34_H
 #define _INCLUDED_MATRIX34_H
 
-
-//#include <string.h>
+#ifdef TARGET_OS_MACOSX // apparently not needed on Windows?
+  #include <string.h>
+#endif
 #include <stdlib.h>
 
-#include "matrix33.h"
-#include "vector3.h"
+#include "lib/matrix33.h"
+#include "lib/vector3.h"
 
 
 class Matrix33;
@@ -17,7 +18,7 @@ class Matrix34
 public:
 	Vector3 r, u, f, pos;
 
-	static float m_openGLFormat[16];
+	static double m_openGLFormat[16];
 
 	// Constructors
 	Matrix34() {}
@@ -54,7 +55,7 @@ public:
 	}
 
 
-	Matrix34( float _yaw, float _dive, float _roll )
+	Matrix34( double _yaw, double _dive, double _roll )
 	{
 		SetToIdentity();
 		RotateAroundZ( _roll );
@@ -69,43 +70,43 @@ public:
 	void OrientFR( Vector3 const & _f, Vector3 const & _r );
 	void OrientFU( Vector3 const & _f, Vector3 const & _u );
 
-	Matrix34 const &RotateAroundR( float angle );
-	Matrix34 const &RotateAroundU( float angle );
-	Matrix34 const &RotateAroundF( float angle );
-	Matrix34 const &RotateAroundX( float angle );
-	Matrix34 const &RotateAroundY( float angle );
-	Matrix34 const &RotateAroundZ( float angle );
+	Matrix34 const &RotateAroundR( double angle );
+	Matrix34 const &RotateAroundU( double angle );
+	Matrix34 const &RotateAroundF( double angle );
+	Matrix34 const &RotateAroundX( double angle );
+	Matrix34 const &RotateAroundY( double angle );
+	Matrix34 const &RotateAroundZ( double angle );
 	Matrix34 const &RotateAround( Vector3 const & _rotationAxis );
-	Matrix34 const &RotateAround( Vector3 const & _norm, float _angle );
-	Matrix34 const &FastRotateAround( Vector3 const & _norm, float _angle );
-
+	Matrix34 const &RotateAround( Vector3 const & _norm, double _angle );
+	Matrix34 const &FastRotateAround( Vector3 const & _norm, double _angle );
+	
 	Matrix34 const &Transpose();
-
+	
 	Vector3			DecomposeToYDR	() const;	//x = dive, y = yaw, z = roll
-	void			DecomposeToYDR	( float *_y, float *_d, float *_r ) const;
+	void			DecomposeToYDR	( double *_y, double *_d, double *_r ) const;
 	void			SetToIdentity	();
 
     bool            IsNormalised    ();
     void			Normalise		();
 
-	float *ConvertToOpenGLFormat() const
+	double *ConvertToOpenGLFormat() const
 	{
 		m_openGLFormat[0] = r.x;
 		m_openGLFormat[1] = r.y;
 		m_openGLFormat[2] = r.z;
-		m_openGLFormat[3] = 0.0f;
+		m_openGLFormat[3] = 0.0;
 		m_openGLFormat[4] = u.x;
 		m_openGLFormat[5] = u.y;
 		m_openGLFormat[6] = u.z;
-		m_openGLFormat[7] = 0.0f;
+		m_openGLFormat[7] = 0.0;
 		m_openGLFormat[8] = f.x;
 		m_openGLFormat[9] = f.y;
 		m_openGLFormat[10] = f.z;
-		m_openGLFormat[11] = 0.0f;
+		m_openGLFormat[11] = 0.0;
 		m_openGLFormat[12] = pos.x;
 		m_openGLFormat[13] = pos.y;
 		m_openGLFormat[14] = pos.z;
-		m_openGLFormat[15] = 1.0f;
+		m_openGLFormat[15] = 1.0;
 
 		return m_openGLFormat;
 	}

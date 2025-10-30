@@ -1,13 +1,19 @@
-#include "pch.h"
-#include "filesys_utils.h"
-#include "hi_res_time.h"
-#include "text_renderer.h"
-#include "input/input.h"
-#include "resource.h"
-#include "language_table.h"
-#include "Canvas/eclipse.h"
+#include "lib/universal_include.h"
+
+#include <string.h>
+
+#include "lib/filesys/filesys_utils.h"
+#include "lib/hi_res_time.h"
+#include "lib/text_renderer.h"
+#include "lib/input/input.h"
+#include "lib/resource.h"
+#include "lib/language_table.h"
+
+#include "eclipse.h"
+
 #include "interface/scrollbar.h"
 #include "interface/filedialog.h"
+
 #include "app.h"
 
 
@@ -21,13 +27,13 @@ public:
     void MouseUp()
     {
         FileDialog *fd = (FileDialog *) m_parent;
-
+        
         for( int i = 0; i < fd->m_selected.Size(); ++i )
         {
             int index = fd->m_selected[i];
-            DEBUG_ASSERT( fd->m_files->ValidIndex(index) );
+            AppDebugAssert( fd->m_files->ValidIndex(index) );
             char *filename = fd->m_files->GetData( index );
-            fd->FileSelected( filename );
+            fd->FileSelected( filename );        
         }
 
         EclRemoveWindow( m_parent->m_name );
@@ -54,7 +60,7 @@ public:
 
     void MouseUp()
 	{
-		FileDialog *fd = (FileDialog *) m_parent;
+		FileDialog *fd = (FileDialog *) m_parent;    
 		int index = m_index + fd->m_scrollBar->m_currentValue;
 
 		if( fd->m_files && fd->m_files->ValidIndex( index ) )
@@ -66,7 +72,7 @@ public:
 		double delta = timeNow - m_lastClickTime;
 		if (delta < 0.2)
 		{
-			FileOKButton *ok = (FileOKButton*)fd->GetButton(LANGUAGEPHRASE("dialog_ok"));
+			FileOKButton *ok = (FileOKButton*)fd->GetButton("dialog_ok");
 			ok->MouseUp();
 			return;
 		}
@@ -79,10 +85,10 @@ public:
 		int index = m_index + fd->m_scrollBar->m_currentValue;
 
 		if( fd->m_files && fd->m_files->ValidIndex( index ) )
-		{
+		{        
             if( fd->IsFileSelected(index) != -1 )
             {
-				glColor4f( 0.3f, 0.3f, 1.0f, 0.5f );
+				glColor4f( 0.3, 0.3, 1.0, 0.5 );
 				glBegin( GL_QUADS );
 					glVertex2i( realX, realY );
 					glVertex2i( realX + m_w, realY );
@@ -91,7 +97,7 @@ public:
 				glEnd();
             }
 
-    		glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
+    		glColor4f( 1.0, 1.0, 1.0, 1.0 );
 
 			if( clicked || highlighted )
 			{
@@ -136,13 +142,13 @@ class SelectedButton : public DarwiniaButton
         {
             int index = fd->m_selected[0];
             char *filename = fd->m_files->GetData(index);
-            SetCaption( filename );
+            SetCaption( UnicodeString(filename) );
         }
         else
         {
-            SetCaption( " " );
+            SetCaption(  UnicodeString(" ") );
         }
-
+        
         DarwiniaButton::Render( realX, realY, highlighted, clicked );
     }
 };
@@ -152,7 +158,7 @@ class SelectedButton : public DarwiniaButton
 // Class FileDialog
 //*****************************************************************************
 
-FileDialog::FileDialog( char const *name, char const *parent,
+FileDialog::FileDialog( char const *name, char const *parent, 
                         char const *path, char const *filter,
                         bool allowMultiSelect )
 :   DarwiniaWindow( name ),
@@ -185,7 +191,7 @@ FileDialog::~FileDialog()
     }
 
     m_selected.Empty();
-
+    
     delete m_scrollBar;
 }
 
@@ -201,20 +207,20 @@ void FileDialog::Create()
         char name[32];
         sprintf( name, "File %d", i );
         FileButton *button = new FileButton(i);
-        button->SetProperties( name, 5, 25 + i * 13, m_w - 25, 12, " ", " " );
+        button->SetProperties( name, 5, 25 + i * 13, m_w - 25, 12, UnicodeString(" "), UnicodeString(" ") );
         RegisterButton( button );
     }
 
     SelectedButton *selected = new SelectedButton();
-    selected->SetProperties( "Selected", 10, m_h - 30, m_w - 140, 20, "", " " );
+    selected->SetProperties( "Selected", 10, m_h - 30, m_w - 140, 20, UnicodeString(""), UnicodeString(" ") );
     RegisterButton( selected );
-
+    
     FileCancelButton *cancel = new FileCancelButton();
-    cancel->SetProperties( LANGUAGEPHRASE("dialog_cancel"), m_w - 60, m_h - 30, 55, 20, LANGUAGEPHRASE("dialog_cancel") );
+    cancel->SetProperties( "dialog_cancel", m_w - 60, m_h - 30, 55, 20, LANGUAGEPHRASE("dialog_cancel") );
     RegisterButton( cancel );
 
     FileOKButton *ok = new FileOKButton();
-    ok->SetProperties( LANGUAGEPHRASE("dialog_ok"), m_w - 120, m_h - 30, 55, 20, LANGUAGEPHRASE("dialog_ok") );
+    ok->SetProperties( "dialog_ok", m_w - 120, m_h - 30, 55, 20, LANGUAGEPHRASE("dialog_ok") );
     RegisterButton( ok );
 
     m_scrollBar->Create( "FileScroll", m_w - 20, 25, 15, numRows * 13, m_files->Size(), numRows );
@@ -233,7 +239,7 @@ void FileDialog::SetDirectory( char const *path )
 {
 	free(m_path);
     m_path = strdup( path );
-    SetTitle( (char *)path );
+    SetTitle( UnicodeString(path) );
     RefreshFileList();
 }
 
@@ -265,9 +271,9 @@ void FileDialog::RefreshFileList()
         delete m_files;
         m_files = NULL;
     }
-
+ 
     m_selected.Empty();
-
+        
     m_files = g_app->m_resource->ListResources( m_path, m_filter, false );
 
     EclDirtyWindow( m_name );

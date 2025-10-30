@@ -1,12 +1,12 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-#include "debug_render.h"
-#include "file_writer.h"
-#include "text_stream_readers.h"
-#include "math_utils.h"
-#include "hi_res_time.h"
-#include "text_renderer.h"
-#include "language_table.h"
+#include "lib/debug_render.h"
+#include "lib/filesys/text_file_writer.h"
+#include "lib/filesys/text_stream_readers.h"
+#include "lib/math_utils.h"
+#include "lib/hi_res_time.h"
+#include "lib/text_renderer.h"
+#include "lib/language_table.h"
 
 #include "worldobject/safearea.h"
 
@@ -19,12 +19,11 @@
 #include "global_world.h"
 
 
-
 SafeArea::SafeArea()
 :   Building(),
-    m_size(50.0f),
+    m_size(50.0),
     m_entitiesRequired(0),
-    m_recountTimer(0.0f),
+    m_recountTimer(0.0),
     m_entitiesCounted(0),
     m_entityTypeRequired(Entity::TypeDarwinian)
 {
@@ -52,29 +51,29 @@ bool SafeArea::Advance()
 
     if( !g_app->m_location ) return false;
     if( !g_app->m_location->m_teams ) return false;
-    if( g_app->m_location->m_teams[ m_id.GetTeamId() ].m_teamType == Team::TeamTypeUnused ) return false;
+    if( g_app->m_location->m_teams[ m_id.GetTeamId() ]->m_teamType == TeamTypeUnused ) return false;
 
-
-    if( GetHighResTime() > m_recountTimer )
+    
+    if( GetNetworkTime() > m_recountTimer )
     {
         int numFound;
-        WorldObjectId *ids = g_app->m_location->m_entityGrid->GetFriends( m_pos.x, m_pos.z, m_size, &numFound, m_id.GetTeamId() );
+        g_app->m_location->m_entityGrid->GetFriends( s_neighbours, m_pos.x, m_pos.z, m_size, &numFound, m_id.GetTeamId() );
         m_entitiesCounted = 0;
-
+        
         for( int i = 0; i < numFound; ++i )
         {
-            WorldObjectId id = ids[i];
+            WorldObjectId id = s_neighbours[i];
             Entity *entity = g_app->m_location->GetEntity( id );
-            if( entity &&
-                entity->m_type == m_entityTypeRequired &&
+            if( entity && 
+                entity->m_type == m_entityTypeRequired && 
                 !entity->m_dead )
             {
                 ++m_entitiesCounted;
             }
         }
 
-        m_recountTimer = GetHighResTime() + 2.0f;
-
+        m_recountTimer = GetNetworkTime() + 2.0;
+    
         if( (m_id.GetTeamId() == 1 && m_entitiesCounted <= m_entitiesRequired) ||
             (m_id.GetTeamId() != 1 && m_entitiesCounted >= m_entitiesRequired) )
         {
@@ -83,7 +82,7 @@ bool SafeArea::Advance()
             {
                 gb->m_online = true;
                 g_app->m_globalWorld->EvaluateEvents();
-            }
+            }        
         }
 
     }
@@ -91,8 +90,8 @@ bool SafeArea::Advance()
     return false;
 }
 
-
-void SafeArea::Render( float predictionTime )
+ 
+void SafeArea::Render( double predictionTime )
 {
     if( g_app->m_editing )
     {
@@ -100,54 +99,54 @@ void SafeArea::Render( float predictionTime )
 
         if( m_id.GetTeamId() != 255 )
         {
-            colour = g_app->m_location->m_teams[ m_id.GetTeamId() ].m_colour;
+            colour = g_app->m_location->m_teams[ m_id.GetTeamId() ]->m_colour;    
         }
         colour.a = 255;
 
 #ifdef DEBUG_RENDER_ENABLED
-        RenderSphere( m_pos, 20.0f, colour );
+        RenderSphere( m_pos, 20.0, colour );
 #endif
         int numSteps = 30;
-        float angle = 0.0f;
+        double angle = 0.0;
 
         glColor4ubv(colour.GetData() );
-        glLineWidth( 2.0f );
+        glLineWidth( 2.0 );
         glBegin( GL_LINE_LOOP );
         for( int i = 0; i <= numSteps; ++i )
         {
-            float xDiff = m_size * sinf(angle);
-            float zDiff = m_size * cosf(angle);
+            double xDiff = m_size * iv_sin(angle);
+            double zDiff = m_size * iv_cos(angle);
             Vector3 pos = m_pos + Vector3(xDiff,5,zDiff);
-	        pos.y = g_app->m_location->m_landscape.m_heightMap->GetValue(pos.x, pos.z) + 10.0f;
+	        pos.y = g_app->m_location->m_landscape.m_heightMap->GetValue(pos.x, pos.z) + 10.0;
             if( pos.y < 2 ) pos.y = 2;
-            glVertex3fv( pos.GetData() );
-            angle += 2.0f * M_PI / (float) numSteps;
+            glVertex3dv( pos.GetData() );
+            angle += 2.0 * M_PI / (double) numSteps;
         }
         glEnd();
     }
     else
     {
 /*
-        float angle = g_gameTime * 2.0f;
-        Vector3 dif( m_size * sinf(angle), 0.0f, m_size * cosf(angle) );
-
+        double angle = g_gameTime * 2.0;
+        Vector3 dif( m_size * iv_sin(angle), 0.0, m_size * iv_cos(angle) );
+        
         Vector3 pos = m_pos + dif;
-        pos.y = g_app->m_location->m_landscape.m_heightMap->GetValue( pos.x, pos.z ) + 5.0f;
-        g_app->m_particleSystem->CreateParticle( pos, g_upVector*2 + dif/30, Particle::TypeMuzzleFlash, 100.0f );
+        pos.y = g_app->m_location->m_landscape.m_heightMap->GetValue( pos.x, pos.z ) + 5.0;
+        g_app->m_particleSystem->CreateParticle( pos, g_upVector*2 + dif/30, Particle::TypeMuzzleFlash, 100.0 );
 
         pos = m_pos - dif;
-        pos.y = g_app->m_location->m_landscape.m_heightMap->GetValue( pos.x, pos.z ) + 5.0f;
-        g_app->m_particleSystem->CreateParticle( pos, g_upVector*2 - dif/30, Particle::TypeMuzzleFlash, 100.0f );
+        pos.y = g_app->m_location->m_landscape.m_heightMap->GetValue( pos.x, pos.z ) + 5.0;
+        g_app->m_particleSystem->CreateParticle( pos, g_upVector*2 - dif/30, Particle::TypeMuzzleFlash, 100.0 );
 */
     }
-
+    
 
     //char *entityTypeRequired = Entity::GetTypeName( m_entityTypeRequired );
-    //g_editorFont.DrawText3DCentre( m_pos + Vector3(0,m_size/2,0), 10.0f, "%d / %d %ss", m_entitiesCounted, m_entitiesRequired, entityTypeRequired );
+    //g_editorFont.DrawText3DCentre( m_pos + Vector3(0,m_size/2,0), 10.0, "%d / %d %ss", m_entitiesCounted, m_entitiesRequired, entityTypeRequired );
 }
 
 
-bool SafeArea::DoesSphereHit(Vector3 const &_pos, float _radius)
+bool SafeArea::DoesSphereHit(Vector3 const &_pos, double _radius)
 {
     return false;
 }
@@ -159,8 +158,8 @@ bool SafeArea::DoesShapeHit(Shape *_shape, Matrix34 _transform)
 }
 
 
-bool SafeArea::DoesRayHit(Vector3 const &_rayStart, Vector3 const &_rayDir,
-                          float _rayLen, Vector3 *_pos, Vector3 *_norm)
+bool SafeArea::DoesRayHit(Vector3 const &_rayStart, Vector3 const &_rayDir, 
+                          double _rayLen, Vector3 *_pos, Vector3 *_norm)
 {
     if( g_app->m_editing )
     {
@@ -173,11 +172,12 @@ bool SafeArea::DoesRayHit(Vector3 const &_rayStart, Vector3 const &_rayDir,
 }
 
 
-char *SafeArea::GetObjectiveCounter()
+void SafeArea::GetObjectiveCounter(UnicodeString& _dest)
 {
-    static char result[256];
-    sprintf( result, "%s : %d", LANGUAGEPHRASE("objective_currentcount"), m_entitiesCounted );
-    return result;
+    static wchar_t result[256];
+	swprintf( result, sizeof(result)/sizeof(wchar_t),
+			  L"%ls : %d", LANGUAGEPHRASE("objective_currentcount").m_unicodestring, m_entitiesCounted );
+    _dest = UnicodeString( result );
 }
 
 
@@ -185,13 +185,13 @@ void SafeArea::Read( TextReader *_in, bool _dynamic )
 {
     Building::Read( _in, _dynamic );
 
-    m_size = atof( _in->GetNextToken() );
+    m_size = iv_atof( _in->GetNextToken() );
     m_entitiesRequired = atoi( _in->GetNextToken() );
     m_entityTypeRequired = atoi( _in->GetNextToken() );
 }
 
 
-void SafeArea::Write( FileWriter *_out )
+void SafeArea::Write( TextWriter *_out )
 {
     Building::Write( _out );
 

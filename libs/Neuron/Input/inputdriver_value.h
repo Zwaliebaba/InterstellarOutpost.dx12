@@ -1,7 +1,7 @@
 #ifndef INCLUDED_INPUTDRIVER_VALUE_H
 #define INCLUDED_INPUTDRIVER_VALUE_H
 
-#include "input/inputdriver.h"
+#include "lib/input/inputdriver.h"
 
 
 class ValueInputDriver : public InputDriver {

@@ -1,4 +1,4 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include "vector2.h"
 #include "vector3.h"
@@ -26,8 +26,8 @@ bool Vector2::Compare(Vector2 const &b) const
 
 // Constructor
 Vector2::Vector2()
-:	x(0.0f),
-	y(0.0f)
+:	x(0.0),
+	y(0.0) 
 {
 }
 
@@ -41,20 +41,20 @@ Vector2::Vector2(Vector3 const &v)
 
 
 // Constructor
-Vector2::Vector2(float _x, float _y)
+Vector2::Vector2(double _x, double _y)
 :	x(_x),
-	y(_y)
+	y(_y) 
 {
 }
 
 
 void Vector2::Zero()
 {
-	x = y = 0.0f;
+	x = y = 0.0;
 }
 
 
-void Vector2::Set(float _x, float _y)
+void Vector2::Set(double _x, double _y)
 {
 	x = _x;
 	y = _y;
@@ -62,14 +62,14 @@ void Vector2::Set(float _x, float _y)
 
 
 // Cross Product
-float Vector2::operator ^ (Vector2 const &b) const
+double Vector2::operator ^ (Vector2 const &b) const
 {
 	return x*b.y - y*b.x;
 }
 
 
 // Dot Product
-float Vector2::operator * (Vector2 const &b) const
+double Vector2::operator * (Vector2 const &b) const
 {
 	return (x * b.x + y * b.y);
 }
@@ -94,15 +94,15 @@ Vector2 Vector2::operator - (Vector2 const &b) const
 }
 
 
-Vector2 Vector2::operator * (float const b) const
+Vector2 Vector2::operator * (double const b) const
 {
 	return Vector2(x * b, y * b);
 }
 
 
-Vector2 Vector2::operator / (float const b) const
+Vector2 Vector2::operator / (double const b) const
 {
-	float multiplier = 1.0f / b;
+	double multiplier = 1.0 / b;
 	return Vector2(x * multiplier, y * multiplier);
 }
 
@@ -123,7 +123,7 @@ void Vector2::operator = (Vector3 const &b)
 
 
 // Scale
-void Vector2::operator *= (float const b)
+void Vector2::operator *= (double const b)
 {
 	x *= b;
 	y *= b;
@@ -131,9 +131,9 @@ void Vector2::operator *= (float const b)
 
 
 // Scale
-void Vector2::operator /= (float const b)
+void Vector2::operator /= (double const b)
 {
-	float multiplier = 1.0f / b;
+	double multiplier = 1.0 / b;
 	x *= multiplier;
 	y *= multiplier;
 }
@@ -155,38 +155,38 @@ void Vector2::operator -= (Vector2 const &b)
 
 Vector2 const &Vector2::Normalise()
 {
-	float lenSqrd = x*x + y*y;
-	if (lenSqrd > 0.0f)
+	double lenSqrd = x*x + y*y;
+	if (lenSqrd > 0.0)
 	{
-		float invLen = 1.0f / sqrtf(lenSqrd);
+		double invLen = 1.0 / iv_sqrt(lenSqrd);
 		x *= invLen;
 		y *= invLen;
 	}
 	else
 	{
-		x = 0.0f;
-        y = 1.0f;
+		x = 0.0;
+        y = 1.0;
 	}
 
 	return *this;
 }
 
 
-void Vector2::SetLength(float _len)
+void Vector2::SetLength(double _len)
 {
-	float scaler = _len / Mag();
+	double scaler = _len / Mag();
 	x *= scaler;
 	y *= scaler;
 }
 
 
-float Vector2::Mag() const
+double Vector2::Mag() const
 {
-    return sqrtf(x * x + y * y);
+    return iv_sqrt(x * x + y * y);
 }
 
 
-float Vector2::MagSquared() const
+double Vector2::MagSquared() const
 {
     return x * x + y * y;
 }
@@ -204,7 +204,7 @@ bool Vector2::operator != (Vector2 const &b) const
 }
 
 
-float *Vector2::GetData()
+double *Vector2::GetData()
 {
 	return &x;
 }

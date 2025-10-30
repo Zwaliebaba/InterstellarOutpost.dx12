@@ -12,7 +12,7 @@
 #ifndef _included_scrollbar_h
 #define _included_scrollbar_h
 
-#include "Canvas/eclipse.h"
+#include "eclipse.h"
 #include "interface/darwinia_window.h"
 
 
@@ -37,7 +37,7 @@ public:
     ScrollBar( EclWindow *parent );
     ~ScrollBar();
 
-    void Create( char *name,
+    void Create( char *name, 
                  int x, int y, int w, int h,
                  int numRows, int winSize,
                  int stepSize=1 );
@@ -57,7 +57,7 @@ class ScrollBarButton : public EclButton
 {
 protected:
     ScrollBar *m_scrollBar;
-    int m_grabOffset;
+    int m_grabOffset;                      
 
 public:
     ScrollBarButton ( ScrollBar *scrollBar );
@@ -76,6 +76,7 @@ protected:
 public:
     ScrollChangeButton( ScrollBar *scrollbar, int amount );
     void MouseDown();
+    void Render( int realX, int realY, bool highlighted, bool clicked );
 };
 
 #endif

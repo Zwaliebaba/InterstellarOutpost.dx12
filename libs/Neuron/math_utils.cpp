@@ -1,24 +1,24 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <math.h>
 
-#include "math_utils.h"
-#include "matrix34.h"
-#include "plane.h"
-#include "vector2.h"
-#include "vector3.h"
+#include "lib/math_utils.h"
+#include "lib/matrix34.h"
+#include "lib/plane.h"
+#include "lib/vector2.h"
+#include "lib/vector3.h"
 
 
-float Log2(float x)
+double Log2(double x)
 {
-	static float oneOverLogOf2 = 1.0f / logf(2.0f);
-	return logf(x) * oneOverLogOf2;
+	static double oneOverLogOf2 = 1.0 / iv_log(2.0);
+	return iv_log(x) * oneOverLogOf2;
 }
 
 
 double RampUpAndDown(double _startTime, double _duration, double _timeNow)
 {
-	if (_timeNow > _startTime + _duration) return 1.0001f;
+	if (_timeNow > _startTime + _duration) return 1.0001;
 
 	double fractionalTime = (_timeNow - _startTime) / _duration;
 
@@ -39,6 +39,62 @@ double RampUpAndDown(double _startTime, double _duration, double _timeNow)
 	}
 }
 
+bool RequireSquareTextures()
+{
+
+#ifdef USE_DIRECT3D
+	return false;
+#endif
+
+	static bool requiresSquareTextures;
+	static bool initted = false;
+
+	if( !initted )
+	{
+		const char *extensions = (const char *) glGetString(GL_EXTENSIONS);
+		bool supportsRectangleTextures = 
+			strstr( extensions, "GL_ARB_texture_rectangle" ) != NULL;
+		requiresSquareTextures = !supportsRectangleTextures;
+		initted = true;
+	}
+
+	return requiresSquareTextures;	
+}
+
+bool RequirePowerOfTwoTextures()
+{
+	
+#ifdef USE_DIRECT3D
+	return false;
+#endif
+	
+	static bool requiresPowerOfTwoTextures;
+	static bool initted = false;
+	
+	if( !initted )
+	{
+		const char *extensions = (const char *) glGetString(GL_EXTENSIONS);
+		bool supportsNonPowerOfTwoTextures = 
+		strstr( extensions, "GL_ARB_texture_non_power_of_two" ) != NULL;
+		requiresPowerOfTwoTextures = !supportsNonPowerOfTwoTextures;
+		initted = true;
+	}
+	
+	return requiresPowerOfTwoTextures;	
+}
+
+unsigned nearestPowerOfTwo( unsigned _x )
+{
+	if( _x > (1 << 31) )
+		return (1 << 31);
+
+	unsigned result = 1;
+	for( ; result < _x; result <<= 1 )
+		;
+
+	return result;
+}
+
 
 // ****************************************************************************
 // Mersenne Twister Random Number Routines
@@ -46,15 +102,15 @@ double RampUpAndDown(double _startTime, double _duration, double _timeNow)
 
 /* This code was taken from
    http://www.math.keio.ac.jp/~matumoto/MT2002/emt19937ar.html
-
+   
    C-program for MT19937, with initialization improved 2002/1/26.
    Coded by Takuji Nishimura and Makoto Matsumoto.
 
-   Before using, initialize the state by using init_genrand(seed)
+   Before using, initialize the state by using init_genrand(seed)  
    or init_by_array(init_key, key_length).
 
    Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
-   All rights reserved.
+   All rights reserved.                          
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -67,8 +123,8 @@ double RampUpAndDown(double _startTime, double _duration, double _timeNow)
         notice, this list of conditions and the following disclaimer in the
         documentation and/or other materials provided with the distribution.
 
-     3. The names of its contributors may not be used to endorse or promote
-        products derived from this software without specific prior written
+     3. The names of its contributors may not be used to endorse or promote 
+        products derived from this software without specific prior written 
         permission.
 
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -88,7 +144,7 @@ double RampUpAndDown(double _startTime, double _duration, double _timeNow)
    email: matumoto@math.keio.ac.jp
 */
 
-/* Period parameters */
+/* Period parameters */  
 #define N 624
 #define M 397
 #define MATRIX_A 0x9908b0dfUL   /* constant vector a */
@@ -103,8 +159,8 @@ static void init_genrand(unsigned long s)
 {
     mt[0]= s & 0xffffffffUL;
     for (mti=1; mti<N; mti++) {
-        mt[mti] =
-	    (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti);
+        mt[mti] = 
+	    (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
         /* In the previous versions, MSBs of the seed affect   */
         /* only MSBs of the array mt[].                        */
@@ -141,7 +197,7 @@ unsigned long syncrand()
 
         mti = 0;
     }
-
+  
     y = mt[mti++];
 
     /* Tempering */
@@ -172,10 +228,10 @@ void GetPlaneMatrix(Vector3 const &t1, Vector3 const &t2, Vector3 const &t3, Mat
 
 // Returns the distance from the point to the plane and writes the point in the plane into
 // result
-float ProjectPointOntoPlane(Vector3 const &point, Matrix34 const &planeMat, Vector3 *result)
+double ProjectPointOntoPlane(Vector3 const &point, Matrix34 const &planeMat, Vector3 *result)
 {
 	Vector3 posToCentre = point - planeMat.pos;
-	float distFromCentreToPlane = posToCentre * planeMat.u;
+	double distFromCentreToPlane = posToCentre * planeMat.u;
 
 	*result = point - planeMat.u * distFromCentreToPlane;
 	return distFromCentreToPlane;
@@ -202,9 +258,9 @@ void ConvertPlaneSpaceIntoWorldSpace(Vector2 const &point, Matrix34 const &plane
 
 
 // Returns the area of an arbitrary triangle in 2D space
-float CalcTriArea(Vector2 const &t1, Vector2 const &t2, Vector2 const &t3)
+double CalcTriArea(Vector2 const &t1, Vector2 const &t2, Vector2 const &t3)
 {
-	return fabsf((t2.x*t1.y-t1.x*t2.y) + (t3.x*t2.y-t2.x*t3.y) + (t1.x*t3.y-t3.x*t1.y)) * 0.5f;
+	return fabsf((t2.x*t1.y-t1.x*t2.y) + (t3.x*t2.y-t2.x*t3.y) + (t1.x*t3.y-t3.x*t1.y)) * 0.5;
 }
 
 
@@ -214,8 +270,8 @@ float CalcTriArea(Vector2 const &t1, Vector2 const &t2, Vector2 const &t3)
 
 bool IsPointInTriangle(Vector2 const &pos, Vector2 const &t1, Vector2 const &t2, Vector2 const &t3)
 {
-	float triArea = CalcTriArea(t1, t2, t3) * 1.0001f;
-	float subTrisArea = CalcTriArea(t1, t2, pos);
+	double triArea = CalcTriArea(t1, t2, t3) * 1.0001;
+	double subTrisArea = CalcTriArea(t1, t2, pos);
 	if (subTrisArea > triArea) return false;
 	subTrisArea += CalcTriArea(t2, t3, pos);
 	if (subTrisArea > triArea) return false;
@@ -227,7 +283,7 @@ bool IsPointInTriangle(Vector2 const &pos, Vector2 const &t1, Vector2 const &t2,
 
 // Finds the point on the line segment that is nearest to the specified point.
 // Often this will be one of the end points of the line segment
-float PointSegDist2D(Vector2 const &p,	// Point
+double PointSegDist2D(Vector2 const &p,	// Point
 				     Vector2 const &l0, Vector2 const &l1, // Line seg
 				     Vector2 *result)
 {
@@ -238,19 +294,19 @@ float PointSegDist2D(Vector2 const &p,	// Point
 	Vector2 w = p - l0;
 
 	// Compute w dot v;
-	float c1 = w.x * v.x + w.y * v.y;
+	double c1 = w.x * v.x + w.y * v.y;
 
-	// If c1 <= 0.0f then the end point l0 is the nearest to p
-	if ( c1 <= 0.0f )
+	// If c1 <= 0.0 then the end point l0 is the nearest to p
+	if ( c1 <= 0.0 )
 	{
 		if (result) *result = l0;
 		Vector2 delta = l0 - p;
 		return delta.Mag();
 	}
 
-	// Compute length squared of v, equivalent to v dot v (a dot b = |a| |b| cos theta)
-	float c2 = v.MagSquared();
-
+	// Compute length squared of v, equivalent to v dot v (a dot b = |a| |b| iv_cos theta)
+	double c2 = v.MagSquared();
+	
 	// If c2 <= c1 then the end point l1 is the nearest to p
 	if ( c2 <= c1 )
 	{
@@ -260,9 +316,9 @@ float PointSegDist2D(Vector2 const &p,	// Point
 	}
 
 	// Otherwise the nearest point is somewhere along the segment
-	float b = c1 / c2;
+	double b = c1 / c2;
 	if (result) *result = l0 + b * v;
-
+	
 	Vector2 delta = (l0 + b * v) - p;
 	return delta.Mag();
 }
@@ -273,15 +329,15 @@ bool SegRayIntersection2D(Vector2 const &_lineStart, Vector2 const &_lineEnd,
 						  Vector2 const &_rayStart, Vector2 const &_rayDir,
                           Vector2 *_result)
 {
-	float r = (_lineStart.y - _rayStart.y) * _rayDir.x - (_lineStart.x - _rayStart.x) * _rayDir.y;
+	double r = (_lineStart.y - _rayStart.y) * _rayDir.x - (_lineStart.x - _rayStart.x) * _rayDir.y;
 	r /= (_lineEnd.x - _lineStart.x) * _rayDir.y - (_lineEnd.y - _lineStart.y) * _rayDir.x;
 
-	float s = (_lineStart.y - _rayStart.y) * (_lineEnd.x - _lineStart.x) -
+	double s = (_lineStart.y - _rayStart.y) * (_lineEnd.x - _lineStart.x) -
 		      (_lineStart.x - _rayStart.x) * (_lineEnd.y - _lineStart.y);
 	s /= (_lineEnd.x - _lineStart.x) * _rayDir.y -
 		 (_lineEnd.y - _lineStart.y) * _rayDir.x;
 
-	if (r >= 0.0f && r <= 1.0f && s >= 0.0f)
+	if (r >= 0.0 && r <= 1.0 && s >= 0.0)
 	{
         if (_result)
         {
@@ -301,7 +357,7 @@ bool SegRayIntersection2D(Vector2 const &_lineStart, Vector2 const &_lineEnd,
 
 // Returns the distance between to infinite 3D lines, assuming that they are skew.
 // Stores the points of closest approach in posOnA and posOnB
-float RayRayDist(Vector3 const &a, Vector3 const &aDir,
+double RayRayDist(Vector3 const &a, Vector3 const &aDir,
 				 Vector3 const &b, Vector3 const &bDir,
 				 Vector3 *posOnA, Vector3 *posOnB)
 {
@@ -313,9 +369,9 @@ float RayRayDist(Vector3 const &a, Vector3 const &aDir,
 	if (posOnB == NULL) posOnB = &temp2;
 
     // Check for near-parallel lines
-//    if ( 0 )
+//    if ( 0 )   
 //	{
-//        return 0.0f;	// degenerate case: lines are parallel
+//        return 0.0;	// degenerate case: lines are parallel
 //    }
 
     // Form plane containing line A, parallel to cdir
@@ -324,7 +380,7 @@ float RayRayDist(Vector3 const &a, Vector3 const &aDir,
     // Form plane containing line B, parallel to cdir
     Plane planeB(b, b+bDir, b+cDir);
 
-	// Now we are going to find the points in the two
+	// Now we are going to find the points in the two 
 	{
 		// Where line A intersects planeB is the point of closest approach to line B
 		int result1 = RayPlaneIntersection( a, aDir, planeB, posOnA );
@@ -333,56 +389,56 @@ float RayRayDist(Vector3 const &a, Vector3 const &aDir,
 		int result2 = RayPlaneIntersection( b, bDir, planeA, posOnB );
 	}
 
-    float dist = ( (*posOnA) - (*posOnB) ).Mag();
-
+    double dist = ( (*posOnA) - (*posOnB) ).Mag();
+	
 	return dist;
 }
 
 
 // Returns the distance between an infinite 3D line and a 3D line segment.
 // Store the points of closest approach in posOnRay and posInSeg
-float RaySegDist(Vector3 const &pointOnLine, Vector3 const &lineDir,
+double RaySegDist(Vector3 const &pointOnLine, Vector3 const &lineDir,
 				 Vector3 const &segStart, Vector3 const &segEnd,
 				 Vector3 *posOnRay, Vector3 *posInSeg)
 {
 	Vector3 segDir = segEnd - segStart;
-
+	
 	Vector3 temp1, temp2;
 	if (!posOnRay) posOnRay = &temp1;
 	if (!posInSeg) posInSeg = &temp2;
 
-	float dist = RayRayDist(pointOnLine, lineDir, segStart, segDir, posOnRay, posInSeg);
+	double dist = RayRayDist(pointOnLine, lineDir, segStart, segDir, posOnRay, posInSeg);
 
-	float t = 0.0f;
+	double t = 0.0;
 
-	if (segDir.x > 0.0001f)
+	if (segDir.x > 0.0001) 
 	{
 		t = (posInSeg->x - segStart.x) / segDir.x;
 	}
-	else if (segDir.y > 0.0001f)
+	else if (segDir.y > 0.0001) 
 	{
 		t = (posInSeg->y - segStart.y) / segDir.y;
 	}
-	else
+	else 
 	{
 		t = (posInSeg->z - segStart.z) / segDir.z;
 	}
 
-	if(t > 0.0f && t < 1.0f)
+	if(t > 0.0 && t < 1.0) 
 	{
 		return dist;
 	}
 
-	return dist * 100000.0f;
+	return dist * 100000.0;
 }
 
 
 bool RayTriIntersection(Vector3 const &orig, Vector3 const &dir,
 						Vector3 const &vert0, Vector3 const &vert1, Vector3 const &vert2,
-						float _rayLen, Vector3 *_result)
+						double _rayLen, Vector3 *_result)
 {
 	Vector3 edge1, edge2, tvec, pvec, qvec;
-	float det, inv_det;
+	double det, inv_det;
 
 	// Find vectors for two edges sharing vert0
 	edge1 = vert1 - vert0;
@@ -394,11 +450,11 @@ bool RayTriIntersection(Vector3 const &orig, Vector3 const &dir,
 	// If determinant is near zero, ray lies in plane of triangle
 	det = edge1 * pvec;
 
-	if (det > -0.0000001f && det < 0.0000001f)
+	if (det > -0.0000001 && det < 0.0000001)
 	{
 		return false;
 	}
-	inv_det = 1.0f / det;
+	inv_det = 1.0 / det;
 
 	/* calculate distance from vert0 to ray origin */
 	tvec = orig - vert0;
@@ -407,7 +463,7 @@ bool RayTriIntersection(Vector3 const &orig, Vector3 const &dir,
 
 	/* calculate Y parameter and test bounds */
 	result.y = (tvec * pvec) * inv_det;
-	if (result.y < 0.0f || result.y > 1.0f)
+	if (result.y < 0.0 || result.y > 1.0)
 	{
 		return false;
 	}
@@ -417,7 +473,7 @@ bool RayTriIntersection(Vector3 const &orig, Vector3 const &dir,
 
 	/* calculate Z parameter and test bounds */
 	result.z = (dir * qvec) * inv_det;
-	if (result.z < 0.0f || result.y + result.z > 1.0f)
+	if (result.z < 0.0 || result.y + result.z > 1.0)
 	{
 		return false;
 	}
@@ -437,26 +493,26 @@ bool RayTriIntersection(Vector3 const &orig, Vector3 const &dir,
 }
 
 
-bool RaySphereIntersection( Vector3 const &rayStart, Vector3 const &rayDir,
-                            Vector3 const &spherePos, float sphereRadius,
-		                    float _rayLen, Vector3 *pos, Vector3 *normal )
-{
+bool RaySphereIntersection( Vector3 const &rayStart, Vector3 const &rayDir, 
+                            Vector3 const &spherePos, double sphereRadius,
+		                    double _rayLen, Vector3 *pos, Vector3 *normal )
+{    
     Vector3 l = spherePos - rayStart;
-
+    
 	// Find tca the distance along ray of point nearest to sphere centre.
 	// We'll call this point P
-	float tca = l * rayDir;
-    if( tca < 0.0f ) return false;
-
+	double tca = l * rayDir;
+    if( tca < 0.0 ) return false;
+    
 	// Use Pythagoras now to find dist from P to sphere centre. Actually
 	// cheaper to calc dist sqrd and compare to radius sqrd
-    float radiusSqrd = sphereRadius * sphereRadius;
-    float lMagSqrd = l.MagSquared();
-    float d2 = lMagSqrd - (tca * tca);
+    double radiusSqrd = sphereRadius * sphereRadius;
+    double lMagSqrd = l.MagSquared();
+    double d2 = lMagSqrd - (tca * tca);
     if( d2 > radiusSqrd ) return false;
-
-    float thc = sqrtf( radiusSqrd - d2 );
-    float t = tca - thc;
+       
+    double thc = iv_sqrt( radiusSqrd - d2 );
+    double t = tca - thc;
 
     if( t < 0 || t > _rayLen ) return false;
 
@@ -483,7 +539,7 @@ bool RaySphereIntersection( Vector3 const &rayStart, Vector3 const &rayDir,
 //	Vector3 pointInPlane = plane.m_distFromOrigin * plane.m_normal;
 //    float d = -pointInPlane.y;
 //    float t = -( rayStart * plane.m_normal + d ) / ( rayDir * plane.m_normal );
-//    if( t < 0.0f ) return false;
+//    if( t < 0.0 ) return false;
 //    if( t > _rayLen ) return false;
 //
 //    if (pos)
@@ -491,7 +547,7 @@ bool RaySphereIntersection( Vector3 const &rayStart, Vector3 const &rayDir,
 //		*pos = rayStart + rayDir * t;
 //	}
 //
-//    return true;
+//    return true;    
 //}
 
 
@@ -514,29 +570,29 @@ int RayPlaneIntersection(Vector3 const &pOnLine, Vector3 const &lineDir,
     if the numerator is also zero (the point at t=0 satisfies the
     plane equation), otherwise the line is parallel to the plane.*/
 
-	float a, b, c, d;
+	double a, b, c, d;
 	plane.GetCartesianDefinition(&a, &b, &c, &d);
+	
+	double x1 = pOnLine.x;
+	double y1 = pOnLine.y;
+	double z1 = pOnLine.z;
 
-	float x1 = pOnLine.x;
-	float y1 = pOnLine.y;
-	float z1 = pOnLine.z;
+	double i = lineDir.x;
+	double j = lineDir.y;
+	double k = lineDir.z;
 
-	float i = lineDir.x;
-	float j = lineDir.y;
-	float k = lineDir.z;
+	double numerator = - (a*x1 + b*y1 + c*z1 + d);
+	double denominator = a*i + b*j + c*k;
 
-	float numerator = - (a*x1 + b*y1 + c*z1 + d);
-	float denominator = a*i + b*j + c*k;
-
-	if(fabs(denominator) < 1e-7)
+	if(fabs(denominator) < 1e-7) 
 	{
-		if(fabs(numerator) < 1e-7)
+		if(fabs(numerator) < 1e-7) 
 		{
 			return 1;
 		}
 		return 0;
 	}
-	float t = numerator / denominator;
+	double t = numerator / denominator;
 
 	intersectionPoint->x = x1 + i * t;
 	intersectionPoint->y = y1 + j * t;
@@ -546,27 +602,27 @@ int RayPlaneIntersection(Vector3 const &pOnLine, Vector3 const &lineDir,
 }
 
 
-bool SphereSphereIntersection( Vector3 const &_sphere1Pos, float _sphere1Radius,
-                               Vector3 const &_sphere2Pos, float _sphere2Radius )
+bool SphereSphereIntersection( Vector3 const &_sphere1Pos, double _sphere1Radius,
+                               Vector3 const &_sphere2Pos, double _sphere2Radius )
 {
-    float distanceSqrd = ( _sphere1Pos - _sphere2Pos ).MagSquared();
-    float radiiSummed = _sphere1Radius + _sphere2Radius;
+    double distanceSqrd = ( _sphere1Pos - _sphere2Pos ).MagSquared();
+    double radiiSummed = _sphere1Radius + _sphere2Radius;
 	return( distanceSqrd <= radiiSummed * radiiSummed );
 }
 
 
-bool SphereTriangleIntersection(Vector3 const &sphereCentre, float sphereRadius,
+bool SphereTriangleIntersection(Vector3 const &sphereCentre, double sphereRadius,
 								Vector3 const &t1, Vector3 const &t2, Vector3 const &t3)
 {
 	Matrix34 planeMat;
 	GetPlaneMatrix(t1, t2, t3, &planeMat);
-
+	
 	Vector3 result;
-	float dist = ProjectPointOntoPlane(sphereCentre, planeMat, &result);
+	double dist = ProjectPointOntoPlane(sphereCentre, planeMat, &result);
 	if (dist > sphereRadius) return false;
 
 //	DrawPoint(result);
-
+	
 	Vector2 point2D;
 	ConvertWorldSpaceIntoPlaneSpace(result, planeMat, &point2D);
 
@@ -574,24 +630,24 @@ bool SphereTriangleIntersection(Vector3 const &sphereCentre, float sphereRadius,
 	ConvertWorldSpaceIntoPlaneSpace(t1, planeMat, &t12D);
 	ConvertWorldSpaceIntoPlaneSpace(t2, planeMat, &t22D);
 	ConvertWorldSpaceIntoPlaneSpace(t3, planeMat, &t32D);
-
+	
 	bool isPointInTri = IsPointInTriangle(point2D, t12D, t22D, t32D);
-
+	
 	if (!isPointInTri)
 	{
 		// Test against edge 1
 		Vector2 pointInTriangle;
-		float nearest = PointSegDist2D(point2D, t12D, t22D, &pointInTriangle);
-
+		double nearest = PointSegDist2D(point2D, t12D, t22D, &pointInTriangle);
+		
 		// Test against edge 2
 		Vector2 temp;
-		float thisDist = PointSegDist2D(point2D, t22D, t32D, &temp);
+		double thisDist = PointSegDist2D(point2D, t22D, t32D, &temp);
 		if (thisDist < nearest)
 		{
 			nearest = thisDist;
 			pointInTriangle = temp;
 		}
-
+		
 		// Test against edge 3
 		thisDist = PointSegDist2D(point2D, t32D, t12D, &temp);
 		if (thisDist < nearest)

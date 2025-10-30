@@ -2,8 +2,8 @@
 #define INCLUDED_KEYBINDINGS_WINDOW_H
 
 
-#include "auto_vector.h"
-#include "input/input.h"
+#include "lib/auto_vector.h"
+#include "lib/input/input.h"
 #include "interface/darwinia_window.h"
 
 

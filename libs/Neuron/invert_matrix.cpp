@@ -1,14 +1,14 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <math.h>
 
-
+#include "lib/debug_utils.h"
 
 class Matrix {
 
 public:
 
-// Default Constructor. Creates a 1 by 1 matrix; sets value to zero.
+// Default Constructor. Creates a 1 by 1 matrix; sets value to zero. 
 Matrix () {
   nRow_ = 1; nCol_ = 1;
   data_ = new double [1];  // Allocate memory
@@ -18,15 +18,15 @@ Matrix () {
 // Regular Constructor. Creates an nR by nC matrix; sets values to zero.
 // If number of columns is not specified, it is set to 1.
 Matrix(int nR, int nC = 1) {
-  DEBUG_ASSERT(nR > 0 && nC > 0);    // Check that nC and nR both > 0.
+  AppDebugAssert(nR > 0 && nC > 0);    // Check that nC and nR both > 0.
   nRow_ = nR; nCol_ = nC;
   data_ = new double [nR*nC];  // Allocate memory
-  DEBUG_ASSERT(data_ != 0);          // Check that memory was allocated
+  AppDebugAssert(data_ != 0);          // Check that memory was allocated
   set(0.0);                    // Set values of data_[] to 0.0
 }
 
 // Copy Constructor.
-// Used when a copy of an object is produced
+// Used when a copy of an object is produced 
 // (e.g., passing to a function by value)
 Matrix(const Matrix& mat) {
   this->copy(mat);   // Call private copy function.
@@ -53,18 +53,18 @@ int nCol() const { return nCol_; }
 
 // Parenthesis operator function.
 // Allows access to values of Matrix via (i,j) pair.
-// Example: a(1,1) = 2*b(2,3);
+// Example: a(1,1) = 2*b(2,3); 
 // If column is unspecified, take as 1.
 double& operator() (int i, int j = 1) {
-  DEBUG_ASSERT(i > 0 && i <= nRow_);          // Bounds checking for rows
-  DEBUG_ASSERT(j > 0 && j <= nCol_);          // Bounds checking for columns
+  AppDebugAssert(i > 0 && i <= nRow_);          // Bounds checking for rows
+  AppDebugAssert(j > 0 && j <= nCol_);          // Bounds checking for columns
   return data_[ nCol_*(i-1) + (j-1) ];  // Access appropriate value
 }
 
 // Parenthesis operator function (const version).
 const double& operator() (int i, int j = 1) const{
-  DEBUG_ASSERT(i > 0 && i <= nRow_);          // Bounds checking for rows
-  DEBUG_ASSERT(j > 0 && j <= nCol_);          // Bounds checking for columns
+  AppDebugAssert(i > 0 && i <= nRow_);          // Bounds checking for rows
+  AppDebugAssert(j > 0 && j <= nCol_);          // Bounds checking for columns
   return data_[ nCol_*(i-1) + (j-1) ];  // Access appropriate value
 }
 
@@ -97,7 +97,7 @@ void copy(const Matrix& mat) {
 
 
 // Compute inverse of matrix
-double inv(Matrix A, Matrix& Ainv)
+double inv(Matrix A, Matrix& Ainv) 
 // Input
 //    A    -    Matrix A (N by N)
 // Outputs
@@ -106,10 +106,10 @@ double inv(Matrix A, Matrix& Ainv)
 {
 
   int N = A.nRow();
-  DEBUG_ASSERT( N == A.nCol() );
-
+  AppDebugAssert( N == A.nCol() );
+  
   Ainv = A;  // Copy matrix to ensure Ainv is same size
-
+    
   int i, j, k;
   Matrix scale(N), b(N,N);	 // Scale factor and work array
   int *index;  index = new int [N+1];
@@ -123,7 +123,7 @@ double inv(Matrix A, Matrix& Ainv)
   for( i=1; i<=N; i++ ) {
     index[i] = i;			  // Initialize row index list
     double scalemax = 0.;
-    for( j=1; j<=N; j++ )
+    for( j=1; j<=N; j++ ) 
       scalemax = (scalemax > fabs(A(i,j))) ? scalemax : fabs(A(i,j));
     scale(i) = scalemax;
   }
@@ -155,7 +155,7 @@ double inv(Matrix A, Matrix& Ainv)
       for( j=k+1; j<=N; j++ )
         A(index[i],j) -= coeff*A(indexJ,j);
       A(index[i],k) = coeff;
-      for( j=1; j<=N; j++ )
+      for( j=1; j<=N; j++ ) 
         b(index[i],j) -= A(index[i],k)*b(indexJ,j);
     }
   }
@@ -176,7 +176,7 @@ double inv(Matrix A, Matrix& Ainv)
   }
 
   delete [] index;	// Release allocated memory
-  return( determ );
+  return( determ );        
 }
 
 
@@ -214,5 +214,5 @@ void InvertMatrix( double *matrixIn, double *matrixOut, int rows, int cols )
             }
         }
     }
-
+    
 }

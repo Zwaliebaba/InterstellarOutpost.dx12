@@ -1,19 +1,17 @@
-#include "pch.h"
+#include "lib/universal_include.h"
+
 #include "net_socket.h"
 
-#ifdef TARGET_MSVC
-#define fdopen _fdopen
-#endif
 
 NetSocket::NetSocket()
+:	m_sockfd( -1 ),
+	m_timeout( 10000 ),
+	m_polltime( 100 ),
+	m_port( 0 ),
+	m_connected( false )
 {
-	m_sockfd = -1;
-	m_stdiofd = (FILE *)0;
-	m_timeout = 10000;
-	m_polltime = 100;
-	m_port = 0;
-	m_ipaddr = 0;
 	memset(&m_to, 0, sizeof(m_to));
+	memset(&m_from, 0, sizeof(m_from));
 	memset(&m_listener, 0, sizeof(m_listener));
 	memset(m_hostname, 0, MAX_HOSTNAME_LEN);
 }
@@ -29,24 +27,14 @@ NetSocket::~NetSocket()
 }
 
 
-NetRetCode NetSocket::Flush()
+NetIpAddress NetSocket::GetRemoteAddress()
 {
-	NetRetCode ret = NetOk;
-	if (!m_stdiofd)
-	{
-		m_stdiofd = fdopen(m_sockfd, "w");
-	}
-	if ((m_stdiofd ==(FILE *)0) || (fflush(m_stdiofd)))
-	{
-		ret = NetFailed;
-	}
-	return ret;
+	return m_to;
 }
 
-
-unsigned long NetSocket::GetIpAddr()
+NetIpAddress NetSocket::GetLocalAddress()
 {
-	return m_ipaddr;
+	return m_from;
 }
 
 
@@ -83,7 +71,7 @@ NetRetCode NetSocket::CheckTimeout(unsigned int *timeout, unsigned int *timedout
 }
 
 
-NetRetCode NetSocket::Connect(char *host, unsigned short port)
+NetRetCode NetSocket::Connect(const char *host, unsigned short port)
 {
 	NetRetCode ret = NetFailed;
 	
@@ -117,8 +105,9 @@ NetRetCode NetSocket::Connect()
 	int err = 0;
 	struct sockaddr_in *servaddr = &m_to;
 	int sockType = SOCK_DGRAM;
-	
-	m_sockfd = socket(AF_INET, sockType, 0);
+	int protocol = IPPROTO_UDP;
+
+	m_sockfd = socket(AF_INET, sockType, protocol);    
 	if (!m_sockfd)
 	{
 		return NetFailed;
@@ -128,57 +117,55 @@ NetRetCode NetSocket::Connect()
 	servaddr->sin_family = AF_INET;
 	servaddr->sin_port = htons(m_port);
 	
-	// Resolve dotted IP address
-	/* Removed, didn't seem to work for addresses like 127.0.0.1 and 90.0.0.3 */
-	//   if (!ncValidInetAddr(ncGetInetAddr(m_hostname,&servaddr->sin_addr.s_addr)))
-	//   {
-	// Otherwise, resolve host name
 	NetHostDetails *pHostent = NetGetHostByName(m_hostname);
 	if (!pHostent)
 	{
-		NetDebugOut("Host address resolution failed for %s", m_hostname);
+		NetDebugOut("Host address resolution failed for %s\n", m_hostname);
 		return NetFailed;
 	}
 	else 
 	{
 		servaddr->sin_addr.s_addr = * ((unsigned long *)pHostent->h_addr_list[0]);
 	}
-	//   }
-	
-	// Stash the IP address as an unsigned long in host byte order
-	m_ipaddr = servaddr->sin_addr.s_addr;
-	
+
 	// Set socket to non - blocking mode
 	NetSetSocketNonBlocking(m_sockfd);
 	
 	// Attempt the connect until we timeout
 	while (::connect(m_sockfd, (struct sockaddr *)servaddr, sizeof(*servaddr)) < 0)
 	{
-		NetDebugOut("Connection error");
+		NetDebugOut("Connection error: ");
+		err = NetGetLastError();
 		if (NetIsBlockingError(err))
 		{
 			timeout += 100;
 			if (timeout > m_timeout)
 			{
-				NetDebugOut("Time out connecting to host");
+				NetDebugOut("Time out connecting to host\n");
 				ret = NetTimedout;
 				break;
 			}
 		}
 		else if (NetIsConnected(err))
 		{
-			NetDebugOut("Already connected");
+			NetDebugOut("Already connected\n");
 			break;
 		}
 		else
 		{
-			NetDebugOut("Connect to host failed: %d", err);
+			NetDebugOut("Connect to host failed: %d\n", err);
 			ret = NetFailed;
 			break;
 		}
 		NetSleep(100);
 	}
-
+	
+	if (ret == 0) {
+		m_connected = true;
+		socklen_t size = sizeof(m_from);
+		getsockname(m_sockfd, (struct sockaddr *) &m_from, &size);
+	}
+	
 	return ret;
 }
 
@@ -198,6 +185,14 @@ NetRetCode NetSocket::WriteData(void *bufAsVoid, int bufLen, int *numActualBytes
 	struct timeval timeVal;
 	long timeoutSeconds = (long)((m_polltime*1000) / 100000);
 	long timeoutUSeconds = (long)((m_polltime*1000) % 100000);
+
+
+	if (!m_connected)
+	{
+		err = Connect();
+		if (err != 0)
+			return NetRetCode(err);
+	}
 	
 	while ((bytesLeft > 0) && (!timedout))
 	{
@@ -224,9 +219,8 @@ NetRetCode NetSocket::WriteData(void *bufAsVoid, int bufLen, int *numActualBytes
 				{
 					return NetFailed;
 				}
-				
-				bytesSent = sendto(m_sockfd, (char *)buf, bytesLeft, 0,
-								(struct sockaddr *)&m_to, sizeof(m_to));
+								
+				bytesSent = send(m_sockfd, (char *)buf, bytesLeft, 0);
 				err = NetGetLastError();
 				if (NetIsSocketError(bytesSent) && NetIsReset(err))
 				{

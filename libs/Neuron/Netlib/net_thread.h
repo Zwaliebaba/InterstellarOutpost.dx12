@@ -8,7 +8,8 @@
 #include "net_lib.h"
 
 
-NetRetCode NetStartThread(NetThreadFunc functionPointer);
+NetThreadId NetGetCurrentThreadId();
+NetRetCode NetStartThread(NetThreadFunc functionPointer, void *arg=NULL );
 	
 
 #endif

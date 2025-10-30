@@ -1,7 +1,7 @@
 #ifndef INCLUDED_INPUTFILTER_DIRECTION_H
 #define INCLUDED_INPUTFILTER_DIRECTION_H
 
-#include "input/inputfilter_withdelta.h"
+#include "lib/input/inputfilter_withdelta.h"
 
 // This class takes one 2D analogue input and converts it
 // into a set of four queriable buttons, which correspond

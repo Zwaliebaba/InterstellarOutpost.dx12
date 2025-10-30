@@ -1,7 +1,7 @@
 #ifndef INCLUDED_INPUTDRIVER_IDLE_H
 #define INCLUDED_INPUTDRIVER_IDLE_H
 
-#include "input/inputdriver_simple.h"
+#include "lib/input/inputdriver_simple.h"
 
 
 class IdleInputDriver : public SimpleInputDriver {
@@ -12,11 +12,11 @@ private:
 	double m_lastChecked;
 
 	bool acceptDriver( std::string const &name );
-
+	
 	control_id_t getControlID( std::string const &name );
 
 	inputtype_t getControlType( control_id_t control_id );
-
+	
 	condition_t getConditionID( std::string const &name, inputtype_t &type );
 
 public:

@@ -1,10 +1,10 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <string>
 
-#include "input/input_types.h"
+#include "lib/input/input_types.h"
 #include "app.h"
-#include "language_table.h"
+#include "lib/language_table.h"
 
 using std::string;
 

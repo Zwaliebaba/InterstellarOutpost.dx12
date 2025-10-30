@@ -1,6 +1,6 @@
-#include "pch.h"
-#include "resource.h"
-#include "language_table.h"
+#include "lib/universal_include.h"
+#include "lib/resource.h"
+#include "lib/language_table.h"
 
 #include "interface/input_field.h"
 #include "interface/globalworldeditor_window.h"
@@ -33,7 +33,7 @@ public:
         {
             DarwiniaButton::Render( realX, realY, highlighted, clicked );
         }
-    }
+    }   
 };
 
 
@@ -43,14 +43,14 @@ class NewLocationButton : public DarwiniaButton
     {
         //
         // If a MOD hasn't been set, don't allow this to happen
-        // as it will try to save into gamedata/levels, which is clearly wrong
+        // as it will try to save into darwinia/data/levels, which is clearly wrong
         // for the end user (but allow it for us)
 
 #ifndef TARGET_DEBUG
-        if( !g_app->m_resource->IsModLoaded() )
+        if( !g_app->m_resource->IsModLoaded() ) 
         {
             EclRegisterWindow( new MessageDialog( LANGUAGEPHRASE( "dialog_newlocationfail1" ),
-                                                  LANGUAGEPHRASE( "dialog_newlocationfail2" ) ),
+                                                  LANGUAGEPHRASE( "dialog_newlocationfail2" ) ), 
                                                   m_parent );
             return;
         }
@@ -58,23 +58,23 @@ class NewLocationButton : public DarwiniaButton
 
         //
         // Create the map and mission files
-
+        
         LevelFile levelFile;
         sprintf( levelFile.m_mapFilename, "map_%s.txt", s_locationName );
         sprintf( levelFile.m_missionFilename, "mission_%s.txt", s_locationName );
-        _strlwr( levelFile.m_mapFilename );
-        _strlwr( levelFile.m_missionFilename );
+        strlwr( levelFile.m_mapFilename );
+        strlwr( levelFile.m_missionFilename );
 
-        levelFile.Save();
-
+        levelFile.Save();       
+        
         //
         // Create new global location
 
         GlobalLocation *loc = new GlobalLocation();
         sprintf( loc->m_mapFilename, "map_%s.txt", s_locationName );
         sprintf( loc->m_missionFilename, "mission_%s.txt", s_locationName );
-        _strlwr( loc->m_mapFilename );
-        _strlwr( loc->m_missionFilename );
+        strlwr( loc->m_mapFilename );
+        strlwr( loc->m_missionFilename );
         strcpy( loc->m_name, s_locationName );
         loc->m_available = true;
         loc->m_pos.Set( -96.25, -274.02, 75.16 );
@@ -95,17 +95,17 @@ class SaveLocationsButton : public DarwiniaButton
     {
         //
         // If a MOD hasn't been set, don't allow this to happen
-        // as it will try to save into gamedata/levels, which is clearly wrong
+        // as it will try to save into darwinia/data/levels, which is clearly wrong
         // for the end user (but allow it for us)
 
 #ifndef TARGET_DEBUG
-        if( !g_app->m_resource->IsModLoaded() )
+        /*if( !g_app->m_resource->IsModLoaded() ) 
         {
             EclRegisterWindow( new MessageDialog( LANGUAGEPHRASE( "dialog_savelocationsfail1" ),
-                                                  LANGUAGEPHRASE( "dialog_savelocationsfail2" ) ),
+                                                  LANGUAGEPHRASE( "dialog_savelocationsfail2" ) ), 
                                                   m_parent );
             return;
-        }
+        }*/
 #endif
 
         //
@@ -117,7 +117,7 @@ class SaveLocationsButton : public DarwiniaButton
 
 
 GlobalWorldEditorWindow::GlobalWorldEditorWindow()
-:   DarwiniaWindow( LANGUAGEPHRASE("editor_globalworldeditor") )
+:   DarwiniaWindow( "editor_globalworldeditor" )
 {
     SetPosition( 20, 20 );
     SetSize( 200, 100 );
@@ -133,26 +133,26 @@ void GlobalWorldEditorWindow::Create()
 
     SetModeButton *setEdit = new SetModeButton();
     setEdit->m_mode = 0;
-    setEdit->SetShortProperties( LANGUAGEPHRASE("editor_editlocations"), 10, y += h, m_w-20 );
+    setEdit->SetShortProperties( "editor_editlocations", 10, y += h, m_w-20,-1, LANGUAGEPHRASE("editor_editlocations") );
     RegisterButton( setEdit );
 
     SetModeButton *setMove = new SetModeButton();
     setMove->m_mode = 1;
-    setMove->SetShortProperties( LANGUAGEPHRASE("editor_movelocations"), 10, y += h, m_w-20 );
+    setMove->SetShortProperties( "editor_movelocations", 10, y += h, m_w-20, -1, LANGUAGEPHRASE("editor_movelocations") );
     RegisterButton( setMove );
 
     y += h;
 
     NewLocationButton *newLoc = new NewLocationButton();
-    newLoc->SetShortProperties( LANGUAGEPHRASE("editor_createnewlocation"), 10, y += h, m_w - 20 );
+    newLoc->SetShortProperties( "editor_createnewlocation", 10, y += h, m_w - 20, -1, LANGUAGEPHRASE("editor_createnewlocation") );
     RegisterButton( newLoc );
 
-    CreateValueControl( LANGUAGEPHRASE("dialog_name"), InputField::TypeString, s_locationName, y +=h, 0, 0, 0, NULL, 10, m_w-20 );
+    CreateValueControl( "dialog_name", s_locationName, y +=h, 0, 0, sizeof(s_locationName), NULL, 10, m_w-20 );
 
     y += h;
-
+    
     SaveLocationsButton *save = new SaveLocationsButton();
-    save->SetShortProperties( LANGUAGEPHRASE("editor_savelocations"), 10, y += h, m_w - 20 );
+    save->SetShortProperties( "editor_savelocations", 10, y += h, m_w - 20, -1, LANGUAGEPHRASE("editor_savelocations") );
     RegisterButton( save );
 }
 

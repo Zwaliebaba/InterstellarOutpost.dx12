@@ -1,10 +1,10 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-#include "debug_render.h"
-#include "file_writer.h"
-#include "text_renderer.h"
-#include "text_stream_readers.h"
-#include "language_table.h"
+#include "lib/debug_render.h"
+#include "lib/filesys/text_file_writer.h"
+#include "lib/text_renderer.h"
+#include "lib/filesys/text_stream_readers.h"
+#include "lib/language_table.h"
 
 #include "worldobject/scripttrigger.h"
 
@@ -14,14 +14,17 @@
 #include "entity_grid.h"
 #include "script.h"
 #include "team.h"
-#include "sepulveda.h"
+#ifdef USE_SEPULVEDA_HELP_TUTORIAL
+    #include "sepulveda.h"
+#endif
 #include "camera.h"
+#include "gametimer.h"
 
 
 ScriptTrigger::ScriptTrigger()
 :   Building(),
-    m_range(100.0f),
-    m_timer(0.0f),
+    m_range(100.0),
+    m_timer(0.0),
     m_entityType(SCRIPTRIGGER_RUNNEVER),
     m_linkId(-1),
     m_triggered(0)
@@ -70,9 +73,10 @@ bool ScriptTrigger::Advance()
         }
         else if( m_triggered > 0 )
         {
+#ifdef USE_SEPULVEDA_HELP_TUTORIAL
             if( !g_app->m_sepulveda->IsTalking() )
             {
-                if( m_triggered == 1 ) g_app->m_sepulveda->HighlightBuilding( m_linkId, m_scriptFilename );
+                if( m_triggered == 1 ) g_app->m_sepulveda->HighlightBuilding( m_linkId, m_scriptFilename );                
                 char nextPhrase[256];
                 sprintf( nextPhrase, "%s_%d", m_scriptFilename, m_triggered );
                 if( !ISLANGUAGEPHRASE_ANY(nextPhrase) )
@@ -84,6 +88,9 @@ bool ScriptTrigger::Advance()
                 g_app->m_sepulveda->Say( nextPhrase );
                 ++m_triggered;
             }
+#else
+            return true;
+#endif
         }
         else
         {
@@ -95,9 +102,9 @@ bool ScriptTrigger::Advance()
                 // We haven't been triggered yet
                 m_timer -= SERVER_ADVANCE_PERIOD;
 
-                if( m_timer <= 0.0f )
+                if( m_timer <= 0.0 )
                 {
-                    m_timer = 1.0f;
+                    m_timer = 1.0;
 
                     if( m_entityType == SCRIPTRIGGER_RUNALWAYS )
                     {
@@ -105,28 +112,28 @@ bool ScriptTrigger::Advance()
                     }
                     else if( m_entityType == SCRIPTRIGGER_RUNCAMENTER )
                     {
-                        float camDistance = (g_app->m_camera->GetPos() - m_pos).Mag();
+                        double camDistance = (g_app->m_camera->GetPos() - m_pos).Mag();
                         Vector3 camVel = g_app->m_camera->GetVel();
                         bool camInteractive = g_app->m_camera->IsInteractive();
 
-                        if( camDistance <= m_range && camVel.Mag() < 5.0f && camInteractive )
+                        if( camDistance <= m_range && camVel.Mag() < 5.0 && camInteractive )
                         {
                             Trigger();
                         }
                     }
                     else if( m_entityType == SCRIPTRIGGER_RUNCAMVIEW )
                     {
-                        float camDistance = (g_app->m_camera->GetPos() - m_pos).Mag();
+                        double camDistance = (g_app->m_camera->GetPos() - m_pos).Mag();
                         Vector3 camVel = g_app->m_camera->GetVel();
                         bool camInteractive = g_app->m_camera->IsInteractive();
                         bool inView = RaySphereIntersection( g_app->m_camera->GetPos(), g_app->m_camera->GetFront(), m_pos, m_range );
-
-                        if( camDistance <= (m_range+300.0f) && camVel.Mag() < 5.0f && camInteractive && inView )
+                            
+                        if( camDistance <= (m_range+300.0) && camVel.Mag() < 5.0 && camInteractive && inView )
                         {
                             Trigger();
-                        }
+                        }                
 
-                        if( camDistance <= m_range && camVel.Mag() < 5.0f && camInteractive )
+                        if( camDistance <= m_range && camVel.Mag() < 5.0 && camInteractive )
                         {
                             Trigger();
                         }
@@ -135,10 +142,10 @@ bool ScriptTrigger::Advance()
                     {
                         int numFound;
                         int numCorrectTypeFound = 0;
-                        WorldObjectId *ids = g_app->m_location->m_entityGrid->GetNeighbours( m_pos.x, m_pos.z, m_range, &numFound );
+                        g_app->m_location->m_entityGrid->GetNeighbours( s_neighbours, m_pos.x, m_pos.z, m_range, &numFound );
                         for( int i = 0; i < numFound; ++i )
                         {
-                            WorldObjectId id = ids[i];
+                            WorldObjectId id = s_neighbours[i];
                             if( id.IsValid() && id.GetTeamId() == m_id.GetTeamId() )
                             {
                                 Entity *entity = g_app->m_location->GetEntity( id );
@@ -164,7 +171,7 @@ bool ScriptTrigger::Advance()
 }
 
 
-void ScriptTrigger::RenderAlphas( float predictionTime )
+void ScriptTrigger::RenderAlphas( double predictionTime )
 {
     if( g_app->m_editing )
     {
@@ -175,19 +182,19 @@ void ScriptTrigger::RenderAlphas( float predictionTime )
         }
         else
         {
-            colour = g_app->m_location->m_teams[m_id.GetTeamId()].m_colour;
+            colour = g_app->m_location->m_teams[m_id.GetTeamId()]->m_colour;
         }
 
         RenderSphere( m_pos, m_range, colour );
         RenderSphere( m_pos, m_range, colour );
 
-        g_editorFont.DrawText3DCentre( m_pos+Vector3(0,30,0), 10, "%s", m_scriptFilename );
-        g_editorFont.DrawText3DCentre( m_pos+Vector3(0,20,0), 10, "%d", m_triggered );
+        g_editorFont.DrawText3DCentre( m_pos+Vector3(0,30,0), 10, "%s", m_scriptFilename );    
+        g_editorFont.DrawText3DCentre( m_pos+Vector3(0,20,0), 10, "%d", m_triggered );    
     }
 };
 
 
-bool ScriptTrigger::DoesSphereHit(Vector3 const &_pos, float _radius)
+bool ScriptTrigger::DoesSphereHit(Vector3 const &_pos, double _radius)
 {
     return false;
 }
@@ -199,8 +206,8 @@ bool ScriptTrigger::DoesShapeHit(Shape *_shape, Matrix34 _transform)
 }
 
 
-bool ScriptTrigger::DoesRayHit(Vector3 const &_rayStart, Vector3 const &_rayDir,
-                                float _rayLen, Vector3 *_pos, Vector3 *_norm)
+bool ScriptTrigger::DoesRayHit(Vector3 const &_rayStart, Vector3 const &_rayDir, 
+                                double _rayLen, Vector3 *_pos, Vector3 *_norm)
 {
     if( g_app->m_editing )
     {
@@ -230,20 +237,20 @@ void ScriptTrigger::Read( TextReader *_in, bool _dynamic )
     Building::Read( _in, _dynamic );
 
     m_linkId = atoi( _in->GetNextToken() );
-    m_range = atof( _in->GetNextToken() );
+    m_range = iv_atof( _in->GetNextToken() );
 
     strcpy( m_scriptFilename, _in->GetNextToken() );
 
     char *entityType = _in->GetNextToken();
-    if      ( _stricmp( entityType, "always" ) == 0 )    m_entityType = SCRIPTRIGGER_RUNALWAYS;
-    else if ( _stricmp( entityType, "never" ) == 0 )     m_entityType = SCRIPTRIGGER_RUNNEVER;
-    else if ( _stricmp( entityType, "camenter" ) == 0 )  m_entityType = SCRIPTRIGGER_RUNCAMENTER;
-    else if ( _stricmp( entityType, "camview" ) == 0 )   m_entityType = SCRIPTRIGGER_RUNCAMVIEW;
-    else     m_entityType = Entity::GetTypeId( entityType );
+    if      ( stricmp( entityType, "always" ) == 0 )    m_entityType = SCRIPTRIGGER_RUNALWAYS;
+    else if ( stricmp( entityType, "never" ) == 0 )     m_entityType = SCRIPTRIGGER_RUNNEVER;
+    else if ( stricmp( entityType, "camenter" ) == 0 )  m_entityType = SCRIPTRIGGER_RUNCAMENTER;
+    else if ( stricmp( entityType, "camview" ) == 0 )   m_entityType = SCRIPTRIGGER_RUNCAMVIEW;
+    else     m_entityType = Entity::GetTypeId( entityType );       
 }
 
 
-void ScriptTrigger::Write( FileWriter *_out )
+void ScriptTrigger::Write( TextWriter *_out )
 {
     Building::Write( _out );
 

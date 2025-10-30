@@ -8,22 +8,22 @@
 class Snow : public WorldObject
 {
 protected:
-    float       m_timeSync;
-    float       m_positionOffset;                       // Used to make them float around a bit
-    float       m_xaxisRate;
-    float       m_yaxisRate;
-    float       m_zaxisRate;
+    double       m_timeSync;
+    double       m_positionOffset;                       // Used to make them double around a bit
+    double       m_xaxisRate;
+    double       m_yaxisRate;
+    double       m_zaxisRate;
 
 public:
     Vector3     m_hover;
-
+    
 public:
     Snow();
 
     bool Advance();
-    void Render( float _predictionTime );
+    void Render( double _predictionTime );
 
-    float GetLife();                        // Returns 0.0f-1.0f (0.0f=dead, 1.0f=alive)
+    double GetLife();                        // Returns 0.0-1.0 (0.0=dead, 1.0=alive)
 };
 
 

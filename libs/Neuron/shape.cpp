@@ -1,4 +1,4 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <float.h>
 #include <ctype.h>
@@ -6,17 +6,18 @@
 #include <string.h>
 #include <math.h>
 
-
-#include "debug_render.h"
-#include "math_utils.h"
-#include "matrix33.h"
-#include "matrix34.h"
-#include "shape.h"
-#include "text_stream_readers.h"
+#include "lib/debug_utils.h"
+#include "lib/debug_render.h"
+#include "lib/math_utils.h"
+#include "lib/matrix33.h"
+#include "lib/matrix34.h"
+#include "lib/shape.h"
+#include "lib/filesys/text_stream_readers.h"
+#include "lib/runnable.h"
 
 #ifndef EXPORTER_BUILD
-#include "resource.h"
-#include "app.h"
+#include "lib/resource.h"
+#include "../app.h"
 #endif
 
 #define USE_DISPLAY_LISTS
@@ -77,38 +78,38 @@ ShapeMarker::ShapeMarker(TextReader *_in, char const *_name)
 
 		if (firstWord)
 		{
-			if (_stricmp(firstWord, "ParentName") == 0)
+			if (stricmp(firstWord, "ParentName") == 0)
 			{
 				char *secondWord = _in->GetNextToken();
 				m_parentName = strdup(secondWord);
 			}
-			else if (_stricmp(firstWord, "Depth") == 0)
+			else if (stricmp(firstWord, "Depth") == 0)
 			{
 				char *secondWord = _in->GetNextToken();
 				m_depth = atoi(secondWord);
 			}
-			else if (_stricmp(firstWord, "front") == 0)
+			else if (stricmp(firstWord, "front") == 0)
 			{
 				char *secondWord = _in->GetNextToken();
-				m_transform.f.x = (float)atof(secondWord);
-				m_transform.f.y = (float)atof(_in->GetNextToken());
-				m_transform.f.z = (float)atof(_in->GetNextToken());
+				m_transform.f.x = (double)iv_atof(secondWord);
+				m_transform.f.y = (double)iv_atof(_in->GetNextToken());
+				m_transform.f.z = (double)iv_atof(_in->GetNextToken());
 			}
-			else if (_stricmp(firstWord, "up") == 0)
+			else if (stricmp(firstWord, "up") == 0)
 			{
 				char *secondWord = _in->GetNextToken();
-				m_transform.u.x = (float)atof(secondWord);
-				m_transform.u.y = (float)atof(_in->GetNextToken());
-				m_transform.u.z = (float)atof(_in->GetNextToken());
+				m_transform.u.x = (double)iv_atof(secondWord);
+				m_transform.u.y = (double)iv_atof(_in->GetNextToken());
+				m_transform.u.z = (double)iv_atof(_in->GetNextToken());
 			}
-			else if (_stricmp(firstWord, "pos") == 0)
+			else if (stricmp(firstWord, "pos") == 0)
 			{
 				char *secondWord = _in->GetNextToken();
-				m_transform.pos.x = (float)atof(secondWord);
-				m_transform.pos.y = (float)atof(_in->GetNextToken());
-				m_transform.pos.z = (float)atof(_in->GetNextToken());
+				m_transform.pos.x = (double)iv_atof(secondWord);
+				m_transform.pos.y = (double)iv_atof(_in->GetNextToken());
+				m_transform.pos.z = (double)iv_atof(_in->GetNextToken());
 			}
-			else if (_stricmp(firstWord, "MarkerEnd") == 0)
+			else if (stricmp(firstWord, "MarkerEnd") == 0)
 			{
 				break;
 			}
@@ -150,9 +151,9 @@ void ShapeMarker::WriteToFile(FILE *_out) const
 	fprintf(_out, "Marker: %s\n", m_name);
 	fprintf(_out, "\tParentName: %s\n", m_parentName);
 	fprintf(_out, "\tDepth: %d\n", m_depth);
-	fprintf(_out, "\tUp:    %5.2f %5.2f %5.2f\n", m_transform.u.x, m_transform.u.y, m_transform.u.z);
-	fprintf(_out, "\tFront: %5.2f %5.2f %5.2f\n", m_transform.f.x, m_transform.f.y, m_transform.f.z);
-	fprintf(_out, "\tPos:   %5.2f %5.2f %5.2f\n", m_transform.pos.x, m_transform.pos.y, m_transform.pos.z);
+	fprintf(_out, "\tUp:    %5.2 %5.2 %5.2\n", m_transform.u.x, m_transform.u.y, m_transform.u.z);
+	fprintf(_out, "\tFront: %5.2 %5.2 %5.2\n", m_transform.f.x, m_transform.f.y, m_transform.f.z);
+	fprintf(_out, "\tPos:   %5.2 %5.2 %5.2\n", m_transform.pos.x, m_transform.pos.y, m_transform.pos.z);
 	fprintf(_out, "\tMarkerEnd\n\n\n");
 }
 
@@ -183,15 +184,15 @@ ShapeFragment::ShapeFragment(TextReader *_in, char const *_name)
 	m_angVel(0,0,0),
 	m_vel(0,0,0),
 	m_useCylinder(false),
-	m_centre(0.0f, 0.0f, 0.0f),
-	m_radius(-1.0f),
-	m_mostPositiveY(0.0f),
-	m_mostNegativeY(0.0f)
+	m_centre(0.0, 0.0, 0.0),
+	m_radius(-1.0),
+	m_mostPositiveY(0.0),
+	m_mostNegativeY(0.0)
 {
 	m_maxTriangles = 1;
 	m_triangles = new ShapeTriangle[m_maxTriangles];
 
-	DEBUG_ASSERT(_name);
+	AppDebugAssert(_name);
 	m_name = strdup(_name);
 
 	m_transform.SetToIdentity();
@@ -205,55 +206,55 @@ ShapeFragment::ShapeFragment(TextReader *_in, char const *_name)
 		char *firstWord = _in->GetNextToken();
 		char *secondWord = _in->GetNextToken();
 
-		if (_stricmp(firstWord, "ParentName") == 0)
+		if (stricmp(firstWord, "ParentName") == 0)
 		{
 			m_parentName = strdup(secondWord);
 		}
-		else if (_stricmp(firstWord, "front") == 0)
+		else if (stricmp(firstWord, "front") == 0)
 		{
-			m_transform.f.x = (float)atof(secondWord);
-			m_transform.f.y = (float)atof(_in->GetNextToken());
-			m_transform.f.z = (float)atof(_in->GetNextToken());
+			m_transform.f.x = (double)iv_atof(secondWord);
+			m_transform.f.y = (double)iv_atof(_in->GetNextToken());
+			m_transform.f.z = (double)iv_atof(_in->GetNextToken());
 		}
-		else if (_stricmp(firstWord, "up") == 0)
+		else if (stricmp(firstWord, "up") == 0)
 		{
-			m_transform.u.x = (float)atof(secondWord);
-			m_transform.u.y = (float)atof(_in->GetNextToken());
-			m_transform.u.z = (float)atof(_in->GetNextToken());
+			m_transform.u.x = (double)iv_atof(secondWord);
+			m_transform.u.y = (double)iv_atof(_in->GetNextToken());
+			m_transform.u.z = (double)iv_atof(_in->GetNextToken());
 		}
-		else if (_stricmp(firstWord, "pos") == 0)
+		else if (stricmp(firstWord, "pos") == 0)
 		{
-			m_transform.pos.x = (float)atof(secondWord);
-			m_transform.pos.y = (float)atof(_in->GetNextToken());
-			m_transform.pos.z = (float)atof(_in->GetNextToken());
+			m_transform.pos.x = (double)iv_atof(secondWord);
+			m_transform.pos.y = (double)iv_atof(_in->GetNextToken());
+			m_transform.pos.z = (double)iv_atof(_in->GetNextToken());
 		}
-		else if (_stricmp(firstWord, "Positions") == 0)
+		else if (stricmp(firstWord, "Positions") == 0)
 		{
 			int numPositions = atoi(secondWord);
 			ParsePositionBlock(_in, numPositions);
 		}
-		else if (_stricmp(firstWord, "Normals") == 0)
+		else if (stricmp(firstWord, "Normals") == 0)
 		{
 			int numNorms = atoi(secondWord);
 			ParseNormalBlock(_in, numNorms);
 		}
-		else if (_stricmp(firstWord, "Colours") == 0)
+		else if (stricmp(firstWord, "Colours") == 0)
 		{
 			int numColours = atoi(secondWord);
 			ParseColourBlock(_in, numColours);
 		}
-		else if (_stricmp(firstWord, "Vertices") == 0)
+		else if (stricmp(firstWord, "Vertices") == 0)
 		{
 			int numVerts = atoi(secondWord);
 			ParseVertexBlock(_in, numVerts);
 		}
-		else if (_stricmp(firstWord, "Strips") == 0)
+		else if (stricmp(firstWord, "Strips") == 0)
 		{
 			int numStrips = atoi(secondWord);
 			ParseAllStripBlocks(_in, numStrips);
 			break;
 		}
-		else if (_stricmp(firstWord, "Triangles") == 0)
+		else if (stricmp(firstWord, "Triangles") == 0)
 		{
 			int numTriangles = atoi(secondWord);
 			ParseTriangleBlock(_in, numTriangles);
@@ -268,6 +269,10 @@ ShapeFragment::ShapeFragment(TextReader *_in, char const *_name)
 
 	GenerateNormals();
 
+	if (m_positionsInWS)
+	{
+		delete [] m_positionsInWS;
+	}
 	m_positionsInWS = new Vector3[m_numVertices];
 }
 
@@ -289,10 +294,10 @@ ShapeFragment::ShapeFragment(char const *_name, char const *_parentName)
 	m_maxTriangles(0),
 	m_triangles(NULL),
 	m_useCylinder(false),
-	m_centre(0.0f, 0.0f, 0.0f),
-	m_radius(-1.0f),
-	m_mostPositiveY(0.0f),
-	m_mostNegativeY(0.0f)
+	m_centre(0.0, 0.0, 0.0),
+	m_radius(-1.0),
+	m_mostPositiveY(0.0),
+	m_mostNegativeY(0.0)
 {
 	m_maxTriangles = 1;
 	m_triangles = new ShapeTriangle[m_maxTriangles];
@@ -332,7 +337,7 @@ ShapeFragment::ShapeFragment(char const *_name, char const *_parentName)
 	c[0] = '\0';
 }
 
-
+    
 ShapeFragment::~ShapeFragment()
 {
 	SAFE_DELETE_ARRAY(m_positions);
@@ -346,7 +351,7 @@ ShapeFragment::~ShapeFragment()
 	m_childFragments.EmptyAndDelete();
 	m_childMarkers.EmptyAndDelete();
 #ifndef EXPORTER_BUILD
-	g_app->m_resource->DeleteDisplayList(m_displayListName);
+	g_app->m_resource->DeleteDisplayListAsync(m_displayListName);
 	delete [] m_displayListName;
 	m_displayListName = NULL;
 #endif
@@ -356,12 +361,9 @@ ShapeFragment::~ShapeFragment()
 void ShapeFragment::BuildDisplayList()
 {
 #ifndef EXPORTER_BUILD
-	DEBUG_ASSERT(m_displayListName == NULL);
+	AppDebugAssert(m_displayListName == NULL);
 	m_displayListName = g_app->m_resource->GenerateName();
-	int id = g_app->m_resource->CreateDisplayList(m_displayListName);
-	glNewList(id, GL_COMPILE);
-		RenderSlow();
-	glEndList();
+	g_app->m_resource->CreateDisplayListAsync(m_displayListName, Method<ShapeFragment>( &ShapeFragment::RenderSlow, this ) );
 #endif
 }
 
@@ -370,12 +372,12 @@ void ShapeFragment::WriteToFile(FILE *_out) const
 {
     int i;
 
-	if (_stricmp(m_name, "SceneRoot") != 0)
+	if (stricmp(m_name, "SceneRoot") != 0)
 	{
 		fprintf(_out, "Fragment: %s\n", m_name);
 		fprintf(_out, "\tParentName: %s\n", m_parentName);
-		fprintf(_out, "\tup:    %5.2f %5.2f %5.2f\n", m_transform.u.x, m_transform.u.y, m_transform.u.z);
-		fprintf(_out, "\tfront: %5.2f %5.2f %5.2f\n", m_transform.f.x, m_transform.f.y, m_transform.f.z);
+		fprintf(_out, "\tup:    %5.2 %5.2 %5.2\n", m_transform.u.x, m_transform.u.y, m_transform.u.z);
+		fprintf(_out, "\tfront: %5.2 %5.2 %5.2\n", m_transform.f.x, m_transform.f.y, m_transform.f.z);
 		fprintf(_out, "\tpos: %.2f %.2f %.2f\n", m_transform.pos.x, m_transform.pos.y, m_transform.pos.z);
 
 		// Write out the positions
@@ -383,7 +385,7 @@ void ShapeFragment::WriteToFile(FILE *_out) const
 		for (i = 0; i < m_numPositions; i++)
 		{
 			Vector3 const &v = m_positions[i];
-			fprintf(_out, "\t\t%d: %7.3f %7.3f %7.3f\n", i, v.x, v.y, v.z);
+			fprintf(_out, "\t\t%d: %7.3 %7.3 %7.3\n", i, v.x, v.y, v.z);
 		}
 
 		// Write out the normals
@@ -391,7 +393,7 @@ void ShapeFragment::WriteToFile(FILE *_out) const
 		for (i = 0; i < m_numNormals; i++)
 		{
 			Vector3 const &n = m_normals[i];
-			fprintf(_out, "\t\t%d: %6.3f %6.3f %6.3f\n", i, n.x, n.y, n.z);
+			fprintf(_out, "\t\t%d: %6.3 %6.3 %6.3\n", i, n.x, n.y, n.z);
 		}
 
 		// Write out the colours
@@ -414,7 +416,7 @@ void ShapeFragment::WriteToFile(FILE *_out) const
 		fprintf(_out, "\tTriangles: %d\n", m_numTriangles);
 		for (i = 0; i < m_numTriangles; ++i)
 		{
-			fprintf(_out, "\t\t%d,%d,%d\n",
+			fprintf(_out, "\t\t%d,%d,%d\n", 
 				m_triangles[i].v1,
 				m_triangles[i].v2,
 				m_triangles[i].v3);
@@ -447,7 +449,7 @@ void ShapeFragment::ParsePositionBlock(TextReader *_in, unsigned int _numPositio
 	{
 		if (_in->ReadLine() == 0)
 		{
-			DEBUG_ASSERT(0);
+			AppDebugAssert(0);
 		}
 
 		char *c = _in->GetNextToken();
@@ -456,19 +458,20 @@ void ShapeFragment::ParsePositionBlock(TextReader *_in, unsigned int _numPositio
 			int id = atoi(c);
 			if (id != expectedId || id >= _numPositions)
 			{
+				delete [] positions;
 				return;
 			}
-
+			
 			Vector3 *vect = &positions[id];
 			c = _in->GetNextToken();
-			DEBUG_ASSERT(c);
-			vect->x = (float)atof(c);
+			AppDebugAssert(c);
+			vect->x = (double)iv_atof(c);
 			c = _in->GetNextToken();
-			DEBUG_ASSERT(c);
-			vect->y = (float)atof(c);
+			AppDebugAssert(c);
+			vect->y = (double)iv_atof(c);
 			c = _in->GetNextToken();
-			DEBUG_ASSERT(c);
-			vect->z = (float)atof(c);
+			AppDebugAssert(c);
+			vect->z = (double)iv_atof(c);
 
 			expectedId++;
 		}
@@ -492,7 +495,7 @@ void ShapeFragment::ParseNormalBlock(TextReader *_in, unsigned int _numNorms)
 	{
 		if (_in->ReadLine() == 0)
 		{
-			DEBUG_ASSERT(0);
+			AppDebugAssert(0);
 		}
 
 		char *c = _in->GetNextToken();
@@ -501,19 +504,19 @@ void ShapeFragment::ParseNormalBlock(TextReader *_in, unsigned int _numNorms)
 			int id = atoi(c);
 			if (id != expectedId || id >= _numNorms)
 			{
-				DEBUG_ASSERT(0);
+				AppDebugAssert(0);
 			}
-
+			
 			Vector3 *vect = &m_normals[id];
 			c = _in->GetNextToken();
-			DEBUG_ASSERT(c);
-			vect->x = (float)atof(c);
+			AppDebugAssert(c);
+			vect->x = (double)iv_atof(c);
 			c = _in->GetNextToken();
-			DEBUG_ASSERT(c);
-			vect->y = (float)atof(c);
+			AppDebugAssert(c);
+			vect->y = (double)iv_atof(c);
 			c = _in->GetNextToken();
-			DEBUG_ASSERT(c);
-			vect->z = (float)atof(c);
+			AppDebugAssert(c);
+			vect->z = (double)iv_atof(c);
 
 			expectedId++;
 		}
@@ -532,7 +535,7 @@ void ShapeFragment::ParseColourBlock(TextReader *_in, unsigned int _numColours)
 	{
 		if (_in->ReadLine() == 0)
 		{
-			DEBUG_ASSERT(0);
+			AppDebugAssert(0);
 		}
 
 		char *c = _in->GetNextToken();
@@ -541,22 +544,22 @@ void ShapeFragment::ParseColourBlock(TextReader *_in, unsigned int _numColours)
 			int id = atoi(c);
 			if (id != expectedId || id >= _numColours)
 			{
-				DEBUG_ASSERT(0);
+				AppDebugAssert(0);
 			}
-
+			
 			RGBAColour *col = &m_colours[id];
 			c = _in->GetNextToken();
-			DEBUG_ASSERT(c);
+			AppDebugAssert(c);
 			col->r = atoi(c);
 			c = _in->GetNextToken();
-			DEBUG_ASSERT(c);
+			AppDebugAssert(c);
 			col->g = atoi(c);
 			c = _in->GetNextToken();
-			DEBUG_ASSERT(c);
+			AppDebugAssert(c);
 			col->b = atoi(c);
 			col->a = 0;
 
-			*col *= 0.85f;
+			*col *= 0.85;
 			col->a = 255;
 
 			expectedId++;
@@ -568,6 +571,11 @@ void ShapeFragment::ParseColourBlock(TextReader *_in, unsigned int _numColours)
 // *** ParseVertexBlock
 void ShapeFragment::ParseVertexBlock(TextReader *_in, unsigned int _numVerts)
 {
+	if (m_vertices)
+	{
+		delete [] m_vertices;
+	}
+
 	m_vertices = new VertexPosCol[_numVerts];
 	m_numVertices = _numVerts;
 
@@ -576,7 +584,7 @@ void ShapeFragment::ParseVertexBlock(TextReader *_in, unsigned int _numVerts)
 	{
 		if (_in->ReadLine() == 0)
 		{
-			DEBUG_ASSERT(0);
+			AppDebugAssert(0);
 		}
 
 		char *c = _in->GetNextToken();
@@ -585,7 +593,7 @@ void ShapeFragment::ParseVertexBlock(TextReader *_in, unsigned int _numVerts)
 			int id = atoi(c);
 			if (id != expectedId || id >= _numVerts)
 			{
-				DEBUG_ASSERT(0);
+				AppDebugAssert(0);
 			}
 
 			VertexPosCol *vert = &m_vertices[id];
@@ -605,24 +613,24 @@ void ShapeFragment::ParseStripBlock(TextReader *_in)
 {
 	_in->ReadLine();
 	char *c = _in->GetNextToken();
-	DEBUG_ASSERT(c);
+	AppDebugAssert(c);
 
 	// Read material name
-	if (_stricmp(c, "Material") == 0)
+	if (stricmp(c, "Material") == 0)
 	{
 		c = _in->GetNextToken();
-		DEBUG_ASSERT(c);
+		AppDebugAssert(c);
 
 		_in->ReadLine();
 		c = _in->GetNextToken();
 	}
 
 	// Read number of vertices in strip
-	DEBUG_ASSERT( c && (_stricmp(c, "Verts") == 0) );
+	AppDebugAssert( c && (stricmp(c, "Verts") == 0) );
 	c = _in->GetNextToken();
-	DEBUG_ASSERT(c);
+	AppDebugAssert(c);
 	int numVerts = atoi(c);
-	DEBUG_ASSERT(numVerts > 2);
+	AppDebugAssert(numVerts > 2);
 
 	// Now just read a sequence of verts
 	int i = 0;
@@ -631,17 +639,17 @@ void ShapeFragment::ParseStripBlock(TextReader *_in)
 	{
 		if (_in->ReadLine() == 0)
 		{
-			DEBUG_ASSERT(0);
+			AppDebugAssert(0);
 		}
-
+	
 		while (_in->TokenAvailable())
 		{
 			char *c = _in->GetNextToken();
-			DEBUG_ASSERT( c[0] == 'v' );
+			AppDebugAssert( c[0] == 'v' );
 
 			c++;
 			int v3 = atoi(c);
-			DEBUG_ASSERT(v3 < m_numVertices);
+			AppDebugAssert(v3 < m_numVertices);
 
 			if (i >= 2 && v1 != v2 && v2 != v3 && v1 != v3)
 			{
@@ -684,17 +692,17 @@ void ShapeFragment::ParseAllStripBlocks(TextReader *_in, unsigned int _numStrips
 	while(_in->ReadLine())
 	{
 		char *c = _in->GetNextToken();
-		if (c && _stricmp(c, "Strip") == 0)
+		if (c && stricmp(c, "Strip") == 0)
 		{
 			c = _in->GetNextToken();
 			int id = atoi(c);
 
-			DEBUG_ASSERT(id == expectedId);
+			AppDebugAssert(id == expectedId);
 
 			ParseStripBlock(_in);
-
+			
 			expectedId++;
-
+			
 			if (expectedId == _numStrips)
 			{
 				break;
@@ -713,7 +721,7 @@ void ShapeFragment::ParseAllStripBlocks(TextReader *_in, unsigned int _numStrips
 
 void ShapeFragment::ParseTriangleBlock(TextReader *_in, unsigned int _numTriangles)
 {
-	DEBUG_ASSERT(m_numTriangles == 0 && m_maxTriangles == 1 && m_triangles != NULL);
+	AppDebugAssert(m_numTriangles == 0 && m_maxTriangles == 1 && m_triangles != NULL);
 	delete [] m_triangles;
 
 	m_maxTriangles = _numTriangles;
@@ -741,9 +749,13 @@ void ShapeFragment::ParseTriangleBlock(TextReader *_in, unsigned int _numTriangl
 void ShapeFragment::GenerateNormals()
 {
 	m_numNormals = m_numTriangles;
+	if( m_normals )
+	{
+		delete [] m_normals;
+	}
 	m_normals = new Vector3[m_numNormals];
 	int normId = 0;
-
+	
 	for (int j = 0; j < m_numTriangles; ++j)
 	{
 		ShapeTriangle *tri = &m_triangles[j];
@@ -776,12 +788,12 @@ void ShapeFragment::RegisterPositions(Vector3 *_positions, unsigned int _numPosi
 	{
 		// Find the centre of the fragment
 		{
-			float minX = FLT_MAX;
-			float maxX = -FLT_MAX;
-			float minY = FLT_MAX;
-			float maxY = -FLT_MAX;
-			float minZ = FLT_MAX;
-			float maxZ = -FLT_MAX;
+			double minX = FLT_MAX;
+			double maxX = -FLT_MAX;
+			double minY = FLT_MAX;
+			double maxY = -FLT_MAX;
+			double minZ = FLT_MAX;
+			double maxZ = -FLT_MAX;
 			for (i = 0; i < m_numPositions; ++i)
 			{
 				if (m_positions[i].x < minX)		minX = m_positions[i].x;
@@ -797,24 +809,24 @@ void ShapeFragment::RegisterPositions(Vector3 *_positions, unsigned int _numPosi
 		}
 
 		// Find the point furthest from the centre
-		float radiusSquared = 0.0f;
+		double radiusSquared = 0.0;
 		for (i = 0; i < m_numPositions; ++i)
 		{
 			Vector3 delta = m_centre - m_positions[i];
-			float magSquared = delta.MagSquared();
+			double magSquared = delta.MagSquared();
 			if (magSquared > radiusSquared)
 			{
 				radiusSquared = magSquared;
 			}
 		}
-		m_radius = sqrtf(radiusSquared);
+		m_radius = iv_sqrt(radiusSquared);
 	}
 
 	// Calculate bounding vertical cylinder
 	{
 		// Find the vertical extents of the fragment and minimum enclosing
 		// cylinder radius
-		float radiusSquared = 0.0f;
+		double radiusSquared = 0.0;
 		m_mostPositiveY = -FLT_MAX;
 		m_mostNegativeY = FLT_MAX;
 		for (i = 0; i < m_numPositions; ++i)
@@ -828,17 +840,17 @@ void ShapeFragment::RegisterPositions(Vector3 *_positions, unsigned int _numPosi
 				m_mostNegativeY = m_positions[i].y;
 			}
 			Vector3 delta = m_centre - m_positions[i];
-			delta.y = 0.0f;
-			float magSquared = delta.MagSquared();
+			delta.y = 0.0;
+			double magSquared = delta.MagSquared();
 			if (magSquared > radiusSquared)
 			{
 				radiusSquared = magSquared;
 			}
 		}
-		float radius = sqrtf(radiusSquared);
-		float height = m_mostPositiveY - m_mostNegativeY;
-		float cylinderVolume = M_PI * radiusSquared * height;
-		float sphereVolume = 4.0f/3.0f * M_PI * m_radius * m_radius * m_radius;
+		double radius = iv_sqrt(radiusSquared);
+		double height = m_mostPositiveY - m_mostNegativeY;
+		double cylinderVolume = M_PI * radiusSquared * height;
+		double sphereVolume = 4.0/3.0 * M_PI * m_radius * m_radius * m_radius;
 
 		if (cylinderVolume < sphereVolume)
 		{
@@ -881,7 +893,7 @@ void ShapeFragment::RegisterTriangles(ShapeTriangle *_tris, unsigned int _numTri
 }
 
 
-void ShapeFragment::Render(float _predictionTime)
+void ShapeFragment::Render(double _predictionTime)
 {
 #ifndef EXPORTER_BUILD
 	Matrix34 predictedTransform = m_transform;
@@ -892,7 +904,7 @@ void ShapeFragment::Render(float _predictionTime)
 	if (!matrixIsIdentity)
 	{
 		glPushMatrix();
-		glMultMatrixf(predictedTransform.ConvertToOpenGLFormat());
+		glMultMatrixd(predictedTransform.ConvertToOpenGLFormat());
 	}
 
 #ifdef USE_DISPLAY_LISTS
@@ -934,11 +946,11 @@ void ShapeFragment::RenderSlow()
 		VertexPosCol const *vertA = &m_vertices[m_triangles[i].v1];
 		VertexPosCol const *vertB = &m_vertices[m_triangles[i].v2];
 		VertexPosCol const *vertC = &m_vertices[m_triangles[i].v3];
-
+		
         unsigned char const alpha = 255;
 
 		/*/ calculate normal
-		float u[3],v[3],n[3],l;
+		double u[3],v[3],n[3],l;
 		u[0]=m_positions[vertB->m_posId].x-m_positions[vertA->m_posId].x;
 		u[1]=m_positions[vertB->m_posId].y-m_positions[vertA->m_posId].y;
 		u[2]=m_positions[vertB->m_posId].z-m_positions[vertA->m_posId].z;
@@ -948,30 +960,30 @@ void ShapeFragment::RenderSlow()
 		n[0]=u[1]*v[2]-u[2]*v[1];
 		n[1]=-u[0]*v[2]+u[2]*v[0];
 		n[2]=u[0]*v[1]-u[1]*v[0];
-		l=(float)sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
+		l=(double)iv_sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
 		n[0]/=l; n[1]/=l; n[2]/=l;
 		glNormal3fv(n);*/
 
-		glNormal3fv(m_normals[norm].GetData());
+		glNormal3dv(m_normals[norm].GetData());
 		glColor4ub (m_colours[vertA->m_colId].r,
                     m_colours[vertA->m_colId].g,
                     m_colours[vertA->m_colId].b,
                     alpha );
-		glVertex3fv (m_positions[vertA->m_posId].GetData());
+		glVertex3dv (m_positions[vertA->m_posId].GetData());
 
-		glNormal3fv(m_normals[norm].GetData());
+		glNormal3dv(m_normals[norm].GetData());
 		glColor4ub (m_colours[vertB->m_colId].r,
                     m_colours[vertB->m_colId].g,
                     m_colours[vertB->m_colId].b,
                     alpha );
-		glVertex3fv (m_positions[vertB->m_posId].GetData());
-
-		glNormal3fv(m_normals[norm].GetData());
+		glVertex3dv (m_positions[vertB->m_posId].GetData());
+		
+		glNormal3dv(m_normals[norm].GetData());
 		glColor4ub (m_colours[vertC->m_colId].r,
                     m_colours[vertC->m_colId].g,
                     m_colours[vertC->m_colId].b,
                     alpha );
-		glVertex3fv (m_positions[vertC->m_posId].GetData());
+		glVertex3dv (m_positions[vertC->m_posId].GetData());		
 		norm++;
 	}
 	glEnd();
@@ -983,7 +995,7 @@ void ShapeFragment::RenderSlow()
 // Recursively look through all child fragments until we find a name match
 ShapeFragment *ShapeFragment::LookupFragment(char const *_name)
 {
-	if (_stricmp(_name, m_name) == 0)
+	if (stricmp(_name, m_name) == 0)
 	{
 		return this;
 	}
@@ -1012,7 +1024,7 @@ ShapeMarker *ShapeFragment::LookupMarker(char const *_name)
 	for (i = 0; i < numMarkers; ++i)
 	{
 		ShapeMarker *marker = m_childMarkers.GetData(i);
-		if (_stricmp(_name, marker->m_name) == 0)
+		if (stricmp(_name, marker->m_name) == 0)
 		{
 			return marker;
 		}
@@ -1073,26 +1085,26 @@ void ShapeFragment::RenderMarkers(Matrix34 const &_rootTransform)
 #ifndef EXPORTER_BUILD
 #ifdef DEBUG_RENDER_ENABLED
 	int i;
-
+	
 	glDisable(GL_DEPTH_TEST);
 
 	int numMarkers = m_childMarkers.Size();
 	for (i = 0; i < numMarkers; ++i)
 	{
 		ShapeMarker *marker = m_childMarkers.GetData(i);
-		Matrix34 mat = marker->GetWorldMatrix(_rootTransform);
-		RenderArrow(mat.pos, mat.pos + mat.f * 20.0f, 2.0f);
-		RenderArrow(mat.pos, mat.pos + mat.u * 10.0f, 2.0f);
-//		glLineWidth(2.0f);
+		Matrix34 mat = marker->GetWorldMatrix(_rootTransform);		
+		RenderArrow(mat.pos, mat.pos + mat.f * 20.0, 2.0);
+		RenderArrow(mat.pos, mat.pos + mat.u * 10.0, 2.0);
+//		glLineWidth(2.0);
 //		glColor3f(1,0,0);
 //        glBegin(GL_LINES);
-//			glVertex3fv(mat.pos.GetData());
-//			glVertex3fv((mat.pos + mat.f * 20.0f).GetData());
+//			glVertex3dv(mat.pos.GetData());
+//			glVertex3dv((mat.pos + mat.f * 20.0).GetData());
 //		glEnd();
 //		glColor3f(0,1,0);
 //		glBegin(GL_LINES);
-//			glVertex3fv(mat.pos.GetData());
-//			glVertex3fv((mat.pos + mat.u * 10.0f).GetData());
+//			glVertex3dv(mat.pos.GetData());
+//			glVertex3dv((mat.pos + mat.u * 10.0).GetData());
 //		glEnd();
 	}
 
@@ -1120,7 +1132,7 @@ bool ShapeFragment::RayHit(RayPackage *_package, Matrix34 const &_transform, boo
 //	RayPackage package(rayStart, rayDir);
 
 	// First do bounding sphere check
-	if (m_radius > 0.0f &&
+	if (m_radius > 0.0 &&
 		RaySphereIntersection(_package->m_rayStart, _package->m_rayDir,
 							  centre, m_radius, _package->m_rayLen))
 //		RaySphereIntersection(package.m_rayStart, package.m_rayDir,
@@ -1179,7 +1191,7 @@ bool ShapeFragment::SphereHit(SpherePackage *_package, Matrix34 const &_transfor
 	Matrix34 totalMatrix = m_transform * _transform;
 	Vector3 centre = totalMatrix * m_centre;
 
-	if (m_radius > 0.0f &&
+	if (m_radius > 0.0 &&
 		SphereSphereIntersection(_package->m_pos, _package->m_radius,
                                  centre, m_radius) )
 	{
@@ -1188,7 +1200,7 @@ bool ShapeFragment::SphereHit(SpherePackage *_package, Matrix34 const &_transfor
 		{
 			return true;
 		}
-
+		
 		// Compute World Space versions of all the vertices
 		for (int i = 0; i < m_numPositions; ++i)
 		{
@@ -1229,15 +1241,15 @@ bool ShapeFragment::SphereHit(SpherePackage *_package, Matrix34 const &_transfor
 
 
 // *** ShapeHit
-bool ShapeFragment::ShapeHit(Shape *_shape, Matrix34 const &_theTransform,
+bool ShapeFragment::ShapeHit(Shape *_shape, Matrix34 const &_theTransform, 
 							 Matrix34 const &_ourTransform, bool _accurate)
 {
 #ifndef EXPORTER_BUILD
-
+    
 	Matrix34 totalMatrix = m_transform * _ourTransform;
 	Vector3 centre = totalMatrix * m_centre;
 
-	if (m_radius > 0.0f)
+	if (m_radius > 0.0)
 	{
         SpherePackage package( centre, m_radius );
     	if( _shape->SphereHit( &package, _theTransform, _accurate ) )
@@ -1257,7 +1269,7 @@ bool ShapeFragment::ShapeHit(Shape *_shape, Matrix34 const &_theTransform,
 		{
 			return true;
 		}
-	}
+	}    
 
 #endif
     return false;
@@ -1277,16 +1289,16 @@ void ShapeFragment::CalculateCentre( Matrix34 const &_transform, Vector3 &_centr
 	{
 		ShapeFragment *frag = m_childFragments.GetData(i);
         frag->CalculateCentre( totalMatrix, _centre, _numFragments );
-    }
+    } 
 }
 
 
-void ShapeFragment::CalculateRadius( Matrix34 const &_transform, Vector3 const &_centre, float &_radius )
+void ShapeFragment::CalculateRadius( Matrix34 const &_transform, Vector3 const &_centre, double &_radius )
 {
 	Matrix34 totalMatrix = m_transform * _transform;
 	Vector3 centre = totalMatrix * m_centre;
 
-    float distance = ( centre - _centre ).Mag();
+    double distance = ( centre - _centre ).Mag();
     if( distance + m_radius > _radius )
     {
         _radius = distance + m_radius;
@@ -1297,6 +1309,15 @@ void ShapeFragment::CalculateRadius( Matrix34 const &_transform, Vector3 const &
 	{
 		ShapeFragment *frag = m_childFragments.GetData(i);
         frag->CalculateRadius ( totalMatrix, _centre, _radius );
+    } 
+}
+
+void ShapeFragment::ScaleRadius(double _scale)
+{
+    m_radius *= _scale;
+    for( int i = 0; i < m_childFragments.Size(); ++i )
+    {
+        m_childFragments[i]->ScaleRadius(_scale);
     }
 }
 
@@ -1311,7 +1332,7 @@ Shape::Shape()
 }
 
 
-Shape::Shape(char const *filename, bool _animating)
+Shape::Shape(char const *filename, bool _animating, bool _buildDisplayList)
 :	m_displayListName(NULL),
 	m_rootFragment(NULL),
 	m_name(NULL),
@@ -1320,18 +1341,25 @@ Shape::Shape(char const *filename, bool _animating)
 	TextFileReader in(filename);
 	Load(&in);
 #ifdef USE_DISPLAY_LISTS
-	BuildDisplayList();
+	if( _buildDisplayList )
+	{
+		BuildDisplayList();
+	}
 #endif
 }
 
 
-Shape::Shape(TextReader *in, bool _animating)
+Shape::Shape(TextReader *in, bool _animating, bool _buildDisplayList)
 :	m_displayListName(NULL),
 	m_rootFragment(NULL),
 	m_animating(_animating)
 {
 	Load(in);
-	BuildDisplayList();
+
+	if( _buildDisplayList )
+	{
+		BuildDisplayList();
+	}
 }
 
 
@@ -1340,23 +1368,44 @@ Shape::~Shape()
 	delete m_rootFragment;
 	free(m_name);
 #ifndef EXPORTER_BUILD
-	g_app->m_resource->DeleteDisplayList(m_displayListName);
+	g_app->m_resource->DeleteDisplayListAsync(m_displayListName);
 	delete [] m_displayListName;
 	m_displayListName = NULL;
 #endif
 }
 
+void Shape::RenderSlow()
+{
+	m_rootFragment->Render(0.0f);
+}
 
 void Shape::BuildDisplayList()
 {
 #ifndef EXPORTER_BUILD
 	if (!m_animating)
 	{
+		if( m_displayListName )
+		{
+			AppDebugOut("Warning: Shape::BuildDisplayList called when there's already a display list. Fix memory leak\n");
+		}
 		m_displayListName = g_app->m_resource->GenerateName();
-		int id = g_app->m_resource->CreateDisplayList(m_displayListName);
-		glNewList(id, GL_COMPILE);
-			m_rootFragment->Render(0.0f);
-		glEndList();
+
+		g_app->m_resource->CreateDisplayListAsync(m_displayListName, Method<Shape>( &Shape::RenderSlow, this ) );
+	}
+#endif
+}
+
+void Shape::FlushDisplayList()
+{
+#ifndef EXPORTER_BUILD
+	if (!m_animating)
+	{
+		if( m_displayListName )
+		{
+			g_app->m_resource->DeleteDisplayList(m_displayListName);
+			delete [] m_displayListName;
+			m_displayListName = NULL;
+		}
 	}
 #endif
 }
@@ -1375,19 +1424,19 @@ void Shape::Load(TextReader *_in)
 	while(_in->ReadLine())
 	{
 		if (!_in->TokenAvailable()) continue;
-
+		
 		char *c = _in->GetNextToken();
 
-		if (_stricmp(c, "fragment") == 0)
+		if (stricmp(c, "fragment") == 0)
 		{
-			DEBUG_ASSERT(currentFrag < maxFrags);
+			AppDebugAssert(currentFrag < maxFrags);
 			c = _in->GetNextToken();
 			allFrags[currentFrag] = new ShapeFragment(_in, c);
 			currentFrag++;
 		}
-		else if (_stricmp(c, "marker") == 0)
+		else if (stricmp(c, "marker") == 0)
 		{
-			DEBUG_ASSERT(currentMarker < maxMarkers);
+			AppDebugAssert(currentMarker < maxMarkers);
 			c = _in->GetNextToken();
 			allMarkers[currentMarker] = new ShapeMarker(_in, c);
 			currentMarker++;
@@ -1395,11 +1444,11 @@ void Shape::Load(TextReader *_in)
 	}
 
 	m_rootFragment = new ShapeFragment("SceneRoot", "");
-
+	
 	// We need to build the hierarchy of fragments from the flat array
 	for (int i = 0; i < currentFrag; ++i)
 	{
-		if (_stricmp(allFrags[i]->m_parentName, "SceneRoot") == 0)
+		if (stricmp(allFrags[i]->m_parentName, "SceneRoot") == 0)
 		{
 			m_rootFragment->m_childFragments.PutData(allFrags[i]);
 		}
@@ -1410,14 +1459,14 @@ void Shape::Load(TextReader *_in)
 			for (j = 0; j < currentFrag; ++j)
 			{
 				if (i == j)	continue;
-				DEBUG_ASSERT(_stricmp(allFrags[i]->m_name, allFrags[j]->m_name) != 0);
-				if (_stricmp(allFrags[i]->m_parentName, allFrags[j]->m_name) == 0)
+				AppDebugAssert(stricmp(allFrags[i]->m_name, allFrags[j]->m_name) != 0);
+				if (stricmp(allFrags[i]->m_parentName, allFrags[j]->m_name) == 0)
 				{
 					allFrags[j]->m_childFragments.PutData(allFrags[i]);
 					break;
 				}
 			}
-			DEBUG_ASSERT(j < currentFrag);
+			AppDebugAssert(j < currentFrag);
 		}
 	}
 
@@ -1425,20 +1474,20 @@ void Shape::Load(TextReader *_in)
 	for (int i = 0; i < currentMarker; ++i)
 	{
 		ShapeFragment *parent = m_rootFragment->LookupFragment(allMarkers[i]->m_parentName);
-		DEBUG_ASSERT(parent);
+		AppDebugAssert(parent);
 		parent->m_childMarkers.PutData(allMarkers[i]);
 
 		int depth = allMarkers[i]->m_depth - 1;
 		allMarkers[i]->m_parents[depth] = parent;
 		depth--;
-		while (_stricmp(parent->m_name, "SceneRoot") != 0)
+		while (stricmp(parent->m_name, "SceneRoot") != 0)
 		{
 			parent = m_rootFragment->LookupFragment(parent->m_parentName);
-			DEBUG_ASSERT(parent && depth >= 0);
+			AppDebugAssert(parent && depth >= 0);
 			allMarkers[i]->m_parents[depth] = parent;
 			depth--;
 		}
-		DEBUG_ASSERT(depth == -1);
+		AppDebugAssert(depth == -1);
 	}
 }
 
@@ -1448,13 +1497,13 @@ void Shape::WriteToFile(FILE *_out) const
 	m_rootFragment->WriteToFile(_out);
 }
 
-void Shape::Render(float _predictionTime, Matrix34 const &_transform)
+void Shape::Render(double _predictionTime, Matrix34 const &_transform)
 {
 #ifndef EXPORTER_BUILD
 	glEnable        (GL_COLOR_MATERIAL);
 	glMatrixMode    (GL_MODELVIEW);
-	glPushMatrix    ();
-	glMultMatrixf   (_transform.ConvertToOpenGLFormat());
+	glPushMatrix    ();	
+	glMultMatrixd   (_transform.ConvertToOpenGLFormat());
 
 #ifdef USE_DISPLAY_LISTS
 	int id = -1;
@@ -1468,7 +1517,7 @@ void Shape::Render(float _predictionTime, Matrix34 const &_transform)
 	{
 		m_rootFragment->Render(_predictionTime);
 	}
-
+ 
 	glDisable       (GL_COLOR_MATERIAL);
 	glMatrixMode    (GL_MODELVIEW);
 	glPopMatrix     ();
@@ -1535,7 +1584,7 @@ bool Shape::SphereHit(SpherePackage *_package, Matrix34 const &_transform, bool 
 }
 
 
-bool Shape::ShapeHit(Shape *_shape, Matrix34 const &_theTransform,
+bool Shape::ShapeHit(Shape *_shape, Matrix34 const &_theTransform, 
 					 Matrix34 const &_ourTransform, bool _accurate)
 {
 #ifndef _EXPORTER_BUILDING
@@ -1554,18 +1603,22 @@ Vector3 Shape::CalculateCentre( Matrix34 const &_transform )
 
     m_rootFragment->CalculateCentre( _transform, centre, numFragments );
 
-    centre /= (float) numFragments;
-
+    centre /= (double) numFragments;
+    
     return centre;
 }
 
 
-float Shape::CalculateRadius( Matrix34 const &_transform, Vector3 const &_centre )
+double Shape::CalculateRadius( Matrix34 const &_transform, Vector3 const &_centre )
 {
-    float radius = 0.0f;
+    double radius = 0.0;
 
     m_rootFragment->CalculateRadius( _transform, _centre, radius );
 
     return radius;
 }
 
+void Shape::ScaleRadius(double _scale)
+{
+    m_rootFragment->ScaleRadius( _scale );
+}

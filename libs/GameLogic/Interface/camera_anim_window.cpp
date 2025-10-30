@@ -1,10 +1,10 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <stdio.h>
 #include <string.h>
 
-#include "random.h"
-#include "language_table.h"
+#include "lib/math/random_number.h"
+#include "lib/language_table.h"
 
 #include "interface/camera_anim_window.h"
 #include "interface/camera_mount_window.h"
@@ -33,9 +33,9 @@ public:
     void MouseUp()
     {
 		CameraAnimation *anim = new CameraAnimation;
-		sprintf(anim->m_name, "CamAnim%d", darwiniaRandom() & 0x3ff);
+		sprintf(anim->m_name, "CamAnim%d", AppRandom() & 0x3ff);
 		g_app->m_location->m_levelFile->m_cameraAnimations.PutData(anim);
-
+		
 		CameraAnimMainEditWindow *parent = (CameraAnimMainEditWindow *)m_parent;
 		parent->RemoveButtons();
 		parent->AddButtons();
@@ -51,7 +51,7 @@ public:
 		LList <CameraAnimation *> *anims = &g_app->m_location->m_levelFile->m_cameraAnimations;
 		for (int i = 0; i < anims->Size(); ++i)
 		{
-			if (_stricmp(anims->GetData(i)->m_name, m_name) == 0)
+			if (stricmp(anims->GetData(i)->m_name, m_name) == 0)
 			{
 				delete anims->GetData(i);
 				anims->RemoveData(i);
@@ -71,9 +71,9 @@ class SelectAnimButton : public DarwiniaButton
 public:
 	void MouseUp()
 	{
-		EclRemoveWindow(LANGUAGEPHRASE("editor_cameraanim"));
+		EclRemoveWindow("editor_cameraanim");
 
-		char *animName = m_name + strlen("select:");
+		char *animName = (char*)m_name + strlen("select:");
 		int animId = g_app->m_location->m_levelFile->GetCameraAnimId(animName);
 		g_app->m_locationEditor->m_selectionId = animId;
 
@@ -91,15 +91,15 @@ public:
 // ****************************************************************************
 
 CameraAnimMainEditWindow::CameraAnimMainEditWindow( char *name )
-:	DarwiniaWindow(name)
+:	DarwiniaWindow(name) 
 {
 }
 
 
 CameraAnimMainEditWindow::~CameraAnimMainEditWindow()
 {
-	EclRemoveWindow(LANGUAGEPHRASE("editor_cameramounts"));
-	EclRemoveWindow(LANGUAGEPHRASE("editor_cameraanim"));
+	EclRemoveWindow("editor_cameramounts");
+	EclRemoveWindow("editor_cameraanim");
 	g_app->m_locationEditor->RequestMode(LocationEditor::ModeNone);
 }
 
@@ -117,7 +117,7 @@ void CameraAnimMainEditWindow::AddButtons()
 	int pitch = 17;
 
     NewAnimButton *generate = new NewAnimButton();
-    generate->SetShortProperties("Create New Anim", 10, height += pitch);
+    generate->SetShortProperties("Create New Anim", 10, height += pitch, -1, -1, UnicodeString("Create New Anim"));
     RegisterButton( generate );
 
 	height += 10;
@@ -130,19 +130,19 @@ void CameraAnimMainEditWindow::AddButtons()
 
 		sprintf(buttonName, "name:%s", anim->m_name);
 		InputField *button = new InputField();
-		button->SetShortProperties("Name:", 10, height += pitch, 150);
+		button->SetShortProperties("Name:", 10, height += pitch, 150, -1, UnicodeString("Name:"));
 		strcpy(button->m_name, buttonName);
-		button->RegisterString(anim->m_name);
+		button->RegisterString(anim->m_name, sizeof( anim->m_name ) );
 		RegisterButton(button);
 
 		DarwiniaButton *delButton = new DeleteAnimButton();
-		delButton->SetShortProperties("Del", 170, height);
+		delButton->SetShortProperties("Del", 170, height, -1, -1, UnicodeString("Del"));
 		sprintf(delButton->m_name, "%s", anim->m_name);
 		RegisterButton(delButton);
 
 		sprintf(buttonName, "select:%s", anim->m_name);
 		DarwiniaButton *selectButton = new SelectAnimButton();
-		selectButton->SetShortProperties("Select", 210, height);
+		selectButton->SetShortProperties("Select", 210, height, -1, -1, UnicodeString("Select"));
 		strcpy(selectButton->m_name, buttonName);
 		RegisterButton(selectButton);
 	}
@@ -169,16 +169,16 @@ class NewNodeButton : public DarwiniaButton
 public:
 	void MouseUp()
 	{
-		CameraAnimSecondaryEditWindow *parent =
+		CameraAnimSecondaryEditWindow *parent = 
 			(CameraAnimSecondaryEditWindow *)m_parent;
 		parent->m_newNodeArmed = !parent->m_newNodeArmed;
 	}
 
 	void Render(int x, int y, bool _hasFocus, bool _clicked)
 	{
-		CameraAnimSecondaryEditWindow *parent =
+		CameraAnimSecondaryEditWindow *parent = 
 			(CameraAnimSecondaryEditWindow *)m_parent;
-		int halfSecond = (int)(g_gameTime * 2.0f) & 1;
+		int halfSecond = (int)(g_gameTime * 2.0) & 1;
 		if (parent->m_newNodeArmed && halfSecond)
 		{
 			DarwiniaButton::Render(x, y, true, false);
@@ -196,13 +196,13 @@ class CamBeforeMountButton: public DarwiniaButton
 public:
 	void MouseUp()
 	{
-		CameraAnimSecondaryEditWindow *parent =
+		CameraAnimSecondaryEditWindow *parent = 
 			(CameraAnimSecondaryEditWindow *)m_parent;
 		if (parent->m_newNodeArmed)
 		{
 			CameraAnimation *anim = g_app->m_location->m_levelFile->m_cameraAnimations[parent->m_animId];
-			DEBUG_ASSERT(anim);
-
+			AppDebugAssert(anim);
+			
 			CamAnimNode *node = new CamAnimNode;
 			node->m_mountName = MAGIC_MOUNT_NAME_START_POS;
 
@@ -221,7 +221,7 @@ class StartPreviewButton : public DarwiniaButton
 public:
 	void MouseUp()
 	{
-		CameraAnimSecondaryEditWindow *parent =
+		CameraAnimSecondaryEditWindow *parent = 
 			(CameraAnimSecondaryEditWindow *)m_parent;
 		CameraAnimation *anim = g_app->m_location->m_levelFile->m_cameraAnimations.GetData(
 									parent->m_animId);
@@ -239,7 +239,7 @@ public:
 	}
 };
 
-
+		
 class SelectMountButton : public DarwiniaButton
 {
 public:
@@ -255,21 +255,21 @@ class DeleteNodeButton : public DarwiniaButton
 public:
 	void MouseUp()
 	{
-		CameraAnimSecondaryEditWindow *parent =
+		CameraAnimSecondaryEditWindow *parent = 
 									(CameraAnimSecondaryEditWindow*)m_parent;
 		CameraAnimation *anim = g_app->m_location->m_levelFile->
 									m_cameraAnimations.GetData(parent->m_animId);
-
-		char *mountName = m_name + 7;
+		
+		char *mountName = (char*)m_name + 7;
 		for (int i = 0; i < anim->m_nodes.Size(); ++i)
 		{
-			if (_stricmp(anim->m_nodes[i]->m_mountName, mountName) == 0)
+			if (stricmp(anim->m_nodes[i]->m_mountName, mountName) == 0)
 			{
 				anim->m_nodes.RemoveData(i);
 				break;
 			}
 		}
-
+		
 		parent->RemoveButtons();
 		parent->AddButtons();
 	}
@@ -309,19 +309,19 @@ void CameraAnimSecondaryEditWindow::Create()
 void CameraAnimSecondaryEditWindow::AddButtons()
 {
 	NewNodeButton *newLinkButton = new NewNodeButton();
-	newLinkButton->SetShortProperties("Add link", 10, 22);
+	newLinkButton->SetShortProperties("Add link", 10, 22, -1, -1, UnicodeString("Add Link"));
 	RegisterButton(newLinkButton);
 
 	CamBeforeMountButton *camBeforeMountButton = new CamBeforeMountButton;
-	camBeforeMountButton->SetShortProperties("CamStart", 85, 22);
+	camBeforeMountButton->SetShortProperties("CamStart", 85, 22, -1, -1, UnicodeString("CameStart"));
 	RegisterButton(camBeforeMountButton);
 
 	StartPreviewButton *startPreviewButton = new StartPreviewButton;
-	startPreviewButton->SetShortProperties("Preview", m_w - 112, 22);
+	startPreviewButton->SetShortProperties("Preview", m_w - 112, 22, -1, -1, UnicodeString("Preview"));
 	RegisterButton(startPreviewButton);
 
 	StopPreviewButton *stopPreviewButton = new StopPreviewButton;
-	stopPreviewButton->SetShortProperties("Stop", m_w - 46, 22);
+	stopPreviewButton->SetShortProperties("Stop", m_w - 46, 22, -1, -1, UnicodeString("Stop"));
 	RegisterButton(stopPreviewButton);
 
 
@@ -340,7 +340,7 @@ void CameraAnimSecondaryEditWindow::AddButtons()
 		    int x = 10;
 
 		    DropDownMenu *modeBut = new DropDownMenu();
-		    modeBut->SetShortProperties("Mode", x, height, 60);
+		    modeBut->SetShortProperties("Mode", x, height, 60, -1, UnicodeString("Mode"));
 		    modeBut->RegisterInt(&node->m_transitionMode);
 		    for (int i = 0; i < CamAnimNode::TransitionNumModes; ++i)
 		    {
@@ -351,26 +351,26 @@ void CameraAnimSecondaryEditWindow::AddButtons()
 		    sprintf(modeBut->m_name, "mode:%s", node->m_mountName);
 		    RegisterButton(modeBut);
 
-		    CreateValueControl(node->m_mountName, InputField::TypeFloat, &node->m_duration,
-					    height, 0.5f, 0.1f, 100.0f, NULL, x, 90);
+		    CreateValueControl(node->m_mountName, &node->m_duration,
+					    height, 0.5, 0.1, 100.0, NULL, x, 90);
 		    EclButton *b = GetButton(node->m_mountName);
 		    sprintf(b->m_name, "duration:%s", node->m_mountName);
-		    b->m_caption[0] = '\0';
+		    b->SetCaption(UnicodeString("\0"));
 		    x += 100;
 
 		    DarwiniaButton *but;
-
+		    
 		    but = new SelectMountButton();
-		    but->SetShortProperties(node->m_mountName, x, height, 80);
+		    but->SetShortProperties(node->m_mountName, x, height, 80, -1, UnicodeString(node->m_mountName));
 		    x += 90;
 		    sprintf(but->m_name, "mount:%s", node->m_mountName);
 		    RegisterButton(but);
-
+		    
 		    but = new DeleteNodeButton();
-		    but->SetShortProperties("Del", x, height, 30);
+		    but->SetShortProperties("Del", x, height, 30, -1, UnicodeString("Del"));
 		    sprintf(but->m_name, "delete:%s", node->m_mountName);
 		    RegisterButton(but);
-
+		    
 		    height += pitch;
 	    }
     }
@@ -387,7 +387,7 @@ void CameraAnimSecondaryEditWindow::RemoveButtons()
 	for (int i = 0; i < m_buttons.Size(); ++i)
 	{
 		EclButton *but = m_buttons[i];
-		if (_stricmp(but->m_name, "Close") != 0)
+		if (stricmp(but->m_name, "Close") != 0)
 		{
 			RemoveButton(m_buttons[i]->m_name);
 			--i;

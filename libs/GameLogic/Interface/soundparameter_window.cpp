@@ -1,9 +1,9 @@
-#include "pch.h"
-#include "text_renderer.h"
+#include "lib/universal_include.h"
+#include "lib/text_renderer.h"
 
-#include "input/input.h"
-#include "input/input_types.h"
-#include "targetcursor.h"
+#include "lib/input/input.h"
+#include "lib/input/input_types.h"
+#include "lib/targetcursor.h"
 
 #include "sound/sound_parameter.h"
 #include "sound/sound_instance.h"
@@ -26,15 +26,15 @@
 
 SoundParameterButton::SoundParameterButton()
 :   m_parameter(NULL),
-    m_minOutput(0.0f),
-    m_maxOutput(1.0f)
+    m_minOutput(0.0),
+    m_maxOutput(1.0)
 {
 }
 
 
 void SoundParameterButton::Render( int realX, int realY, bool highlighted,  bool clicked )
 {
-    glColor4f( 0.1f, 0.0f, 0.0f, 0.5f );
+    glColor4f( 0.1, 0.0, 0.0, 0.5 );
     float editAreaWidth = m_w - 100;
     glBegin( GL_QUADS );
         glVertex2f( realX + m_w - editAreaWidth, realY );
@@ -43,7 +43,7 @@ void SoundParameterButton::Render( int realX, int realY, bool highlighted,  bool
         glVertex2f( realX + m_w - editAreaWidth, realY+m_h );
     glEnd();
 
-    glColor4f( 0.0f, 0.0f, 0.0f, 1.0f );
+    glColor4f( 0.0, 0.0, 0.0, 1.0 );
     glBegin( GL_LINES );                        // top
         glVertex2f( realX + m_w - editAreaWidth, realY );
         glVertex2f( realX + m_w, realY );
@@ -54,7 +54,7 @@ void SoundParameterButton::Render( int realX, int realY, bool highlighted,  bool
         glVertex2f( realX + m_w - editAreaWidth, realY+m_h );
     glEnd();
 
-    glColor4f( 0.9f, 0.3f, 0.3f, 0.3f );        // right
+    glColor4f( 0.9, 0.3, 0.3, 0.3 );        // right
     glBegin( GL_LINES );
         glVertex2f( realX + m_w, realY );
         glVertex2f( realX + m_w, realY + m_h );
@@ -70,27 +70,27 @@ void SoundParameterButton::Render( int realX, int realY, bool highlighted,  bool
     BorderlessButton::Render( realX, realY, highlighted, clicked );
 
     float value = m_parameter->GetOutput();
-
+    
     switch( m_parameter->m_type )
     {
         case SoundParameter::TypeFixedValue:
         {
-            g_editorFont.DrawText2DRight( realX + m_w - 10, realY+10, 12, "Fixed at %2.2f", value );
+            g_editorFont.DrawText2DRight( realX + m_w - 10, realY+10, 12, "Fixed at %2.2", value );
             break;
         }
 
         case SoundParameter::TypeRangedRandom:
         {
-            g_editorFont.DrawText2DRight( realX + m_w - 5, realY+10, 12, "From %2.2f to %2.2f",
+            g_editorFont.DrawText2DRight( realX + m_w - 5, realY+10, 12, "From %2.2 to %2.2", 
                                             m_parameter->m_outputLower, m_parameter->m_outputUpper );
             break;
         }
 
         case SoundParameter::TypeLinked:
-            g_editorFont.DrawText2DRight( realX + m_w - 10, realY+10, 12, "Linked To %s",
+            g_editorFont.DrawText2DRight( realX + m_w - 10, realY+10, 12, "Linked To %s", 
                                             m_parameter->GetLinkName( m_parameter->m_link ) );
             break;
-
+            
         default:
             g_editorFont.DrawText2DRight( realX + m_w - 10, realY+11, 12, "[???]" );
     }
@@ -100,7 +100,7 @@ void SoundParameterButton::Render( int realX, int realY, bool highlighted,  bool
 void SoundParameterButton::MouseUp()
 {
     SoundParameterEditor *editor = new SoundParameterEditor( m_caption );
-    editor->SetSize( 400.0f, 400.0f );
+    editor->SetSize( 400.0, 400.0 );
     editor->m_parameter = m_parameter;
     editor->m_minOutput = m_minOutput;
     editor->m_maxOutput = m_maxOutput;
@@ -133,9 +133,9 @@ void SoundParameterGraph::GetPosition( float _output, float _input, float *_x, f
 //    {
 //        float sizeBelowZero = m_minOutput;
 //        float fractionBelowZero = m_minOutput / (m_maxOutput - m_minOutput);
-//        minX += sizeX * fractionBelowZero * -1.0f;
+//        minX += sizeX * fractionBelowZero * -1.0;
 //    }
-
+    
     float fractionOutput = (_output - m_minOutput) / (m_maxOutput - m_minOutput);
     float fractionInput = _input / ( m_maxInput - m_minInput );
 
@@ -145,7 +145,7 @@ void SoundParameterGraph::GetPosition( float _output, float _input, float *_x, f
 	}
 	else
 	{
-		if( _x ) *_x = minX + sqrtf(fractionOutput) * sizeX;
+		if( _x ) *_x = minX + iv_sqrt(fractionOutput) * sizeX;
 	}
     if( _y ) *_y = minY + (fractionInput) * sizeY;
 }
@@ -178,8 +178,8 @@ void SoundParameterGraph::RescaleAxis()
     {
         case SoundParameter::TypeFixedValue:
         case SoundParameter::TypeRangedRandom:
-            m_minInput = 0.0f;
-            m_maxInput = 1.0f;
+            m_minInput = 0.0;
+            m_maxInput = 1.0;
             break;
 
         case SoundParameter::TypeLinked:
@@ -187,20 +187,20 @@ void SoundParameterGraph::RescaleAxis()
             {
                 case SoundParameter::LinkedToHeightAboveGround:
                 case SoundParameter::LinkedToYpos:
-                    m_minInput = 0.0f;
-                    m_maxInput = 1000.0f;
+                    m_minInput = 0.0;
+                    m_maxInput = 1000.0;
                     break;
 
                 case SoundParameter::LinkedToXpos:
                 case SoundParameter::LinkedToZpos:
                 case SoundParameter::LinkedToCameraDistance:
-                    m_minInput = 0.0f;
-                    m_maxInput = 5000.0f;
+                    m_minInput = 0.0;
+                    m_maxInput = 5000.0;
                     break;
 
                 case SoundParameter::LinkedToVelocity:
-                    m_minInput = 0.0f;
-                    m_maxInput = 100.0f;
+                    m_minInput = 0.0;
+                    m_maxInput = 100.0;
                     break;
             }
             break;
@@ -208,10 +208,10 @@ void SoundParameterGraph::RescaleAxis()
 
     m_parameter->m_inputLower  = max( m_parameter->m_inputLower, m_minInput );
     m_parameter->m_inputLower  = min( m_parameter->m_inputLower, m_maxInput );
-
+    
     m_parameter->m_inputUpper  = max( m_parameter->m_inputUpper, m_minInput );
     m_parameter->m_inputUpper  = min( m_parameter->m_inputUpper, m_maxInput );
-
+    
     m_parameter->m_outputLower = max( m_parameter->m_outputLower, m_minOutput );
     m_parameter->m_outputLower = min( m_parameter->m_outputLower, m_maxOutput );
 
@@ -222,7 +222,7 @@ void SoundParameterGraph::RescaleAxis()
 
 void SoundParameterGraph::HandleMouseEvents()
 {
-    if( EclMouseInButton(m_parent,this) )
+    if( EclMouseInButton(m_parent,this) )                    
     {
 		bool lmb = g_inputManager->controlEvent( ControlEclipseLMousePressed );
         bool rmb = g_inputManager->controlEvent( ControlEclipseRMousePressed );
@@ -237,7 +237,7 @@ void SoundParameterGraph::HandleMouseEvents()
 
         if( input < m_minInput ) input = m_minInput;
         if( input > m_maxInput ) input = m_maxInput;
-
+        
         if( g_target->X() < m_parent->m_x + m_x + 50 )
         {
             SoundInstance *instance = g_app->m_soundSystem->GetSoundInstance( g_app->m_soundSystem->m_editorInstanceId );
@@ -263,8 +263,8 @@ void SoundParameterGraph::HandleMouseEvents()
                     if( lmb )
                     {
                         m_parameter->m_outputLower = output;
-                        m_parameter->m_outputUpper = max( m_parameter->m_outputUpper,
-                                                          m_parameter->m_outputLower );
+                        m_parameter->m_outputUpper = max( m_parameter->m_outputUpper, 
+                                                          m_parameter->m_outputLower );                        
                         m_parameter->Recalculate();
                     }
                     if( rmb )
@@ -275,20 +275,20 @@ void SoundParameterGraph::HandleMouseEvents()
                         m_parameter->Recalculate();
                     }
                     break;
-
+                    
                 case SoundParameter::TypeLinked:
                     if( lmb )
                     {
                         m_parameter->m_inputLower = input;
                         m_parameter->m_outputLower = output;
-                        m_parameter->m_outputUpper = max( m_parameter->m_outputUpper,
+                        m_parameter->m_outputUpper = max( m_parameter->m_outputUpper, 
                                                           m_parameter->m_outputLower );
                     }
                     if( rmb )
                     {
                         m_parameter->m_inputUpper = input;
                         m_parameter->m_outputUpper = output;
-                        m_parameter->m_outputLower = min( m_parameter->m_outputLower,
+                        m_parameter->m_outputLower = min( m_parameter->m_outputLower, 
                                                           m_parameter->m_outputUpper );
                     }
                     break;
@@ -303,12 +303,12 @@ void SoundParameterGraph::RenderAxis( int realX, int realY )
     float x1, x2, y;
     GetPosition( m_minOutput, 0, &x1, &y );
     GetPosition( m_maxOutput, 0, &x2, &y );
-
+    
     float y1, y2, x;
     GetPosition( 0, m_minInput, &x, &y2 );
     GetPosition( 0, m_maxInput, &x, &y1 );
 
-    glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
+    glColor4f( 1.0, 1.0, 1.0, 1.0 );
     glBegin( GL_LINES );
         glVertex2i( realX + x1, realY + y );
         glVertex2i( realX + x2, realY + y );
@@ -320,16 +320,16 @@ void SoundParameterGraph::RenderAxis( int realX, int realY )
         }
     glEnd();
 
-    g_editorFont.DrawText2DCentre( realX + x1, realY + y + 20, 10, "%2.2f", m_minOutput );
-    g_editorFont.DrawText2DCentre( realX + x2, realY + y + 20, 10, "%2.2f", m_maxOutput );
+    g_editorFont.DrawText2DCentre( realX + x1, realY + y + 20, 10, "%2.2", m_minOutput );
+    g_editorFont.DrawText2DCentre( realX + x2, realY + y + 20, 10, "%2.2", m_maxOutput );
 
     if( m_parameter->m_type == SoundParameter::TypeLinked )
     {
-        g_editorFont.DrawText2DRight( realX + x, realY + y1, 10, "%2.2f", m_maxInput );
-        g_editorFont.DrawText2DRight( realX + x, realY + y2, 10, "%2.2f", m_minInput );
+        g_editorFont.DrawText2DRight( realX + x, realY + y1, 10, "%2.2", m_maxInput );
+        g_editorFont.DrawText2DRight( realX + x, realY + y2, 10, "%2.2", m_minInput );
     }
 
-
+	
 	//
 	// Render lines every 10% along the scale
 
@@ -340,7 +340,7 @@ void SoundParameterGraph::RenderAxis( int realX, int realY )
 		GetPosition( 0, m_maxInput, &x1, &y2 );
 		for (int i = 0; i < 11; ++i)
 		{
-			float output = m_minOutput + (float)i * 0.1f * (m_maxOutput - m_minOutput);
+			float output = m_minOutput + (float)i * 0.1 * (m_maxOutput - m_minOutput);
 			GetPosition( output, 0, &x1, &y );
 			glBegin(GL_LINES);
 				glVertex2f(realX + x1, realY + y1);
@@ -360,12 +360,12 @@ void SoundParameterGraph::RenderValues( int realX, int realY )
             float x, y1, y2;
             GetPosition( m_parameter->m_outputLower, m_minInput, &x, &y1 );
             GetPosition( m_parameter->m_outputLower, m_maxInput, &x, &y2 );
-            glColor4f( 0.7f, 0.8f, 1.0f, 0.7f );
+            glColor4f( 0.7, 0.8, 1.0, 0.7 );
             glBegin( GL_LINES );
                 glVertex2f( realX + x, realY + y1 );
                 glVertex2f( realX + x, realY + y2 );
             glEnd();
-            g_editorFont.DrawText2DCentre( realX + x, realY + y1 + 10, 10, "%2.2f", m_parameter->m_outputLower );
+            g_editorFont.DrawText2DCentre( realX + x, realY + y1 + 10, 10, "%2.2", m_parameter->m_outputLower );
             break;
         }
 
@@ -376,7 +376,7 @@ void SoundParameterGraph::RenderValues( int realX, int realY )
             GetPosition( m_parameter->m_outputLower, m_maxInput, &x1, &y2 );
             GetPosition( m_parameter->m_outputUpper, m_minInput, &x2, NULL );
 
-            glColor4f( 0.5f, 0.5f, 1.0f, 0.3f );
+            glColor4f( 0.5, 0.5, 1.0, 0.3 );
             glBegin( GL_QUADS );
                 glVertex2f( realX + x1, realY + y1 );
                 glVertex2f( realX + x1, realY + y2 );
@@ -384,7 +384,7 @@ void SoundParameterGraph::RenderValues( int realX, int realY )
                 glVertex2f( realX + x2, realY + y1 );
             glEnd();
 
-            glColor4f( 0.5f, 0.5f, 1.0f, 0.7f );
+            glColor4f( 0.5, 0.5, 1.0, 0.7 );
             glBegin( GL_LINES );
                 glVertex2f( realX + x1, realY + y1 );
                 glVertex2f( realX + x1, realY + y2 );
@@ -392,8 +392,8 @@ void SoundParameterGraph::RenderValues( int realX, int realY )
                 glVertex2f( realX + x2, realY + y2 );
             glEnd();
 
-            g_editorFont.DrawText2DCentre( realX + x1, realY + y1 + 10, 10, "%2.2f", m_parameter->m_outputLower );
-            g_editorFont.DrawText2DCentre( realX + x2, realY + y1 + 10, 10, "%2.2f", m_parameter->m_outputUpper );
+            g_editorFont.DrawText2DCentre( realX + x1, realY + y1 + 10, 10, "%2.2", m_parameter->m_outputLower );
+            g_editorFont.DrawText2DCentre( realX + x2, realY + y1 + 10, 10, "%2.2", m_parameter->m_outputUpper );
 
             break;
         }
@@ -401,13 +401,13 @@ void SoundParameterGraph::RenderValues( int realX, int realY )
         case SoundParameter::TypeLinked:
         {
             float x1, x2, y1, y2;
-            float minX, minY, maxX, maxY;
+            float minX, minY, maxX, maxY;                
             GetPosition( m_parameter->m_outputLower, m_parameter->m_inputLower, &x1, &y1 );
             GetPosition( m_parameter->m_outputUpper, m_parameter->m_inputUpper, &x2, &y2 );
             GetPosition( m_minOutput, m_minInput, &minX, &minY );
             GetPosition( m_maxOutput, m_maxInput, &maxX, &maxY );
-
-            glColor4f( 0.5f, 0.5f, 1.0f, 0.9f );
+            
+            glColor4f( 0.5, 0.5, 1.0, 0.9 );
             glBegin( GL_LINES );
                 glVertex2f( realX + x1, realY + y1 );
                 glVertex2f( realX + x2, realY + y2 );
@@ -421,11 +421,11 @@ void SoundParameterGraph::RenderValues( int realX, int realY )
                 else            glVertex2f( realX + x2, realY + minY );
             glEnd();
 
-            g_editorFont.DrawText2DCentre( realX + x1, realY + minY + 10, 10, "%2.2f", m_parameter->m_outputLower );
-            g_editorFont.DrawText2DCentre( realX + x2, realY + minY + 10, 10, "%2.2f", m_parameter->m_outputUpper );
+            g_editorFont.DrawText2DCentre( realX + x1, realY + minY + 10, 10, "%2.2", m_parameter->m_outputLower );
+            g_editorFont.DrawText2DCentre( realX + x2, realY + minY + 10, 10, "%2.2", m_parameter->m_outputUpper );
 
-            g_editorFont.DrawText2DRight( realX + minX, realY + y1, 10, "%2.2f", m_parameter->m_inputLower );
-            g_editorFont.DrawText2DRight( realX + minX, realY + y2, 10, "%2.2f", m_parameter->m_inputUpper );
+            g_editorFont.DrawText2DRight( realX + minX, realY + y1, 10, "%2.2", m_parameter->m_inputLower );
+            g_editorFont.DrawText2DRight( realX + minX, realY + y2, 10, "%2.2", m_parameter->m_inputUpper );
             break;
         }
     }
@@ -444,12 +444,12 @@ void SoundParameterGraph::RenderOutput( int realX, int realY )
         {
             instance->UpdateParameter( *m_parameter );
         }
-
+         
         float output = m_parameter->m_output;
         float x, minY, maxY;
         GetPosition( output, m_minInput, &x, &minY );
         GetPosition( output, m_maxInput, &x, &maxY );
-        glColor4f( 0.5f, 1.0f, 0.5f, 0.75f );
+        glColor4f( 0.5, 1.0, 0.5, 0.75 );
         glBegin( GL_LINES );
             glVertex2f( realX + x, realY + minY );
             glVertex2f( realX + x, realY + maxY);
@@ -458,7 +458,7 @@ void SoundParameterGraph::RenderOutput( int realX, int realY )
         float desiredOutput = m_parameter->m_desiredOutput;
         GetPosition( desiredOutput, m_minInput, &x, &minY );
         GetPosition( desiredOutput, m_maxInput, &x, &maxY );
-        glColor4f( 0.5f, 1.0f, 0.5f, 0.35f );
+        glColor4f( 0.5, 1.0, 0.5, 0.35 );
         glBegin( GL_LINES );
             glVertex2f( realX + x, realY + minY );
             glVertex2f( realX + x, realY + maxY);
@@ -481,7 +481,7 @@ void SoundParameterGraph::RenderOutput( int realX, int realY )
         GetPosition( m_minOutput, input, &minX, &minY );
         GetPosition( output, m_minInput, &maxX, &maxY );
 
-        glColor4f( 0.5f, 1.0f, 0.5f, 0.75f );
+        glColor4f( 0.5, 1.0, 0.5, 0.75 );
         glBegin( GL_LINES );
             glVertex2f( realX + minX, realY + minY );
             glVertex2f( realX + maxX, realY + minY );
@@ -497,15 +497,15 @@ void SoundParameterGraph::RenderOutput( int realX, int realY )
             glVertex2f( realX + 2, realY + minY + 5 );
         glEnd();
 
-        g_editorFont.DrawText2DRight( realX + minX, realY + minY, 10, "%2.2f", input );
-        g_editorFont.DrawText2DCentre( realX + maxX, realY + maxY + 10, 10, "%2.2f", output );
+        g_editorFont.DrawText2DRight( realX + minX, realY + minY, 10, "%2.2", input );
+        g_editorFont.DrawText2DCentre( realX + maxX, realY + maxY + 10, 10, "%2.2", output );
 
         float desiredOutput = m_parameter->m_desiredOutput;
 
         GetPosition( m_minOutput, input, &minX, &minY );
         GetPosition( desiredOutput, m_minInput, &maxX, &maxY );
-
-        glColor4f( 0.5f, 1.0f, 0.5f, 0.35f );
+        
+        glColor4f( 0.5, 1.0, 0.5, 0.35 );
         glBegin( GL_LINES );
             glVertex2f( realX + minX, realY + minY );
             glVertex2f( realX + maxX, realY + minY );
@@ -521,9 +521,9 @@ void SoundParameterGraph::Render( int realX, int realY, bool highlighted, bool c
 {
     InvertedBox::Render( realX, realY, false, false );
 
-    glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
-    g_editorFont.DrawText2D( realX + m_w/2, realY + m_h - 10, 16, m_parent->m_name );
-
+    glColor4f( 1.0, 1.0, 1.0, 1.0 );
+    g_editorFont.DrawText2D( realX + m_w/2, realY + m_h - 10, 16, LANGUAGEPHRASE(m_parent->m_name) );
+    
     if( m_parameter->m_type == SoundParameter::TypeLinked )
     {
         g_editorFont.DrawText2D( realX + 10, realY + 10, 16, m_parameter->GetLinkName( m_parameter->m_link ) );
@@ -533,7 +533,7 @@ void SoundParameterGraph::Render( int realX, int realY, bool highlighted, bool c
     RenderAxis      ( realX, realY );
     RenderValues    ( realX, realY );
     RenderOutput    ( realX, realY );
-
+    
     HandleMouseEvents();
 }
 
@@ -541,7 +541,7 @@ void SoundParameterGraph::Render( int realX, int realY, bool highlighted, bool c
 class SoundParameterGraphScaleToggle : public DarwiniaButton
 {
 public:
-	void MouseUp()
+	void MouseUp() 
 	{
 		SoundParameterGraph *graph = (SoundParameterGraph*)m_parent->GetButton("graph");
 		graph->m_linearScale = !graph->m_linearScale;
@@ -582,11 +582,11 @@ class UpdateTypeMenu : public DropDownMenu
 // Class SoundParameterEditor
 //*****************************************************************************
 
-SoundParameterEditor::SoundParameterEditor( char *_name )
+SoundParameterEditor::SoundParameterEditor( const char *_name )
 :   DarwiniaWindow( _name ),
     m_parameter(NULL),
-    m_minOutput(0.0f),
-    m_maxOutput(1.0f)
+    m_minOutput(0.0),
+    m_maxOutput(1.0)
 {
 }
 
@@ -599,7 +599,7 @@ void SoundParameterEditor::Create()
     // Parameter type
 
     DropDownMenu *paramType = new DropDownMenu(false);
-    paramType->SetShortProperties( "ParameterType", 10, 30, 150 );
+    paramType->SetShortProperties( "ParameterType", 10, 30, 150, -1, UnicodeString("ParameterType") );
     for( int i = 0; i < SoundParameter::NumParameterTypes; ++i )
     {
         paramType->AddOption( SoundParameter::GetParameterTypeName(i) );
@@ -612,7 +612,7 @@ void SoundParameterEditor::Create()
     // Link type
 
     LinkTypeMenu *linkType = new LinkTypeMenu();
-    linkType->SetShortProperties( "LinkType", 10, 50, 150 );
+    linkType->SetShortProperties( "LinkType", 10, 50, 150, -1, UnicodeString("LinkType") );
     for( int i = 0; i < SoundParameter::NumLinkTypes; ++i )
     {
         linkType->AddOption( SoundParameter::GetLinkName(i) );
@@ -624,14 +624,14 @@ void SoundParameterEditor::Create()
     //
     // Smoothing factor
 
-    CreateValueControl( "SmoothFactor", InputField::TypeFloat, &m_parameter->m_smooth, 30, 0.05f, 0.0f, 0.99f, NULL, 170, m_w - 180 );
+    CreateValueControl( "SmoothFactor", &m_parameter->m_smooth, 30, 0.05, 0.0, 0.99, NULL, 170, m_w - 180 );
 
 
     //
     // Update type
 
     UpdateTypeMenu *updateType = new UpdateTypeMenu();
-    updateType->SetShortProperties( "UpdateType", 170, 50, m_w - 180 );
+    updateType->SetShortProperties( "UpdateType", 170, 50, m_w - 180, -1, UnicodeString("UpdateType") );
     for( int i = 0; i < SoundParameter::NumUpdateTypes; ++i )
     {
         updateType->AddOption( SoundParameter::GetUpdateTypeName(i) );
@@ -639,13 +639,13 @@ void SoundParameterEditor::Create()
     updateType->RegisterInt( &m_parameter->m_updateType );
     RegisterButton( updateType );
 
-
+    
     //
-    // Graph
-
+    // Graph 
+    
     SoundParameterGraph *graph = new SoundParameterGraph();
-    graph->SetShortProperties( "  ", 10, 70, m_w - 20, m_h - 80 );
-	strcpy(graph->m_name, "graph");
+    graph->SetShortProperties( "graph", 10, 70, m_w - 20, m_h - 80, UnicodeString("  ") );
+	//strcpy(graph->m_name, "graph");
     graph->SetParameter( m_parameter, m_minOutput, m_maxOutput );
     RegisterButton( graph );
 
@@ -657,7 +657,7 @@ void SoundParameterEditor::Create()
 
 void SoundParameterEditor::Update()
 {
-    DarwiniaWindow::Update();
+    DarwiniaWindow::Update();    
 }
 
 

@@ -1,4 +1,4 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include "rgb_colour.h"
 
@@ -6,10 +6,11 @@ RGBAColour g_colourBlack(0,0,0);
 RGBAColour g_colourWhite(255,255,255);
 
 
-// *** Constructor
-RGBAColour::RGBAColour()
-{
-}
+// Removed, seems to perform better to declare it empty in the header/class definition
+//// *** Constructor
+//RGBAColour::RGBAColour()
+//{
+//}
 
 
 // *** Constructor
@@ -35,7 +36,7 @@ void RGBAColour::Set(unsigned char _r, unsigned char _g, unsigned char _b, unsig
 
 void RGBAColour::Set(int _col)
 {
-    r = (_col & 0xff000000) >> 24;
+    r = (_col & 0xff000000) >> 24; // endianity
     g = (_col & 0x00ff0000) >> 16;
     b = (_col & 0x0000ff00) >> 8;
     a = (_col & 0x000000ff) >> 0;
@@ -55,8 +56,8 @@ RGBAColour RGBAColour::operator + (RGBAColour const &_b) const
 // *** Operator -
 RGBAColour RGBAColour::operator - (RGBAColour const &_b) const
 {
-	return RGBAColour((r - _b.r),
-					  (g - _b.g),
+	return RGBAColour((r - _b.r), 
+					  (g - _b.g), 
 					  (b - _b.b),
 					  (a - _b.a));
 }
@@ -75,7 +76,7 @@ RGBAColour RGBAColour::operator * (float const _b) const
 // *** Operator /
 RGBAColour RGBAColour::operator / (float const _b) const
 {
-	float multiplier = 1.0f / _b;
+	float multiplier = 1.0 / _b;
 	return RGBAColour((unsigned char) ((float)r * multiplier),
 					  (unsigned char) ((float)g * multiplier),
 					  (unsigned char) ((float)b * multiplier),
@@ -97,11 +98,21 @@ RGBAColour const &RGBAColour::operator *= (float const _b)
 // *** Operator /=
 RGBAColour const &RGBAColour::operator /= (float const _b)
 {
-	float multiplier = 1.0f / _b;
+	float multiplier = 1.0 / _b;
 	r = (unsigned char)((float)r * multiplier);
 	g = (unsigned char)((float)g * multiplier);
 	b = (unsigned char)((float)b * multiplier);
 	a = (unsigned char)((float)a * multiplier);
+	return *this;
+}
+
+// *** Operator |=
+RGBAColour const &RGBAColour::operator |= (RGBAColour const &_b)
+{
+	r |= _b.r;
+	g |= _b.g;
+	b |= _b.b;
+	a |= _b.a;
 	return *this;
 }
 
@@ -145,26 +156,26 @@ bool RGBAColour::operator != (RGBAColour const &_b) const
 // *** GetData
 unsigned char const *RGBAColour::GetData() const
 {
-	return &r;
+	return (unsigned char*)(this);
 }
 
 
 // *** AddWithClamp
 void RGBAColour::AddWithClamp( RGBAColour const &_b)
 {
-    float alpha = (float) _b.a / 255.0f;;
+    float alpha = (float) _b.a / 255.0;;
 
     int newR = (int)r + int( _b.r * alpha );
     int newG = (int)g + int( _b.g * alpha );
     int newB = (int)b + int( _b.b * alpha );
+    
+    newR = max(newR, 0);
+    newG = max(newG, 0);
+    newB = max(newB, 0);
 
-    newR = std::max(newR, 0);
-    newG = std::max(newG, 0);
-    newB = std::max(newB, 0);
-
-    newR = std::min(newR, 255);
-    newG = std::min(newG, 255);
-    newB = std::min(newB, 255);
+    newR = min(newR, 255);
+    newG = min(newG, 255);
+    newB = min(newB, 255);
 
     r = newR;
     g = newG;
@@ -175,23 +186,23 @@ void RGBAColour::AddWithClamp( RGBAColour const &_b)
 // *** MultiplyWithClamp
 void RGBAColour::MultiplyWithClamp(float _scale)
 {
-	if ((float)r * _scale < 255.0f)
+	if ((float)r * _scale < 255.0)
 		r = (unsigned char) ((float)r * _scale);
 	else
 		r = 255;
 
-	if ((float)g * _scale < 255.0f)
+	if ((float)g * _scale < 255.0)	
 		g = (unsigned char) ((float)g * _scale);
 	else
 		g = 255;
-
-	if ((float)b * _scale < 255.0f)
+	
+	if ((float)b * _scale < 255.0)	
 		b = (unsigned char) ((float)b * _scale);
 	else
 		b = 255;
-
-	if ((float)a * _scale < 255.0f)
+	
+	if ((float)a * _scale < 255.0)	
 		a = (unsigned char)((float)a * _scale);
-	else
+	else 
 		a = 255;
 }

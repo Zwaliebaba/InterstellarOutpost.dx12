@@ -1,7 +1,7 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-#include "input/inputdriver_alias.h"
-#include "input/input.h"
+#include "lib/input/inputdriver_alias.h"
+#include "lib/input/input.h"
 
 using std::string;
 

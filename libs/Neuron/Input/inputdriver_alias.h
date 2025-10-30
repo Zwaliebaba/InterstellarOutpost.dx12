@@ -1,7 +1,7 @@
 #ifndef INCLUDED_INPUTDRIVER_ALIAS_H
 #define INCLUDED_INPUTDRIVER_ALIAS_H
 
-#include "input/inputdriver.h"
+#include "lib/input/inputdriver.h"
 
 class AliasInputDriver : public InputDriver {
 

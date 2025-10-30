@@ -1,12 +1,12 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <math.h>
 #include <stdarg.h>
 
-#include "math_utils.h"
-#include "sphere_renderer.h"
-#include "text_renderer.h"
-
+#include "lib/math_utils.h"
+#include "lib/sphere_renderer.h"
+#include "lib/text_renderer.h"
+#include "lib/debug_utils.h"
 
 #include "app.h"
 #include "camera.h"
@@ -26,7 +26,7 @@ void RenderSquare2d(float x, float y, float size, RGBAColour const &_col)
 	glPushMatrix();
 	glLoadIdentity();
 
-	int v[4];
+	GLint v[4];
 	glGetIntegerv(GL_VIEWPORT, &v[0]);
     float left = v[0];
 	float right = v[0] + v[2];
@@ -60,9 +60,9 @@ void RenderSquare2d(float x, float y, float size, RGBAColour const &_col)
 
 void RenderCube(Vector3 const &_centre, float _sizeX, float _sizeY, float _sizeZ, RGBAColour const &_col)
 {
-	float halfX = _sizeX * 0.5f;
-	float halfY = _sizeY * 0.5f;
-	float halfZ = _sizeZ * 0.5f;
+	float halfX = _sizeX * 0.5;
+	float halfY = _sizeY * 0.5;
+	float halfZ = _sizeZ * 0.5;
 
 	if (_col.a != 255)
 	{
@@ -71,7 +71,7 @@ void RenderCube(Vector3 const &_centre, float _sizeX, float _sizeY, float _sizeZ
 
 	glColor4ubv(_col.GetData());
 	glEnable(GL_LINE_SMOOTH);
-	glLineWidth(2.0f);
+	glLineWidth(2.0);
 	glBegin(GL_LINE_LOOP);
 		glVertex3f(_centre.x - halfX, _centre.y - halfY, _centre.z - halfZ);
 		glVertex3f(_centre.x - halfX, _centre.y + halfY, _centre.z - halfZ);
@@ -116,7 +116,7 @@ void RenderSphereRings(Vector3 const &_centre, float _radius, RGBAColour const &
 	glColor3ubv(_col.GetData());
 
 	int const _segs = 20;
-	float thetaIncrement = M_PI * 2.0f / (float)_segs;
+	float thetaIncrement = M_PI * 2.0 / (float)_segs;
 
 	static float cx[_segs] = {-1};
 	static float sx[_segs];
@@ -128,19 +128,19 @@ void RenderSphereRings(Vector3 const &_centre, float _radius, RGBAColour const &
 		for (i = 0; i < _segs; i++)
 		{
 			float theta = (float)i * thetaIncrement;
-			sx[i] = sinf(theta);
-			cx[i] = cosf(theta);
+			sx[i] = iv_sin(theta);
+			cx[i] = iv_cos(theta);
 		}
 	}
-
-	glLineWidth(2.0f);
+	
+	glLineWidth(2.0);
 	glBegin(GL_LINE_LOOP);
 		for (i = 0; i < _segs; i++)
 		{
 			Vector3 pos = _centre;
 			pos.x += sx[i] * _radius;
 			pos.z += cx[i] * _radius;
-			glVertex3fv(pos.GetData());
+			glVertex3dv(pos.GetData());
 		}
 	glEnd();
 	glBegin(GL_LINE_LOOP);
@@ -149,7 +149,7 @@ void RenderSphereRings(Vector3 const &_centre, float _radius, RGBAColour const &
 			Vector3 pos = _centre;
 			pos.y += sx[i] * _radius;
 			pos.z += cx[i] * _radius;
-			glVertex3fv(pos.GetData());
+			glVertex3dv(pos.GetData());
 		}
 	glEnd();
 	glBegin(GL_LINE_LOOP);
@@ -158,22 +158,38 @@ void RenderSphereRings(Vector3 const &_centre, float _radius, RGBAColour const &
 			Vector3 pos = _centre;
 			pos.x += sx[i] * _radius;
 			pos.y += cx[i] * _radius;
-			glVertex3fv(pos.GetData());
+			glVertex3dv(pos.GetData());
 		}
 	glEnd();
 }
 
+static Sphere aSphere;
 
 void RenderSphere(Vector3 const &_centre, float _radius, RGBAColour const &_col)
 {
-	static Sphere aSphere;
+    if( Sphere::s_regenerateDisplayList )
+    {
+        aSphere.GenerateDisplayList();
+    }
 
-	glColor3ubv(_col.GetData());
+	glColor4ubv(_col.GetData());
 	aSphere.Render(_centre, _radius);
 }
 
 
-void RenderVerticalCylinder(Vector3 const &_centreBase, Vector3 const &_verticalAxis,
+void RenderSphereFilled(Vector3 const &_centre, float _radius, RGBAColour const &_col)
+{
+    if( Sphere::s_regenerateDisplayList )
+    {
+        aSphere.GenerateDisplayList();
+    }
+
+    glColor4ubv(_col.GetData());
+    aSphere.RenderFilled(_centre, _radius);
+}
+
+
+void RenderVerticalCylinder(Vector3 const &_centreBase, Vector3 const &_verticalAxis, 
 							float _height, float _radius, RGBAColour const &_col)
 {
 	Vector3 axis1 = _verticalAxis;
@@ -181,7 +197,7 @@ void RenderVerticalCylinder(Vector3 const &_centreBase, Vector3 const &_vertical
 	Vector3 axis2;
 	Vector3 axis3;
 
-	if (axis1.x > 0.5f)			axis2.Set(0, 1, 0);
+	if (axis1.x > 0.5)			axis2.Set(0, 1, 0);
 	else						axis2.Set(1, 0, 0);
 
 	axis3 = axis1 ^ axis2;
@@ -190,7 +206,7 @@ void RenderVerticalCylinder(Vector3 const &_centreBase, Vector3 const &_vertical
 	glDisable(GL_LIGHTING);
 	glDisable(GL_COLOR_MATERIAL);
 	glDisable(GL_TEXTURE_2D);
-	glLineWidth(1.0f);
+	glLineWidth(1.0);
 	glColor3ubv(_col.GetData());
 
 	int const numEdges = 16;
@@ -200,10 +216,10 @@ void RenderVerticalCylinder(Vector3 const &_centreBase, Vector3 const &_vertical
 		for (int i = 0; i < numEdges; ++i)
 		{
 			Vector3 pos = _centreBase;
-			float theta = M_PI * 2.0f * (float)i / (float)numEdges;
-			pos += axis2 * sinf(theta) * _radius;
-			pos += axis3 * cosf(theta) * _radius;
-			glVertex3fv(pos.GetData());
+			float theta = M_PI * 2.0 * (float)i / (float)numEdges;
+			pos += axis2 * iv_sin(theta) * _radius;
+			pos += axis3 * iv_cos(theta) * _radius;
+			glVertex3dv(pos.GetData());
 		}
 	glEnd();
 
@@ -212,10 +228,10 @@ void RenderVerticalCylinder(Vector3 const &_centreBase, Vector3 const &_vertical
 		for (int i = 0; i < numEdges; ++i)
 		{
 			Vector3 pos = _centreBase + axis1 * _height;
-			float theta = M_PI * 2.0f * (float)i / (float)numEdges;
-			pos += axis2 * sinf(theta) * _radius;
-			pos += axis3 * cosf(theta) * _radius;
-			glVertex3fv(pos.GetData());
+			float theta = M_PI * 2.0 * (float)i / (float)numEdges;
+			pos += axis2 * iv_sin(theta) * _radius;
+			pos += axis3 * iv_cos(theta) * _radius;
+			glVertex3dv(pos.GetData());
 		}
 	glEnd();
 
@@ -224,12 +240,12 @@ void RenderVerticalCylinder(Vector3 const &_centreBase, Vector3 const &_vertical
 		for (int i = 0; i < numEdges; ++i)
 		{
 			Vector3 pos = _centreBase;
-			float theta = M_PI * 2.0f * (float)i / (float)numEdges;
-			pos += axis2 * sinf(theta) * _radius;
-			pos += axis3 * cosf(theta) * _radius;
-			glVertex3fv(pos.GetData());
+			float theta = M_PI * 2.0 * (float)i / (float)numEdges;
+			pos += axis2 * iv_sin(theta) * _radius;
+			pos += axis3 * iv_cos(theta) * _radius;
+			glVertex3dv(pos.GetData());
 			pos += axis1 * _height;
-			glVertex3fv(pos.GetData());
+			glVertex3dv(pos.GetData());
 		}
 	glEnd();
 
@@ -240,13 +256,13 @@ void RenderVerticalCylinder(Vector3 const &_centreBase, Vector3 const &_vertical
 void RenderArrow(Vector3 const &start, Vector3 const &end, float width, RGBAColour const &_col/* =RGBAColour */)
 {
 	Camera *cam = g_app->m_camera;
-	Vector3 midPoint = (start + end) * 0.5f;
+	Vector3 midPoint = (start + end) * 0.5;
 	Vector3 midPointToCamera = cam->GetPos() - midPoint;
 	float midPointToCameraDist = midPointToCamera.Mag();
 	Vector3 invDir = start - end;
 	Vector3 sidewaysDir = ((cam->GetPos() - end) ^ invDir).Normalise();
 	float arrowLen = invDir.Mag();
-	invDir.SetLength(arrowLen * 0.2f);
+	invDir.SetLength(arrowLen * 0.2);
 
 	if (_col.a != 255)
 	{
@@ -257,15 +273,15 @@ void RenderArrow(Vector3 const &start, Vector3 const &end, float width, RGBAColo
 	glColor3ubv(_col.GetData());
 
 	glBegin(GL_LINES);
-		glVertex3fv(start.GetDataConst());
-		glVertex3fv(end.GetDataConst());
+		glVertex3dv(start.GetDataConst());
+		glVertex3dv(end.GetDataConst());
 
-		Vector3 p1 = end + invDir + sidewaysDir * arrowLen * 0.1f;
-		Vector3 p2 = end + invDir - sidewaysDir * arrowLen * 0.1f;
-		glVertex3fv(p1.GetDataConst());
-		glVertex3fv(end.GetDataConst());
-		glVertex3fv(p2.GetDataConst());
-		glVertex3fv(end.GetDataConst());
+		Vector3 p1 = end + invDir + sidewaysDir * arrowLen * 0.1;
+		Vector3 p2 = end + invDir - sidewaysDir * arrowLen * 0.1;
+		glVertex3dv(p1.GetDataConst());
+		glVertex3dv(end.GetDataConst());
+		glVertex3dv(p2.GetDataConst());
+		glVertex3dv(end.GetDataConst());
 	glEnd();
 
     glDisable( GL_LINE_SMOOTH );
@@ -281,8 +297,8 @@ void RenderPointMarker(Vector3 const &point, char const *_fmt, ...)
     vsprintf(buf, _fmt, ap);
 
 	Vector3 end(point + Vector3(20,20,20));
-	RenderArrow(end, point, 2.0f);
-	g_editorFont.DrawText3DCentre(end, 3.0f, buf);
+	RenderArrow(end, point, 2.0);
+	g_editorFont.DrawText3DCentre(end, 3.0, buf);
 }
 
 
@@ -292,14 +308,14 @@ void PrintMatrix( const char *_name, GLenum _whichMatrix )
 
 	glGetDoublev( _whichMatrix, matrix );
 
-	DebugTrace( "\tMatrix: %s\n", _name );
+	AppDebugOut( "\tMatrix: %s\n", _name );
 	for (int row = 0; row < 4; row++) {
-		DebugTrace("\t\t");
-		for (int col = 0; col < 4; col++)
-			DebugTrace("% 13.1f ", matrix[col * 4 + row]);
-		DebugTrace("\n");
+		AppDebugOut("\t\t");
+		for (int col = 0; col < 4; col++) 
+			AppDebugOut("% 13.1 ", matrix[col * 4 + row]);
+		AppDebugOut("\n");
 	}
-	DebugTrace("\n");
+	AppDebugOut("\n");
 }
 
 void PrintMatrices( const char *_title )
@@ -309,7 +325,7 @@ void PrintMatrices( const char *_title )
 	if (numTimes > 10)
 		return;
 
-	DebugTrace(
+	AppDebugOut(
 #ifdef USE_DIRECT3D
 		"Direct3D: "
 #else

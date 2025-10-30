@@ -1,10 +1,10 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <stdarg.h>
 #include <string.h>
 
-#include "debug_render.h"
-#include "persisting_debug_render.h"
+#include "lib/debug_render.h"
+#include "lib/persisting_debug_render.h"
 
 
 #ifdef DEBUG_RENDER_ENABLED
@@ -25,7 +25,7 @@ PersistRenderItem *PersistingDebugRenderer::FindItem(char const *_label)
 	{
 		if (!m_items.ValidIndex(i)) continue;
 
-		if (_strnicmp(_label, m_items[i].m_label, sizeof(m_items[i].m_label) - 1) == 0)
+		if (strnicmp(_label, m_items[i].m_label, sizeof(m_items[i].m_label) - 1) == 0)
 		{
 			return &m_items[i];
 		}
@@ -44,7 +44,7 @@ void PersistingDebugRenderer::Square2d(float x, float y, float _size, unsigned i
 	buf[63] = '\0';
 
 	PersistRenderItem *item = FindItem(buf);
-	if (!item)
+	if (!item) 
 	{
 		item = m_items.GetPointer();
 	}
@@ -68,7 +68,7 @@ void PersistingDebugRenderer::PointMarker(Vector3 const &_point, unsigned int _l
 	buf[63] = '\0';
 
 	PersistRenderItem *item = FindItem(buf);
-	if (!item)
+	if (!item) 
 	{
 		item = m_items.GetPointer();
 	}
@@ -128,7 +128,7 @@ void PersistingDebugRenderer::Render()
 	for (unsigned int i = 0; i < m_items.Size(); ++i)
 	{
 		if (!m_items.ValidIndex(i)) continue;
-
+		
 		PersistRenderItem *item = &m_items[i];
 
 		switch (item->m_type)
@@ -143,7 +143,7 @@ void PersistingDebugRenderer::Render()
 				RenderSphere(item->m_vect1, item->m_size1);
 				break;
 			case TypeVector:
-				RenderArrow(item->m_vect1, item->m_vect2, 2.0f);
+				RenderArrow(item->m_vect1, item->m_vect2, 2.0);
 				break;
 		}
 
@@ -151,7 +151,7 @@ void PersistingDebugRenderer::Render()
 		{
 			if (item->m_life == 1)
 			{
-				m_items.MarkNotUsed(i);
+				m_items.RemoveData(i);
 			}
 			else
 			{

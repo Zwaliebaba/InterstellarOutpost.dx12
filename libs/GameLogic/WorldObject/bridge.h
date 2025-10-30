@@ -3,8 +3,8 @@
 
 #include "worldobject/teleport.h"
 
-#define BRIDGE_TRANSPORTPERIOD          0.1f
-#define BRIDGE_TRANSPORTSPEED           50.0f
+#define BRIDGE_TRANSPORTPERIOD          0.1
+#define BRIDGE_TRANSPORTSPEED           50.0
 
 
 class Bridge : public Teleport
@@ -18,12 +18,12 @@ public:
     };
     int     m_bridgeType;
     int     m_nextBridgeId;
-    float   m_status;                           // Construction status, 0=not started, 100=finished, < 0.0f = shutdown
+    double   m_status;                           // Construction status, 0=not started, 100=finished, < 0.0 = shutdown
 
 protected:
     Shape       *m_shapes[NumBridgeTypes];
     ShapeMarker *m_signal;
-
+    
     bool    m_beingOperated;
 
 public:
@@ -32,8 +32,8 @@ public:
     void Initialise     ( Building *_template );
     void SetBridgeType  ( int _type );
 
-    void Render         ( float predictionTime );
-    void RenderAlphas   ( float predictionTime );
+    void Render         ( double predictionTime );    
+    void RenderAlphas   ( double predictionTime );
     bool Advance        ();
 
     bool GetAvailablePosition   ( Vector3 &_pos, Vector3 &_front );                     // Finds place for engineer
@@ -47,11 +47,11 @@ public:
 
     bool        UpdateEntityInTransit( Entity *_entity );
 
-    int  GetBuildingLink();
+    int  GetBuildingLink();                 
     void SetBuildingLink( int _buildingId );
 
     void Read           ( TextReader *_in, bool _dynamic );
-    void Write          ( FileWriter *_out );
+    void Write          ( TextWriter *_out );     
 };
 
 

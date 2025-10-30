@@ -1,7 +1,7 @@
-#include "pch.h"
-#include "resource.h"
-#include "shape.h"
-
+#include "lib/universal_include.h"
+#include "lib/resource.h"
+#include "lib/shape.h"
+#include "lib/debug_utils.h"
 
 #include "worldobject/library.h"
 #include "worldobject/researchitem.h"
@@ -30,7 +30,7 @@ bool Library::Advance()
             char markerName[256];
             sprintf( markerName, "MarkerResearch%02d", i+1 );
             ShapeMarker *scrollMarker = m_shape->m_rootFragment->LookupMarker( markerName );
-            DEBUG_ASSERT( scrollMarker );
+            AppReleaseAssert( scrollMarker, "Library: Can't get Marker(%s) from shape(%s), probably a corrupted file\n", markerName, m_shape->m_name );
 
             Matrix34 rootMat(m_front, g_upVector, m_pos);
             Matrix34 scrollPos = scrollMarker->GetWorldMatrix( rootMat );

@@ -3,15 +3,24 @@
 #define _included_userprofilewindow_h
 
 #include "interface/darwinia_window.h"
+#include "interface/mainmenus.h"
 
 
-class UserProfileWindow : public DarwiniaWindow
+class UserProfileWindow : public GameOptionsWindow
 {
 public:
     UserProfileWindow();
 
     void Render ( bool hasFocus );
-    void Create();
+    void Create();    
+};
+
+class ResetProfileButton : public GameMenuButton
+{
+public:
+    ResetProfileButton();
+
+    void MouseUp();
 };
 
 

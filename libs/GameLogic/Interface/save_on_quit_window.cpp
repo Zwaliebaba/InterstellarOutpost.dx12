@@ -1,6 +1,6 @@
-#include "pch.h"
-#include "text_renderer.h"
-#include "language_table.h"
+#include "lib/universal_include.h"
+#include "lib/text_renderer.h"
+#include "lib/language_table.h"
 
 #include "sound/soundsystem.h"
 
@@ -34,7 +34,7 @@ class CancelButton : public DarwiniaButton
 {
     void MouseUp()
     {
-		EclRemoveWindow(LANGUAGEPHRASE("editor_savesettings"));
+		EclRemoveWindow("editor_savesettings");
     }
 };
 
@@ -58,17 +58,17 @@ void SaveOnQuitWindow::Create()
 	int pitch = width + 8;
 	int x = 1 - width;
 	int y = m_h - 25;
-
+	
 	button = new YesButton();
-    button->SetShortProperties( "Yes", x += pitch, y, width);
+    button->SetShortProperties( "Yes", x += pitch, y, width, -1, UnicodeString("Yes"));
     RegisterButton( button );
 
 	button = new NoButton();
-    button->SetShortProperties( "No", x += pitch, y, width );
+    button->SetShortProperties( "No", x += pitch, y, width, -1, UnicodeString("No") );
     RegisterButton( button );
 
 	button = new CancelButton();
-    button->SetShortProperties( "Cancel", x += pitch, y, width );
+    button->SetShortProperties( "Cancel", x += pitch, y, width, -1, UnicodeString("Cancel") );
     RegisterButton( button );
 }
 

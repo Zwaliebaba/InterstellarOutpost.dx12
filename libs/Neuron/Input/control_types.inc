@@ -7,6 +7,10 @@ DEF_CONTROL_TYPE( MenuActivate,                      INPUT_TYPE_BOOL ) // Press 
 DEF_CONTROL_TYPE( MenuEscape,                        INPUT_TYPE_BOOL ) // Escape out of this menu
 DEF_CONTROL_TYPE( MenuClose,                         INPUT_TYPE_BOOL ) // close current window
 
+DEF_CONTROL_TYPE( LeaderboardWeekly,                 INPUT_TYPE_BOOL ) // Change to weekly leaderboards
+DEF_CONTROL_TYPE( LeaderboardLTrigger,               INPUT_TYPE_BOOL ) // Cycle leaderboard selections up
+DEF_CONTROL_TYPE( LeaderboardRTrigger,               INPUT_TYPE_BOOL ) // Cycle leaderboard selections down
+
 //DEF_CONTROL_TYPE( ChatLogDisplay,                    INPUT_TYPE_BOOL ) // Show chat log
 //DEF_CONTROL_TYPE( ChatLogHide,                       INPUT_TYPE_BOOL ) // Hide chat log
 DEF_CONTROL_TYPE( SkipMessage,                       INPUT_TYPE_BOOL ) // Skip chat message
@@ -37,6 +41,18 @@ DEF_CONTROL_TYPE( CameraSwitchMode,                  INPUT_TYPE_BOOL ) // Switch
 DEF_CONTROL_TYPE( CameraDebugRotate,                 INPUT_TYPE_BOOL ) // Hold for debug rotate mode
 DEF_CONTROL_TYPE( GestureActive,                     INPUT_TYPE_BOOL ) // Hold to write a gesture
 
+DEF_CONTROL_TYPE( DarwinianPromote,                  INPUT_TYPE_BOOL ) 
+DEF_CONTROL_TYPE( BeginSelectionCircle,              INPUT_TYPE_BOOL ) 
+DEF_CONTROL_TYPE( EnlargeSelectionCircle,            INPUT_TYPE_BOOL ) 
+DEF_CONTROL_TYPE( EndSelectionCircle,                INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( IssueDarwinianOrders,              INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( OrderDirectRoute,                  INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( OrderSpecialMove,                  INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( IssueSpecialOrders,                INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( LeftButtonPressed,                 INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( LeftButtonDown,                    INPUT_TYPE_BOOL )
+
+DEF_CONTROL_TYPE( UnitSelect,                        INPUT_TYPE_BOOL ) 
 DEF_CONTROL_TYPE( UnitDeselect,                      INPUT_TYPE_BOOL ) // Escape unit control mode
 DEF_CONTROL_TYPE( UnitCycleLeft,                     INPUT_TYPE_BOOL ) // Cycle left through tasks
 DEF_CONTROL_TYPE( UnitCycleRight,                    INPUT_TYPE_BOOL ) // Cycle right through tasks
@@ -46,7 +62,7 @@ DEF_CONTROL_TYPE( UnitSetTarget,                     INPUT_TYPE_BOOL ) // "Click
 DEF_CONTROL_TYPE( UnitMove,                          INPUT_TYPE_2D   ) // Analog unit movement
 DEF_CONTROL_TYPE( UnitMoveDirectionChange,           INPUT_TYPE_2D   )
 DEF_CONTROL_TYPE( UnitPrimaryFireTarget,             INPUT_TYPE_BOOL ) // "Press button to fire at target"
-DEF_CONTROL_TYPE( UnitPrimaryFireDirected,           INPUT_TYPE_2D   ) // "Move joystick to fire"
+DEF_CONTROL_TYPE( UnitTargetDirected,                INPUT_TYPE_2D   ) // "Move joystick to fire"
 DEF_CONTROL_TYPE( UnitSecondaryFireTarget,           INPUT_TYPE_BOOL ) // "Press button to fire at target"
 DEF_CONTROL_TYPE( UnitSecondaryAim,                  INPUT_TYPE_BOOL )
 
@@ -57,6 +73,9 @@ DEF_CONTROL_TYPE( UnitCreate,                        INPUT_TYPE_BOOL )
 
 DEF_CONTROL_TYPE( WeaponCycleLeft,                   INPUT_TYPE_BOOL ) // Cycle left through weapons or unit modes
 DEF_CONTROL_TYPE( WeaponCycleRight,                  INPUT_TYPE_BOOL ) // Cycle right through weapons or unit modes
+
+DEF_CONTROL_TYPE( XBoxMenuCycleUp,                   INPUT_TYPE_BOOL ) // Cycle left through weapons or unit modes
+DEF_CONTROL_TYPE( XBoxMenuCycleDown,                 INPUT_TYPE_BOOL ) // Cycle right through weapons or unit modes
 
 DEF_CONTROL_TYPE( TaskManagerSelectNextTask,         INPUT_TYPE_BOOL ) // Select Next active task
 DEF_CONTROL_TYPE( TaskManagerDisplay,                INPUT_TYPE_BOOL ) // Show the task manager
@@ -162,6 +181,24 @@ DEF_CONTROL_TYPE( MouseMovement,                     INPUT_TYPE_2D   )
 DEF_CONTROL_TYPE( IconsTaskManagerQuickUnit,         INPUT_TYPE_BOOL )
 DEF_CONTROL_TYPE( IconsTaskManagerQuickUnitCreate,   INPUT_TYPE_BOOL )
 DEF_CONTROL_TYPE( IconsTaskManagerQuickUnitLeft,     INPUT_TYPE_BOOL )
-DEF_CONTROL_TYPE( IconsTaskManagerQuickUnitRight,     INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( IconsTaskManagerQuickUnitRight,    INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( IconsTaskManagerQuickUnitUp,       INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( IconsTaskManagerQuickUnitDown,     INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( CameraSquadZoomIn,                 INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( CameraSquadZoomOut,                INPUT_TYPE_BOOL )
 DEF_CONTROL_TYPE( ControllerUnplugged,               INPUT_TYPE_BOOL )
-DEF_CONTROL_TYPE( ControllerPlugged,               INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( ControllerPlugged,			     INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( ToggleNetworkStats,                INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( ToggleInterface,                   INPUT_TYPE_BOOL )
+
+DEF_CONTROL_TYPE( GameDebugQuit,					 INPUT_TYPE_BOOL )
+
+DEF_CONTROL_TYPE( ToggleReady,                       INPUT_TYPE_BOOL )
+
+DEF_CONTROL_TYPE( ShowMouseCursor,					 INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( MainMenuActivate,                  INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( CloseTaskHelp,                     INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( TaskManagerScrollUp,               INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( TaskManagerScrollDown,             INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( ToggleRendering,					 INPUT_TYPE_BOOL )
+DEF_CONTROL_TYPE( LobbyChat,                         INPUT_TYPE_BOOL )

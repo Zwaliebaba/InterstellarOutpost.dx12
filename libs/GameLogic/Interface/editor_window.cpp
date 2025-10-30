@@ -1,7 +1,15 @@
-#include "pch.h"
-#include "hi_res_time.h"
-#include "resource.h"
-#include "language_table.h"
+#include "lib/universal_include.h"
+#include "lib/hi_res_time.h"
+#include "lib/resource.h"
+#include "lib/language_table.h"
+
+#include <fstream>
+#include <sstream>
+#include <string>
+
+#include "lib/tosser/directory.h"
+#include "lib/filesys/text_file_writer.h"
+#include "lib/filesys/filesys_utils.h"
 
 #include "interface/buildings_window.h"
 #include "interface/camera_mount_window.h"
@@ -25,6 +33,7 @@
 #include "level_file.h"
 #include "renderer.h"
 #include "location.h"
+#include "mapfile.h"
 
 #ifdef LOCATION_EDITOR
 
@@ -37,7 +46,8 @@ class MainEditWindowButton : public BorderlessButton
 public:
 	enum
 	{
-		TypeSave = LocationEditor::ModeNumModes
+		TypeSave = LocationEditor::ModeNumModes,
+        TypePublish = 255
 	};
 
 	int m_type;
@@ -53,21 +63,29 @@ public:
 		{
             //
             // If a MOD hasn't been set, don't allow this to happen
-            // as it will try to save into gamedata/levels, which is clearly wrong
+            // as it will try to save into darwinia/data/levels, which is clearly wrong
             // for the end user (but allow it for us)
 
 #ifndef TARGET_DEBUG
-            if( !g_app->m_resource->IsModLoaded() )
+            /*if( !g_app->m_resource->IsModLoaded() ) 
             {
                 EclRegisterWindow( new MessageDialog( LANGUAGEPHRASE( "dialog_savelocationsfail1" ),
-                                                      LANGUAGEPHRASE( "dialog_savelocationsfail2" ) ),
+                                                      LANGUAGEPHRASE( "dialog_savelocationsfail2" ) ), 
                                                       m_parent );
                 return;
-            }
+            }*/
 #endif
-
             g_app->m_location->m_levelFile->Save();
-
+            return;
+        }
+        else if( m_type == TypePublish )
+        {
+            char filename[512];
+            sprintf( filename, "%s%s", g_app->GetMapDirectory(), g_app->m_location->m_levelFile->m_mapFilename );
+            MapFile *mapFile = new MapFile();
+            mapFile->Save(filename);
+            delete mapFile;
+            
 			return;
 		}
 
@@ -107,33 +125,54 @@ void MainEditWindow::Create()
 
 	MainEditWindowButton *button;
 	button = new MainEditWindowButton(LocationEditor::ModeLandTile);
-	button->SetShortProperties(LANGUAGEPHRASE("editor_editlandtiles"), 7, y += buttonYPitch, m_w - 15 );
+	button->SetShortProperties("editor_editlandtiles", 7, y += buttonYPitch, m_w - 15, -1, LANGUAGEPHRASE("editor_editlandtiles") );
 	RegisterButton(button);
 
 	button = new MainEditWindowButton(LocationEditor::ModeLandFlat);
-	button->SetShortProperties(LANGUAGEPHRASE("editor_editflattenareas"), 7, y += buttonYPitch, m_w - 15 );
+	button->SetShortProperties("editor_editflattenareas", 7, y += buttonYPitch, m_w - 15, -1, LANGUAGEPHRASE("editor_editflattenareas") );
 	RegisterButton(button);
 
     button = new MainEditWindowButton(LocationEditor::ModeLight);
-	button->SetShortProperties(LANGUAGEPHRASE("editor_editlights"), 7, y += buttonYPitch, m_w - 15 );
+	button->SetShortProperties("editor_editlights", 7, y += buttonYPitch, m_w - 15, -1, LANGUAGEPHRASE("editor_editlights") );
 	RegisterButton(button);
 
     button = new MainEditWindowButton(LocationEditor::ModeBuilding);
-    button->SetShortProperties(LANGUAGEPHRASE("editor_editbuildings"), 7, y += buttonYPitch, m_w - 15 );
+    button->SetShortProperties("editor_editbuildings", 7, y += buttonYPitch, m_w - 15, -1, LANGUAGEPHRASE("editor_editbuildings") );
     RegisterButton(button);
 
     button = new MainEditWindowButton(LocationEditor::ModeInstantUnit);
-    button->SetShortProperties(LANGUAGEPHRASE("editor_editinstantunits"), 7, y += buttonYPitch, m_w - 15 );
+    button->SetShortProperties("editor_editinstantunits", 7, y += buttonYPitch, m_w - 15, -1, LANGUAGEPHRASE("editor_editinstantunits") );
     RegisterButton(button);
 
     button = new MainEditWindowButton(LocationEditor::ModeCameraMount);
-    button->SetShortProperties(LANGUAGEPHRASE("editor_editcameramounts"), 7, y += buttonYPitch, m_w - 15 );
+    button->SetShortProperties("editor_editcameramounts", 7, y += buttonYPitch, m_w - 15, -1, LANGUAGEPHRASE("editor_editcameramounts") );
     RegisterButton(button);
+
+    button = new MainEditWindowButton(LocationEditor::ModeMultiwinia);
+    button->SetShortProperties( "editor_multiwiniaoptions", 7, y += buttonYPitch, m_w - 15, -1, LANGUAGEPHRASE("dialog_otheroptions") );
+    RegisterButton( button );
+
+    button = new MainEditWindowButton( LocationEditor::ModeInvalidCrates);
+    button->SetShortProperties( "editor_invalidcrates", 7, y += buttonYPitch, m_w - 15, -1, LANGUAGEPHRASE("dialog_invalidcrates") );
+    RegisterButton( button );
 
 	y += 6;
 
+#ifdef TARGET_DEBUG
 	button = new MainEditWindowButton(MainEditWindowButton::TypeSave);
-	button->SetShortProperties(LANGUAGEPHRASE("editor_save"), 7, y += buttonYPitch, m_w - 15);
+	button->SetShortProperties("editor_save", 7, y += buttonYPitch, m_w - 15, -1, LANGUAGEPHRASE("editor_save"));
+	RegisterButton(button);
+#endif
+
+    UnicodeString caption;
+#ifdef TARGET_DEBUG
+    caption = LANGUAGEPHRASE("editor_publish");
+#else
+    caption = LANGUAGEPHRASE("editor_save");
+#endif
+
+    button = new MainEditWindowButton(MainEditWindowButton::TypePublish);
+	button->SetShortProperties("editor_publish", 7, y += buttonYPitch, m_w - 15, -1, caption );
 	RegisterButton(button);
 }
 

@@ -1,14 +1,14 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <math.h>
 
-#include "debug_render.h"
-
-#include "file_writer.h"
-#include "profiler.h"
-#include "resource.h"
-#include "shape.h"
-#include "text_stream_readers.h"
+#include "lib/debug_render.h"
+#include "lib/debug_utils.h"
+#include "lib/filesys/text_file_writer.h"
+#include "lib/profiler.h"
+#include "lib/resource.h"
+#include "lib/shape.h"
+#include "lib/filesys/text_stream_readers.h"
 
 #include "network/clienttoserver.h"
 
@@ -17,6 +17,7 @@
 #include "camera.h"
 #include "global_world.h"
 #include "script.h"
+#include "gametimer.h"
 
 #include "worldobject/building.h"
 #include "worldobject/laserfence.h"
@@ -35,7 +36,7 @@ FenceSwitch::FenceSwitch()
     m_linkedBuildingId2(-1),
     m_switchValue(-1),
     m_switchable(false),
-    m_timer(20.0f),
+    m_timer(20.0),
 	m_locked(false),
 	m_lockable(0),
     m_connectionLocation(NULL)
@@ -50,7 +51,7 @@ FenceSwitch::FenceSwitch()
 void FenceSwitch::Initialise( Building *_template )
 {
     Building::Initialise( _template );
-	DEBUG_ASSERT(_template->m_type == Building::TypeFenceSwitch);
+	AppDebugAssert(_template->m_type == Building::TypeFenceSwitch);
     m_linkedBuildingId = ((FenceSwitch *) _template)->m_linkedBuildingId;
     m_linkedBuildingId2 = ((FenceSwitch *) _template)->m_linkedBuildingId2;
     m_switchValue = ((FenceSwitch *) _template)->m_switchValue;
@@ -61,9 +62,9 @@ void FenceSwitch::Initialise( Building *_template )
 
 void FenceSwitch::SetDetail( int _detail )
 {
-    if( m_timer < 10.0f )
+    if( m_timer < 10.0 )
     {
-        m_timer = 10.0f;
+        m_timer = 10.0;
     }
     Building::SetDetail( _detail );
 }
@@ -71,7 +72,7 @@ void FenceSwitch::SetDetail( int _detail )
 // *** Advance
 bool FenceSwitch::Advance()
 {
-    if( m_timer > 0.0f )
+    if( m_timer > 0.0 )
     {
         m_timer -= SERVER_ADVANCE_PERIOD;
         return Building::Advance();
@@ -92,7 +93,7 @@ bool FenceSwitch::Advance()
     {
         SetTeamId( 2 );
     }
-    else
+    else 
     {
         SetTeamId( 1 );
     }
@@ -106,7 +107,7 @@ bool FenceSwitch::Advance()
 	    if( b->m_type == Building::TypeLaserFence )
         {
             LaserFence *fence = (LaserFence *) b;
-
+            
             if( GetNumPorts() == GetNumPortsOccupied() )
             {
 			    GlobalBuilding *gb = g_app->m_globalWorld->GetBuilding( m_id.GetUniqueId(), g_app->m_locationId );
@@ -178,7 +179,7 @@ bool FenceSwitch::Advance()
 				    g_app->m_globalWorld->EvaluateEvents();
 			    }
             }
-            else
+            else 
 		    {
 			    GlobalBuilding *gb = g_app->m_globalWorld->GetBuilding( m_id.GetUniqueId(), g_app->m_locationId );
 			    if( gb &&
@@ -238,12 +239,12 @@ bool FenceSwitch::Advance()
 
 
 // *** Render
-void FenceSwitch::Render( float predictionTime )
+void FenceSwitch::Render( double predictionTime )
 {
 	Building::Render(predictionTime);
 }
 
-void FenceSwitch::RenderAlphas( float predictionTime )
+void FenceSwitch::RenderAlphas( double predictionTime )
 {
     Building *building = g_app->m_location->GetBuilding( m_linkedBuildingId );
     if( building &&
@@ -269,11 +270,11 @@ void FenceSwitch::RenderConnection( Vector3 _targetPos, bool _active )
 
     Vector3 camToOurPos = g_app->m_camera->GetPos() - ourPos;
     Vector3 ourPosRight = camToOurPos ^ ( theirPos - ourPos );
-    ourPosRight.SetLength( 2.0f );
+    ourPosRight.SetLength( 2.0 );
 
     Vector3 camToTheirPos = g_app->m_camera->GetPos() - theirPos;
     Vector3 theirPosRight = camToTheirPos ^ ( theirPos - ourPos );
-    theirPosRight.SetLength( 2.0f );
+    theirPosRight.SetLength( 2.0 );
 
     glDisable   ( GL_CULL_FACE );
     glEnable    ( GL_BLEND );
@@ -282,11 +283,11 @@ void FenceSwitch::RenderConnection( Vector3 _targetPos, bool _active )
 
     if( _active )
     {
-        glColor4f   ( 0.9f, 0.9f, 0.5f, 1.0f );
+        glColor4f   ( 0.9, 0.9, 0.5, 1.0 );     
     }
     else
     {
-        glColor4f( 0.5f, 0.5f, 0.5f, 1.0f );
+        glColor4f( 0.5, 0.5, 0.5, 1.0 );
     }
 
     glEnable        ( GL_TEXTURE_2D );
@@ -295,10 +296,10 @@ void FenceSwitch::RenderConnection( Vector3 _targetPos, bool _active )
     glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 
     glBegin( GL_QUADS );
-        glTexCoord2f(0.1f, 0);      glVertex3fv( (ourPos - ourPosRight).GetData() );
-        glTexCoord2f(0.1f, 1);      glVertex3fv( (ourPos + ourPosRight).GetData() );
-        glTexCoord2f(0.9f, 1);      glVertex3fv( (theirPos + theirPosRight).GetData() );
-        glTexCoord2f(0.9f, 0);      glVertex3fv( (theirPos - theirPosRight).GetData() );
+        glTexCoord2f(0.1, 0);      glVertex3dv( (ourPos - ourPosRight).GetData() );
+        glTexCoord2f(0.1, 1);      glVertex3dv( (ourPos + ourPosRight).GetData() );
+        glTexCoord2f(0.9, 1);      glVertex3dv( (theirPos + theirPosRight).GetData() );
+        glTexCoord2f(0.9, 0);      glVertex3dv( (theirPos - theirPosRight).GetData() );
     glEnd();
 }
 
@@ -331,7 +332,7 @@ void FenceSwitch::SetBuildingLink( int _buildingId )
 void FenceSwitch::Read( TextReader *_in, bool _dynamic )
 {
     Building::Read( _in, _dynamic );
-
+   
     m_linkedBuildingId = atoi(_in->GetNextToken());
     m_linkedBuildingId2 = atoi(_in->GetNextToken());
     m_switchValue = atoi( _in->GetNextToken() );
@@ -354,7 +355,7 @@ void FenceSwitch::Read( TextReader *_in, bool _dynamic )
 
 
 // *** Write
-void FenceSwitch::Write( FileWriter *_out )
+void FenceSwitch::Write( TextWriter *_out )
 {
     Building::Write( _out );
 
@@ -383,10 +384,10 @@ void FenceSwitch::RenderLink()
         if( linkBuilding )
         {
 			Vector3 start = m_pos;
-			start.y += 10.0f;
+			start.y += 10.0;
 			Vector3 end = linkBuilding->m_pos;
-			end.y += 10.0f;
-			RenderArrow(start, end, 6.0f, RGBAColour(255,0,0));
+			end.y += 10.0;
+			RenderArrow(start, end, 6.0, RGBAColour(255,0,0));
         }
     }
 #endif
@@ -433,17 +434,17 @@ void FenceSwitch::RenderLights()
                 Matrix34 worldMat = marker->GetWorldMatrix(rootMat);
 	            Vector3 lightPos = worldMat.pos;
 
-                float signalSize = 6.0f;
+                double signalSize = 6.0;
                 Vector3 camR = g_app->m_camera->GetRight();
                 Vector3 camU = g_app->m_camera->GetUp();
 
                 if( m_switchValue == m_linkedBuildingId )
 	            {
-		            glColor3f( 0.0f, 1.0f, 0.0f );
+		            glColor3f( 0.0, 1.0, 0.0 );
 	            }
 	            else
 	            {
-		            glColor3f( 1.0f, 0.0f, 0.0f );
+		            glColor3f( 1.0, 0.0, 0.0 );
 	            }
 
                 glEnable        ( GL_TEXTURE_2D );
@@ -458,12 +459,12 @@ void FenceSwitch::RenderLights()
 
                 for( int i = 0; i < 10; ++i )
                 {
-                    float size = signalSize * (float) i / 10.0f;
+                    double size = signalSize * (double) i / 10.0;
                     glBegin( GL_QUADS );
-                        glTexCoord2f    ( 0.0f, 0.0f );             glVertex3fv     ( (lightPos - camR * size - camU * size).GetData() );
-                        glTexCoord2f    ( 1.0f, 0.0f );             glVertex3fv     ( (lightPos + camR * size - camU * size).GetData() );
-                        glTexCoord2f    ( 1.0f, 1.0f );             glVertex3fv     ( (lightPos + camR * size + camU * size).GetData() );
-                        glTexCoord2f    ( 0.0f, 1.0f );             glVertex3fv     ( (lightPos - camR * size + camU * size).GetData() );
+                        glTexCoord2f    ( 0.0, 0.0 );             glVertex3dv     ( (lightPos - camR * size - camU * size).GetData() );
+                        glTexCoord2f    ( 1.0, 0.0 );             glVertex3dv     ( (lightPos + camR * size - camU * size).GetData() );
+                        glTexCoord2f    ( 1.0, 1.0 );             glVertex3dv     ( (lightPos + camR * size + camU * size).GetData() );
+                        glTexCoord2f    ( 0.0, 1.0 );             glVertex3dv     ( (lightPos - camR * size + camU * size).GetData() );
                     glEnd();
                 }
 
@@ -472,7 +473,7 @@ void FenceSwitch::RenderLights()
 
                 glDepthMask     ( true );
                 glEnable        ( GL_CULL_FACE );
-                glDisable       ( GL_TEXTURE_2D );
+                glDisable       ( GL_TEXTURE_2D );                    
             }
         }
     }
@@ -482,8 +483,9 @@ Vector3 FenceSwitch::GetConnectionLocation()
 {
     if( !m_connectionLocation )
     {
-        m_connectionLocation = m_shape->m_rootFragment->LookupMarker( "MarkerConnectionLocation" );
-        DEBUG_ASSERT( m_connectionLocation );
+        const char connectionLocationName[] = "MarkerConnectionLocation";
+        m_connectionLocation = m_shape->m_rootFragment->LookupMarker( connectionLocationName );
+        AppReleaseAssert( m_connectionLocation, "FenceSwitch: Can't get Marker(%s) from shape(%s), probably a corrupted file\n", connectionLocationName, m_shape->m_name );
     }
 
     Matrix34 rootMat( m_front, m_up, m_pos );
@@ -500,9 +502,9 @@ bool FenceSwitch::IsInView()
         if( b )
         {
             Vector3 endPoint = b->m_pos;
-            Vector3 midPoint = ( startPoint + endPoint ) / 2.0f;
+            Vector3 midPoint = ( startPoint + endPoint ) / 2.0;
 
-            float radius = ( startPoint - endPoint ).Mag() / 2.0f;
+            double radius = ( startPoint - endPoint ).Mag() / 2.0;
             radius += m_radius;
 
             if( g_app->m_camera->SphereInViewFrustum( midPoint, radius ) )
@@ -519,9 +521,9 @@ bool FenceSwitch::IsInView()
         if( b )
         {
             Vector3 endPoint = b->m_pos;
-            Vector3 midPoint = ( startPoint + endPoint ) / 2.0f;
+            Vector3 midPoint = ( startPoint + endPoint ) / 2.0;
 
-            float radius = ( startPoint - endPoint ).Mag() / 2.0f;
+            double radius = ( startPoint - endPoint ).Mag() / 2.0;
             radius += m_radius;
 
             if( g_app->m_camera->SphereInViewFrustum( midPoint, radius ) )

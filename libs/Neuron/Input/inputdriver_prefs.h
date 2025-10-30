@@ -3,8 +3,8 @@
 
 #include <string>
 
-#include "auto_vector.h"
-#include "input/inputdriver.h"
+#include "lib/auto_vector.h"
+#include "lib/input/inputdriver.h"
 
 
 class PrefsInputDriver : public InputDriver {

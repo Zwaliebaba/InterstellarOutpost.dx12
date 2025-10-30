@@ -1,8 +1,8 @@
 #ifndef INCLUDED_INPUTDRIVER_INVERT_H
 #define INCLUDED_INPUTDRIVER_INVERT_H
 
-#include "auto_vector.h"
-#include "input/inputdriver.h"
+#include "lib/auto_vector.h"
+#include "lib/input/inputdriver.h"
 
 typedef auto_vector<const InputSpec> InputSpecList;
 

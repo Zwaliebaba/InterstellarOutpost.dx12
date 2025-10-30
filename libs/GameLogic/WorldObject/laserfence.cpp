@@ -1,18 +1,19 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <math.h>
 
-#include "math_utils.h"
-
-#include "file_writer.h"
-#include "matrix33.h"
-#include "profiler.h"
-#include "shape.h"
-#include "resource.h"
-#include "text_stream_readers.h"
-#include "ogl_extensions.h"
-#include "debug_render.h"
-#include "preferences.h"
+#include "lib/math_utils.h"
+#include "lib/debug_utils.h"
+#include "lib/filesys/text_file_writer.h"
+#include "lib/matrix33.h"
+#include "lib/profiler.h"
+#include "lib/shape.h"
+#include "lib/resource.h"
+#include "lib/filesys/text_stream_readers.h"
+#include "lib/ogl_extensions.h"
+#include "lib/debug_render.h"
+#include "lib/preferences.h"
+#include "lib/math/random_number.h"
 
 #include "main.h"
 #include "app.h"
@@ -23,6 +24,7 @@
 #include "obstruction_grid.h"
 #include "team.h"
 #include "particle_system.h"
+#include "multiwinia.h"
 
 #include "network/clienttoserver.h"
 
@@ -34,37 +36,45 @@
 LaserFence::LaserFence()
 :   Building(),
     m_nextLaserFenceId(-1),
-    m_status(0.0f),
+    m_status(0.0),
     m_mode(ModeDisabled),
-    m_scale(1.0f),
+    m_scale(1.0),
     m_marker1(NULL),
     m_marker2(NULL),
-    m_sparkTimer(0.0f),
+    m_sparkTimer(0.0),
     m_radiusSet(false),
-	m_nextToggled(false)
+	m_nextToggled(false),
+    m_solarMode(false),
+    m_surgeReceived(0.0),
+	m_solarLinked(false)
 {
     m_type = Building::TypeLaserFence;
-
+    
 	SetShape( g_app->m_resource->GetShape("laserfence.shp") );
 
-    m_marker1 = m_shape->m_rootFragment->LookupMarker( "MarkerFence01" );
-    m_marker2 = m_shape->m_rootFragment->LookupMarker( "MarkerFence02" );
+    const char marker1Name[] = "MarkerFence01";
+    m_marker1 = m_shape->m_rootFragment->LookupMarker( marker1Name );
+    AppReleaseAssert( m_marker1, "LaserFence: Can't get Marker(%s) from shape(%s), probably a corrupted file\n", marker1Name, m_shape->m_name );
 
-    ASSERT_TEXT( m_marker1, "MarkerFence01 not found in laserfence.shp" );
-    ASSERT_TEXT( m_marker2, "MarkerFence02 not found in laserfence.shp" );
+    const char marker2Name[] = "MarkerFence02";
+    m_marker2 = m_shape->m_rootFragment->LookupMarker( marker2Name );
+    AppReleaseAssert( m_marker2, "LaserFence: Can't get Marker(%s) from shape(%s), probably a corrupted file\n", marker2Name, m_shape->m_name );
 }
 
 
 void LaserFence::Initialise( Building *_template )
 {
     Building::Initialise( _template );
-	DEBUG_ASSERT(_template->m_type == Building::TypeLaserFence);
+	AppDebugAssert(_template->m_type == Building::TypeLaserFence);
 
     m_nextLaserFenceId = ((LaserFence *) _template)->m_nextLaserFenceId;
     m_scale            = ((LaserFence *) _template)->m_scale;
     m_mode             = ((LaserFence *) _template)->m_mode;
 
-    m_sparkTimer = frand(10.0f);
+    if( m_mode == ModeEnabled ||
+        m_mode == ModeAlwaysOn ) m_status = 1.0;
+
+    m_sparkTimer = syncfrand(10.0);
 }
 
 void LaserFence::SetDetail( int _detail )
@@ -76,21 +86,21 @@ void LaserFence::SetDetail( int _detail )
 void LaserFence::Spark()
 {
     Vector3 sparkPos = m_pos;
-    sparkPos.y += frand( m_scale*50.0f );
+    sparkPos.y += frand( m_scale*50.0 );
 
     LaserFence *nextFence = (LaserFence *) g_app->m_location->GetBuilding( m_nextLaserFenceId );
 
-    int numSparks = 5.0f + frand(5.0f);
+    int numSparks = 5.0 + frand(5.0);
     for( int i = 0; i < numSparks; ++i )
     {
         Vector3 particleVel;
         if( nextFence ) particleVel = ( m_pos - nextFence->m_pos ) ^ g_upVector;
-        else            particleVel = Vector3( sfrand(10.0f), sfrand(5.0f), sfrand(10.0f) );
-
-        particleVel.SetLength( 40.0f+frand(20.0f) );
-        particleVel += Vector3( frand() * 20.0f, sfrand() * 20.0f, sfrand() * 20.0f );
-        float size = 25.0f + frand(25.0f);
-        g_app->m_particleSystem->CreateParticle( sparkPos, particleVel, Particle::TypeSpark, size );
+        else            particleVel = Vector3( sfrand(10.0), sfrand(5.0), sfrand(10.0) );
+        
+        particleVel.SetLength( 40.0+frand(20.0) );
+        particleVel += Vector3( frand() * 20.0, sfrand() * 20.0, sfrand() * 20.0 );
+        double size = 25.0 + frand(25.0);
+        g_app->m_particleSystem->CreateParticle( sparkPos, particleVel, Particle::TypeSpark, size );        
     }
 
     g_app->m_soundSystem->TriggerBuildingEvent( this, "Spark" );
@@ -98,14 +108,14 @@ void LaserFence::Spark()
 
 
 bool LaserFence::Advance ()
-{
+{   
     if( !m_radiusSet )
     {
         Building *building = g_app->m_location->GetBuilding( m_nextLaserFenceId );
         if( building )
         {
-            m_centrePos = ( building->m_pos + m_pos ) / 2.0f;
-            m_radius = ( building->m_pos - m_pos ).Mag() / 2.0f + m_radius;
+            m_centrePos = ( building->m_pos + m_pos ) / 2.0;
+            m_radius = ( building->m_pos - m_pos ).Mag() / 2.0 + m_radius;
         }
         m_radiusSet = true;
     }
@@ -113,10 +123,25 @@ bool LaserFence::Advance ()
     if( m_mode != ModeDisabled )
     {
         m_sparkTimer -= SERVER_ADVANCE_PERIOD;
-        if( m_sparkTimer < 0.0f )
+        if( m_sparkTimer < 0.0 )
         {
-            m_sparkTimer = 8.0f + syncfrand(4.0f);
-            Spark();
+            m_sparkTimer = 8.0 + syncfrand(4.0);
+            Spark();           
+        }
+    }
+
+    if( m_solarMode )
+    {
+        if( GetNetworkTime() - m_surgeReceived > 5.0 )
+        {
+            if( IsEnabled() || m_mode == ModeNeverOn )
+            {
+                Disable();
+            }
+        }
+        else if( !IsEnabled() )
+        {
+            Enable();
         }
     }
 
@@ -124,62 +149,63 @@ bool LaserFence::Advance ()
     {
         case ModeEnabling:
             m_status += LASERFENCE_RAISESPEED * SERVER_ADVANCE_PERIOD;
-            if( m_status >= 0.5f && m_nextLaserFenceId != -1 && !m_nextToggled )
+            if( m_status >= 0.5 && m_nextLaserFenceId != -1 && !m_nextToggled )
             {
                 LaserFence *nextFence = (LaserFence *) g_app->m_location->GetBuilding( m_nextLaserFenceId );
-                if( nextFence )
+                if( nextFence ) 
 				{
 					nextFence->Enable();
 					m_nextToggled = true;
 				}
             }
-            if( m_status >= 1.0f )
+            if( m_status >= 1.0 )
             {
-                m_status = 1.0f;
+                m_status = 1.0;
                 m_mode = ModeEnabled;
                 if( m_nextLaserFenceId == -1)
                 {
-                    g_app->m_location->m_obstructionGrid->CalculateAll();
+                    //g_app->m_location->m_obstructionGrid->CalculateAll();
                 }
             }
             break;
 
         case ModeDisabling:
-            if( m_status <= 0.5f && m_nextLaserFenceId != -1 && !m_nextToggled)
+            if( m_status <= 0.5 && m_nextLaserFenceId != -1 && !m_nextToggled)
             {
                 LaserFence *nextFence = (LaserFence *) g_app->m_location->GetBuilding( m_nextLaserFenceId );
-                if( nextFence )
+                if( nextFence ) 
 				{
 					nextFence->Disable();
 					m_nextToggled = true;
 				}
             }
             m_status -= LASERFENCE_RAISESPEED * SERVER_ADVANCE_PERIOD;
-            if( m_status <= 0.0f )
+            if( m_status <= 0.0 )
             {
-                m_status = 0.0f;
+                m_status = 0.0;
                 m_mode = ModeDisabled;
-                if( m_nextLaserFenceId == -1)
+                if( m_nextLaserFenceId == -1 && m_mode != ModeAlwaysOn )
                 {
-                    g_app->m_location->m_obstructionGrid->CalculateAll();
+                    //g_app->m_location->m_obstructionGrid->CalculateAll();
                 }
             }
             break;
 
         case ModeEnabled:
+        case ModeAlwaysOn:
         {
-            if( m_status < 1.0f )
+            if( m_status < 1.0 )
             {
-                m_status = 1.0f;
+                m_status = 1.0;
                 if( m_nextLaserFenceId == -1)
                 {
-                    g_app->m_location->m_obstructionGrid->CalculateAll();
+                    //g_app->m_location->m_obstructionGrid->CalculateAll();
                 }
             }
             break;
         }
         case ModeDisabled:
-            m_status = 0.0f;
+            m_status = 0.0;
             break;
     }
 
@@ -187,7 +213,7 @@ bool LaserFence::Advance ()
 }
 
 
-void LaserFence::Render ( float predictionTime )
+void LaserFence::Render ( double predictionTime )
 {
 	Matrix34 mat(m_front, g_upVector, m_pos);
     mat.f *= m_scale;
@@ -200,7 +226,7 @@ void LaserFence::Render ( float predictionTime )
 }
 
 
-float LaserFence::GetFenceFullHeight()
+double LaserFence::GetFenceFullHeight()
 {
     Matrix34 mat( m_front, g_upVector, m_pos );
     mat.u *= m_scale;
@@ -215,11 +241,13 @@ float LaserFence::GetFenceFullHeight()
 
 bool LaserFence::IsInView()
 {
+    if( g_app->m_multiwinia->GameInGracePeriod() ) return true;
+
     return Building::IsInView();
 
     // No need to do the usual midpoint / radius calculation here
     // as it has already been done in LaserFence::Advance.
-    // Our midpoint and radius values are frigged in order to
+    // Our midpoint and radius values are frigged in order to 
     // correctly fill the obstruction grid.
 }
 
@@ -234,25 +262,24 @@ bool LaserFence::PerformDepthSort( Vector3 &_centrePos )
         _centrePos = m_centrePos;
         return true;
     }
-
-
+    
+    
     return false;;
 }
 
-
-void LaserFence::RenderAlphas( float predictionTime )
+void LaserFence::RenderAlphas( double predictionTime )
 {
     Building::RenderAlphas( predictionTime );
-
+    
     if( m_mode != ModeDisabled &&
 		m_mode != ModeNeverOn )
     {
         //
         // Draw the laser fence connecting to the next laser fence
-
+    
         if( m_nextLaserFenceId != -1 )
         {
-            Building *nextFence = g_app->m_location->GetBuilding( m_nextLaserFenceId );
+            Building *nextFence = g_app->m_location->GetBuilding( m_nextLaserFenceId );                       
             if( !nextFence || nextFence->m_type != Building::TypeLaserFence )
             {
                 m_nextLaserFenceId = -1;
@@ -264,7 +291,7 @@ void LaserFence::RenderAlphas( float predictionTime )
 
             glDisable           ( GL_CULL_FACE );
             glEnable            ( GL_BLEND );
-            glBlendFunc         ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+            glBlendFunc         ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );        
             glDepthMask         ( false );
 
             unsigned char alpha = 150;
@@ -272,42 +299,78 @@ void LaserFence::RenderAlphas( float predictionTime )
             {
                 glColor4ub( 100, 100, 100, alpha );
             }
+            else if( m_solarMode || m_solarLinked )
+            {
+                RGBAColour teamColour = g_app->m_location->m_teams[ m_id.GetTeamId() ]->m_colour;
+                teamColour.r *= 0.9f;
+                teamColour.g *= 0.9f;
+                teamColour.b *= 0.9f;
+                RGBAColour baseColour( 20, 20, 20, alpha );
+                float timeFactor = fabs(sinf( GetHighResTime() * 4 ));
+                //timeFactor = max( timeFactor, 0.0f );
+
+                RGBAColour actualColour = (baseColour * (1.0f - timeFactor)) + (teamColour * timeFactor);
+                glColor4ub( actualColour.r, actualColour.g, actualColour.b, alpha );
+
+            }
             else
             {
-                RGBAColour *colour = &g_app->m_location->m_teams[ m_id.GetTeamId() ].m_colour;
-                glColor4ub( colour->r, colour->g, colour->b, alpha );
+                const RGBAColour &colour = g_app->m_location->m_teams[ m_id.GetTeamId() ]->m_colour;
+                glColor4ub( colour.r, colour.g, colour.b, alpha );
             }
 
-            float ourFenceMaxHeight = GetFenceFullHeight();
-            float theirFenceMaxHeight = nextLaserFence->GetFenceFullHeight();
-            float predictedStatus = m_status;
+            double ourFenceMaxHeight = GetFenceFullHeight();
+            double theirFenceMaxHeight = nextLaserFence->GetFenceFullHeight();
+            double predictedStatus = m_status;
             if( m_mode == ModeDisabling ) predictedStatus -= LASERFENCE_RAISESPEED * predictionTime;
             if( m_mode == ModeEnabling ) predictedStatus += LASERFENCE_RAISESPEED * predictionTime;
-            if( g_app->m_editing ) predictedStatus = 1.0f;
+            if( g_app->m_editing ) predictedStatus = 1.0;
+            
+            double ourFenceHeight = ourFenceMaxHeight * predictedStatus;
+            double theirFenceHeight = theirFenceMaxHeight * predictedStatus;
+            double distance = ( m_pos - nextFence->m_pos ).Mag();
+            double dx = distance / (ourFenceMaxHeight*2.0);
+            double dz = ourFenceHeight / ourFenceMaxHeight;
+            double timeOff = g_gameTime / 15.0;
+            float texH = 1.0f;
+            float texY = 0.0f;
 
-            float ourFenceHeight = ourFenceMaxHeight * predictedStatus;
-            float theirFenceHeight = theirFenceMaxHeight * predictedStatus;
-            float distance = ( m_pos - nextFence->m_pos ).Mag();
-            float dx = distance / (ourFenceMaxHeight*2.0f);
-            float dz = ourFenceHeight / ourFenceMaxHeight;
-            float timeOff = g_gameTime / 15.0f;
+            if( m_solarMode || m_solarLinked )
+            {                
+                texY += timeOff * 10;
+                texH *= 7;             
+                timeOff = 0;
+            }
+
+			Vector3 
+				bottomLeft( m_pos - Vector3(0,ourFenceHeight/3,0) ),
+				topLeft( m_pos + Vector3(0,ourFenceHeight,0) ),
+				topRight( nextFence->m_pos + Vector3(0,theirFenceHeight,0) ),
+				bottomRight( nextFence->m_pos - Vector3(0,theirFenceHeight/3,0) );
+
+			int laserFenceTextureId = g_app->m_resource->GetTexture( "textures/laserfence.bmp" );
+			int laserFence2TextureId = g_app->m_resource->GetTexture( "textures/laserfence2.bmp" );
+
+            if( m_solarMode || m_solarLinked )
+            {
+                laserFence2TextureId = laserFenceTextureId;
+            }
 
             if( buildingDetail < 3 )
             {
-                glEnable            (GL_TEXTURE_2D);
 
                 gglActiveTextureARB  (GL_TEXTURE0_ARB);
-                glBindTexture       (GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laserfence.bmp" ) );
+                glBindTexture       (GL_TEXTURE_2D, laserFenceTextureId );
 	            glTexParameteri	    (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	            glTexParameteri	    (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
                 glTexParameteri	    (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
                 glTexParameteri	    (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
                 glTexEnvf           (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
-                glTexEnvf           (GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);
+                glTexEnvf           (GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_REPLACE);        
                 glEnable            (GL_TEXTURE_2D);
 
                 gglActiveTextureARB  (GL_TEXTURE1_ARB);
-                glBindTexture       (GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laserfence2.bmp" ) );
+                glBindTexture       (GL_TEXTURE_2D, laserFence2TextureId );
 	            glTexParameteri	    (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	            glTexParameteri	    (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
                 glTexParameteri	    (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
@@ -315,31 +378,30 @@ void LaserFence::RenderAlphas( float predictionTime )
                 glTexEnvf           (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
                 glTexEnvf           (GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE);
                 glEnable            (GL_TEXTURE_2D);
-
-
+        
                 glBegin(GL_QUADS);
-                    gglMultiTexCoord2fARB ( GL_TEXTURE0_ARB, timeOff, 0.0f );
-                    gglMultiTexCoord2fARB ( GL_TEXTURE1_ARB, 0, 0 );
-                    glVertex3fv ( (m_pos - Vector3(0,ourFenceHeight/3,0)).GetData() );
-
+                    gglMultiTexCoord2fARB ( GL_TEXTURE0_ARB, timeOff, 0.0 );          
+                    gglMultiTexCoord2fARB ( GL_TEXTURE1_ARB, 0, texY );          
+                    glVertex3dv ( bottomLeft.GetData() );
+           
                     gglMultiTexCoord2fARB ( GL_TEXTURE0_ARB, timeOff, dz );
-                    gglMultiTexCoord2fARB ( GL_TEXTURE1_ARB, 0, 1 );
-                    glVertex3fv ( (m_pos + Vector3(0,ourFenceHeight,0)).GetData() );
-
+                    gglMultiTexCoord2fARB ( GL_TEXTURE1_ARB, 0, texY+texH );          
+                    glVertex3dv ( topLeft.GetData() );
+            
                     gglMultiTexCoord2fARB ( GL_TEXTURE0_ARB, timeOff + dx, dz );
-                    gglMultiTexCoord2fARB ( GL_TEXTURE1_ARB, 1, 1 );
-                    glVertex3fv ( (nextFence->m_pos + Vector3(0,theirFenceHeight,0)).GetData() );
-
-                    gglMultiTexCoord2fARB ( GL_TEXTURE0_ARB, timeOff + dx, 0.0f );
-                    gglMultiTexCoord2fARB ( GL_TEXTURE1_ARB, 1, 0 );
-                    glVertex3fv ( (nextFence->m_pos - Vector3(0,theirFenceHeight/3,0)).GetData() );
+                    gglMultiTexCoord2fARB ( GL_TEXTURE1_ARB, 1, texY+texH );          
+                    glVertex3dv ( topRight.GetData() );
+            
+                    gglMultiTexCoord2fARB ( GL_TEXTURE0_ARB, timeOff + dx, 0.0 );
+                    gglMultiTexCoord2fARB ( GL_TEXTURE1_ARB, 1, texY );          
+                    glVertex3dv ( bottomRight.GetData() );
                 glEnd();
 
                 gglActiveTextureARB  (GL_TEXTURE1_ARB);
                 glDisable           (GL_TEXTURE_2D);
                 glTexParameteri	    (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
                 glTexParameteri	    (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
-
+            
                 gglActiveTextureARB  (GL_TEXTURE0_ARB);
                 glDisable           (GL_TEXTURE_2D);
                 glTexParameteri	    (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
@@ -347,41 +409,46 @@ void LaserFence::RenderAlphas( float predictionTime )
                 glTexEnvf           (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
             }
-
+            
             //
             // Blend another poly over the top for burn effect
 
-            glEnable            (GL_TEXTURE_2D);
             glBindTexture       (GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laserfence2.bmp" ) );
 	        glTexParameteri	    (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	        glTexParameteri	    (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
             glBlendFunc         (GL_SRC_ALPHA, GL_ONE);
+            glEnable            (GL_TEXTURE_2D);
 
             glBegin(GL_QUADS);
-                glTexCoord2f( 0, 0 );
-                glVertex3fv ( (m_pos - Vector3(0,ourFenceHeight/3,0)).GetData() );
-
-                glTexCoord2f( 0, 1 );
-                glVertex3fv ( (m_pos + Vector3(0,ourFenceHeight,0)).GetData() );
-
-                glTexCoord2f( 1, 1 );
-                glVertex3fv ( (nextFence->m_pos + Vector3(0,theirFenceHeight,0)).GetData() );
-
-                glTexCoord2f( 1, 0 );
-                glVertex3fv ( (nextFence->m_pos - Vector3(0,theirFenceHeight/3,0)).GetData() );
+                glTexCoord2f( 0, texY );          
+				glVertex3dv ( bottomLeft.GetData() );
+            
+                glTexCoord2f( 0, texY+texH );          
+                glVertex3dv ( topLeft.GetData() );
+            
+                glTexCoord2f( 1, texY+texH );          
+                glVertex3dv ( topRight.GetData() );
+            
+                glTexCoord2f( 1, texY );          
+                glVertex3dv ( bottomRight.GetData() );
             glEnd();
 
             glDisable           (GL_TEXTURE_2D);
-
+        
 
             //
             // Gimme a line across the top
-            glLineWidth ( 2.0f );
-            glEnable    ( GL_LINE_SMOOTH );
+            glLineWidth ( 2.0 );
+            if( m_solarMode || m_solarLinked )
+            {
+                glLineWidth( 0.5f );
+            }
 
+            glEnable    ( GL_LINE_SMOOTH );
+       
             glBegin( GL_LINES );
-                glVertex3fv( (m_pos + Vector3(0,ourFenceHeight,0)).GetData() );
-                glVertex3fv( (nextFence->m_pos + Vector3(0,theirFenceHeight,0)).GetData() );
+                glVertex3dv( topLeft.GetData() );
+                glVertex3dv( topRight.GetData() );
             glEnd();
 
             glDepthMask ( true );
@@ -402,7 +469,8 @@ void LaserFence::RenderLights()
 void LaserFence::Enable()
 {
     if( m_mode != ModeEnabled &&
-		m_mode != ModeNeverOn )
+		m_mode != ModeNeverOn &&
+        m_mode != ModeAlwaysOn )
     {
         m_mode = ModeEnabling;
     }
@@ -410,7 +478,7 @@ void LaserFence::Enable()
 	if( m_mode == ModeNeverOn )
 	{
 		LaserFence *nextFence = (LaserFence *) g_app->m_location->GetBuilding( m_nextLaserFenceId );
-		if( nextFence ) nextFence->Toggle();
+        if( nextFence ) nextFence->Enable();
 	}
 
 	m_nextToggled = false;
@@ -420,7 +488,8 @@ void LaserFence::Enable()
 void LaserFence::Disable ()
 {
     if( m_mode != ModeDisabled &&
-		m_mode != ModeNeverOn )
+		m_mode != ModeNeverOn &&
+        m_mode != ModeAlwaysOn)
     {
         m_mode = ModeDisabling;
     }
@@ -428,7 +497,7 @@ void LaserFence::Disable ()
 	if( m_mode == ModeNeverOn )
 	{
 		LaserFence *nextFence = (LaserFence *) g_app->m_location->GetBuilding( m_nextLaserFenceId );
-		if( nextFence ) nextFence->Toggle();
+        if( nextFence ) nextFence->Disable();
 	}
 
 	m_nextToggled = false;
@@ -456,7 +525,7 @@ void LaserFence::Toggle ()
 
 bool LaserFence::IsEnabled()
 {
-	return (m_mode == ModeEnabled) || (m_mode == ModeEnabling);
+	return (m_mode == ModeEnabled) || (m_mode == ModeEnabling) || ( m_mode == ModeAlwaysOn );
 }
 
 
@@ -464,15 +533,15 @@ void LaserFence::Read( TextReader *_in, bool _dynamic )
 {
     Building::Read( _in, _dynamic );
 
-    char *word = _in->GetNextToken();
-    m_nextLaserFenceId = atoi(word);
+    char *word = _in->GetNextToken();  
+    m_nextLaserFenceId = atoi(word);    
 
-    if( _in->TokenAvailable() ) m_scale = atof(_in->GetNextToken());
-    if( _in->TokenAvailable() ) m_mode = atof(_in->GetNextToken());
+    if( _in->TokenAvailable() ) m_scale = iv_atof(_in->GetNextToken());
+    if( _in->TokenAvailable() ) m_mode = iv_atof(_in->GetNextToken());
 }
 
 
-void LaserFence::Write( FileWriter *_out )
+void LaserFence::Write( TextWriter *_out )
 {
     Building::Write( _out );
 
@@ -500,7 +569,7 @@ void LaserFence::Electrocute( Vector3 const &_pos )
 }
 
 
-bool LaserFence::DoesSphereHit(Vector3 const &_pos, float _radius)
+bool LaserFence::DoesSphereHit(Vector3 const &_pos, double _radius)
 {
     if( m_mode == ModeDisabled || g_app->m_editing )
     {
@@ -518,20 +587,20 @@ bool LaserFence::DoesSphereHit(Vector3 const &_pos, float _radius)
 
     Vector3 ray1Start = _pos - Vector3(_radius,0,0);
     Vector3 ray1Dir(1,0,0);
-    float ray1Len = _radius * 2;
-    if( DoesRayHit( ray1Start, ray1Dir, ray1Len ) )
+    double ray1Len = _radius * 2;
+    if( DoesRayHit( ray1Start, ray1Dir, ray1Len ) ) 
 		return true;
 
     Vector3 ray2Start = _pos - Vector3(0,0,_radius);
     Vector3 ray2Dir(0,0,1);
-    float ray2Len = _radius * 2;
-    if( DoesRayHit( ray2Start, ray2Dir, ray2Len ) )
+    double ray2Len = _radius * 2;
+    if( DoesRayHit( ray2Start, ray2Dir, ray2Len ) ) 
 		return true;
 
     //
     // Fence is ok
     // Test against the shape
-
+    
     SpherePackage sphere(_pos, _radius);
     Matrix34 transform(m_front, m_up, m_pos);
     transform.f *= m_scale;
@@ -542,8 +611,8 @@ bool LaserFence::DoesSphereHit(Vector3 const &_pos, float _radius)
 }
 
 
-bool LaserFence::DoesRayHit(Vector3 const &_rayStart, Vector3 const &_rayDir,
-                            float _rayLen, Vector3 *_pos, Vector3 *_norm)
+bool LaserFence::DoesRayHit(Vector3 const &_rayStart, Vector3 const &_rayDir, 
+                            double _rayLen, Vector3 *_pos, Vector3 *_norm)
 {
     if( m_mode == ModeDisabled ||  g_app->m_editing )
     {
@@ -554,17 +623,17 @@ bool LaserFence::DoesRayHit(Vector3 const &_rayStart, Vector3 const &_rayDir,
         transform.r *= m_scale;
 		return m_shape->RayHit(&ray, transform, true);
     }
-
-    if( m_nextLaserFenceId != -1 && m_status > 0.0f )
+    
+    if( m_nextLaserFenceId != -1 && m_status > 0.0 )
     {
         Building *nextFence = g_app->m_location->GetBuilding( m_nextLaserFenceId );
-        float maxHeight = GetFenceFullHeight();
-        float fenceHeight = maxHeight * m_status;
+        double maxHeight = GetFenceFullHeight();
+        double fenceHeight = maxHeight * m_status;
         Vector3 pos1 = m_pos - Vector3(0,fenceHeight/3,0);
         Vector3 pos2 = m_pos + Vector3(0,fenceHeight,0);
         Vector3 pos3 = nextFence->m_pos - Vector3(0,fenceHeight/3,0);
         Vector3 pos4 = nextFence->m_pos + Vector3(0,fenceHeight,0);
-
+           
         bool hitTri1 = false;
         bool hitTri2 = false;
 
@@ -580,9 +649,9 @@ bool LaserFence::DoesRayHit(Vector3 const &_rayStart, Vector3 const &_rayDir,
                 *_norm = ( v2 ^ v1 ).Normalise();
             }
             return true;
-        }
+        }  
     }
-
+    
     //return Building::DoesRayHit( _rayStart, _rayDir, _rayLen, _pos, _norm );
 
 	RayPackage ray(_rayStart, _rayDir, _rayLen);
@@ -616,4 +685,31 @@ Vector3 LaserFence::GetTopPosition()
     mat.r *= m_scale;
     mat.f *= m_scale;
     return m_marker2->GetWorldMatrix( mat ).pos;
+}
+
+void LaserFence::ProvidePower()
+{
+    m_solarMode = true;
+    m_surgeReceived = GetNetworkTime();
+	if( !m_solarLinked )
+	{
+		SetSolarLinked();
+	}
+}
+
+void LaserFence::SetSolarLinked()
+{
+	if( m_mode != LaserFence::ModeAlwaysOn )
+	{
+		m_solarLinked = true;
+		if( GetBuildingLink() != -1 )
+		{
+			LaserFence *fence = (LaserFence *)g_app->m_location->GetBuilding( GetBuildingLink() );
+			if( fence && !fence->m_solarLinked )
+			{
+				fence->SetSolarLinked();
+				
+			}
+		}
+	}
 }

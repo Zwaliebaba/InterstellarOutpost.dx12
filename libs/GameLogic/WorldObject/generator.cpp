@@ -1,16 +1,17 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-
-#include "file_writer.h"
-#include "hi_res_time.h"
-#include "math_utils.h"
-#include "profiler.h"
-#include "resource.h"
-#include "shape.h"
-#include "text_renderer.h"
-#include "text_stream_readers.h"
-#include "debug_render.h"
-#include "language_table.h"
+#include "lib/debug_utils.h"
+#include "lib/filesys/text_file_writer.h"
+#include "lib/hi_res_time.h"
+#include "lib/math_utils.h"
+#include "lib/profiler.h"
+#include "lib/resource.h"
+#include "lib/shape.h"
+#include "lib/text_renderer.h"
+#include "lib/filesys/text_stream_readers.h"
+#include "lib/debug_render.h"
+#include "lib/language_table.h"
+#include "lib/math/random_number.h"
 
 #include "worldobject/generator.h"
 #include "worldobject/constructionyard.h"
@@ -18,6 +19,7 @@
 #include "worldobject/controltower.h"
 #include "worldobject/rocket.h"
 #include "worldobject/switch.h"
+#include "worldobject/laserfence.h"
 
 #include "app.h"
 #include "location.h"
@@ -27,9 +29,10 @@
 #include "main.h"
 #include "entity_grid.h"
 #include "user_input.h"
+#include "team.h"
+#include "multiwinia.h"
 
 #include "sound/soundsystem.h"
-
 
 // ****************************************************************************
 // Class PowerBuilding
@@ -39,7 +42,12 @@ PowerBuilding::PowerBuilding()
 :   Building(),
     m_powerLink(-1),
     m_powerLocation(NULL)
+{    
+}
+
+PowerBuilding::~PowerBuilding()
 {
+	m_surges.EmptyAndDelete();
 }
 
 void PowerBuilding::Initialise( Building *_template )
@@ -52,8 +60,9 @@ Vector3 PowerBuilding::GetPowerLocation()
 {
     if( !m_powerLocation )
     {
-        m_powerLocation = m_shape->m_rootFragment->LookupMarker( "MarkerPowerLocation" );
-        DEBUG_ASSERT( m_powerLocation );
+        const char powerLocationName[] = "MarkerPowerLocation";
+        m_powerLocation = m_shape->m_rootFragment->LookupMarker( powerLocationName );
+        AppReleaseAssert( m_powerLocation, "PowerBuilding: Can't get Marker(%s) from shape(%s), probably a corrupted file\n", powerLocationName, m_shape->m_name );
     }
 
     Matrix34 rootMat( m_front, m_up, m_pos );
@@ -68,10 +77,10 @@ bool PowerBuilding::IsInView()
 
     if( powerLink )
     {
-        Vector3 midPoint = ( powerLink->m_centrePos + m_centrePos ) / 2.0f;
-        float radius = ( powerLink->m_centrePos - m_centrePos ).Mag() / 2.0f;
+        Vector3 midPoint = ( powerLink->m_centrePos + m_centrePos ) / 2.0;
+        double radius = ( powerLink->m_centrePos - m_centrePos ).Mag() / 2.0;
         radius += m_radius;
-
+                
         return( g_app->m_camera->SphereInViewFrustum( midPoint, radius ) );
     }
     else
@@ -81,22 +90,25 @@ bool PowerBuilding::IsInView()
 }
 
 
-void PowerBuilding::Render( float _predictionTime )
+void PowerBuilding::Render( double _predictionTime )
 {
-	Matrix34 mat(m_front, m_up, m_pos);
-	m_shape->Render(_predictionTime, mat);
+    if( m_shape )
+    {
+	    Matrix34 mat(m_front, m_up, m_pos);
+	    m_shape->Render(_predictionTime, mat);
+    }
 }
 
 
-void PowerBuilding::RenderAlphas ( float _predictionTime )
+void PowerBuilding::RenderAlphas ( double _predictionTime )
 {
     Building::RenderAlphas( _predictionTime );
-
+    
     Building *powerLink = g_app->m_location->GetBuilding( m_powerLink );
     if( powerLink )
     {
         //
-        // Render the power line itself
+        // Render the power line itself 
         PowerBuilding *powerBuilding = (PowerBuilding *) powerLink;
 
         Vector3 ourPos = GetPowerLocation();
@@ -104,29 +116,48 @@ void PowerBuilding::RenderAlphas ( float _predictionTime )
 
         Vector3 camToOurPos = g_app->m_camera->GetPos() - ourPos;
         Vector3 ourPosRight = camToOurPos ^ ( theirPos - ourPos );
-        ourPosRight.SetLength( 2.0f );
+        ourPosRight.SetLength( 2.0 );
 
         Vector3 camToTheirPos = g_app->m_camera->GetPos() - theirPos;
         Vector3 theirPosRight = camToTheirPos ^ ( theirPos - ourPos );
-        theirPosRight.SetLength( 2.0f );
+        theirPosRight.SetLength( 2.0 );
 
         glDisable   ( GL_CULL_FACE );
         glEnable    ( GL_BLEND );
-        glBlendFunc ( GL_SRC_ALPHA, GL_ONE );
         glDepthMask ( false );
-        glColor4f   ( 0.9f, 0.9f, 0.5f, 1.0f );
-
         glEnable        ( GL_TEXTURE_2D );
         glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laser.bmp" ) );
         glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
         glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 
+        glBlendFunc ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR );
+        glColor4f   ( 1.0, 1.0, 1.0, 0.0 );
+
         glBegin( GL_QUADS );
-            glTexCoord2f(0.1f, 0);      glVertex3fv( (ourPos - ourPosRight).GetData() );
-            glTexCoord2f(0.1f, 1);      glVertex3fv( (ourPos + ourPosRight).GetData() );
-            glTexCoord2f(0.9f, 1);      glVertex3fv( (theirPos + theirPosRight).GetData() );
-            glTexCoord2f(0.9f, 0);      glVertex3fv( (theirPos - theirPosRight).GetData() );
-        glEnd();
+            glTexCoord2f(0.0, 0);      glVertex3dv( (ourPos - ourPosRight * 3).GetData() );
+            glTexCoord2f(0.0, 1);      glVertex3dv( (ourPos + ourPosRight * 3).GetData() );
+            glTexCoord2f(1.0, 1);      glVertex3dv( (theirPos + theirPosRight * 3).GetData() );
+            glTexCoord2f(1.0, 0);      glVertex3dv( (theirPos - theirPosRight * 3).GetData() );
+        glEnd();           
+
+
+        glBlendFunc ( GL_SRC_ALPHA, GL_ONE );
+        glColor4f   ( 0.9, 0.9, 0.5, 1.0 );
+
+        glBegin( GL_QUADS );
+            glTexCoord2f(0.1, 0);      glVertex3dv( (ourPos - ourPosRight).GetData() );
+            glTexCoord2f(0.1, 1);      glVertex3dv( (ourPos + ourPosRight).GetData() );
+            glTexCoord2f(0.9, 1);      glVertex3dv( (theirPos + theirPosRight).GetData() );
+            glTexCoord2f(0.9, 0);      glVertex3dv( (theirPos - theirPosRight).GetData() );
+        glEnd();           
+
+        glBegin( GL_QUADS );
+            glTexCoord2f(0.1, 0);      glVertex3dv( (ourPos - ourPosRight).GetData() );
+            glTexCoord2f(0.1, 1);      glVertex3dv( (ourPos + ourPosRight).GetData() );
+            glTexCoord2f(0.9, 1);      glVertex3dv( (theirPos + theirPosRight).GetData() );
+            glTexCoord2f(0.9, 0);      glVertex3dv( (theirPos - theirPosRight).GetData() );
+        glEnd();           
+
 
         //
         // Render any surges
@@ -134,24 +165,93 @@ void PowerBuilding::RenderAlphas ( float _predictionTime )
         glEnable        ( GL_TEXTURE_2D );
         glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/starburst.bmp" ) );
 
-        float surgeSize = 25.0f;
-        glColor4f( 0.5f, 0.5f, 1.0f, 1.0f );
+        double surgeSize = 20.0;
         Vector3 camUp = g_app->m_camera->GetUp() * surgeSize;
         Vector3 camRight = g_app->m_camera->GetRight() * surgeSize;
-        glBegin( GL_QUADS );
+
         for( int i = 0; i < m_surges.Size(); ++i )
-        {
-            float thisSurge = m_surges[i];
-            thisSurge += _predictionTime * 2;
-            if( thisSurge < 0.0f ) thisSurge = 0.0f;
-            if( thisSurge > 1.0f ) thisSurge = 1.0f;
-            Vector3 thisSurgePos = ourPos + (theirPos-ourPos) * thisSurge;
-            glTexCoord2i( 0, 0 );       glVertex3fv( (thisSurgePos - camUp - camRight).GetData() );
-            glTexCoord2i( 1, 0 );       glVertex3fv( (thisSurgePos - camUp + camRight).GetData() );
-            glTexCoord2i( 1, 1 );       glVertex3fv( (thisSurgePos + camUp + camRight).GetData() );
-            glTexCoord2i( 0, 1 );       glVertex3fv( (thisSurgePos + camUp - camRight).GetData() );
+        {                        
+            PowerSurge *thisSurge = m_surges[i];
+            double predictedPos = thisSurge->m_percent + _predictionTime * 4;
+            if( g_app->Multiplayer() ) predictedPos = thisSurge->m_percent + _predictionTime * 2;
+            if( predictedPos < 0.0 ) predictedPos = 0.0;
+            if( predictedPos > 1.0 ) predictedPos = 1.0;
+            Vector3 thisSurgePos = ourPos + (theirPos-ourPos) * predictedPos;
+
+            glBlendFunc ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR );
+            glColor4f( 1.0, 1.0, 1.0, 0.0 );
+
+            glBegin( GL_QUADS );
+                glTexCoord2i( 0, 0 );       glVertex3dv( (thisSurgePos - camUp * 1.5 - camRight * 1.5).GetData() );
+                glTexCoord2i( 1, 0 );       glVertex3dv( (thisSurgePos - camUp * 1.5 + camRight * 1.5).GetData() );
+                glTexCoord2i( 1, 1 );       glVertex3dv( (thisSurgePos + camUp * 1.5 + camRight * 1.5).GetData() );
+                glTexCoord2i( 0, 1 );       glVertex3dv( (thisSurgePos + camUp * 1.5 - camRight * 1.5).GetData() );
+            glEnd();
+
+            if( !g_app->Multiplayer() || thisSurge->m_teamId < 0 || thisSurge->m_teamId >= NUM_TEAMS )
+            {
+                glColor4f( 0.5, 0.5, 1.0, 1.0 );
+            }
+            else
+            {
+                Team *team = g_app->m_location->m_teams[thisSurge->m_teamId];
+                glColor4ubv( team->m_colour.GetData() );
+            }
+
+            glBlendFunc ( GL_SRC_ALPHA, GL_ONE );
+
+            glBegin( GL_QUADS );
+                glTexCoord2i( 0, 0 );       glVertex3dv( (thisSurgePos - camUp - camRight).GetData() );
+                glTexCoord2i( 1, 0 );       glVertex3dv( (thisSurgePos - camUp + camRight).GetData() );
+                glTexCoord2i( 1, 1 );       glVertex3dv( (thisSurgePos + camUp + camRight).GetData() );
+                glTexCoord2i( 0, 1 );       glVertex3dv( (thisSurgePos + camUp - camRight).GetData() );
+            glEnd();
+
+            glColor4f( 1.0, 1.0, 1.0, 0.8 );
+            glBegin( GL_QUADS );
+                glTexCoord2i( 0, 0 );       glVertex3dv( (thisSurgePos - camUp - camRight).GetData() );
+                glTexCoord2i( 1, 0 );       glVertex3dv( (thisSurgePos - camUp + camRight).GetData() );
+                glTexCoord2i( 1, 1 );       glVertex3dv( (thisSurgePos + camUp + camRight).GetData() );
+                glTexCoord2i( 0, 1 );       glVertex3dv( (thisSurgePos + camUp - camRight).GetData() );
+            glEnd();
         }
-        glEnd();
+
+        if( g_app->Multiplayer() ) 
+        {
+            glBlendFunc ( GL_SRC_ALPHA, GL_ONE );
+            glBegin( GL_QUADS );
+
+            for( int i = 0; i < m_surges.Size(); ++i )
+            {                        
+                PowerSurge *thisSurge = m_surges[i];
+                if( thisSurge && thisSurge->m_teamId >= 0 && thisSurge->m_teamId < NUM_TEAMS )
+                {
+                    Team *team = g_app->m_location->m_teams[thisSurge->m_teamId];
+                    if( !team || team->m_monsterTeam || team->m_futurewinianTeam) continue;
+
+                    for( int j = 1; j <= 3; ++j )
+                    {
+                        RGBAColour colour = team->m_colour;                
+                        colour.a *= ( 0.8 * j );
+                        glColor4ubv( colour.GetData() );
+
+                        double predictedPos = thisSurge->m_percent + _predictionTime * 4;
+                        if( g_app->Multiplayer() ) predictedPos = thisSurge->m_percent + _predictionTime * 2;
+                        predictedPos -= 0.05 * j;
+                        if( predictedPos < 0.0 ) predictedPos = 0.0;
+                        if( predictedPos > 1.0 ) predictedPos = 1.0;
+                        Vector3 thisSurgePos = ourPos + (theirPos-ourPos) * predictedPos;
+                        
+                        glTexCoord2i( 0, 0 );       glVertex3dv( (thisSurgePos - camUp - camRight).GetData() );
+                        glTexCoord2i( 1, 0 );       glVertex3dv( (thisSurgePos - camUp + camRight).GetData() );
+                        glTexCoord2i( 1, 1 );       glVertex3dv( (thisSurgePos + camUp + camRight).GetData() );
+                        glTexCoord2i( 0, 1 );       glVertex3dv( (thisSurgePos + camUp - camRight).GetData() );
+                    }
+                }
+            }
+
+            glEnd();
+        }
 
         glDisable   ( GL_TEXTURE_2D );
         glDepthMask ( true );
@@ -165,27 +265,36 @@ bool PowerBuilding::Advance()
 {
     for( int i = 0; i < m_surges.Size(); ++i )
     {
-        float *thisSurge = m_surges.GetPointer(i);
-        *thisSurge += SERVER_ADVANCE_PERIOD * 2;
-        if( *thisSurge >= 1.0f )
-        {
-            m_surges.RemoveData(i);
-            --i;
+        PowerSurge *thisSurge = m_surges[i];
+        double amountToAdd = SERVER_ADVANCE_PERIOD * 4;
+        if( g_app->Multiplayer() ) amountToAdd = SERVER_ADVANCE_PERIOD * 2;
 
+        thisSurge->m_percent += amountToAdd;
+
+        if( thisSurge->m_percent >= 1.0 )
+        {            
             Building *powerLink = g_app->m_location->GetBuilding( m_powerLink );
             if( powerLink )
             {
                 PowerBuilding *powerBuilding = (PowerBuilding *) powerLink;
-                powerBuilding->TriggerSurge( 0.0f );
+                powerBuilding->TriggerSurge( 0.0, thisSurge->m_teamId );
             }
+
+            delete thisSurge;
+            m_surges.RemoveData(i);
+            --i;
         }
     }
     return Building::Advance();
 }
 
-void PowerBuilding::TriggerSurge ( float _initValue )
+void PowerBuilding::TriggerSurge ( double _initValue, int teamId )
 {
-    m_surges.PutDataAtStart( _initValue );
+    PowerSurge *surge = new PowerSurge;
+    surge->m_teamId = teamId;
+    surge->m_percent = _initValue;
+
+    m_surges.PutDataAtStart( surge );
 
     g_app->m_soundSystem->TriggerBuildingEvent( this, "TriggerSurge" );
 }
@@ -205,7 +314,7 @@ void PowerBuilding::Read( TextReader *_in, bool _dynamic )
     m_powerLink = atoi( _in->GetNextToken() );
 }
 
-void PowerBuilding::Write( FileWriter *_out )
+void PowerBuilding::Write( TextWriter *_out )
 {
     Building::Write( _out );
 
@@ -230,34 +339,36 @@ void PowerBuilding::SetBuildingLink( int _buildingId )
 
 Generator::Generator()
 :   PowerBuilding(),
-    m_throughput(0.0f),
-    m_timerSync(0.0f),
+    m_throughput(0.0),
+    m_timerSync(0.0),
     m_numThisSecond(0),
     m_enabled(false)
 {
     m_type = TypeGenerator;
     SetShape( g_app->m_resource->GetShape( "generator.shp" ) );
 
-    m_counter = m_shape->m_rootFragment->LookupMarker( "MarkerCounter" );
+    const char counterName[] = "MarkerCounter";
+    m_counter = m_shape->m_rootFragment->LookupMarker( counterName );
+    AppReleaseAssert( m_counter, "Generator: Can't get Marker(%s) from shape(%s), probably a corrupted file\n", counterName, m_shape->m_name );
 }
 
-
-void Generator::TriggerSurge( float _initValue )
+void Generator::TriggerSurge( double _initValue, int teamId )
 {
     if( m_enabled )
     {
-        PowerBuilding::TriggerSurge( _initValue );
+        PowerBuilding::TriggerSurge( _initValue, teamId );
         ++m_numThisSecond;
     }
 }
 
 
-char *Generator::GetObjectiveCounter()
+void Generator::GetObjectiveCounter(UnicodeString& _dest)
 {
-    static char result[256];
-    sprintf( result, "%s : %d Gq/s", LANGUAGEPHRASE("objective_output"),
-                                     int(m_throughput*10) );
-    return result;
+    static wchar_t result[256];
+	swprintf( result, sizeof(result)/sizeof(wchar_t),
+			  L"%ls : %d Gq/s", LANGUAGEPHRASE("objective_output").m_unicodestring,
+			  int(m_throughput*10) );
+    _dest = UnicodeString(result);
 }
 
 
@@ -281,7 +392,7 @@ bool Generator::Advance()
     if( !m_enabled )
     {
         m_surges.Empty();
-        m_throughput = 0.0f;
+        m_throughput = 0.0;
         m_numThisSecond = 0;
 
         //
@@ -300,7 +411,7 @@ bool Generator::Advance()
                     ControlTower *tower = (ControlTower *) building;
                     if( tower->GetBuildingLink() == m_id.GetUniqueId() &&
                         tower->m_id.GetTeamId() == m_id.GetTeamId() )
-                    {
+                    {                        
                         m_enabled = true;
                         break;
                     }
@@ -308,47 +419,47 @@ bool Generator::Advance()
             }
         }
     }
-    else
+    else 
     {
-        if( GetHighResTime() >= m_timerSync + 1.0f )
+        if( GetNetworkTime() >= m_timerSync + 1.0 )
         {
-            float newAverage = m_numThisSecond;
+            double newAverage = m_numThisSecond;
             m_numThisSecond = 0;
-            m_timerSync = GetHighResTime();
-            m_throughput = m_throughput * 0.8f + newAverage * 0.2f;
+            m_timerSync = GetNetworkTime();
+            m_throughput = m_throughput * 0.8 + newAverage * 0.2;
         }
 
-        if( m_throughput > 6.5f )
+        if( m_throughput > 6.5 )
         {
             GlobalBuilding *gb = g_app->m_globalWorld->GetBuilding( m_id.GetUniqueId(), g_app->m_locationId );
             gb->m_online = true;
         }
     }
-
+	
     return PowerBuilding::Advance();
 }
 
 
-void Generator::Render( float _predictionTime )
+void Generator::Render( double _predictionTime )
 {
     PowerBuilding::Render( _predictionTime );
 
-    //g_gameFont.DrawText3DCentre( m_pos + Vector3(0,215,0), 10.0f, "NumThisSecond : %d", m_numThisSecond );
-
-    //if( m_enabled ) g_gameFont.DrawText3DCentre( m_pos + Vector3(0,180,0), 10.0f, "Enabled" );
-    //g_gameFont.DrawText3DCentre( m_pos + Vector3(0,170,0), 10.0f, "Output : %d Gq/s", int(m_throughput*10.0f) );
+    //g_gameFont.DrawText3DCentre( m_pos + Vector3(0,215,0), 10.0, "NumThisSecond : %d", m_numThisSecond );    
+    
+    //if( m_enabled ) g_gameFont.DrawText3DCentre( m_pos + Vector3(0,180,0), 10.0, "Enabled" );
+    //g_gameFont.DrawText3DCentre( m_pos + Vector3(0,170,0), 10.0, "Output : %d Gq/s", int(m_throughput*10.0) );    
 
     Matrix34 generatorMat( m_front, g_upVector, m_pos );
     Matrix34 counterMat = m_counter->GetWorldMatrix(generatorMat);
 
-    glColor4f( 0.6f, 0.8f, 0.9f, 1.0f );
-    g_gameFont.DrawText3D( counterMat.pos, counterMat.f, counterMat.u, 7.0f, "%d", int(m_throughput*10.0f));
-    counterMat.pos += counterMat.f * 0.1f;
-    counterMat.pos += ( counterMat.f ^ counterMat.u ) * 0.2f;
-    counterMat.pos += counterMat.u * 0.2f;
+    glColor4f( 0.6, 0.8, 0.9, 1.0 );
+    g_gameFont.DrawText3D( counterMat.pos, counterMat.f, counterMat.u, 7.0, "%d", int(m_throughput*10.0));
+    counterMat.pos += counterMat.f * 0.1;
+    counterMat.pos += ( counterMat.f ^ counterMat.u ) * 0.2;
+    counterMat.pos += counterMat.u * 0.2;        
     g_gameFont.SetRenderShadow(true);
-    glColor4f( 0.6f, 0.8f, 0.9f, 0.0f );
-    g_gameFont.DrawText3D( counterMat.pos, counterMat.f, counterMat.u, 7.0f, "%d", int(m_throughput*10.0f));
+    glColor4f( 0.6, 0.8, 0.9, 0.0 );
+    g_gameFont.DrawText3D( counterMat.pos, counterMat.f, counterMat.u, 7.0, "%d", int(m_throughput*10.0));
     g_gameFont.SetRenderShadow(false);
 }
 
@@ -362,12 +473,12 @@ Pylon::Pylon()
 :   PowerBuilding()
 {
     m_type = TypePylon;
-    SetShape( g_app->m_resource->GetShape( "pylon.shp" ) );
+    SetShape( g_app->m_resource->GetShape( "pylon.shp" ) );    
 }
 
 
 bool Pylon::Advance()
-{
+{    
     return PowerBuilding::Advance();
 }
 
@@ -381,7 +492,7 @@ PylonStart::PylonStart()
     m_reqBuildingId(-1)
 {
     m_type = TypePylonStart;
-    SetShape( g_app->m_resource->GetShape( "pylon.shp" ) );
+    SetShape( g_app->m_resource->GetShape( "pylon.shp" ) );    
 };
 
 
@@ -407,7 +518,7 @@ bool PylonStart::Advance()
         if( g_app->m_globalWorld->m_buildings.ValidIndex(i) )
         {
             GlobalBuilding *gb = g_app->m_globalWorld->m_buildings[i];
-            if( gb && gb->m_locationId == generatorLocationId &&
+            if( gb && gb->m_locationId == generatorLocationId && 
                 gb->m_type == TypeGenerator && gb->m_online )
             {
                 generatorOnline = true;
@@ -423,9 +534,9 @@ bool PylonStart::Advance()
         GlobalBuilding *globalBuilding = g_app->m_globalWorld->GetBuilding( m_reqBuildingId, g_app->m_locationId );
         if( globalBuilding && globalBuilding->m_online )
         {
-            if( syncfrand() > 0.7f )
+            if( syncfrand(1) > 0.7 )
             {
-                TriggerSurge(0.0f);
+                TriggerSurge(0.0);
             }
         }
     }
@@ -434,7 +545,7 @@ bool PylonStart::Advance()
 }
 
 
-void PylonStart::RenderAlphas( float _predictionTime )
+void PylonStart::RenderAlphas( double _predictionTime )
 {
     PowerBuilding::RenderAlphas( _predictionTime );
 
@@ -444,9 +555,9 @@ void PylonStart::RenderAlphas( float _predictionTime )
         Building *req = g_app->m_location->GetBuilding( m_reqBuildingId );
         if( req )
         {
-            RenderArrow( m_pos+Vector3(0,50,0),
-                         req->m_pos+Vector3(0,50,0),
-                         2.0f, RGBAColour(255,0,0) );
+            RenderArrow( m_pos+Vector3(0,50,0), 
+                         req->m_pos+Vector3(0,50,0), 
+                         2.0, RGBAColour(255,0,0) );
         }
     }
 #endif
@@ -457,11 +568,11 @@ void PylonStart::Read( TextReader *_in, bool _dynamic )
 {
     PowerBuilding::Read( _in, _dynamic );
 
-    m_reqBuildingId = atoi( _in->GetNextToken() );
+    m_reqBuildingId = atoi( _in->GetNextToken() );    
 }
 
 
-void PylonStart::Write( FileWriter *_out )
+void PylonStart::Write( TextWriter *_out )
 {
     PowerBuilding::Write( _out );
 
@@ -477,14 +588,14 @@ PylonEnd::PylonEnd()
 :   PowerBuilding()
 {
     m_type = TypePylonEnd;
-    SetShape( g_app->m_resource->GetShape( "pylon.shp" ) );
+    SetShape( g_app->m_resource->GetShape( "pylon.shp" ) );    
 };
 
 
-void PylonEnd::TriggerSurge( float _initValue )
+void PylonEnd::TriggerSurge( double _initValue, int teamId )
 {
     Building *building = g_app->m_location->GetBuilding( m_powerLink );
-
+    
     if( building && building->m_type == Building::TypeYard )
     {
         ConstructionYard *yard = (ConstructionYard *) building;
@@ -496,10 +607,17 @@ void PylonEnd::TriggerSurge( float _initValue )
         FuelGenerator *fuel = (FuelGenerator *) building;
         fuel->ProvideSurge();
     }
+
+    if( building && building->m_type == Building::TypeLaserFence &&
+		g_app->m_location->IsFriend( teamId, building->m_id.GetTeamId() ) )
+    {
+        LaserFence *fence = (LaserFence *)building;
+        fence->ProvidePower();
+    }
 }
 
 
-void PylonEnd::RenderAlphas( float _predictionTime )
+void PylonEnd::RenderAlphas( double _predictionTime )
 {
     // Do nothing
 }
@@ -511,7 +629,8 @@ void PylonEnd::RenderAlphas( float _predictionTime )
 
 SolarPanel::SolarPanel()
 :   PowerBuilding(),
-    m_operating(false)
+    m_operating(false),
+    m_startingTeam(-1)
 {
     m_type = TypeSolarPanel;
     SetShape( g_app->m_resource->GetShape( "solarpanel.shp" ) );
@@ -523,7 +642,7 @@ SolarPanel::SolarPanel()
         char name[64];
         sprintf( name, "MarkerGlow0%d", i+1 );
         m_glowMarker[i] = m_shape->m_rootFragment->LookupMarker( name );
-        DEBUG_ASSERT( m_glowMarker[i] );
+        AppReleaseAssert( m_glowMarker[i], "SolarPanel: Can't get Marker(%s) from shape(%s), probably a corrupted file\n", name, m_shape->m_name );
     }
 
     for( int i = 0; i < SOLARPANEL_NUMSTATUSMARKERS; ++i )
@@ -531,7 +650,13 @@ SolarPanel::SolarPanel()
         char name[64];
         sprintf( name, "MarkerStatus0%d", i+1 );
         m_statusMarkers[i] = m_shape->m_rootFragment->LookupMarker( name );
+        AppReleaseAssert( m_statusMarkers[i], "SolarPanel: Can't get Marker(%s) from shape(%s), probably a corrupted file\n", name, m_shape->m_name );
     }
+}
+
+bool SolarPanel::IsOperating()
+{
+	return m_operating;
 }
 
 
@@ -542,28 +667,102 @@ void SolarPanel::Initialise( Building *_template )
     _template->m_front = right ^ _template->m_up;
 
     PowerBuilding::Initialise( _template );
+
+    if( m_id.GetTeamId() != 255 ) 
+    {
+        m_startingTeam = m_id.GetTeamId();
+    }
+}
+
+
+void SolarPanel::RecalculateOwnership()
+{
+    if( GetNumPorts() == 0 )
+    {
+        m_id.SetTeamId(255);
+        return;
+    }
+
+    if( GetNumPortsOccupied() == 0 )
+    {
+        m_id.SetTeamId(255);
+    }
+
+
+    //
+    // Count darwinians from each team operating the building
+
+    int teamCount[NUM_TEAMS];
+    memset( teamCount, 0, NUM_TEAMS * sizeof(int) );
+
+    for( int i = 0; i < GetNumPorts(); ++i )
+    {
+        if( GetPortOccupant(i).IsValid() )
+        {
+            Entity *entity = g_app->m_location->GetEntity( GetPortOccupant(i) );
+            if( entity && entity->m_type == Entity::TypeDarwinian )
+            {
+                teamCount[ entity->m_id.GetTeamId() ]++;
+            }
+        }
+    }
+
+    //
+    // Who was highest?
+
+    int highestTeamId = -1;
+    int highest = 0;
+
+    for( int i = 0; i < NUM_TEAMS; ++i )
+    {
+        if( teamCount[i] > highest )
+        {
+            highest = teamCount[i];
+            highestTeamId = i;
+        }
+    }
+
+
+    SetTeamId( highestTeamId );
 }
 
 
 bool SolarPanel::Advance()
 {
-    float fractionOccupied = (float) GetNumPortsOccupied() / (float) GetNumPorts();
-
-    if( syncfrand(20.0f) <= fractionOccupied )
+    double fractionOccupied = 0.0f;
+    if( GetNumPorts() > 0 )
     {
-        TriggerSurge(0.0f);
+        fractionOccupied = (double) GetNumPortsOccupied() / (double) GetNumPorts();
     }
 
-    if( fractionOccupied > 0.6f )
+    if( m_startingTeam != 255 && m_id.GetTeamId() != 255 &&
+        m_startingTeam != m_id.GetTeamId() &&
+        GetNumPorts() > 0 &&
+        g_app->m_multiwinia->m_gameType == Multiwinia::GameTypeAssault )
+    {
+        m_ports.EmptyAndDelete();
+    }
+    
+    if( syncfrand(20.0) <= fractionOccupied )
+    {
+        TriggerSurge(0.0, m_id.GetTeamId() );
+    }
+    
+    if( fractionOccupied > 0.6 )
     {
         if( !m_operating ) g_app->m_soundSystem->TriggerBuildingEvent( this, "Operate" );
         m_operating = true;
     }
 
-    if( fractionOccupied < 0.3f )
+    if( fractionOccupied < 0.3 )
     {
         if( m_operating ) g_app->m_soundSystem->StopAllSounds( m_id, "SolarPanel Operate" );
         m_operating = false;
+    }
+
+    if( g_app->Multiplayer() )
+    {
+        RecalculateOwnership();
     }
 
     return PowerBuilding::Advance();
@@ -580,29 +779,29 @@ void SolarPanel::RenderPorts()
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
 
     for( int i = 0; i < GetNumPorts(); ++i )
-    {
+    {        
         Matrix34 rootMat(m_front, m_up, m_pos);
         Matrix34 worldMat = m_statusMarkers[i]->GetWorldMatrix(rootMat);
 
-
+        
         //
         // Render the status light
 
-        float size = 6.0f;
+        double size = 6.0;
 
         Vector3 camR = g_app->m_camera->GetRight() * size;
         Vector3 camU = g_app->m_camera->GetUp() * size;
 
         Vector3 statusPos = worldMat.pos;
 
-        if( GetPortOccupant(i).IsValid() )      glColor4f( 0.3f, 1.0f, 0.3f, 1.0f );
-        else                                    glColor4f( 1.0f, 0.3f, 0.3f, 1.0f );
-
+        if( GetPortOccupant(i).IsValid() )      glColor4f( 0.3, 1.0, 0.3, 1.0 );        
+        else                                    glColor4f( 1.0, 0.3, 0.3, 1.0 );
+        
         glBegin( GL_QUADS );
-            glTexCoord2i( 0, 0 );           glVertex3fv( (statusPos - camR - camU).GetData() );
-            glTexCoord2i( 1, 0 );           glVertex3fv( (statusPos + camR - camU).GetData() );
-            glTexCoord2i( 1, 1 );           glVertex3fv( (statusPos + camR + camU).GetData() );
-            glTexCoord2i( 0, 1 );           glVertex3fv( (statusPos - camR + camU).GetData() );
+            glTexCoord2i( 0, 0 );           glVertex3dv( (statusPos - camR - camU).GetData() );
+            glTexCoord2i( 1, 0 );           glVertex3dv( (statusPos + camR - camU).GetData() );
+            glTexCoord2i( 1, 1 );           glVertex3dv( (statusPos + camR + camU).GetData() );
+            glTexCoord2i( 0, 1 );           glVertex3dv( (statusPos - camR + camU).GetData() );
         glEnd();
     }
 
@@ -614,7 +813,7 @@ void SolarPanel::RenderPorts()
 }
 
 
-void SolarPanel::Render( float _predictionTime )
+void SolarPanel::Render( double _predictionTime )
 {
     if( g_app->m_editing )
     {
@@ -629,36 +828,62 @@ void SolarPanel::Render( float _predictionTime )
 }
 
 
-void SolarPanel::RenderAlphas( float _predictionTime )
+void SolarPanel::RenderAlphas( double _predictionTime )
 {
     PowerBuilding::RenderAlphas( _predictionTime );
 
-    float fractionOccupied = (float) GetNumPortsOccupied() / (float) GetNumPorts();
+    double fractionOccupied = (double) GetNumPortsOccupied() / (double) GetNumPorts();
 
-    if( fractionOccupied > 0.0f )
+    if( fractionOccupied > 0.0 && m_id.GetTeamId() != 255 )
     {
         Matrix34 mat( m_front, m_up, m_pos );
-        float glowWidth = 60.0f;
-        float glowHeight = 40.0f;
-        float alphaValue = fabs(sinf(g_gameTime)) * fractionOccupied;
+        double glowWidth = 60.0;
+        double glowHeight = 40.0;
+        double alphaValue = 0.5 + iv_abs(iv_sin(g_gameTime)) * 0.5;
+        
+        Team *team = g_app->m_location->m_teams[ m_id.GetTeamId() ];
+        
+        RGBAColour teamColour = team->m_colour;
+		if( g_app->IsSinglePlayer() )
+		{
+			teamColour = RGBAColour(100, 100, 250);
+		}
+        teamColour.a *= alphaValue;
 
-        glColor4f       ( 0.2f, 0.4f, 0.9f, alphaValue );
+
         glEnable        ( GL_BLEND );
-        glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
         glEnable        ( GL_TEXTURE_2D );
         glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/glow.bmp" ) );
         glDepthMask     ( false );
         glDisable       ( GL_CULL_FACE );
+
+        glBlendFunc     ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR );
+        glColor4f( alphaValue, alphaValue, alphaValue, 0.0 );
 
         for( int i = 0; i < SOLARPANEL_NUMGLOWS; ++i )
         {
             Matrix34 thisGlow = m_glowMarker[i]->GetWorldMatrix( mat );
 
             glBegin( GL_QUADS );
-                glTexCoord2i( 0, 0 );   glVertex3fv( (thisGlow.pos - thisGlow.r * glowHeight + thisGlow.f * glowWidth).GetData() );
-                glTexCoord2i( 0, 1 );   glVertex3fv( (thisGlow.pos + thisGlow.r * glowHeight + thisGlow.f * glowWidth).GetData() );
-                glTexCoord2i( 1, 1 );   glVertex3fv( (thisGlow.pos + thisGlow.r * glowHeight - thisGlow.f * glowWidth).GetData() );
-                glTexCoord2i( 1, 0 );   glVertex3fv( (thisGlow.pos - thisGlow.r * glowHeight - thisGlow.f * glowWidth).GetData() );
+            glTexCoord2i( 0, 0 );   glVertex3dv( (thisGlow.pos - thisGlow.r * glowHeight * 0.5 + thisGlow.f * glowWidth* 0.5).GetData() );    
+            glTexCoord2i( 0, 1 );   glVertex3dv( (thisGlow.pos + thisGlow.r * glowHeight * 0.5+ thisGlow.f * glowWidth* 0.5).GetData() );    
+            glTexCoord2i( 1, 1 );   glVertex3dv( (thisGlow.pos + thisGlow.r * glowHeight * 0.5- thisGlow.f * glowWidth* 0.5).GetData() );    
+            glTexCoord2i( 1, 0 );   glVertex3dv( (thisGlow.pos - thisGlow.r * glowHeight * 0.5- thisGlow.f * glowWidth* 0.5).GetData() );                
+            glEnd();
+        }
+
+        glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
+        glColor4ubv( teamColour.GetData() );
+
+        for( int i = 0; i < SOLARPANEL_NUMGLOWS; ++i )
+        {
+            Matrix34 thisGlow = m_glowMarker[i]->GetWorldMatrix( mat );
+                    
+            glBegin( GL_QUADS );
+                glTexCoord2i( 0, 0 );   glVertex3dv( (thisGlow.pos - thisGlow.r * glowHeight + thisGlow.f * glowWidth).GetData() );    
+                glTexCoord2i( 0, 1 );   glVertex3dv( (thisGlow.pos + thisGlow.r * glowHeight + thisGlow.f * glowWidth).GetData() );    
+                glTexCoord2i( 1, 1 );   glVertex3dv( (thisGlow.pos + thisGlow.r * glowHeight - thisGlow.f * glowWidth).GetData() );    
+                glTexCoord2i( 1, 0 );   glVertex3dv( (thisGlow.pos - thisGlow.r * glowHeight - thisGlow.f * glowWidth).GetData() );                
             glEnd();
         }
 
@@ -678,4 +903,98 @@ void SolarPanel::ListSoundEvents( LList<char *> *_list )
     _list->PutData( "Operate" );
 }
 
+
+
+PowerSplitter::PowerSplitter()
+:   PowerBuilding()
+{
+    m_type = TypePowerSplitter;
+
+    SetShape( g_app->m_resource->GetShape( "pylon.shp" ) );    
+}
+
+
+void PowerSplitter::Initialise( Building *_template )
+{
+    PowerBuilding::Initialise( _template );
+
+    PowerSplitter *splitter = (PowerSplitter *)_template;
+
+    for( int i = 0; i < splitter->m_links.Size(); ++i )
+    {
+        m_links.PutData( splitter->m_links[i] );
+    }
+}
+
+
+void PowerSplitter::TriggerSurge( double _initValue, int teamId )
+{
+    for( int i = 0; i < m_links.Size(); ++i )
+    {
+        Building *building = g_app->m_location->GetBuilding(m_links[i] );
+        if( building &&
+            building->m_type == Building::TypePylon &&
+            building->m_id.GetTeamId() == teamId )
+        {
+            ((PowerBuilding *)building)->TriggerSurge( _initValue, teamId );
+            break;
+        }
+    }
+}
+
+
+void PowerSplitter::Render( double _predictionTime )
+{
+    if( g_app->m_editing )
+    {
+        PowerBuilding::Render( _predictionTime );
+    }
+}
+
+
+void PowerSplitter::RenderAlphas( double _predictionTime )
+{
+    PowerBuilding::RenderAlphas( _predictionTime );
+
+    if( g_app->m_editing )
+    {
+        for( int i = 0; i < m_links.Size(); ++i )
+        {
+            Building *building = g_app->m_location->GetBuilding(m_links[i] );
+            if( building )
+            {
+                RenderArrow( m_pos + g_upVector * 50, building->m_pos + g_upVector * 50, 1, RGBAColour(255,0,0,255) );
+            }
+        }
+    }
+}
+
+
+void PowerSplitter::SetBuildingLink( int _buildingId )
+{
+    m_links.PutData( _buildingId );
+}
+
+
+void PowerSplitter::Read( TextReader *_in, bool _dynamic )
+{
+    PowerBuilding::Read( _in, _dynamic );
+
+    while( _in->TokenAvailable() )
+    {
+        int link = atoi( _in->GetNextToken() );
+        m_links.PutData( link );
+    }
+}
+
+
+void PowerSplitter::Write( TextWriter *_out )
+{
+    PowerBuilding::Write( _out );
+
+    for( int i = 0; i < m_links.Size(); ++i )
+    {
+        _out->printf( "%-4d", m_links[i] );
+    }
+}
 

@@ -1,19 +1,19 @@
 #ifndef INCLUDED_RGB_COLOUR_H
 #define INCLUDED_RGB_COLOUR_H
 
-
+#include "lib/debug_utils.h"
 
 class RGBAColour
 {
 public:
-	unsigned char r, g, b, a;
+	unsigned char r, g, b, a; // formatted for most widely supported GL_RGBA
 
-	RGBAColour();
+	RGBAColour() {};
 	RGBAColour(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 255);
     RGBAColour(int _col);
 
 	void Set(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 255);
-    void Set(int _col);
+    void Set(int _col_rgba); // r in highest bits, a in lowest bits
 
 	RGBAColour operator + (RGBAColour const &b) const;
 	RGBAColour operator - (RGBAColour const &b) const;
@@ -30,7 +30,7 @@ public:
 		//a = _b.a;
 		// faster code:
 		//  but not completely safe (c++ aliasing rules)
-		DEBUG_ASSERT(sizeof(int)==4);
+		AppDebugAssert(sizeof(int)==4);
 		*(int*)this = *(int*)&b;
 		return *this;
 	}
@@ -38,11 +38,12 @@ public:
 	RGBAColour const &operator /= (float const b);
 	RGBAColour const &operator += (RGBAColour const &b);
 	RGBAColour const &operator -= (RGBAColour const &b);
+	RGBAColour const &operator |= (RGBAColour const &b);
 
 	bool operator == (RGBAColour const &b) const;
 	bool operator != (RGBAColour const &b) const;
 
-	unsigned char const *GetData() const;
+	unsigned char const *GetData() const; // r,g,b,a on intel, a,b,g,r on ppc
 
     void AddWithClamp( RGBAColour const &b);
 	void MultiplyWithClamp(float _scale);

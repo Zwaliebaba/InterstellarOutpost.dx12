@@ -1,15 +1,17 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <math.h>
 #include <float.h>
 
-
+#include "debug_utils.h"
 #include "profiler.h"
 #include "hi_res_time.h"
 
-#ifdef PROFILER_ENABLED
+#pragma warning( disable : 4189 )
 
 #define PROFILE_HISTORY_LENGTH  10
+
+Profiler *g_profiler = NULL;
 
 
 // ****************************************************************************
@@ -38,8 +40,6 @@ ProfiledElement::ProfiledElement(char const *_name, ProfiledElement *_parent)
 // *** Destructor
 ProfiledElement::~ProfiledElement()
 {
-	free(m_name);
-	m_children.EmptyAndDelete();
 }
 
 
@@ -58,7 +58,7 @@ void ProfiledElement::End()
 	m_currentNumCalls++;
 	double const duration = timeNow - m_callStartTime;
 	m_currentTotalTime += duration;
-
+	
 	if (duration > m_longest)
 	{
 		m_longest = duration;
@@ -80,6 +80,9 @@ void ProfiledElement::Advance()
 	m_historyTotalTime += m_lastTotalTime;
 	m_historyNumSeconds += 1.0;
 	m_historyNumCalls += m_lastNumCalls;
+
+//    float thisMax = m_lastTotalTime;
+//    if( thisMax > g_profiler->m_maxFound ) g_profiler->m_maxFound = thisMax;
 
 	for (int i = 0; i < m_children.Size(); ++i)
 	{
@@ -111,7 +114,7 @@ void ProfiledElement::ResetHistory()
 
 
 double ProfiledElement::GetMaxChildTime()
-{
+{    
 	double rv = 0.0;
 
 	short first = m_children.StartOrderedWalk();
@@ -149,13 +152,15 @@ static Uint32 s_profileThread;
 #define MAIN_THREAD_ONLY { if (SDL_ThreadID() != s_profileThread) return; }
 #else
 #define MAIN_THREAD_ONLY {}
-#endif
+#endif 
 
 // *** Constructor
 Profiler::Profiler()
 :   m_doGlFinish(false),
 	m_currentElement(NULL),
-	m_insideRenderSection(false)
+	m_insideRenderSection(false),
+    m_maxFound(0.0f),
+    m_lastFrameStart(-1.0)
 {
 	m_rootElement = new ProfiledElement("Root", NULL);
 	m_rootElement->m_isExpanded = true;
@@ -170,7 +175,25 @@ Profiler::Profiler()
 // *** Destructor
 Profiler::~Profiler()
 {
-	delete m_rootElement;
+}
+
+
+void Profiler::Start()
+{
+    if( !g_profiler )
+    {
+        g_profiler = new Profiler();
+    }
+}
+
+
+void Profiler::Stop()
+{
+    if( g_profiler )
+    {
+        delete g_profiler;
+        g_profiler = NULL;
+    }
 }
 
 
@@ -183,8 +206,21 @@ void Profiler::Advance()
 		m_lengthOfLastSecond = timeNow - (m_endOfSecond - 1.0);
 		m_endOfSecond = timeNow + 1.0;
 
-		m_rootElement->Advance();
+        m_maxFound = 0.0f;
+		m_rootElement->Advance();  
 	}
+
+    if( m_lastFrameStart >= 0 )
+    {
+        double lastFrameTime = timeNow - m_lastFrameStart;
+        m_frameTimes.PutDataAtStart( int( lastFrameTime * 1000 ) );
+    }
+    
+    while( m_frameTimes.ValidIndex(200) )
+    {
+        m_frameTimes.RemoveData(200);
+    }
+    m_lastFrameStart = timeNow;
 }
 
 
@@ -222,8 +258,8 @@ void Profiler::StartProfile(char const *_name)
 		m_currentElement->m_children.PutData(_name, pe);
 	}
 
-	ASSERT_TEXT(m_rootElement->m_isExpanded, "Profiler root element has been un-expanded");
-
+	AppReleaseAssert(m_rootElement->m_isExpanded, "Profiler root element has been un-expanded");
+	
     bool wasExpanded = m_currentElement->m_isExpanded;
 
     if (m_currentElement->m_isExpanded)
@@ -243,26 +279,81 @@ void Profiler::StartProfile(char const *_name)
 // *** EndProfile
 void Profiler::EndProfile(char const *_name)
 {
+	((void)sizeof(_name));
 	MAIN_THREAD_ONLY;
 
-    DEBUG_ASSERT( m_currentElement->m_wasExpanded == m_currentElement->m_parent->m_isExpanded );
+    //AppDebugAssert( m_currentElement->m_wasExpanded == m_currentElement->m_parent->m_isExpanded );
 
-	if (m_currentElement->m_parent->m_isExpanded)
-	{
-		if (m_doGlFinish && m_insideRenderSection)
-		{
-			glFinish();
-		}
+	if (m_currentElement &&
+        m_currentElement->m_parent )
+    {
+        if( m_currentElement->m_parent->m_isExpanded)
+	    {
+		    if (m_doGlFinish && m_insideRenderSection)
+		    {
+			    glFinish();
+		    }
+        
+		    AppDebugAssert(m_currentElement != m_rootElement);
+		    AppDebugAssert(stricmp(_name, m_currentElement->m_name) == 0);
 
-		DEBUG_ASSERT(m_currentElement != m_rootElement);
-		DEBUG_ASSERT(_stricmp(_name, m_currentElement->m_name) == 0);
+		    m_currentElement->End();
+	    }
 
-		m_currentElement->End();
-	}
-
-    DEBUG_ASSERT( strcmp( m_currentElement->m_name, m_currentElement->m_parent->m_name ) != 0 );
-	m_currentElement = m_currentElement->m_parent;
+        AppDebugAssert( strcmp( m_currentElement->m_name, m_currentElement->m_parent->m_name ) != 0 );
+	    m_currentElement = m_currentElement->m_parent;
+    }
 }
 
 
-#endif // PROFILER_ENABLED
+void ExpandAllRecursively( ProfiledElement *current )
+{
+    current->m_isExpanded = true;
+
+    for( int i = 0; i < current->m_children.Size(); ++i )
+    {
+        if( current->m_children.ValidIndex(i) )
+        {
+            ProfiledElement *child = current->m_children[i];
+            ExpandAllRecursively( child );
+        }
+    }
+}
+
+
+void Profiler::ExpandAll()
+{
+    ExpandAllRecursively( m_rootElement );
+}
+
+
+ProfiledElement *LookupElementRecursive(char const *_name, ProfiledElement *current )
+{
+    if( !current )
+    {
+        return NULL;
+    }
+
+    if( stricmp( current->m_name, _name ) == 0 )
+    {
+        return current;
+    }
+
+    for( int i = 0; i < current->m_children.Size(); ++i )
+    {
+        if( current->m_children.ValidIndex(i) )
+        {
+            ProfiledElement *child = current->m_children[i];
+            ProfiledElement *result = LookupElementRecursive( _name, child );
+            if( result ) return result;
+        }
+    }
+
+    return NULL;
+}
+
+
+ProfiledElement *Profiler::LookupElement(char const *_name)
+{
+    return LookupElementRecursive( _name, m_rootElement );
+}

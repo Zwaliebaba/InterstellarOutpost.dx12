@@ -1,4 +1,4 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include "texture_uv.h"
 
@@ -49,7 +49,7 @@ TextureUV TextureUV::operator * (float const _b) const
 // *** Operator /
 TextureUV TextureUV::operator / (float const _b) const
 {
-	float multiplier = 1.0f / _b;
+	float multiplier = 1.0 / _b;
 	return TextureUV(u * multiplier, v * multiplier);
 }
 
@@ -75,7 +75,7 @@ TextureUV const &TextureUV::operator *= (float const _b)
 // *** Operator /=
 TextureUV const &TextureUV::operator /= (float const _b)
 {
-	float multiplier = 1.0f / _b;
+	float multiplier = 1.0 / _b;
 	u *= multiplier;
 	v *= multiplier;
 	return *this;

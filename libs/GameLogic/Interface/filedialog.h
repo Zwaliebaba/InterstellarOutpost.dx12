@@ -12,7 +12,7 @@
 #define _included_filedialog_h
 
 
-#include "darray.h"
+#include "lib/tosser/darray.h"
 #include "interface/darwinia_window.h"
 
 class ScrollBar;
@@ -34,7 +34,7 @@ public:
     ScrollBar   *m_scrollBar;
 
 public:
-    FileDialog( char const *name, char const *parent,
+    FileDialog( char const *name, char const *parent, 
                 char const *path=NULL, char const *filter=NULL,
                 bool allowMultiSelect=false );
     ~FileDialog();

@@ -3,9 +3,9 @@
 
 #include <sstream>
 
-#include "auto_vector.h"
-#include "input/inputdriver.h"
-#include "input/inputspeclist.h"
+#include "lib/auto_vector.h"
+#include "lib/input/inputdriver.h"
+#include "lib/input/inputspeclist.h"
 
 
 // Enables input specifications to be fed through converters

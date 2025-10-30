@@ -1,13 +1,13 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <math.h>
 
-
-#include "file_writer.h"
-#include "profiler.h"
-#include "resource.h"
-#include "shape.h"
-#include "text_stream_readers.h"
+#include "lib/debug_utils.h"
+#include "lib/filesys/text_file_writer.h"
+#include "lib/profiler.h"
+#include "lib/resource.h"
+#include "lib/shape.h"
+#include "lib/filesys/text_stream_readers.h"
 
 #include "app.h"
 #include "location.h"
@@ -35,7 +35,7 @@ Powerstation::Powerstation()
 void Powerstation::Initialise( Building *_template )
 {
     Building::Initialise( _template );
-	DEBUG_ASSERT(_template->m_type == Building::TypePowerstation);
+	AppDebugAssert(_template->m_type == Building::TypePowerstation);
     m_linkedBuildingId = ((Powerstation *) _template)->m_linkedBuildingId;
 }
 
@@ -52,7 +52,7 @@ bool Powerstation::Advance()
             fence->Enable();
         }
 
-        if( fence->IsEnabled() && GetNumPortsOccupied() <= GetNumPorts() * 3.0f/4.0f )
+        if( fence->IsEnabled() && GetNumPortsOccupied() <= GetNumPorts() * 3.0/4.0 )
         {
             fence->Disable();
         }
@@ -63,7 +63,7 @@ bool Powerstation::Advance()
 
 
 // *** Render
-void Powerstation::Render( float predictionTime )
+void Powerstation::Render( double predictionTime )
 {
 	Building::Render(predictionTime);
 }
@@ -88,13 +88,13 @@ void Powerstation::Read( TextReader *_in, bool _dynamic )
 {
     Building::Read( _in, _dynamic );
 
-    char *word = _in->GetNextToken();
-    m_linkedBuildingId = atoi(word);
+    char *word = _in->GetNextToken();  
+    m_linkedBuildingId = atoi(word);    
 }
 
 
 // *** Write
-void Powerstation::Write( FileWriter *_out )
+void Powerstation::Write( TextWriter *_out )
 {
     Building::Write( _out );
 

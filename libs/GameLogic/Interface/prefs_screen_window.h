@@ -3,9 +3,10 @@
 #define _included_prefsscreenwindow_h
 
 #include "interface/darwinia_window.h"
+#include "interface/mainmenus.h"
 
 
-class PrefsScreenWindow : public DarwiniaWindow
+class PrefsScreenWindow : public GameOptionsWindow
 {
 public:
     int     m_resId;
@@ -13,7 +14,8 @@ public:
     int     m_colourDepth;
     int     m_refreshRate;
     int     m_zDepth;
-
+    int     m_overscan;
+    
 public:
     PrefsScreenWindow();
 

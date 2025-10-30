@@ -1,7 +1,7 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-#include "input/inputdriver_invert.h"
-#include "input/input.h"
+#include "lib/input/inputdriver_invert.h"
+#include "lib/input/input.h"
 #include <memory>
 //#include <fstream>
 
@@ -48,9 +48,9 @@ InputParserState InvertInputDriver::parseInputSpecification( InputSpecTokens con
 	//derr << "Full: " << tokens << endl;
 
 	if ( tokens.length() < 1 ) return STATE_ERROR;
-	if ( ( _stricmp( tokens[0].c_str(), "not" ) == 0 ) ||
+	if ( ( stricmp( tokens[0].c_str(), "not" ) == 0 ) ||
 	     tokens[0] == "!" ) {
-		std::unique_ptr<InputSpecTokens> newtokens = tokens( 1, -1 );
+		auto_ptr<InputSpecTokens> newtokens = tokens( 1, -1 );
 		//derr << "Part: " << *newtokens << endl;
 		InputSpec invspec;
 		InputParserState state = g_inputManager->parseInputSpecTokens( *newtokens, invspec, lastError );
@@ -60,7 +60,7 @@ InputParserState InvertInputDriver::parseInputSpecification( InputSpecTokens con
 				lastError = complexErr;
 				return STATE_CONJ_ERROR; // This check may be too restrictive
 			}
-			m_specs.push_back( std::unique_ptr<const InputSpec>( new InputSpec( invspec ) ) );
+			m_specs.push_back( auto_ptr<const InputSpec>( new InputSpec( invspec ) ) );
 			spec.type = INPUT_TYPE_BOOL;
 			spec.control_id = m_specs.size() - 1;
 			return STATE_DONE;

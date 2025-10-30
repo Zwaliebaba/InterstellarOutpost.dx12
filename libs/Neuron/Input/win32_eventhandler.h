@@ -1,12 +1,11 @@
 #ifndef INCLUDED_W32_EVENTHANDLER_H
 #define INCLUDED_W32_EVENTHANDLER_H
 
-#include <windows.h>
 #include <vector>
 
-#include "input/eventhandler.h"
-#include "input/inputdriver_win32.h"
-#include "input/win32_eventproc.h"
+#include "lib/input/eventhandler.h"
+#include "lib/input/inputdriver_win32.h"
+#include "lib/input/win32_eventproc.h"
 
 
 class W32EventHandler : public EventHandler, public W32EventProcessor {

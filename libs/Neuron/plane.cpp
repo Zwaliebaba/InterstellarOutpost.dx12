@@ -1,7 +1,7 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-#include "plane.h"
-#include "vector3.h"
+#include "lib/plane.h"
+#include "lib/vector3.h"
 
 
 // *************
@@ -30,7 +30,7 @@ Plane::Plane(Vector3 const &normal, Vector3 const &pointInPlane)
 
 
 // Normal and distance
-Plane::Plane(Vector3 const &normal, float const distFromOrigin)
+Plane::Plane(Vector3 const &normal, double const distFromOrigin)
 :	m_normal(normal),
 	m_distFromOrigin(distFromOrigin)
 {
@@ -39,7 +39,7 @@ Plane::Plane(Vector3 const &normal, float const distFromOrigin)
 
 // Returns the cartesian definition of the plane in the form:
 //   ax + by + cz + d = 0
-void Plane::GetCartesianDefinition(float *a, float *b, float *c, float *d) const
+void Plane::GetCartesianDefinition(double *a, double *b, double *c, double *d) const
 {
 	*a = m_normal.x;
 	*b = m_normal.y;

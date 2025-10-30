@@ -22,6 +22,8 @@ class SoundEditorWindow : public DarwiniaWindow
 public:
     int             m_eventIndex;
 	bool			m_objectSelectorEnabled;
+       
+    ScrollBar       *m_eventScrollbar;
 
 public:
     SoundEditorWindow( char *_name );
@@ -40,9 +42,9 @@ public:
     void StopPlayback();
 
     static void CreateSoundParameterButton( DarwiniaWindow *_window,
-                                             char *name, SoundParameter *parameter, int y,
+                                             char *name, SoundParameter *parameter, int y, 
 							                 float _minOutput, float _maxOutput,
-                                             DarwiniaButton *callback=NULL, int x=-1, int w=-1 );
+                                             DarwiniaButton *callback=NULL, int x=-1, int w=-1, int h=-1 );
     static void RemoveSoundParameterButton( DarwiniaWindow *_window, char *name );
 
     SoundSourceBlueprint *GetSoundSourceBlueprint();
@@ -75,7 +77,7 @@ class SampleGroupEditor : public DarwiniaWindow
 public:
     SoundEventBlueprint *m_seb;
     ScrollBar *m_scrollbar;
-
+    
 public:
     SampleGroupEditor( char *_name );
 
@@ -112,14 +114,14 @@ public:
     LList <char *> m_fileList;
 
     ScrollBar *m_scrollBar;
-
+    
 public:
     PurgeSoundsWindow( char *_name );
-
+    
     void Create();
     void Remove();
     void Render( bool _hasFocus );
-    void RefreshFileList();
+    void RefreshFileList();    
 };
 
 

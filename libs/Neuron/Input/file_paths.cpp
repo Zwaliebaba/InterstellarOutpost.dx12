@@ -1,17 +1,23 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <map>
 
-#include "input/file_paths.h"
+#include "lib/input/file_paths.h"
 #include "app.h"
-#include "preferences.h"
-#include "resource.h"
-#include "text_stream_readers.h"
+#include "lib/preferences.h"
+#include "lib/resource.h"
+#include "lib/filesys/text_stream_readers.h"
 
 using std::string;
 
 static const string INPUT_DATA_DIR        = "input/";
-static const string INPUT_PREFS_FILE      = "input_preferences.txt";
+#ifdef TARGET_OS_MACOSX
+	// We need to remap input to support single-button mice
+	static const string INPUT_PREFS_FILE      = "input_preferences_mac.txt";
+#else
+	static const string INPUT_PREFS_FILE      = "input_preferences.txt";
+#endif
+static const string INPUT_PREFS_DW_FILE   = "input_preferences_darwinia.txt";
 static const string USER_INPUT_PREFS_FILE = "user_input_preferences.txt";
 static const string KEYBOARD_LAYOUT       = "KeyboardLayout";
 
@@ -31,36 +37,57 @@ void readLocaleNames()
 					s_localeNames.insert( std::make_pair( key, rest ) );
 			}
 		}
+		delete reader;
 	}
 }
 
 const string & InputPrefs::GetSystemPrefsPath()
 {
-	static string path = "";
+    int mwControlMethod = g_prefsManager->GetInt( "MultiwiniaControlMethod", 1 );
 
-	if ( path == "" ) {
-		path = INPUT_DATA_DIR + INPUT_PREFS_FILE;
-	}
+    static string path = "";
+
+    if( mwControlMethod == 0 )  path = INPUT_DATA_DIR + INPUT_PREFS_DW_FILE;
+    else                        path = INPUT_DATA_DIR + INPUT_PREFS_FILE;
 
 	return path;
+}
+
+std::string InputPrefs::GetKeyboardLayout()
+{
+#if defined(TARGET_OS_MACOSX)
+	return "";
+#else
+	static std::string defLocale;
+
+	if ( s_localeNames.empty() )
+		readLocaleNames();
+
+	int localeID = int(::GetKeyboardLayout( 0 )) & 0xFFFF;
+
+	localeIt it = s_localeNames.find( localeID );
+	if ( it != s_localeNames.end() ) 
+		defLocale = it->second;
+
+	return g_prefsManager->GetString( KEYBOARD_LAYOUT.c_str(), defLocale.c_str() );
+#endif
+}
+
+bool InputPrefs::IsKeyboardFrenchLocale()
+{
+	return GetKeyboardLayout() == "fr_FR";
 }
 
 
 const string & InputPrefs::GetLocalePrefsPath()
 {
 	static string path = "";
-	static string defLocale = "";
 
 	if ( path == "" ) {
-		if ( s_localeNames.empty() )
-			readLocaleNames();
-		int localeID = int(GetKeyboardLayout( 0 )) & 0xFFFF;
-		localeIt it = s_localeNames.find( localeID );
-		if ( it != s_localeNames.end() ) defLocale = it->second;
-		string kb = g_prefsManager->GetString( KEYBOARD_LAYOUT.c_str(), const_cast<char*>(defLocale.c_str()) );
-		if ( kb != "" ) {
-			path = INPUT_DATA_DIR + "keyboards/" + kb + ".txt";
-		}
+		string kb = GetKeyboardLayout();
+
+		if ( kb != "" ) 
+			path = INPUT_DATA_DIR + "keyboards/" + kb + ".txt";		
 	}
 
 	return path;

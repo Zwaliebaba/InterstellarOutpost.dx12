@@ -1,23 +1,25 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-#include "file_writer.h"
-#include "resource.h"
-#include "text_stream_readers.h"
-#include "shape.h"
-#include "debug_render.h"
-#include "language_table.h"
+#include "lib/filesys/text_file_writer.h"
+#include "lib/resource.h"
+#include "lib/filesys/text_stream_readers.h"
+#include "lib/shape.h"
+#include "lib/debug_render.h"
+#include "lib/language_table.h"
 
 #include "worldobject/staticshape.h"
 
 #include "app.h"
 #include "location.h"
 #include "camera.h"
-#include "sepulveda.h"
+#ifdef USE_SEPULVEDA_HELP_TUTORIAL
+    #include "sepulveda.h"
+#endif
 
 
 StaticShape::StaticShape()
-:   Building(),
-    m_scale(1.0f)
+:   Building(),    
+    m_scale(1.0)
 {
     m_type = TypeStaticShape;
 
@@ -47,10 +49,10 @@ void StaticShape::SetDetail( int _detail )
         mat.r *= m_scale;
         mat.f *= m_scale;
 
-        m_centrePos = m_shape->CalculateCentre( mat );
+        m_centrePos = m_shape->CalculateCentre( mat );        
         m_radius = m_shape->CalculateRadius( mat, m_centrePos );
     }
-}
+}   
 
 
 void StaticShape::SetShapeName( char *_shapeName )
@@ -66,14 +68,14 @@ void StaticShape::SetShapeName( char *_shapeName )
         mat.r *= m_scale;
         mat.f *= m_scale;
 
-        m_centrePos = m_shape->CalculateCentre( mat );
+        m_centrePos = m_shape->CalculateCentre( mat );        
         m_radius = m_shape->CalculateRadius( mat, m_centrePos );
     }
 }
 
 
-bool StaticShape::DoesRayHit(Vector3 const &_rayStart, Vector3 const &_rayDir,
-                          float _rayLen, Vector3 *_pos, Vector3 *norm )
+bool StaticShape::DoesRayHit(Vector3 const &_rayStart, Vector3 const &_rayDir, 
+                          double _rayLen, Vector3 *_pos, Vector3 *norm )
 {
 	if (m_shape)
 	{
@@ -87,10 +89,10 @@ bool StaticShape::DoesRayHit(Vector3 const &_rayStart, Vector3 const &_rayDir,
 	else
 	{
 		return RaySphereIntersection(_rayStart, _rayDir, m_pos, m_radius, _rayLen);
-	}
+	}	
 }
 
-bool StaticShape::DoesSphereHit(Vector3 const &_pos, float _radius)
+bool StaticShape::DoesSphereHit(Vector3 const &_pos, double _radius)
 {
     if(m_shape)
     {
@@ -103,7 +105,7 @@ bool StaticShape::DoesSphereHit(Vector3 const &_pos, float _radius)
     }
     else
     {
-        float distance = (_pos - m_pos).Mag();
+        double distance = (_pos - m_pos).Mag();
         return( distance <= _radius + m_radius );
     }
 }
@@ -128,7 +130,7 @@ bool StaticShape::DoesShapeHit(Shape *_shape, Matrix34 _theTransform)
 }
 
 
-void StaticShape::Render( float _predictionTime )
+void StaticShape::Render( double _predictionTime )
 {
     if( m_shape )
     {
@@ -136,14 +138,14 @@ void StaticShape::Render( float _predictionTime )
         mat.u *= m_scale;
         mat.r *= m_scale;
         mat.f *= m_scale;
-
+    
         glEnable( GL_NORMALIZE );
         m_shape->Render( _predictionTime, mat );
         glDisable( GL_NORMALIZE );
-    }
+    }        
     else
     {
-        RenderSphere( m_pos, 40.0f );
+        RenderSphere( m_pos, 40.0 );
     }
 }
 
@@ -158,13 +160,13 @@ void StaticShape::Read( TextReader *_in, bool _dynamic )
 {
     Building::Read( _in, _dynamic );
 
-    m_scale = atof( _in->GetNextToken() );
+    m_scale = iv_atof( _in->GetNextToken() );
 
     SetShapeName( _in->GetNextToken() );
 }
 
 
-void StaticShape::Write( FileWriter *_out )
+void StaticShape::Write( TextWriter *_out )
 {
     Building::Write( _out );
 

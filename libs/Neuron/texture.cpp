@@ -1,14 +1,14 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #ifdef USE_DIRECT3D
 
-#include "texture.h"
-
-#include "opengl_directx_internals.h"
+#include "lib/texture.h"
+#include "lib/debug_utils.h"
+#include "lib/opengl_directx_internals.h"
 
 #pragma comment(lib,"d3dx9.lib")
 
-#define CHECK_HR(hr) {DEBUG_ASSERT(SUCCEEDED(hr)); if(FAILED(hr)) return;}
+#define CHECK_HR(hr) {AppDebugAssert(SUCCEEDED(hr)); if(FAILED(hr)) return;}
 
 Texture* Texture::Create(const TextureParams& tp)
 {
@@ -25,10 +25,10 @@ Texture::Texture(const TextureParams& tp) : m_textureParams(tp)
 	for(unsigned i=0;i<6;i++) m_D3DRenderTarget[i] = NULL;
 
 	// size must be positive
-	DEBUG_ASSERT(tp.m_w && tp.m_h);
+	AppDebugAssert(tp.m_w && tp.m_h);
 
 	// rendertarget & lockable at once not possible
-	DEBUG_ASSERT(!(tp.m_flags&TF_RENDERTARGET) || !(tp.m_flags&TF_LOCKABLE));
+	AppDebugAssert(!(tp.m_flags&TF_RENDERTARGET) || !(tp.m_flags&TF_LOCKABLE));
 
 	// set d3d textures
 	unsigned flags;
@@ -51,7 +51,7 @@ Texture::Texture(const TextureParams& tp) : m_textureParams(tp)
 	}
 	if(tp.m_flags&TF_CUBE)
 	{
-		DEBUG_ASSERT(tp.m_w==tp.m_h);
+		AppDebugAssert(tp.m_w==tp.m_h);
 		HRESULT hr = OpenGLD3D::g_pd3dDevice->CreateCubeTexture(tp.m_w,1,flags,tp.m_format,pool,&m_D3DTextureCube,NULL);
 		CHECK_HR(hr);
 	}
@@ -89,29 +89,29 @@ const TextureParams& Texture::GetParams() const
 	return m_textureParams;
 }
 
-IDirect3DBaseTexture9* Texture::GetTexture()
+IDirect3DBaseTexture9* Texture::GetTexture() const
 {
 	if(m_textureParams.m_flags&TF_CUBE) return m_D3DTextureCube;
 	return m_D3DTexture2D;
 }
 
-IDirect3DCubeTexture9* Texture::GetTextureCube()
+IDirect3DCubeTexture9* Texture::GetTextureCube() const
 {
 	if(m_textureParams.m_flags&TF_CUBE) return m_D3DTextureCube;
 	return NULL;
 }
 
-IDirect3DTexture9* Texture::GetTexture2D()
+IDirect3DTexture9* Texture::GetTexture2D() const
 {
 	if(!(m_textureParams.m_flags&TF_CUBE)) return m_D3DTexture2D;
 	return NULL;
 }
 
-IDirect3DSurface9* Texture::GetRenderTarget(unsigned index)
+IDirect3DSurface9* Texture::GetRenderTarget(unsigned index) const
 {
-	DEBUG_ASSERT(index < 6);
-	DEBUG_ASSERT(index==0 || (m_textureParams.m_flags&TF_CUBE));
-	DEBUG_ASSERT(m_textureParams.m_flags&TF_RENDERTARGET);
+	AppDebugAssert(index < 6);
+	AppDebugAssert(index==0 || (m_textureParams.m_flags&TF_CUBE));
+	AppDebugAssert(m_textureParams.m_flags&TF_RENDERTARGET);
 	return m_D3DRenderTarget[index];
 }
 

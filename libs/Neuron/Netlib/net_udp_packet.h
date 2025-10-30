@@ -12,9 +12,11 @@
 class NetUdpPacket
 {
 public:
-	NetUdpPacket(int sockfd, NetIpAddress *clientaddr, char *buf, int len);
+	NetUdpPacket();
 	
-	int 			m_sockfd;
+	void IpAddressToStr(char *_ipAddress);
+	int  GetPort();
+	
 	int 			m_length;
 	NetIpAddress	m_clientAddress;
 	char 			m_data[MAX_PACKET_SIZE];

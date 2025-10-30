@@ -2,7 +2,7 @@
 #define _included_gesturewindow_h
 
 
-#ifdef GESTURE_EDITOR
+#if defined(GESTURE_EDITOR) && defined(USE_SEPULVEDA_HELP_TUTORIAL)
 
 #include "interface/darwinia_window.h"
 

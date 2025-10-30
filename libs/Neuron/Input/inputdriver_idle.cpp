@@ -1,13 +1,13 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <string>
 #include <sstream>
 //#include <fstream>
 
-#include "input/input.h"
-#include "input/control_bindings.h"
-#include "input/inputdriver_idle.h"
-#include "hi_res_time.h"
+#include "lib/input/input.h"
+#include "lib/input/control_bindings.h"
+#include "lib/input/inputdriver_idle.h"
+#include "lib/hi_res_time.h"
 
 
 // Must be in the same order as s_controls (below)
@@ -94,7 +94,7 @@ void IdleInputDriver::Advance()
 
 bool IdleInputDriver::acceptDriver( std::string const &name )
 {
-	return _stricmp( name.c_str(), "idle" ) == 0;
+	return stricmp( name.c_str(), "idle" ) == 0;
 }
 
 
@@ -120,7 +120,7 @@ inputtype_t IdleInputDriver::getControlType( control_id_t control_id )
 condition_t IdleInputDriver::getConditionID( std::string const &name, inputtype_t &type )
 {
 	if ( INPUT_TYPE_BOOL == type ) {
-		return ( _stricmp( name.c_str(), "longer" ) == 0 ) ? 0 : -1;
+		return ( stricmp( name.c_str(), "longer" ) == 0 ) ? 0 : -1;
 	} else if ( INPUT_TYPE_1D == type ) {
 		std::istringstream str( name );
 		int num;

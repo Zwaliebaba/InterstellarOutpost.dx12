@@ -3,10 +3,10 @@
 
 #include <stdio.h>
 
-#include "llist.h"
-#include "matrix34.h"
-#include "rgb_colour.h"
-#include "vector3.h"
+#include "lib/tosser/llist.h"
+#include "lib/matrix34.h"
+#include "lib/rgb_colour.h"
+#include "lib/vector3.h"
 
 
 class TextReader;
@@ -25,9 +25,9 @@ public:
 	Vector3 m_rayStart;
 	Vector3 m_rayEnd;
 	Vector3 m_rayDir;
-    float   m_rayLen;
+    double   m_rayLen;
 
-	RayPackage(Vector3 const &_start, Vector3 const &_dir, float _length = 1e10)
+	RayPackage(Vector3 const &_start, Vector3 const &_dir, double _length = 1e10)
 	:	m_rayStart(_start),
 		m_rayDir(_dir)
 	{
@@ -45,9 +45,9 @@ class SpherePackage
 {
 public:
     Vector3 m_pos;
-    float   m_radius;
+    double   m_radius;
 
-    SpherePackage(Vector3 const &_pos, float _radius)
+    SpherePackage(Vector3 const &_pos, double _radius)
     :   m_pos(_pos),
         m_radius(_radius)
     {
@@ -71,7 +71,7 @@ public:
 	ShapeMarker(char const *_name, char *_parentName, int _depth, Matrix34 const &_transform);
   	ShapeMarker(TextReader *_in, char const *_name);
 	~ShapeMarker();
-
+	
 	Matrix34 GetWorldMatrix(Matrix34 const &_rootTransform);
 
     void WriteToFile(FILE *_out) const;
@@ -143,9 +143,9 @@ public:
 
 	bool			m_useCylinder;	// If true then use cylinder hit check instead of sphere
     Vector3			m_centre;
-	float			m_radius;
-	float			m_mostPositiveY;
-	float			m_mostNegativeY;
+	double			m_radius;
+	double			m_mostPositiveY;
+	double			m_mostNegativeY;
 
 	LList<ShapeFragment *>	m_childFragments;
 	LList<ShapeMarker *>	m_childMarkers;
@@ -164,7 +164,7 @@ public:
 
     void WriteToFile			(FILE *_out) const;
 
-	void Render					(float _predictionTime);// Uses display list
+	void Render					(double _predictionTime);// Uses display list
 	void RenderSlow				();						// Doesn't use display list
 	void RenderHitCheck			(Matrix34 const &_transform);
 	void RenderMarkers			(Matrix34 const &_transform);
@@ -173,7 +173,9 @@ public:
 	ShapeMarker   *LookupMarker  (char const *_name);	// Recurses into child fragments
 
     void CalculateCentre        ( Matrix34 const &_transform, Vector3 &_centre, int &_numFragments );       // Recursive
-    void CalculateRadius        ( Matrix34 const &_transform, Vector3 const &_centre, float &_radius );     // Recursive
+    void CalculateRadius        ( Matrix34 const &_transform, Vector3 const &_centre, double &_radius );     // Recursive
+
+    void ScaleRadius            ( double _scale );
 
 	bool RayHit					(RayPackage *_package, Matrix34 const &_transform, bool _accurate = false);
     bool SphereHit              (SpherePackage *_package, Matrix34 const &_transform, bool _accurate = false);
@@ -194,20 +196,23 @@ protected:
 	bool						m_animating;		// If false then whole shape in one display list otherwise one display list per fragment
 	char						*m_displayListName;
 
+	void						RenderSlow();
+
 public:
 	ShapeFragment				*m_rootFragment;
 	char						*m_name;
 
 	Shape						();
-    Shape						(char const *filename, bool _animating);
-    Shape						(TextReader *in, bool _animating);
+    Shape						(char const *filename, bool _animating, bool _buildDisplayList = true);
+    Shape						(TextReader *in, bool _animating, bool _buildDisplayList = true);
 	~Shape						();
 
 	void						BuildDisplayList();
+	void						FlushDisplayList();
 
     void WriteToFile			(FILE *_out) const;
 
-	void Render					(float _predictionTime, Matrix34 const &_transform);
+	void Render					(double _predictionTime, Matrix34 const &_transform);
 	void RenderHitCheck			(Matrix34 const &_transform);
 	void RenderMarkers			(Matrix34 const &_transform);
 
@@ -218,7 +223,9 @@ public:
 								 bool _accurate = false);
 
     Vector3 CalculateCentre     ( Matrix34 const &_transform );
-    float   CalculateRadius     ( Matrix34 const &_transform, Vector3 const &_centre );
+    double   CalculateRadius     ( Matrix34 const &_transform, Vector3 const &_centre );
+
+    void    ScaleRadius         ( double _scale );
 };
 
 #endif

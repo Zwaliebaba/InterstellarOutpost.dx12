@@ -12,12 +12,12 @@ class ShapeMarker;
 class FenceSwitch : public Building
 {
 protected:
-    int         m_linkedBuildingId;
+    int         m_linkedBuildingId; 
     int         m_linkedBuildingId2;    // optional second link for fence toggling
 
     bool        m_switchable;
 
-    float       m_timer;                // no fences changes will be made until this timer counts to 0 for the first time
+    double       m_timer;                // no fences changes will be made until this timer counts to 0 for the first time
 
     ShapeMarker *m_connectionLocation;
 
@@ -29,24 +29,24 @@ public:
 
 public:
     FenceSwitch 		();
-
+	
 	void Initialise		(Building *_template);
     void SetDetail      ( int _detail );
 
     bool Advance		();
-    void Render			(float predictionTime);
-    void RenderAlphas   (float predictionTime);
+    void Render			(double predictionTime);
+    void RenderAlphas   (double predictionTime);
     void RenderLink     ();
     void RenderLights   ();
     void RenderConnection( Vector3 _targetPos, bool _active );
 
     void Switch         ();
 
-    int  GetBuildingLink();
+    int  GetBuildingLink();                 
     void SetBuildingLink(int _buildingId);
 
 	void Read( TextReader *_in, bool _dynamic );
-	void Write( FileWriter *out );
+	void Write( TextWriter *out );
 
     Vector3 GetConnectionLocation();
 

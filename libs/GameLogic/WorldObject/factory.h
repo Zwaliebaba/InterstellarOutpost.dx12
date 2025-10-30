@@ -6,7 +6,7 @@
 #include "worldobject/spiritstore.h"
 
 
-class FileWriter;
+class TextWriter;
 
 
 class Factory: public Building
@@ -20,9 +20,9 @@ public:
     int             m_unitId;
     int             m_numToCreate;
     int             m_numCreated;
-
-    float           m_timeToCreate;         // Total Time to create ALL troops
-    float           m_timeSoFar;
+    
+    double           m_timeToCreate;         // Total Time to create ALL troops
+    double           m_timeSoFar;
 
     enum
     {
@@ -39,8 +39,8 @@ public:
 
     void Initialise( Building *_template );
 
-    void Render         ( float predictionTime );
-    void RenderAlphas   ( float predictionTime );
+    void Render         ( double predictionTime );
+    void RenderAlphas   ( double predictionTime );
 
     bool Advance();
     void AdvanceStateUnused();
@@ -52,7 +52,7 @@ public:
     void RequestUnit( unsigned char _troopType, int _numToCreate );
 
 	void Read(TextReader *_in, bool _dynamic);
-	void Write(FileWriter *_out);
+	void Write(TextWriter *_out);
 };
 
 #endif

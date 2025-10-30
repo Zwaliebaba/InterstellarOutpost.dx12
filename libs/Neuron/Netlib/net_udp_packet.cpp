@@ -1,14 +1,23 @@
-// See header file for module description
+#include "lib/universal_include.h"
 
 #include <string.h>		// For memcpy
 
 #include "net_udp_packet.h"
 
-
-NetUdpPacket::NetUdpPacket(int sockfd, NetIpAddress *clientAddress, char *buf, int len)
-:	m_sockfd(sockfd)
+NetUdpPacket::NetUdpPacket()
+	: m_length(0)
 {
-	m_length = MIN(len, MAX_PACKET_SIZE);
-	memcpy(&m_clientAddress, clientAddress, sizeof(NetIpAddress));
-	memcpy(m_data, buf, m_length * sizeof(char));
+	memset(m_data, 0, MAX_PACKET_SIZE * sizeof(char));
+	memset(&m_clientAddress, 0, sizeof(m_clientAddress));
 }
+
+void NetUdpPacket::IpAddressToStr(char *_ipAddress)
+{
+	::IpAddressToStr(m_clientAddress.sin_addr, _ipAddress);
+}
+
+int NetUdpPacket::GetPort()
+{
+	return ntohs(m_clientAddress.sin_port);
+}
+

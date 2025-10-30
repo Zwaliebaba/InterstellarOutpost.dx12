@@ -1,16 +1,16 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <string>
 
-#include "preferences.h"
-#include "input/inputdriver_value.h"
+#include "lib/preferences.h"
+#include "lib/input/inputdriver_value.h"
 
 using namespace std;
 
 
 enum {
 	#define DEF_VALUE(x,y) Value##x,
-	#include "input/inputdriver_values.inc"
+	#include "lib/input/inputdriver_values.inc"
 	#undef DEF_VALUE
 
 	NumValues
@@ -19,7 +19,7 @@ enum {
 
 static string s_values[] = {
 	#define DEF_VALUE(x,y) #x,
-	#include "input/inputdriver_values.inc"
+	#include "lib/input/inputdriver_values.inc"
 	#undef DEF_VALUE
 	""
 };
@@ -31,7 +31,7 @@ InputParserState ValueInputDriver::parseInputSpecification( InputSpecTokens cons
 	InputParserState state = STATE_WANT_DRIVER;
 	unsigned idx = 0;
 	if ( ( tokens.length() < idx + 1 ) ||
-	     ( _stricmp( tokens[idx++].c_str(), "value" ) == 0 ) )
+	     ( tokens[idx++] != "value" ) )
 		return state;
 
 	state = STATE_WANT_CONTROL;
@@ -60,7 +60,7 @@ bool ValueInputDriver::getInput( InputSpec const &spec, InputDetails &details )
 	switch ( spec.control_id ) {
 		#define DEF_VALUE(x,y) case Value##x:\
 			ans = (y); break;
-		#include "input/inputdriver_values.inc"
+		#include "lib/input/inputdriver_values.inc"
 		#undef DEF_VALUE
 
 		default:

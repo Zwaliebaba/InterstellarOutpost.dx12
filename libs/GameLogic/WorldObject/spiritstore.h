@@ -1,31 +1,31 @@
 #ifndef _included_spiritstore_h
 #define _included_spiritstore_h
 
-#include "fast_darray.h"
-#include "vector3.h"
+#include "lib/tosser/fast_darray.h"
+#include "lib/vector3.h"
 
 #include "worldobject/spirit.h"
 
 
-class SpiritStore
+class SpiritStore 
 {
 public:
     Vector3     m_pos;
-    float       m_sizeX;
-    float       m_sizeY;
-    float       m_sizeZ;
-
+    double       m_sizeX;
+    double       m_sizeY;
+    double       m_sizeZ;
+    
 protected:
     FastDArray  <Spirit> m_spirits;
 
 public:
-    SpiritStore     ();
+    SpiritStore     ();                  
 
-    void Initialise ( int _initialCapacity, int _maxCapacity, Vector3 _pos,
-                      float _sizeX, float _sizeY, float _sizeZ );            // Capacity isn't enforced, just provide a "best guess"
+    void Initialise ( int _initialCapacity, int _maxCapacity, Vector3 _pos, 
+                      double _sizeX, double _sizeY, double _sizeZ );            // Capacity isn't enforced, just provide a "best guess"
 
     void Advance    ();
-    void Render     ( float _predictionTime );
+    void Render     ( double _predictionTime );
 
     int  NumSpirits     ();
     void AddSpirit      ( Spirit *_spirit );

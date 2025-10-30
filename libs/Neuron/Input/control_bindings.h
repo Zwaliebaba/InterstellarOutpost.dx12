@@ -3,9 +3,9 @@
 
 #include <string>
 
-#include "input/inputspec.h"
-#include "input/inputspeclist.h"
-#include "input/control_types.h"
+#include "lib/input/inputspec.h"
+#include "lib/input/inputspeclist.h"
+#include "lib/input/control_types.h"
 
 
 struct ControlAction {

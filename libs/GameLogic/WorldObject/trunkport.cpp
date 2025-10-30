@@ -1,15 +1,17 @@
-#include "pch.h"
-#include "resource.h"
-
-#include "file_writer.h"
-#include "text_stream_readers.h"
-#include "shape.h"
-#include "hi_res_time.h"
-#include "text_renderer.h"
-#include "profiler.h"
-#include "language_table.h"
+#include "lib/universal_include.h"
+#include "lib/resource.h"
+#include "lib/debug_utils.h"
+#include "lib/filesys/text_file_writer.h"
+#include "lib/filesys/text_stream_readers.h"
+#include "lib/shape.h"
+#include "lib/hi_res_time.h"
+#include "lib/text_renderer.h"
+#include "lib/profiler.h"
+#include "lib/language_table.h"
 
 #include "worldobject/trunkport.h"
+#include "worldobject/spawnpoint.h"
+#include "worldobject/virii.h"
 
 #include "sound/soundsystem.h"
 
@@ -20,66 +22,86 @@
 #include "particle_system.h"
 #include "main.h"
 #include "renderer.h"
+#include "level_file.h"
+#include "multiwinia.h"
 
 
 TrunkPort::TrunkPort()
 :   Building(),
     m_targetLocationId(-1),
-    m_openTimer(0.0f),
+    m_openTimer(0.0),
     m_heightMap(NULL),
-    m_heightMapSize(TRUNKPORT_HEIGHTMAP_MAXSIZE)
+    m_heightMapSize(TRUNKPORT_HEIGHTMAP_MAXSIZE),
+    m_populationLock(-1)
 {
     m_type = TypeTrunkPort;
-    SetShape( g_app->m_resource->GetShape( "trunkport.shp" ) );
+    if( g_app->IsSinglePlayer() )
+    {
+        SetShape( g_app->m_resource->GetShape( "trunkport.shp" ) );
+    }
+    else
+    {
+        SetShape( g_app->m_resource->GetShape( "trunkport_mp.shp" ) );
+    }
 
-    m_destination1 = m_shape->m_rootFragment->LookupMarker( "MarkerDestination1" );
-    m_destination2 = m_shape->m_rootFragment->LookupMarker( "MarkerDestination2" );
+    const char destination1Name[] = "MarkerDestination1";
+    m_destination1 = m_shape->m_rootFragment->LookupMarker( destination1Name );
+    AppReleaseAssert( m_destination1, "TrunkPort: Can't get Marker(%s) from shape(%s), probably a corrupted file\n", destination1Name, m_shape->m_name );
+
+    const char destination2Name[] = "MarkerDestination2";
+    m_destination2 = m_shape->m_rootFragment->LookupMarker( destination2Name );
+    AppReleaseAssert( m_destination2, "TrunkPort: Can't get Marker(%s) from shape(%s), probably a corrupted file\n", destination2Name, m_shape->m_name );
 }
 
+TrunkPort::~TrunkPort()
+{
+	delete [] m_heightMap; m_heightMap = NULL;
+}
 
 void TrunkPort::SetDetail( int _detail )
 {
-    m_heightMapSize = int( TRUNKPORT_HEIGHTMAP_MAXSIZE / (float) _detail );
+    m_heightMapSize = int( TRUNKPORT_HEIGHTMAP_MAXSIZE / (double) _detail );
 
     //
     // Pre-Generate our height map
 
-    if( m_heightMap ) delete m_heightMap;
+    if( m_heightMap ) delete [] m_heightMap;
     m_heightMap = new Vector3[ m_heightMapSize * m_heightMapSize ];
     memset( m_heightMap, 0, m_heightMapSize * m_heightMapSize * sizeof(Vector3) );
 
-    ShapeMarker *marker = m_shape->m_rootFragment->LookupMarker( "MarkerSurface" );
-    DEBUG_ASSERT( marker );
-
+    const char markerName[] = "MarkerSurface";
+    ShapeMarker *marker = m_shape->m_rootFragment->LookupMarker( markerName );
+    AppReleaseAssert( marker, "TrunkPort: Can't get Marker(%s) from shape(%s), probably a corrupted file\n", markerName, m_shape->m_name );
+    
     Matrix34 transform( m_front, g_upVector, m_pos );
     Vector3 worldPos = marker->GetWorldMatrix( transform ).pos;
 
-    float size = 90.0f;
+    double size = 90.0;
     Vector3 up = g_upVector * size;
     Vector3 right = ( m_front ^ g_upVector ).Normalise() * size;
 
-
+    
     for( int x = 0; x < m_heightMapSize; ++x )
     {
         for( int z = 0; z < m_heightMapSize; ++z )
         {
-            float fractionX = (float) x / (float) (m_heightMapSize-1);
-            float fractionZ = (float) z / (float) (m_heightMapSize-1);
+            double fractionX = (double) x / (double) (m_heightMapSize-1);
+            double fractionZ = (double) z / (double) (m_heightMapSize-1);
 
-            fractionX -= 0.5f;
-            fractionZ -= 0.5f;
-
+            fractionX -= 0.5;
+            fractionZ -= 0.5;
+            
             Vector3 basePos = worldPos;
             basePos += right * fractionX;
             basePos += up * fractionZ;
-
-            //basePos += right * 0.02f;
-            //basePos += up * 0.02f;
-
-            //basePos += right * 0.05f;
-            //basePos += up * 0.05f;
-
-            m_heightMap[z*m_heightMapSize+x] = basePos;
+    
+            //basePos += right * 0.02;
+            //basePos += up * 0.02;
+            
+            //basePos += right * 0.05;
+            //basePos += up * 0.05;
+            
+            m_heightMap[z*m_heightMapSize+x] = basePos;        
         }
     }
 }
@@ -87,8 +109,8 @@ void TrunkPort::SetDetail( int _detail )
 
 bool TrunkPort::Advance()
 {
-    GlobalBuilding *gb = g_app->m_globalWorld->GetBuilding( m_id.GetUniqueId(), g_app->m_locationId );
-    if( gb && gb->m_online && m_openTimer == 0.0f)
+    GlobalBuilding *gb = g_app->m_globalWorld->GetBuilding( m_id.GetUniqueId(), g_app->m_locationId );    
+    if( gb && gb->m_online && m_openTimer == 0.0)
     {
         m_openTimer = GetHighResTime();
         g_app->m_soundSystem->TriggerBuildingEvent( this, "PowerUp" );
@@ -105,53 +127,51 @@ void TrunkPort::Initialise ( Building *_template )
 }
 
 
-void TrunkPort::Render( float predictionTime )
+void TrunkPort::Render( double predictionTime )
 {
     Building::Render( predictionTime );
 
-    char caption[256];
+	if( g_app->IsSinglePlayer() )
+	{
+		UnicodeString locationName;
+		g_app->m_globalWorld->GetLocationNameTranslated( m_targetLocationId, locationName );
+		if( locationName.Length() <= 0 ) 
+		{
+			locationName = LANGUAGEPHRASE("location_unknown");
+		}
+	    
+		START_PROFILE( "RenderDestination" );
 
-    char *locationName = g_app->m_globalWorld->GetLocationNameTranslated( m_targetLocationId );
-    if( locationName )
-    {
-        strcpy( caption, locationName );
-    }
-    else
-    {
-        sprintf( caption, "[%s]", LANGUAGEPHRASE("location_unknown") );
-    }
+		float fontSize = 70.0f / locationName.Length();
+		fontSize = min( fontSize, 10.0f );
 
-    START_PROFILE( g_app->m_profiler, "RenderDestination" );
+		Matrix34 portMat( m_front, g_upVector, m_pos );
+	    
+		Matrix34 destMat = m_destination1->GetWorldMatrix(portMat);
+		glColor4f( 0.9f, 0.8f, 0.8f, 1.0f );
+		g_gameFont.DrawText3D( destMat.pos, destMat.f, destMat.u, fontSize, locationName );
+		g_gameFont.SetRenderShadow(true);
+		destMat.pos += destMat.f * 0.1f;
+		destMat.pos += ( destMat.f ^ destMat.u ) * 0.2f;
+		destMat.pos += destMat.u * 0.2f;
+		glColor4f( 0.9f, 0.8f, 0.8f, 0.0f );
+		g_gameFont.DrawText3D( destMat.pos, destMat.f, destMat.u, fontSize, locationName );
 
-    float fontSize = 70.0f / strlen(caption);
-    fontSize = min( fontSize, 10.0f );
+		g_gameFont.SetRenderShadow(false);
+		glColor4f( 0.9f, 0.8f, 0.8f, 1.0f );
+		destMat = m_destination2->GetWorldMatrix(portMat);
+		g_gameFont.DrawText3D( destMat.pos, destMat.f, destMat.u, fontSize, locationName );
+		g_gameFont.SetRenderShadow(true);
+		destMat.pos += destMat.f * 0.1f;
+		destMat.pos += ( destMat.f ^ destMat.u ) * 0.2f;
+		destMat.pos += destMat.u * 0.2f;
+		glColor4f( 0.9f, 0.8f, 0.8f, 0.0f );
+		g_gameFont.DrawText3D( destMat.pos, destMat.f, destMat.u, fontSize, locationName );
+	    
+		g_gameFont.SetRenderShadow(false);
 
-    Matrix34 portMat( m_front, g_upVector, m_pos );
-
-    Matrix34 destMat = m_destination1->GetWorldMatrix(portMat);
-    glColor4f( 0.9f, 0.8f, 0.8f, 1.0f );
-    g_gameFont.DrawText3D( destMat.pos, destMat.f, destMat.u, fontSize, "%s", caption );
-    g_gameFont.SetRenderShadow(true);
-    destMat.pos += destMat.f * 0.1f;
-    destMat.pos += ( destMat.f ^ destMat.u ) * 0.2f;
-    destMat.pos += destMat.u * 0.2f;
-    glColor4f( 0.9f, 0.8f, 0.8f, 0.0f );
-    g_gameFont.DrawText3D( destMat.pos, destMat.f, destMat.u, fontSize, "%s", caption );
-
-    g_gameFont.SetRenderShadow(false);
-    glColor4f( 0.9f, 0.8f, 0.8f, 1.0f );
-    destMat = m_destination2->GetWorldMatrix(portMat);
-    g_gameFont.DrawText3D( destMat.pos, destMat.f, destMat.u, fontSize, "%s", caption );
-    g_gameFont.SetRenderShadow(true);
-    destMat.pos += destMat.f * 0.1f;
-    destMat.pos += ( destMat.f ^ destMat.u ) * 0.2f;
-    destMat.pos += destMat.u * 0.2f;
-    glColor4f( 0.9f, 0.8f, 0.8f, 0.0f );
-    g_gameFont.DrawText3D( destMat.pos, destMat.f, destMat.u, fontSize, "%s", caption );
-
-    g_gameFont.SetRenderShadow(false);
-
-    END_PROFILE( g_app->m_profiler, "RenderDestination" );
+		END_PROFILE(  "RenderDestination" );    
+	}
 }
 
 
@@ -163,54 +183,55 @@ bool TrunkPort::PerformDepthSort( Vector3 &_centrePos )
 }
 
 
-void TrunkPort::RenderAlphas( float predictionTime )
+void TrunkPort::RenderAlphas( double predictionTime )
 {
     Building::RenderAlphas( predictionTime );
 
-    if( m_openTimer > 0.0f )
+    if( m_openTimer > 0.0 || g_app->Multiplayer() )
     {
-        ShapeMarker *marker = m_shape->m_rootFragment->LookupMarker( "MarkerSurface" );
-        DEBUG_ASSERT( marker );
-
+        const char markerName[] = "MarkerSurface";
+        ShapeMarker *marker = m_shape->m_rootFragment->LookupMarker( markerName );
+        AppReleaseAssert( marker, "TrunkPort: Can't get Marker(%s) from shape(%s), probably a corrupted file\n", markerName, m_shape->m_name );
+    
         Matrix34 transform( m_front, g_upVector, m_pos );
         Vector3 markerPos = marker->GetWorldMatrix( transform ).pos;
-        float maxDistance = 40.0f;
+        double maxDistance = 40.0;
 
-        float timeOpen = GetHighResTime() - m_openTimer;
-        float timeScale = ( 5 - timeOpen );
-        if( timeScale < 1.0f ) timeScale = 1.0f;
-
+        double timeOpen = GetHighResTime() - m_openTimer;
+        double timeScale = ( 5 - timeOpen );
+        if( timeScale < 1.0 ) timeScale = 1.0;
+        
         //
         // Calculate our Dif map based on some nice sine curves
 
-        START_PROFILE( g_app->m_profiler, "Advance Heightmap" );
+        START_PROFILE( "Advance Heightmap" );
 
         Vector3 difMap[TRUNKPORT_HEIGHTMAP_MAXSIZE][TRUNKPORT_HEIGHTMAP_MAXSIZE];
-
+    
         for( int x = 0; x < m_heightMapSize; ++x )
         {
             for( int z = 0; z < m_heightMapSize; ++z )
             {
-                float centreDif = (m_heightMap[z*m_heightMapSize+x] - markerPos).Mag();
-                float fractionOut = centreDif / maxDistance;
-                if( fractionOut > 1.0f ) fractionOut = 1.0f;
+                double centreDif = (m_heightMap[z*m_heightMapSize+x] - markerPos).Mag();
+                double fractionOut = centreDif / maxDistance;
+                if( fractionOut > 1.0 ) fractionOut = 1.0;
 
-                float wave1 = cosf(centreDif * 0.15f);
-                float wave2 = cosf(centreDif * 0.05f);
-
-                Vector3 thisDif = m_front * sinf(g_gameTime * 2) * wave1 * (1.0f-fractionOut) * 15 * timeScale;
-                thisDif += m_front * sinf(g_gameTime * 2.5) * wave2 * (1.0f-fractionOut) * 15 * timeScale;
-                thisDif += g_upVector * cosf(g_gameTime) * wave1 * timeScale * 10 * (1.0f-fractionOut);
+                double wave1 = iv_cos(centreDif * 0.15);
+                double wave2 = iv_cos(centreDif * 0.05);
+            
+                Vector3 thisDif = m_front * iv_sin(g_gameTime * 2) * wave1 * (1.0-fractionOut) * 15 * timeScale;
+                thisDif += m_front * iv_sin(g_gameTime * 2.5) * wave2 * (1.0-fractionOut) * 15 * timeScale;
+                thisDif += g_upVector * iv_cos(g_gameTime) * wave1 * timeScale * 10 * (1.0-fractionOut);
                 difMap[x][z] = thisDif;
-            }
+            }        
         }
 
-        END_PROFILE( g_app->m_profiler, "Advance Heightmap" );
+        END_PROFILE(  "Advance Heightmap" );
 
         //
         // Render our height map with the dif map added on
 
-        START_PROFILE( g_app->m_profiler, "Render Heightmap" );
+        START_PROFILE( "Render Heightmap" );
 
         glDisable       ( GL_CULL_FACE );
         glEnable        ( GL_BLEND );
@@ -220,9 +241,23 @@ void TrunkPort::RenderAlphas( float predictionTime )
         glEnable        ( GL_TEXTURE_2D );
         glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laserfence.bmp" ) );
 
-        float alphaValue = timeOpen;
-        if( alphaValue > 0.7f ) alphaValue = 0.7f;
-        glColor4f       ( 0.8f, 0.8f, 1.0f, alphaValue );
+        double alphaValue = timeOpen;
+        if( alphaValue > 0.7 ) alphaValue = 0.7;
+        
+        if( g_app->Multiplayer() && m_id.GetTeamId() >= 0 && m_id.GetTeamId() < NUM_TEAMS )
+        {
+            Team *team = g_app->m_location->m_teams[m_id.GetTeamId()];
+            RGBAColour colour = team->m_colour;
+            colour.a *= 0.7;
+
+            glColor4ubv     ( colour.GetData() );
+        }
+        else
+        {
+            glColor4f       ( 0.8, 0.8, 1.0, alphaValue );
+        }
+
+        glBegin( GL_QUADS );
 
         for( int x = 0; x < m_heightMapSize-1; ++x )
         {
@@ -232,23 +267,29 @@ void TrunkPort::RenderAlphas( float predictionTime )
                 Vector3 thisPos2 = m_heightMap[z*m_heightMapSize+x+1] + difMap[x+1][z];
                 Vector3 thisPos3 = m_heightMap[(z+1)*m_heightMapSize+x+1] + difMap[x+1][z+1];
                 Vector3 thisPos4 = m_heightMap[(z+1)*m_heightMapSize+x] + difMap[x][z+1];
-
-                float fractionX = (float) x / (float) m_heightMapSize;
-                float fractionZ = (float) z / (float) m_heightMapSize;
-                float width = 1.0f / m_heightMapSize;
-
-                glBegin( GL_QUADS );
-                    glTexCoord2f( fractionX, fractionZ );               glVertex3fv( thisPos1.GetData() );
-                    glTexCoord2f( fractionX+width, fractionZ );         glVertex3fv( thisPos2.GetData() );
-                    glTexCoord2f( fractionX+width, fractionZ+width );   glVertex3fv( thisPos3.GetData() );
-                    glTexCoord2f( fractionX, fractionZ+width );         glVertex3fv( thisPos4.GetData() );
-                glEnd();
+            
+                double fractionX = (double) x / (double) m_heightMapSize;
+                double fractionZ = (double) z / (double) m_heightMapSize;
+                double width = 1.0 / m_heightMapSize;
+            
+                glTexCoord2f( fractionX, fractionZ );               glVertex3dv( thisPos1.GetData() );
+                glTexCoord2f( fractionX+width, fractionZ );         glVertex3dv( thisPos2.GetData() );
+                glTexCoord2f( fractionX+width, fractionZ+width );   glVertex3dv( thisPos3.GetData() );
+                glTexCoord2f( fractionX, fractionZ+width );         glVertex3dv( thisPos4.GetData() );
             }
         }
 
+        glEnd();
+        
         glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
         glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/glow.bmp" ) );
-        glColor4f       ( 1.0f, 1.0f, 1.0f, 1.0f );
+        
+        if( !g_app->Multiplayer() )
+        {
+            glColor4f       ( 1.0, 1.0, 1.0, 1.0 );
+        }
+
+        glBegin( GL_QUADS );
 
         for( int x = 0; x < m_heightMapSize-1; ++x )
         {
@@ -258,19 +299,19 @@ void TrunkPort::RenderAlphas( float predictionTime )
                 Vector3 thisPos2 = m_heightMap[z*m_heightMapSize+x+1] + difMap[x+1][z];
                 Vector3 thisPos3 = m_heightMap[(z+1)*m_heightMapSize+x+1] + difMap[x+1][z+1];
                 Vector3 thisPos4 = m_heightMap[(z+1)*m_heightMapSize+x] + difMap[x][z+1];
-
-                float fractionX = (float) x / (float) m_heightMapSize;
-                float fractionZ = (float) z / (float) m_heightMapSize;
-                float width = 1.0f / m_heightMapSize;
-
-                glBegin( GL_QUADS );
-                    glTexCoord2f( fractionX, fractionZ );               glVertex3fv( thisPos1.GetData() );
-                    glTexCoord2f( fractionX+width, fractionZ );         glVertex3fv( thisPos2.GetData() );
-                    glTexCoord2f( fractionX+width, fractionZ+width );   glVertex3fv( thisPos3.GetData() );
-                    glTexCoord2f( fractionX, fractionZ+width );         glVertex3fv( thisPos4.GetData() );
-                glEnd();
+            
+                double fractionX = (double) x / (double) m_heightMapSize;
+                double fractionZ = (double) z / (double) m_heightMapSize;
+                double width = 1.0 / m_heightMapSize;
+            
+                glTexCoord2f( fractionX, fractionZ );               glVertex3dv( thisPos1.GetData() );
+                glTexCoord2f( fractionX+width, fractionZ );         glVertex3dv( thisPos2.GetData() );
+                glTexCoord2f( fractionX+width, fractionZ+width );   glVertex3dv( thisPos3.GetData() );
+                glTexCoord2f( fractionX, fractionZ+width );         glVertex3dv( thisPos4.GetData() );
             }
         }
+
+        glEnd();
 
         glDisable       ( GL_TEXTURE_2D );
 
@@ -279,7 +320,7 @@ void TrunkPort::RenderAlphas( float predictionTime )
         glDisable       ( GL_BLEND );
         glEnable        ( GL_CULL_FACE );
 
-        END_PROFILE( g_app->m_profiler, "Render Heightmap" );
+        END_PROFILE(  "Render Heightmap" );
 
     }
 }
@@ -299,12 +340,103 @@ void TrunkPort::ReprogramComplete()
                 building->m_locationId == m_targetLocationId &&
                 building->m_link == g_app->m_locationId )
             {
-                building->m_online = true;
+                building->m_online = true;         
+            }
+        }
+    }
+    
+    Building::ReprogramComplete();
+}
+
+
+bool TrunkPort::PopulationLocked()
+{
+    //
+    // If a population lock has been specified for the map, use that.
+    // Otherwise, fall back on pop-lock buildings.
+
+    if( g_app->Multiplayer() )
+    {
+        if( g_app->m_multiwinia->m_gameType == Multiwinia::GameTypeAssault )
+        {
+            if( g_app->m_location->m_levelFile->m_defenderPopulationCap != -1 )
+            {
+                if( m_id.GetTeamId() == 255 ) return false;
+
+                int defenderCap = g_app->m_location->m_levelFile->m_defenderPopulationCap;
+                Team *team = g_app->m_location->m_teams[ m_id.GetTeamId() ];
+                int currentPop = g_app->m_location->m_teams[ m_id.GetTeamId() ]->m_others.NumUsed() - Virii::s_viriiPopulation[m_id.GetTeamId()];
+
+                if( g_app->m_location->IsDefending( m_id.GetTeamId() ) )
+                {
+                    return( currentPop >= defenderCap );
+                }
+                else
+                {
+                    int numDefenders = g_app->m_location->m_levelFile->m_numPlayers - g_app->m_location->GetNumAttackers();
+                    int cap = g_app->m_location->m_levelFile->m_populationCap;
+                    cap -= (numDefenders * defenderCap);
+                    cap /= g_app->m_location->GetNumAttackers();
+                    return( currentPop >= cap );
+                }
+            }
+        }
+
+        if( g_app->m_location->m_levelFile->m_populationCap != -1 )
+        {
+            if( m_id.GetTeamId() == 255 ) return false;
+            int numTeams = g_app->m_location->m_levelFile->m_numPlayers;
+            int maxPopPerTeam = g_app->m_location->m_levelFile->m_populationCap / numTeams;
+            Team *team = g_app->m_location->m_teams[ m_id.GetTeamId() ];
+            int currentPop = g_app->m_location->m_teams[ m_id.GetTeamId() ]->m_others.NumUsed() - Virii::s_viriiPopulation[m_id.GetTeamId()];
+            return( currentPop >= maxPopPerTeam );
+        }
+    }
+
+
+    //
+    // If we haven't yet looked up a nearby Pop lock,
+    // do so now
+
+    if( m_populationLock == -1 )
+    {
+        m_populationLock = -2;
+
+        for( int i = 0; i < g_app->m_location->m_buildings.Size(); ++i )
+        {
+            if( g_app->m_location->m_buildings.ValidIndex(i) )
+            {
+                Building *building = g_app->m_location->m_buildings[i];
+                if( building && building->m_type == TypeSpawnPopulationLock )
+                {
+                    SpawnPopulationLock *lock = (SpawnPopulationLock *) building;
+                    double distance = ( building->m_pos - m_pos ).Mag();
+                    if( distance < lock->m_searchRadius )
+                    {
+                        m_populationLock = lock->m_id.GetUniqueId();
+                        break;
+                    }
+                }
             }
         }
     }
 
-    Building::ReprogramComplete();
+
+    //
+    // If we are inside a Population Lock, query it now
+
+    if( m_populationLock > 0 )
+    {
+        SpawnPopulationLock *lock = (SpawnPopulationLock *) g_app->m_location->GetBuilding( m_populationLock );
+        if( lock && m_id.GetTeamId() != 255 &&
+            lock->m_teamCount[ m_id.GetTeamId() ] >= lock->m_maxPopulation )
+        {
+            return true;
+        }
+    }
+
+
+    return false;
 }
 
 
@@ -326,10 +458,11 @@ void TrunkPort::Read( TextReader *_in, bool _dynamic )
     }
 }
 
-void TrunkPort::Write ( FileWriter *_out )
+void TrunkPort::Write ( TextWriter *_out )
 {
     Building::Write( _out );
 
     _out->printf( "%-8d", m_targetLocationId );
 }
+
 

@@ -1,9 +1,9 @@
 #ifndef INCLUDED_INPUTFILTER_WITHDELTA_H
 #define INCLUDED_INPUTFILTER_WITHDELTA_H
 
-#include "auto_vector.h"
-#include "input/inputfilterspec.h"
-#include "input/inputfilter.h"
+#include "lib/auto_vector.h"
+#include "lib/input/inputfilterspec.h"
+#include "lib/input/inputfilter.h"
 
 
 class InputFilterWithDelta : public InputFilter {

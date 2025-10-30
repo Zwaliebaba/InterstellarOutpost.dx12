@@ -1,8 +1,8 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <iostream>
 
-#include "input/inputdriver.h"
+#include "lib/input/inputdriver.h"
 
 
 struct ConditionInfo {
@@ -24,6 +24,10 @@ static ConditionInfo s_conditions[] = {
 	INPUT_TYPE_ANALOG, "read",     COND_READ,     // Analog always triggers (return default device info)
 	NULL,              NULL,       NULL
 };
+
+InputDriver::~InputDriver()
+{
+}
 
 condition_t InputDriver::getDefaultConditionID( std::string const &name, inputtype_t &type )
 {
@@ -47,7 +51,7 @@ bool InputDriver::getDefaultPrefsString( condition_t condition_id, inputtype_t t
 	while ( info.name && ( ( type & info.type ) != info.type
 	                       || condition_id != info.cond ) )
 		info = s_conditions[ ++i ];
-	if ( i < NumInputConditions ) {
+	if ( info.name ) { // was i < NumInputConditions which is not safe against commenting out lines in s_conditions!
 		prefsString = info.name;
 		return true;
 	} else {

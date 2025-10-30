@@ -14,11 +14,11 @@
 #include <algorithm>
 
 //---------------------------------
-// Dynamic array of owned pointers.
+// Dynamic array of owned pointers. 
 // Ownership transfer semantics.
 //---------------------------------
 
-template <class T>
+template <class T> 
 class auto_vector
 {
 public:
@@ -28,7 +28,7 @@ public:
 		auto_lvalue (T * & p) : _p (p) {}
 		operator T * () const { return _p; }
 		T * operator-> () const { return _p; }
-		auto_lvalue & operator= (std::unique_ptr<T> ap)
+		auto_lvalue & operator= (std::auto_ptr<T> ap)
 		{
 			delete _p;
 			_p = ap.release ();
@@ -56,16 +56,16 @@ public:
 	}
 	// array access
     T const * operator [] (size_t i) const { return _arr [i]; }
-	auto_lvalue operator [] (size_t i)
-	{
-		return auto_lvalue (_arr [i]);
+	auto_lvalue operator [] (size_t i) 
+	{ 
+		return auto_lvalue (_arr [i]); 
 	}
-	void assign (size_t i, std::unique_ptr<T> p);
+	void assign (size_t i, std::auto_ptr<T> p);
 	void assign_direct (size_t i, T * p);
-	void insert (size_t idx, std::unique_ptr<T> p);
+	void insert (size_t idx, std::auto_ptr<T> p);
 	// stack access
-	void push_back (std::unique_ptr<T> p);
-	std::unique_ptr<T> pop_back (); // non-standard
+	void push_back (std::auto_ptr<T> p);
+	std::auto_ptr<T> pop_back (); // non-standard
 	T * back () { return _arr.back (); }
     T const * back () const { return _arr.back (); }
 	T * front () { return _arr.front (); }
@@ -90,7 +90,7 @@ public:
 
 	// iterator/index conversion
 	size_t ToIndex (iterator const & it);
-	size_t ToIndex (reverse_iterator const & rit);
+	size_t ToIndex (reverse_iterator const & rit); 
 	iterator ToIter (size_t idx);
 	reverse_iterator ToRIter (size_t idx);
 private:
@@ -113,19 +113,19 @@ auto_vector<T>::~auto_vector ()
 }
 
 template <class T>
-void auto_vector<T>::push_back (std::unique_ptr<T> ptr)
+void auto_vector<T>::push_back (std::auto_ptr<T> ptr)
 {
     _arr.push_back (ptr.get ());
     ptr.release ();
 }
 
 template <class T>
-inline std::unique_ptr<T> auto_vector<T>::pop_back ()
+inline std::auto_ptr<T> auto_vector<T>::pop_back () 
 {
 	assert (size () != 0);
 	T * p = _arr.back ();
 	_arr.pop_back ();
-	return std::unique_ptr<T> (p);
+	return std::auto_ptr<T> (p);
 }
 
 template <class T>
@@ -155,7 +155,7 @@ inline void auto_vector<T>::assign_direct (size_t i, T * p)
 }
 
 template <class T>
-inline void auto_vector<T>::assign (size_t i, std::unique_ptr<T> p)
+inline void auto_vector<T>::assign (size_t i, std::auto_ptr<T> p)
 {
     assert (i < size ());
 	if (_arr [i] != p.get ())
@@ -191,14 +191,14 @@ void auto_vector<T>::compact ()
 }
 
 template <class T>
-size_t auto_vector<T>::ToIndex (iterator const & it)
+size_t auto_vector<T>::ToIndex (iterator const & it)  
 {
 	assert (it - begin () >= 0);
 	return static_cast<size_t> (it - begin ());
 }
 
 template <class T>
-size_t auto_vector<T>::ToIndex (reverse_iterator const & rit)
+size_t auto_vector<T>::ToIndex (reverse_iterator const & rit)  
 {
 	iterator it = rit.base ();
 	--it;
@@ -207,13 +207,13 @@ size_t auto_vector<T>::ToIndex (reverse_iterator const & rit)
 }
 
 template <class T>
-typename auto_vector<T>::iterator auto_vector<T>::ToIter (size_t idx)
-{
+typename auto_vector<T>::iterator auto_vector<T>::ToIter (size_t idx) 
+{ 
 	return begin () + idx;
 }
 
 template <class T>
-typename auto_vector<T>::reverse_iterator auto_vector<T>::ToRIter (size_t idx)
+typename auto_vector<T>::reverse_iterator auto_vector<T>::ToRIter (size_t idx) 
 {
 	++idx;
 	return reverse_iterator (ToIter (idx));
@@ -235,7 +235,7 @@ inline void auto_vector<T>::resize (unsigned int newSize)
 }
 
 template <class T>
-void auto_vector<T>::insert (size_t idx, std::unique_ptr<T> p)
+void auto_vector<T>::insert (size_t idx, std::auto_ptr<T> p)
 {
 	assert (idx <= size ());
 	_arr.insert (ToIter (idx), p.get ());

@@ -8,15 +8,34 @@
 class Wall : public Building
 {
 protected:
-    float m_damage;
-    float m_fallSpeed;
+    double m_damage;
+    double m_fallSpeed;
+    double m_lastDamageTime;
+    double m_scale;
 
+    int   m_objectiveLink;
+    bool    m_registered;
+    
 public:
     Wall();
+    void Initialise( Building *_template );
 
     bool Advance    ();
-    void Damage     ( float _damage );
-    void Render     ( float _predictionTime );
+    void Damage     ( double _damage );
+    void Render     ( double _predictionTime );
+
+    void SetDetail  ( int _detail );
+
+    void SetBuildingLink( int _buildingId );
+    int  GetBuildingLink();
+
+    bool DoesSphereHit( const Vector3 &_pos, double _radius );
+    bool DoesShapeHit           (Shape *_shape, Matrix34 _transform);
+    bool DoesRayHit             (Vector3 const &_rayStart, Vector3 const &_rayDir, 
+                                 double _rayLen=1e10, Vector3 *_pos=NULL, Vector3 *_norm=NULL);
+
+    void Read   ( TextReader *_in, bool _dynamic );     
+    void Write  ( TextWriter *_out );	
 
 };
 

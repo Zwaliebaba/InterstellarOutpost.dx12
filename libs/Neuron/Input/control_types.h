@@ -9,7 +9,7 @@ typedef int controltype_t;
 enum ControlType {
 
 	#define DEF_CONTROL_TYPE(x,y) Control##x,
-	#include "input/control_types.inc"
+	#include "lib/input/control_types.inc"
 	#undef DEF_CONTROL_TYPE
 
 	ControlNull,                              // This is never triggered

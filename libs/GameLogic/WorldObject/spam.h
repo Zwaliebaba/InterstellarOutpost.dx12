@@ -4,30 +4,30 @@
 
 #include "worldobject/building.h"
 
-#define SPAM_RELOADTIME             60.0f
-#define SPAM_DAMAGE                 100.0f
+#define SPAM_RELOADTIME             60.0 
+#define SPAM_DAMAGE                 100.0 
 
 
 class Spam : public Building
 {
 protected:
-    float   m_timer;
-    float   m_damage;
-
+    double   m_timer;
+    double   m_damage;
+            
     bool    m_research;
     bool    m_onGround;
     bool    m_activated;
-
+    
 public:
     Spam();
 
     void Initialise( Building *_template );
     void SetDetail( int _detail );
-    void Damage( float _damage );
-	void Destroy( float _intensity );
+    void Damage( double _damage );
+	void Destroy( double _intensity );
 
-    void Render( float _predictionTime );
-    void RenderAlphas( float _predictionTime );
+    void Render( double _predictionTime );
+    void RenderAlphas( double _predictionTime );
 
     bool Advance();
 
@@ -44,9 +44,9 @@ public:
 //  Class SpamInfection
 // ****************************************************************************
 
-#define SPAMINFECTION_MINSEARCHRANGE    100.0f
-#define SPAMINFECTION_MAXSEARCHRANGE    200.0f
-#define SPAMINFECTION_LIFE              10.0f
+#define SPAMINFECTION_MINSEARCHRANGE    100.0 
+#define SPAMINFECTION_MAXSEARCHRANGE    200.0 
+#define SPAMINFECTION_LIFE              10.0
 #define SPAMINFECTION_TAILLENGTH        30
 
 class SpamInfection : public WorldObject
@@ -60,14 +60,15 @@ protected:
     };
 
     int             m_state;
-    float           m_retargetTimer;
+    double           m_retargetTimer;
     WorldObjectId   m_targetId;
     int             m_spiritId;
     Vector3         m_targetPos;
-    float           m_life;
-
+    double           m_life;
+    int             m_startCounter;
+    
     LList           <Vector3> m_positionHistory;
-
+    
 protected:
     void AdvanceIdle();
     void AdvanceAttackingEntity();
@@ -85,7 +86,7 @@ public:
     SpamInfection();
 
     bool Advance	();
-    void Render	    ( float _time );
+    void Render	    ( double _time );
 };
 
 

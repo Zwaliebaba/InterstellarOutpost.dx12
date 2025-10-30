@@ -1,9 +1,10 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <string.h>
 
-
-#include "targetcursor.h"
+#include "lib/debug_utils.h"
+#include "lib/targetcursor.h"
+#include "lib/resource.h"
 
 #include "interface/scrollbar.h"
 
@@ -19,7 +20,7 @@ ScrollBar::ScrollBar( EclWindow *parent )
     m_winSize(0),
     m_currentValue(0)
 {
-    DEBUG_ASSERT( parent );
+    AppDebugAssert( parent );
     strcpy( m_parentWindow, parent->m_name );
     strcpy( m_name, "New Scrollbar" );
 }
@@ -28,9 +29,9 @@ ScrollBar::~ScrollBar()
 {
 }
 
-void ScrollBar::Create( char *name,
+void ScrollBar::Create( char *name, 
                         int x, int y, int w, int h,
-                        int numRows, int winSize,
+                        int numRows, int winSize, 
                         int stepSize )
 {
 
@@ -43,7 +44,7 @@ void ScrollBar::Create( char *name,
     m_winSize = winSize;
 
     EclWindow *parent = EclGetWindow( m_parentWindow );
-    DEBUG_ASSERT( parent );
+    AppDebugAssert( parent );
 
     char barName[256];
     char upName[256];
@@ -54,15 +55,15 @@ void ScrollBar::Create( char *name,
     sprintf( downName, "%s down", name );
 
     ScrollChangeButton *up = new ScrollChangeButton(this, stepSize*-1);
-    up->SetProperties( upName, x, y, w, 18, "^", " " );
+    up->SetProperties( upName, x, y, w, 18, UnicodeString(), UnicodeString(" ") );
     parent->RegisterButton( up );
 
     ScrollBarButton *bar = new ScrollBarButton(this);
-    bar->SetProperties( barName, x, y+18, w, h-36, " ", " " );
+    bar->SetProperties( barName, x, y+18, w, h-36, UnicodeString(" "), UnicodeString(" ") );
     parent->RegisterButton( bar );
 
     ScrollChangeButton *down = new ScrollChangeButton(this, stepSize);
-    down->SetProperties( downName, x, y+h-18, w, 18, "v", " " );
+    down->SetProperties( downName, x, y+h-18, w, 18, UnicodeString(), UnicodeString(" ") );
     parent->RegisterButton( down );
 
 }
@@ -135,8 +136,8 @@ ScrollBarButton::ScrollBarButton( ScrollBar *scrollBar )
 
 void ScrollBarButton::Render( int realX, int realY, bool highlighted, bool clicked )
 {
-
-    DEBUG_ASSERT( m_scrollBar );
+    
+    AppDebugAssert( m_scrollBar );
 
     // Background
 
@@ -155,17 +156,17 @@ void ScrollBarButton::Render( int realX, int realY, bool highlighted, bool click
         glVertex2i( realX + m_w, realY + m_h );
         glVertex2i( realX, realY + m_h );
     glEnd();
-
+    
     // Bar
     int barTop = int( m_h * (float) m_scrollBar->m_currentValue / (float) m_scrollBar->m_numRows);
-    int barEnd = int( m_h * (float) (m_scrollBar->m_currentValue + m_scrollBar->m_winSize) / (float) m_scrollBar->m_numRows );
+    int barEnd = int( m_h * (float) (m_scrollBar->m_currentValue + m_scrollBar->m_winSize) / (float) m_scrollBar->m_numRows );    
     if( barEnd >= m_h ) barEnd = m_h-1;
 
 
     if( clicked )           glColor3ub(50,55,120);
     else if( highlighted )  glColor3ub(55,60,120);
     else                    glColor3ub(65,71,120);
-
+        
     glBegin( GL_QUADS );
         glVertex2i( realX+1, realY+barTop+1 );
         glVertex2i( realX+m_w, realY+barTop+1 );
@@ -175,17 +176,17 @@ void ScrollBarButton::Render( int realX, int realY, bool highlighted, bool click
 }
 
 void ScrollBarButton::MouseUp()
-{
+{    
     if( m_grabOffset == -1 )
     {
 
-        DEBUG_ASSERT( m_scrollBar );
+        AppDebugAssert( m_scrollBar );
 
         EclWindow *parent = EclGetWindow( m_scrollBar->m_parentWindow );
-        DEBUG_ASSERT( parent );
+        AppDebugAssert( parent );
 
         int barTop = int( parent->m_y + m_y + m_h * (float) m_scrollBar->m_currentValue / (float) m_scrollBar->m_numRows );
-        int barEnd = int( parent->m_y + m_y + m_h * (float) (m_scrollBar->m_currentValue + m_scrollBar->m_winSize) / (float) m_scrollBar->m_numRows );
+        int barEnd = int( parent->m_y + m_y + m_h * (float) (m_scrollBar->m_currentValue + m_scrollBar->m_winSize) / (float) m_scrollBar->m_numRows );    
         if( barEnd >= m_h ) barEnd = m_h-1;
 
 		int mouseY = g_target->Y();
@@ -211,7 +212,7 @@ void ScrollBarButton::MouseDown()
 {
     if( m_grabOffset > -1 )
     {
-        DEBUG_ASSERT( m_scrollBar );
+        AppDebugAssert( m_scrollBar );
         int pixelsInside = g_target->Y() - ( m_parent->m_y + m_y );
         float fractionInside = (float) pixelsInside / (float) m_h;
         int centreVal = fractionInside * m_scrollBar->m_numRows;
@@ -220,12 +221,12 @@ void ScrollBarButton::MouseDown()
     }
     else
     {
-        DEBUG_ASSERT( m_scrollBar );
+        AppDebugAssert( m_scrollBar );
         EclWindow *parent = EclGetWindow( m_scrollBar->m_parentWindow );
-        DEBUG_ASSERT( parent );
+        AppDebugAssert( parent );
         int mouseY = g_target->Y();
         int barTop = int( m_parent->m_y + m_y + m_h * (float) m_scrollBar->m_currentValue / (float) m_scrollBar->m_numRows );
-        int barEnd = int( m_parent->m_y + m_y + m_h * (float) (m_scrollBar->m_currentValue + m_scrollBar->m_winSize) / (float) m_scrollBar->m_numRows );
+        int barEnd = int( m_parent->m_y + m_y + m_h * (float) (m_scrollBar->m_currentValue + m_scrollBar->m_winSize) / (float) m_scrollBar->m_numRows );    
         //if( barEnd >= m_h ) barEnd = m_h-1;
         if( mouseY >= barTop && mouseY <= barEnd )
         {
@@ -239,10 +240,54 @@ ScrollChangeButton::ScrollChangeButton( ScrollBar *scrollbar, int amount )
     m_scrollBar( scrollbar ),
     m_amount( amount )
 {
+    m_centered = true;
 }
 
 void ScrollChangeButton::MouseDown()
 {
-    DEBUG_ASSERT( m_scrollBar );
+    AppDebugAssert( m_scrollBar );
     m_scrollBar->ChangeCurrentValue( m_amount );
+}
+
+void ScrollChangeButton::Render(int realX, int realY, bool highlighted, bool clicked)
+{
+    DarwiniaButton::Render( realX, realY, highlighted, clicked );
+
+    int x = realX + float(m_w) * 0.05f;
+    int y = realY + float(m_h) * 0.05f;
+    int w = m_w * 0.9f;
+    int h = m_h * 0.9f;   
+
+    glEnable        ( GL_BLEND );
+    glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
+    glDepthMask     ( false );
+    glEnable        ( GL_TEXTURE_2D );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons/selectionarrow.bmp" ) );
+
+    int dir = 0;
+    if( m_amount > 0 ) dir = 1;
+    else dir = -1;
+
+    glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
+    if( dir == 1 )
+    {
+        glBegin( GL_QUADS );
+            glTexCoord2i(0,0);      glVertex2f( x, y );
+            glTexCoord2i(1,0);      glVertex2f( x + w, y );
+            glTexCoord2i(1,1);      glVertex2f( x + w, y + h );
+            glTexCoord2i(0,1);      glVertex2f( x, y + h );
+        glEnd();
+    }
+    else
+    {
+        glBegin( GL_QUADS );
+            glTexCoord2i(0,1);      glVertex2f( x, y );
+            glTexCoord2i(1,1);      glVertex2f( x + w, y );
+            glTexCoord2i(1,0);      glVertex2f( x + w, y + h );
+            glTexCoord2i(0,0);      glVertex2f( x, y + h );
+        glEnd();
+    }
+
+    glDisable       ( GL_TEXTURE_2D );
+    glDepthMask     ( true );
 }

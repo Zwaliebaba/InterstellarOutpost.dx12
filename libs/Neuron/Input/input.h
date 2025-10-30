@@ -4,12 +4,12 @@
 #include <vector>
 #include <string>
 
-#include "text_stream_readers.h"
-#include "input/input_types.h"
-#include "input/inputspec.h"
-#include "input/inputdriver.h"
-#include "input/control_types.h"
-#include "input/control_bindings.h"
+#include "lib/filesys/text_stream_readers.h"
+#include "lib/input/input_types.h"
+#include "lib/input/inputspec.h"
+#include "lib/input/inputdriver.h"
+#include "lib/input/control_types.h"
+#include "lib/input/control_bindings.h"
 
 
 class InputManager {

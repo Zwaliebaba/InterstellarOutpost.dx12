@@ -5,7 +5,14 @@
 #include "worldobject/building.h"
 
 
-class FileWriter;
+class TextWriter;
+
+
+struct PowerSurge
+{
+    int     m_teamId;
+    double   m_percent;
+};
 
 
 // ****************************************************************************
@@ -18,27 +25,29 @@ protected:
     int             m_powerLink;
     ShapeMarker     *m_powerLocation;
 
-    LList           <float> m_surges;
+    LList           <PowerSurge *> m_surges;
 
 public:
     PowerBuilding();
-
-    void Initialise     ( Building *_template );
+	~PowerBuilding();
+    
+    void Initialise     ( Building *_template );    
     bool Advance        ();
-    void Render         ( float _predictionTime );
-    void RenderAlphas   ( float _predictionTime );
+    void Render         ( double _predictionTime );
+    void RenderAlphas   ( double _predictionTime );
 
     bool IsInView       ();
     Vector3 GetPowerLocation();
-    virtual void TriggerSurge ( float _initValue );
+    
+    virtual void TriggerSurge ( double _initValue, int teamId=255 );
 
     void ListSoundEvents( LList<char *> *_list );
 
-    void Read   ( TextReader *_in, bool _dynamic );
-    void Write  ( FileWriter *_out );
-
-    int  GetBuildingLink();
-    void SetBuildingLink( int _buildingId );
+    void Read   ( TextReader *_in, bool _dynamic );     
+    void Write  ( TextWriter *_out );							
+    
+    int  GetBuildingLink();                             
+    void SetBuildingLink( int _buildingId );            
 };
 
 
@@ -52,26 +61,26 @@ class Generator : public PowerBuilding
 protected:
     ShapeMarker *m_counter;
 
-    float   m_timerSync;
+    double   m_timerSync;
     int     m_numThisSecond;
     bool    m_enabled;
 
 public:
-    float   m_throughput;
+    double   m_throughput;
 
 public:
     Generator();
 
-    void TriggerSurge ( float _initValue );
+    void TriggerSurge ( double _initValue, int teamId=255 );
 
     void ReprogramComplete();
 
-    char *GetObjectiveCounter();
+    void GetObjectiveCounter( UnicodeString& _dest );
 
     void ListSoundEvents( LList<char *> *_list );
 
     bool Advance();
-    void Render( float _predictionTime );
+    void Render( double _predictionTime );
 };
 
 
@@ -96,16 +105,16 @@ class PylonStart : public PowerBuilding
 {
 public:
     int m_reqBuildingId;
-
+    
 public:
     PylonStart();
-
-    void Initialise     ( Building *_template );
+    
+    void Initialise     ( Building *_template );    
     bool Advance        ();
-    void RenderAlphas   ( float _predictionTime );
+    void RenderAlphas   ( double _predictionTime );
 
-    void Read   ( TextReader *_in, bool _dynamic );
-    void Write  ( FileWriter *_out );
+    void Read   ( TextReader *_in, bool _dynamic );     
+    void Write  ( TextWriter *_out );							
 };
 
 
@@ -114,12 +123,12 @@ public:
 // ****************************************************************************
 
 class PylonEnd : public PowerBuilding
-{
+{    
 public:
     PylonEnd();
-
-    void TriggerSurge   ( float _initValue );
-    void RenderAlphas   ( float _predictionTime );
+        
+    void TriggerSurge   ( double _initValue, int teamId=255 );
+    void RenderAlphas   ( double _predictionTime );
 };
 
 
@@ -135,20 +144,55 @@ class SolarPanel : public PowerBuilding
 protected:
     ShapeMarker *m_glowMarker   [SOLARPANEL_NUMGLOWS];
     ShapeMarker *m_statusMarkers[SOLARPANEL_NUMSTATUSMARKERS];
-
+    
     bool m_operating;
+    int  m_startingTeam;
 
 public:
     SolarPanel();
 
     void Initialise     ( Building *_template );
-    bool Advance        ();
+    bool Advance        ();           
 
-    void Render         ( float _predictionTime );
+    void RecalculateOwnership();
+    
+    void Render         ( double _predictionTime );
     void RenderPorts    ();
-    void RenderAlphas   ( float _predictionTime );
+    void RenderAlphas   ( double _predictionTime );
 
     void ListSoundEvents( LList<char *> *_list );
+
+	bool IsOperating	();
 };
+
+
+
+// ****************************************************************************
+// Class 
+// ****************************************************************************
+
+class PowerSplitter : public PowerBuilding
+{    
+public:
+    LList<int> m_links;
+
+public:
+    PowerSplitter();
+
+    void Initialise     ( Building *_template );
+
+    void TriggerSurge   ( double _initValue, int teamId=255 );
+    
+    void Render         ( double _predictionTime );
+    void RenderAlphas   ( double _predictionTime );
+
+    void SetBuildingLink( int _buildingId );            
+
+    void Read   ( TextReader *_in, bool _dynamic );     
+    void Write  ( TextWriter *_out );							
+
+};
+
+
 
 #endif

@@ -1,21 +1,25 @@
 #ifndef _included_building_h
 #define _included_building_h
 
-#include "vector3.h"
-#include "matrix34.h"
-#include "llist.h"
+#include "lib/vector3.h"
+#include "lib/matrix34.h"
+#include "lib/tosser/llist.h"
 
 #include "worldobject/entity.h"
 #include "worldobject/worldobject.h"
 
 #include "globals.h"
 
+#include "lib/unicode/unicode_string.h"
+
+#include <vector>
+
 class Shape;
 class ShapeFragment;
 class ShapeMarker;
 class TextReader;
 class BuildingPort;
-class FileWriter;
+class TextWriter;
 
 
 class Building: public WorldObject
@@ -24,42 +28,43 @@ public:
     enum
     {
         TypeInvalid,		// When you add an entry here remember to update building.cpp
-        TypeFactory,		// 1
+        TypeFactory,		// 1	
         TypeCave,			// 2
-        TypeRadarDish,
+        TypeRadarDish,		
         TypeLaserFence,
         TypeControlTower,
         TypeGunTurret,
-        TypeBridge,
+        TypeBridge,		
 		TypePowerstation,
-        TypeTree,
+        TypeTree,		
         TypeWall,
-        TypeTrunkPort,
+        TypeTrunkPort,	
         TypeResearchItem,
-        TypeLibrary,
+        TypeLibrary,	
         TypeGenerator,
-        TypePylon,
+        TypePylon,		
         TypePylonStart,
         TypePylonEnd,
         TypeSolarPanel,
+        TypePowerSplitter,
         TypeTrackLink,
         TypeTrackJunction,
         TypeTrackStart,
-        TypeTrackEnd,
-        TypeRefinery,
-        TypeMine,
-        TypeYard,
-        TypeDisplayScreen,
-		TypeUpgradePort,
+        TypeTrackEnd,		
+        TypeRefinery,       
+        TypeMine,			
+        TypeYard,			
+        TypeDisplayScreen,	
+		TypeUpgradePort,	
         TypePrimaryUpgradePort,
-        TypeIncubator,
+        TypeIncubator,		
         TypeAntHill,
         TypeSafeArea,
         TypeTriffid,
         TypeSpiritReceiver,
         TypeReceiverLink,
         TypeReceiverSpiritSpawner,
-        TypeSpiritProcessor,
+        TypeSpiritProcessor,        
         TypeSpawnPoint,
         TypeSpawnPopulationLock,
         TypeSpawnPointMaster,
@@ -81,19 +86,35 @@ public:
         TypeDynamicHub,
         TypeDynamicNode,
         TypeFeedingTube,
-		NumBuildingTypes
+        TypeMultiwiniaZone,
+        TypeChessPiece,
+        TypeChessBase,
+        TypeCloneLab,
+		TypeControlStation,
+        TypePortal,
+        TypeCrate,
+        TypeStatue,
+        TypeWallBuster,
+        TypePulseBomb,
+        TypeRestrictionZone,
+        TypeJumpPad,
+        TypeAIObjective,
+        TypeAIObjectiveMarker,
+        TypeEruptionMarker,
+        TypeSmokeMarker,
+		NumBuildingTypes		
     };
-
+    
     Vector3     m_front;
     Vector3     m_up;
-	float		m_timeOfDeath;
+	double		m_timeOfDeath;
 	bool		m_dynamic;								// Only appears on this level, not all levels for this map
 	bool		m_isGlobal;
     Vector3     m_centrePos;
-    float       m_radius;
+    double       m_radius;
 
 	bool		m_destroyed;							// Building has been destroyed using the script command DestroyBuilding, remove it next Advance
-
+	
     Shape		*m_shape;
     LList       <ShapeMarker *> m_lights;               // Ownership lights
     LList       <BuildingPort *> m_ports;               // Require Darwinians in them to operate
@@ -101,12 +122,16 @@ public:
     static Shape        *s_controlPad;
     static ShapeMarker  *s_controlPadStatus;
 
+protected:
+	static std::vector<WorldObjectId> s_neighbours;
+
 public:
     Building();
-
+	~Building();
+    
     virtual void Initialise( Building *_template );
     virtual bool Advance();
-
+    
     virtual void SetShape       ( Shape *_shape );
     void         SetShapeLights ( ShapeFragment *_fragment );   // Recursivly search for lights
     void         SetShapePorts  ( ShapeFragment *_fragment );
@@ -115,8 +140,8 @@ public:
 
     virtual bool IsInView       ();
 
-    virtual void Render         ( float predictionTime );
-    virtual void RenderAlphas   ( float predictionTime );
+    virtual void Render         ( double predictionTime );        
+    virtual void RenderAlphas   ( double predictionTime );    
     virtual void RenderLights   ();
     virtual void RenderPorts    ();
 	virtual void RenderHitCheck ();
@@ -125,35 +150,35 @@ public:
     virtual bool PerformDepthSort( Vector3 &_centrePos );       // Return true if you plan to use transparencies
 
     virtual void SetTeamId          ( int _teamId );
-    virtual void Reprogram          ( float _complete );
+    virtual void Reprogram          ( double _complete );
     virtual void ReprogramComplete  ();
+    
+    virtual void Damage( double _damage );
+	virtual void Destroy( double _intensity );
 
-    virtual void Damage( float _damage );
-	virtual void Destroy( float _intensity );
-
-    Vector3 PushFromBuilding( Vector3 const &_pos, float _radius );
-
+    Vector3 PushFromBuilding( Vector3 const &_pos, double _radius );
+    
     virtual void            EvaluatePorts          ();
     virtual int             GetNumPorts            ();
     virtual int             GetNumPortsOccupied    ();
     virtual WorldObjectId   GetPortOccupant        ( int _portId );
     virtual bool            GetPortPosition        ( int _portId, Vector3 &_pos, Vector3 &_front );
-
-    virtual void            OperatePort            ( int _portId, int _teamId );
+    
+    virtual void            OperatePort            ( int _portId, int _teamId );    
     virtual int             GetPortOperatorCount   ( int _portId, int _teamId );
 
-    virtual char            *GetObjectiveCounter   ();
+    virtual void            GetObjectiveCounter   (UnicodeString& _dest);
 
-    virtual bool DoesSphereHit          (Vector3 const &_pos, float _radius);
+    virtual bool DoesSphereHit          (Vector3 const &_pos, double _radius);
     virtual bool DoesShapeHit           (Shape *_shape, Matrix34 _transform);
-    virtual bool DoesRayHit             (Vector3 const &_rayStart, Vector3 const &_rayDir,
-                                        float _rayLen=1e10, Vector3 *_pos=NULL, Vector3 *_norm=NULL);        // pos/norm will not always be available
+    virtual bool DoesRayHit             (Vector3 const &_rayStart, Vector3 const &_rayDir, 
+                                        double _rayLen=1e10, Vector3 *_pos=NULL, Vector3 *_norm=NULL);        // pos/norm will not always be available
 
     virtual void ListSoundEvents        ( LList<char *> *_list );
-
+    
     virtual void Read   ( TextReader *_in, bool _dynamic );     // Use these to read/write additional building-specific
-    virtual void Write  ( FileWriter *_out );					// data to the level files
-
+    virtual void Write  ( TextWriter *_out );					// data to the level files
+    
     virtual int  GetBuildingLink();                             // Allows a building to link to another
     virtual void SetBuildingLink( int _buildingId );            // eg control towers
 
@@ -162,7 +187,10 @@ public:
     static Building *CreateBuilding ( int _type );
     static Building *CreateBuilding ( char *_name );
 
-    static char *GetTypeNameTranslated( int _type );
+    void GetTypeNameTranslated( int _type, UnicodeString& _dest );
+	char		*LogState( char *_message = NULL );
+
+    static bool BuildingIsBlocked( int _buildingId );
 };
 
 

@@ -1,11 +1,12 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <string.h>
 
-
-#include "file_writer.h"
-#include "math_utils.h"
-#include "text_stream_readers.h"
+#include "lib/debug_utils.h"
+#include "lib/filesys/text_file_writer.h"
+#include "lib/math_utils.h"
+#include "lib/filesys/text_stream_readers.h"
+#include "lib/math/random_number.h"
 
 #include "sound/sound_parameter.h"
 
@@ -52,13 +53,13 @@ void SoundParameter::Copy( SoundParameter *_copyMe )
     m_inputUpper    = _copyMe->m_inputUpper;
     m_outputLower   = _copyMe->m_outputLower;
     m_outputUpper   = _copyMe->m_outputUpper;
-    m_smooth     = _copyMe->m_smooth;
+    m_smooth     = _copyMe->m_smooth;    
 }
 
 void SoundParameter::Recalculate( float _input )
 {
     m_input = _input;
-
+    
     switch( m_type )
     {
         case TypeFixedValue:
@@ -70,7 +71,7 @@ void SoundParameter::Recalculate( float _input )
         case TypeRangedRandom:
         {
             float diff = m_outputUpper - m_outputLower;
-            float random = frand( diff );
+            float random = frand( double(diff) );
             m_desiredOutput = m_outputLower + random;
 			float smooth = GetSmooth();
             m_output = m_desiredOutput * (1.0f-smooth) + m_output * smooth;
@@ -80,7 +81,7 @@ void SoundParameter::Recalculate( float _input )
         case TypeLinked:
         {
             if( _input <= m_inputLower &&
-                _input <= m_inputUpper )
+                _input <= m_inputUpper ) 
             {
                 m_desiredOutput = m_inputLower < m_inputUpper ? m_outputLower : m_outputUpper;
             }
@@ -111,7 +112,7 @@ float SoundParameter::GetOutput()
 void SoundParameter::Read( TextReader *_in )
 {
     char *parameter = _in->GetNextToken();
-    DEBUG_ASSERT( _stricmp( parameter, "PARAMETER" ) == 0 );
+    AppDebugAssert( stricmp( parameter, "PARAMETER" ) == 0 );
 
     char *paramType     = _in->GetNextToken();
     m_type              = GetParameterType( paramType );
@@ -119,7 +120,7 @@ void SoundParameter::Read( TextReader *_in )
     switch( m_type )
     {
         case TypeFixedValue:
-            m_outputLower       = atof( _in->GetNextToken() );
+            m_outputLower       = atof( _in->GetNextToken() );    
             break;
 
         case TypeRangedRandom:
@@ -128,7 +129,7 @@ void SoundParameter::Read( TextReader *_in )
             m_smooth            = atof( _in->GetNextToken() );
             break;
 
-        case TypeLinked:
+        case TypeLinked:            
             m_inputLower        = atof( _in->GetNextToken() );
             m_outputLower       = atof( _in->GetNextToken() );
             m_inputUpper        = atof( _in->GetNextToken() );
@@ -139,7 +140,7 @@ void SoundParameter::Read( TextReader *_in )
             break;
     }
 
-    // TODO : This check is required for compatability with the version
+    // TODO : This check is required for compatability with the version 
     // dated 22nd March 2004.  After that it can be removed
     if( _in->TokenAvailable() )
     {
@@ -151,7 +152,7 @@ void SoundParameter::Read( TextReader *_in )
 }
 
 
-void SoundParameter::Write( FileWriter *_file, char *_paramName, int _tabs )
+void SoundParameter::Write( TextFileWriter *_file, char *_paramName, int _tabs )
 {
     for( int i = 0; i < _tabs; ++i )
     {
@@ -161,7 +162,7 @@ void SoundParameter::Write( FileWriter *_file, char *_paramName, int _tabs )
     _file->printf( "%-18s PARAMETER %-18s",
                             _paramName,
                             GetParameterTypeName( m_type ) );
-
+    
     switch( m_type )
     {
         case TypeFixedValue:
@@ -173,7 +174,7 @@ void SoundParameter::Write( FileWriter *_file, char *_paramName, int _tabs )
             break;
 
         case TypeLinked:
-            _file->printf( "%8.2f %8.2f %8.2f %8.2f %8.2f  %s",
+            _file->printf( "%8.2f %8.2f %8.2f %8.2f %8.2f  %s", 
                             m_inputLower, m_outputLower,
                             m_inputUpper, m_outputUpper,
                             m_smooth,
@@ -194,19 +195,19 @@ bool SoundParameter::IsFixedValue( float _value )
 
 float SoundParameter::GetSmooth()
 {
-	return sqrtf(m_smooth);
+	return iv_sqrt(m_smooth);
 }
 
 
 char *SoundParameter::GetParameterTypeName( int _type )
 {
-    char *names[] = {
+    char *names[] = {   
                         "TypeFixedValue",
                         "TypeRangedRandom",
                         "TypeLinked"
                     };
 
-    DEBUG_ASSERT( _type >= 0 && _type < NumParameterTypes );
+    AppDebugAssert( _type >= 0 && _type < NumParameterTypes );
     return names[_type];
 }
 
@@ -214,7 +215,7 @@ int SoundParameter::GetParameterType( char *_name )
 {
     for( int i = 0; i < NumParameterTypes; ++i )
     {
-        if( _stricmp( GetParameterTypeName(i), _name ) == 0 )
+        if( stricmp( GetParameterTypeName(i), _name ) == 0 )
         {
             return i;
         }
@@ -225,7 +226,7 @@ int SoundParameter::GetParameterType( char *_name )
 
 char *SoundParameter::GetLinkName( int _type )
 {
-    char *names[] = {
+    char *names[] = { 
                         "Nothing",
                         "HeightAboveGround",
                         "Xpos",
@@ -235,7 +236,7 @@ char *SoundParameter::GetLinkName( int _type )
                         "CameraDistance"
                     };
 
-    DEBUG_ASSERT( _type >= 0 && _type < NumLinkTypes );
+    AppDebugAssert( _type >= 0 && _type < NumLinkTypes );
     return names[_type];
 }
 
@@ -244,7 +245,7 @@ int SoundParameter::GetLinkType( char *_name )
 {
     for( int i = 0; i < NumLinkTypes; ++i )
     {
-        if( _stricmp( GetLinkName(i), _name ) == 0 )
+        if( stricmp( GetLinkName(i), _name ) == 0 )
         {
             return i;
         }
@@ -255,12 +256,12 @@ int SoundParameter::GetLinkType( char *_name )
 
 char *SoundParameter::GetUpdateTypeName( int _type )
 {
-    char *names[] = {
+    char *names[] = { 
                         "UpdateConstantly",
                         "UpdateOncePerLoop"
                     };
 
-    DEBUG_ASSERT( _type >= 0 && _type < NumUpdateTypes );
+    AppDebugAssert( _type >= 0 && _type < NumUpdateTypes );
     return names[ _type ];
 }
 
@@ -269,7 +270,7 @@ int SoundParameter::GetUpdateType( char *_name )
 {
     for( int i = 0; i < NumUpdateTypes; ++i )
     {
-        if( _stricmp( GetUpdateTypeName(i), _name ) == 0 )
+        if( stricmp( GetUpdateTypeName(i), _name ) == 0 )
         {
             return i;
         }

@@ -18,20 +18,27 @@ public:
 	//!  Path to HLSL vertex shader for vs_2_0 model.
 	//! \param pixelFileName
 	//!  Path to HLSL pixel shader for ps_2_0 or ps_3_0 model.
-	//! \param shaderVersion
-	//!  2 = ps_2_0, 3 = ps_3_0
 	static Shader* Create(const char* vertexFileName, const char* pixelFileName);
 	void Bind();
 	void Unbind();
-	void SetFloatArray(char* name, float* arr, unsigned numFloats);
-	void SetUniform(char* name, float v1);
-	void SetUniform(char* name, float v1, float v2);
-	void SetUniform(char* name, float v1, float v2, float v3);
-	void SetUniform(char* name, float v1, float v2, float v3, float v4);
-	void SetMatrix(char* name, const double* v);
-	int SetSampler(char* name, IDirect3DBaseTexture9* tex);
-	int SetSampler(char* name, Texture* tex);
-	int SetSampler(char* name, int tex);
+	void SetBoolArray(const char* name, const BOOL* arr, unsigned numBools);
+	void SetBool(const char* name, BOOL b);
+	void SetIntArray(const char* name, const int* arr, unsigned numInts);
+	void SetInt(const char* name, int i);
+	void SetFloat(const char* name, float f);
+	void SetFloatArray(const char* name, const float* arr, unsigned numFloats);
+	void SetUniform(const char* name, float v1);
+	void SetUniform(const char* name, float v1, float v2);
+	void SetUniform(const char* name, float v1, float v2, float v3);
+	void SetUniform(const char* name, float v1, float v2, float v3, float v4);
+	void SetMatrix(const char* name, const float* v);
+	void SetMatrix(const char* name, const double* v);
+	void SetMatrixTranspose(const char* name, const float* v);
+	void SetMatrixTranspose(const char* name, const double* v);
+	int SetSamplerDX(const char* name, IDirect3DBaseTexture9* tex);
+	int SetSamplerTex(const char* name, const Texture* tex);
+	int SetSamplerGLTextureId(const char* name, int tex);
+	int SetSamplerGLFixedStage(const char* name, int tex);
 	~Shader();
 private:
 	Shader(const char* vertexFileName, const char* pixelFileName);
@@ -41,6 +48,7 @@ private:
 	IDirect3DPixelShader9*  m_pixelShader;
 	DWORD                   m_fvf;
 	bool                    m_Ok;
+	char					m_vertexFilename[128], m_pixelFilename[128];
 };
 
 #endif

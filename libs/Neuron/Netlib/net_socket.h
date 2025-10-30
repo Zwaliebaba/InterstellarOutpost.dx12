@@ -25,7 +25,7 @@ public:
 	// Establishes a connection to the host/port specified
 	// on object construction. Returns NetOK on success,
 	// NetTimedout on timeout, and NetFailed on failure
-	NetRetCode Connect(char *host, unsigned short port);
+	NetRetCode Connect(const char *host, unsigned short port);
 	
 	// Close the current socket connection
 	void Close();
@@ -52,24 +52,21 @@ public:
 	//	  
 	// Returns NetClientDisconnect if a client forcefully disconnects.
 	NetRetCode WriteData(void *buf, int bufLen, int *numActualBytes = 0);
-		
-	// Flushes the output data from the last call of writeData;
-	// returns NetOK on success; NetFailed on error
-	NetRetCode Flush();
-	
-	unsigned long		GetIpAddr();
+			
+	NetIpAddress		GetRemoteAddress();
+	NetIpAddress		GetLocalAddress();
 	
 protected:
 	NetRetCode			CheckTimeout(unsigned int *timeout,	unsigned int *timedout,	int haveAllData);
 	
 	NetSocketHandle		m_sockfd;
 	NetPollObject		m_listener;
-	FILE				*m_stdiofd;
+	NetIpAddress		m_from;
 	NetIpAddress		m_to;
-	unsigned long		m_ipaddr;
 	unsigned int		m_timeout;
 	unsigned int		m_polltime;
 	unsigned short		m_port;
+	bool				m_connected;
 	char				m_hostname[MAX_HOSTNAME_LEN];
 };
 

@@ -13,9 +13,9 @@ protected:
         StateSailing,
         StateLanded
     };
-
+    
     int     m_state;
-    float   m_spawnTimer;
+    double   m_spawnTimer;
 
 public:
     Lander();
@@ -25,7 +25,7 @@ public:
     bool AdvanceLanded  ();
 
     void ChangeHealth   ( int amount );
-    void Render         ( float _predictionTime, int _teamId );
+    void Render         ( double _predictionTime, int _teamId );
 
 };
 

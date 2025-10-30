@@ -2,7 +2,7 @@
 #define INCLUDED_SPIDER_H
 
 
-#include "vector2.h"
+#include "lib/vector2.h"
 
 #include "worldobject/entity.h"
 
@@ -16,12 +16,12 @@ class EntityLeg;
 class SpiderParameters
 {
 public:
-	float 		m_legLift;
-	float 		m_idealLegSlope;
-	float 		m_legSwingDuration;
-	float 		m_delayBetweenLifts;		// Time between successive foot lifts
-	float		m_lookAheadCoef;			// Amount of velocity to add on to foot home pos to calc foot target pos
-	float 		m_idealSpeed;				// Speed at which this set of parameters is appropriate
+	double 		m_legLift;
+	double 		m_idealLegSlope;
+	double 		m_legSwingDuration;
+	double 		m_delayBetweenLifts;		// Time between successive foot lifts
+	double		m_lookAheadCoef;			// Amount of velocity to add on to foot home pos to calc foot target pos
+	double 		m_idealSpeed;				// Speed at which this set of parameters is appropriate
 };
 
 
@@ -48,29 +48,29 @@ protected:
     ShapeMarker     *m_eggLay;
 
 	EntityLeg		*m_legs[SPIDER_NUM_LEGS];
-	float			m_nextLegMoveTime;			// Actually just the next opportunity for a leg to move - there is no guarantee that a leg will move then
-	float			m_delayBetweenLifts;
+	double			m_nextLegMoveTime;			// Actually just the next opportunity for a leg to move - there is no guarantee that a leg will move then
+	double			m_delayBetweenLifts;
 
-	float			m_speed;
-	float			m_targetHoverHeight;
+	double			m_speed;
+	double			m_targetHoverHeight;
 	Vector3			m_targetPos;
 	Vector3			m_up;
-
-	float			m_pounceStartTime;
+    
+	double			m_pounceStartTime;
 
 	int		CalcWhichFootToMove();
 	void	StompFoot(Vector3 const &_pos);
 	void	UpdateLegsPouncing();
 	void	UpdateLegs();
-	float	IsPathOK(Vector3 const &_dest);		// Returns amount of path that can be followed
+	double	IsPathOK(Vector3 const &_dest);		// Returns amount of path that can be followed
 	void	DetectCollisions();
 
 protected:          // AI stuff
-
-    float           m_retargetTimer;
+    
+    double           m_retargetTimer;
     Vector3         m_pounceTarget;
     int             m_spiritId;
-
+    
 	bool	SearchForRandomPos();
     bool    SearchForEnemies();
     bool    SearchForSpirits();
@@ -89,9 +89,9 @@ public:
 
 	void    Begin               ();
 	bool    Advance             (Unit *_unit);
-    void	ChangeHealth        (int _amount);
-	void    Render              (float _predictionTime);
-	bool    RenderPixelEffect   (float _predictionTime);
+    bool	ChangeHealth        (int _amount, int _damageType);
+	void    Render              (double _predictionTime);
+	bool    RenderPixelEffect   (double _predictionTime);
 
     bool    IsInView            ();
     void    ListSoundEvents     (LList<char *> *_list);

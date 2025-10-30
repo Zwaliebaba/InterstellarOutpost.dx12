@@ -3,8 +3,8 @@
 
 #include <string>
 
-#include "input/input_types.h"
-#include "input/inputspec.h"
+#include "lib/input/input_types.h"
+#include "lib/input/inputspec.h"
 
 #define PARSE_SUCCESS(x) ( STATE_DONE == (x) )
 
@@ -62,6 +62,9 @@ protected:
 	void setName( std::string const &name );
 
 public:
+
+	virtual ~InputDriver();
+
 	// Return STATE_DONE if we managed to parse these tokens, and put the parsed information
 	// into spec. Anything else means we failed.
 	virtual InputParserState parseInputSpecification( InputSpecTokens const &tokens,

@@ -1,7 +1,9 @@
-#include "pch.h"
+//#include "lib/universal_include.h"
+
 #include <stdio.h>
 #include <string.h>
-#include "Canvas/eclipse.h"
+
+#include "eclipse.h"
 #include "eclwindow.h"
 
 
@@ -14,7 +16,7 @@ EclWindow::EclWindow( char *_name )
     m_resizable(true)
 {    
     SetName (_name);
-    SetTitle ( "New Window" );
+    SetTitle ( UnicodeString("New Window") );
     SetMovable ( true );
     strcpy( m_currentTextEdit, "None" );
 }
@@ -44,14 +46,14 @@ void EclWindow::SetName ( char *_name )
 
 }
 
-void EclWindow::SetTitle ( char *_title )
+void EclWindow::SetTitle ( const UnicodeString &_title )
 {
-    if ( strlen(_title) > SIZE_ECLWINDOW_TITLE )
+    if ( _title.Length() > SIZE_ECLWINDOW_TITLE )
     {
         return;
     }
 
-    strcpy ( m_title, _title );
+    m_title = _title;
     EclDirtyWindow( this );
 
 }
@@ -79,10 +81,10 @@ void EclWindow::MakeAllOnScreen()
 {
 	int screenW = EclGetScreenW();
 	int screenH = EclGetScreenH();
-    if( m_x < 10 ) m_x = 10;
-    if( m_y < 10 ) m_y = 10;
-    if( m_x + m_w > screenW - 10 ) m_x = screenW - m_w - 10;
-    if( m_y + m_h > screenH - 10 ) m_y = screenH - m_h - 10;
+    if( m_x < 0 ) m_x = 0;
+    if( m_y < 0 ) m_y = 0;
+    if( m_x + m_w > screenW ) m_x = screenW - m_w;
+    if( m_y + m_h > screenH ) m_y = screenH - m_h;
 }
 
 void EclWindow::BeginTextEdit ( char *_name )
@@ -112,13 +114,17 @@ void EclWindow::RegisterButton ( EclButton *button )
 
 void EclWindow::RemoveButton ( char *_name )
 {
-    for ( int i = 0; i < m_buttons.Size(); ++i )
+	// Copy the name because we're removing ALL buttons with this name
+	std::string name = _name;
+
+    for ( int i = m_buttons.Size() - 1; i >= 0; --i )
     {
         EclButton *button = m_buttons.GetData (i);
-        if ( strcmp ( button->m_name, _name ) == 0 )
+        if ( strcmp ( button->m_name, name.c_str() ) == 0 )
         {
             m_buttons.RemoveData(i);
             delete button;
+			break;
         }
     }            
 }
@@ -126,7 +132,7 @@ void EclWindow::RemoveButton ( char *_name )
 EclButton *EclWindow::GetButton ( char *_name )
 {
 
-    for ( int i = 0; i < m_buttons.Size(); ++i )
+	for ( int i = 0; i < m_buttons.Size(); ++i )
     {
         EclButton *button = m_buttons.GetData (i);
         if ( strcmp ( button->m_name, _name ) == 0 )
@@ -168,12 +174,12 @@ void EclWindow::Update ()
 {
 }
 
-void EclWindow::Keypress ( int keyCode, bool shift, bool ctrl, bool alt )
+void EclWindow::Keypress ( int keyCode, bool shift, bool ctrl, bool alt, unsigned char ascii)
 {
     EclButton *currentTextEdit = GetButton( m_currentTextEdit );
     if( currentTextEdit )
     {
-        currentTextEdit->Keypress( keyCode, shift, ctrl, alt );
+        currentTextEdit->Keypress( keyCode, shift, ctrl, alt, ascii );
     }
 }
 
@@ -191,4 +197,7 @@ void EclWindow::Render ( bool hasFocus )
         button->Render( m_x + button->m_x, m_y + button->m_y, highlighted, clicked );
     }
 }
+
+
+
 

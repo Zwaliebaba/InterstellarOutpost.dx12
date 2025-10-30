@@ -1,12 +1,12 @@
-#include "pch.h"
-#include "random.h"
+ //#include "lib/universal_include.h"
+#include "lib/math/random_number.h"
 
 #ifdef WIN32
-#include <windows.h>
+	#include <windows.h>
 #else
-#include <sys/time.h> 
-#include <unistd.h> 
-#include <string.h>
+	#include <sys/time.h> 
+	#include <unistd.h> 
+	#include <string.h>
 #endif
 
 #include <stdio.h>
@@ -15,9 +15,9 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "Canvas/eclipse.h"
-#include "llist.h"
-
+#include "eclipse.h"
+#include "lib/tosser/llist.h"
+#include "lib/debug_utils.h"
 
 // ============================================================================
 
@@ -187,50 +187,53 @@ void EclUpdateMouse ( int _mouseX, int _mouseY, bool _lmb, bool _rmb )
         if ( strcmp ( mouseDownWindow, "None" ) != 0 ) {
 
             EclWindow *window = EclGetWindow( mouseDownWindow );
-            EclButton *button = window->GetButton( mouseX - window->m_x, mouseY - window->m_y );
+            if( window )
+            {
+                EclButton *button = window->GetButton( mouseX - window->m_x, mouseY - window->m_y );
             
-            if( button )
-            {
-                button->MouseDown();
-            }
-            else
-            {
-                if( strcmp( currentButton, "None" ) == 0 )
+                if( button )
                 {
-                    int newWidth = window->m_w;
-                    int newHeight = window->m_h;
-                    bool sizeChanged = false;
-
-                    if( oldMouseY > window->m_y + window->m_h - 4 &&
-                        oldMouseY < window->m_y + window->m_h + 4 )
-                    {                
-                        newHeight = mouseY - window->m_y;
-                        sizeChanged = true;
-                    }
-            
-                    if( oldMouseX > window->m_x + window->m_w - 4 &&
-                        oldMouseX < window->m_x + window->m_w + 4 )
+                    button->MouseDown();
+                }
+                else
+                {
+                    if( strcmp( currentButton, "None" ) == 0 )
                     {
-                        newWidth = mouseX - window->m_x;
-                        sizeChanged = true;
-                    }
+                        int newWidth = window->m_w;
+                        int newHeight = window->m_h;
+                        bool sizeChanged = false;
 
-                    if( sizeChanged )
-                    {
-                        if( window->m_resizable )
-                        {
-                            if( newWidth < 60 ) newWidth = 60;
-                            if( newHeight < 40 ) newHeight = 40;  
-                            EclSetWindowSize( mouseDownWindow, newWidth, newHeight );
+                        if( oldMouseY > window->m_y + window->m_h - 4 &&
+                            oldMouseY < window->m_y + window->m_h + 4 )
+                        {                
+                            newHeight = mouseY - window->m_y;
+                            sizeChanged = true;
                         }
-                    }
-                    else 
-                    {
-                        if( window->m_movable )
+                
+                        if( oldMouseX > window->m_x + window->m_w - 4 &&
+                            oldMouseX < window->m_x + window->m_w + 4 )
                         {
-                            EclSetWindowPosition ( mouseDownWindow, 
-                                                   mouseX - mouseDownWindowX, 
-                                                   mouseY - mouseDownWindowY );
+                            newWidth = mouseX - window->m_x;
+                            sizeChanged = true;
+                        }
+
+                        if( sizeChanged )
+                        {
+                            if( window->m_resizable )
+                            {
+                                if( newWidth < 60 ) newWidth = 60;
+                                if( newHeight < 40 ) newHeight = 40;  
+                                EclSetWindowSize( mouseDownWindow, newWidth, newHeight );
+                            }
+                        }
+                        else 
+                        {
+                            if( window->m_movable )
+                            {
+                                EclSetWindowPosition ( mouseDownWindow, 
+                                                       mouseX - mouseDownWindowX, 
+                                                       mouseY - mouseDownWindowY );
+                            }
                         }
                     }
                 }
@@ -277,12 +280,12 @@ void EclUpdateMouse ( int _mouseX, int _mouseY, bool _lmb, bool _rmb )
 
 }
 
-void EclUpdateKeyboard ( int keyCode, bool shift, bool ctrl, bool alt )
+void EclUpdateKeyboard ( int keyCode, bool shift, bool ctrl, bool alt, unsigned char ascii )
 {
     EclWindow *currentWindow = EclGetWindow( windowFocus );
     if ( currentWindow )
     {
-        currentWindow->Keypress( keyCode, shift, ctrl, alt );
+        currentWindow->Keypress( keyCode, shift, ctrl, alt, ascii );
     }
 }
 
@@ -408,10 +411,10 @@ void EclRegisterWindow ( EclWindow *window, EclWindow *parent )
         // We should place the window in a decent location
         int left = screenW / 2 - parent->m_x;
         int above = screenH / 2 - parent->m_y;
-        if( left > window->m_w / 2 )    window->m_x = int( parent->m_x + parent->m_w * (float) darwiniaRandom() / (float) DARWINIA_RAND_MAX );
-        else                            window->m_x = int( parent->m_x - window->m_w * (float) darwiniaRandom() / (float) DARWINIA_RAND_MAX );
-        if( above > window->m_h / 2 )   window->m_y = int( parent->m_y + parent->m_h * (float) darwiniaRandom() / (float) DARWINIA_RAND_MAX );
-        else                            window->m_y = int( parent->m_y - window->m_h/2 * (float) darwiniaRandom() / (float) DARWINIA_RAND_MAX );
+        if( left > window->m_w / 2 )    window->m_x = int( parent->m_x + parent->m_w * (float) AppRandom() / (float) APP_RAND_MAX );
+        else                            window->m_x = int( parent->m_x - window->m_w * (float) AppRandom() / (float) APP_RAND_MAX );
+        if( above > window->m_h / 2 )   window->m_y = int( parent->m_y + parent->m_h * (float) AppRandom() / (float) APP_RAND_MAX );
+        else                            window->m_y = int( parent->m_y - window->m_h/2 * (float) AppRandom() / (float) APP_RAND_MAX );
     }
 
 	window->MakeAllOnScreen();
@@ -448,7 +451,6 @@ void EclRemoveWindow ( char *name )
         EclWindow *window = windows.GetData(index);
         EclDirtyRectangle ( window->m_x, window->m_y, window->m_w, window->m_h );
         windows.RemoveData(index);
-        delete window;
 
         if( strcmp( mouseDownWindow, name ) == 0 )
         {
@@ -459,7 +461,8 @@ void EclRemoveWindow ( char *name )
         {
             strcpy( windowFocus, "None" );
         }
-
+		
+		delete window;
     }
     else
     {
@@ -625,9 +628,7 @@ LList <EclWindow *> *EclGetWindows ()
 
 int EclGetAccurateTime ()
 {
-
-
-#ifdef WIN32
+#if defined(WIN32) 
 
 	return GetTickCount ();
 
@@ -720,7 +721,7 @@ void EclResetDirtyRectangles ()
         dirtyrects.RemoveData(0);
     }    
 
-    for( int i =0; i < windows.Size(); ++i )
+    for ( int i = 0; i < windows.Size(); ++i )
     {
         EclWindow *window = windows.GetData(i);
         window->m_dirty = false;

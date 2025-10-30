@@ -4,8 +4,8 @@
 #include <string>
 #include <iostream>
 
-#include "input/inputfilterspec.h"
-#include "input/input_types.h"
+#include "lib/input/inputfilterspec.h"
+#include "lib/input/input_types.h"
 
 class InputFilter {
 

@@ -1,15 +1,16 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
-#include "input/input.h"
-#include "targetcursor.h"
-#include "input/inputfiltermanager.h"
+#include "lib/input/input.h"
+#include "lib/targetcursor.h"
+#include "lib/input/inputfiltermanager.h"
 #include "app.h"
-#include "language_table.h"
-#include "hi_res_time.h"
+#include "lib/language_table.h"
+#include "lib/hi_res_time.h"
 
 #define Q(x) "\"" << x << "\""
 
@@ -36,11 +37,17 @@ InputManager::~InputManager()
 void InputManager::parseInputPrefs( TextReader &reader, bool replace )
 {
 	int line = 1;
-#ifdef TARGET_DEBUG
-	ofstream derr( "inputprefs_debug.txt" );
+	// FIXME: always log to file on OS X, not to Console, because we're getting
+	// a number of spurious error messages.
+#if defined(TARGET_OS_MACOSX) || defined(TARGET_DEBUG) 
+	char fullFileName[512];
+	snprintf( fullFileName, sizeof(fullFileName), "%sinputprefs_debug.txt", g_app->GetProfileDirectory() );
+	fullFileName[ sizeof(fullFileName) - 1 ] = '\0';
+	ofstream derr( fullFileName );
 #else
 	ostream &derr = cout;
 #endif
+
 	while ( reader.ReadLine() ) {
 		// derr << "Line " << line++ << ": ";
 		bool iconline = false;
@@ -67,8 +74,7 @@ void InputManager::parseInputPrefs( TextReader &reader, bool replace )
 							inputspec = inputspec.substr( 0, len-- );
 						if ( inputspec[ len ] == '\r' )
 							inputspec = inputspec.substr( 0, len );
-						bindings.setIcon( control_id, inputspec );
-						derr << "Treated as icon: " << Q(bindings.getIcon( control_id )) << endl;
+						bindings.setIcon( control_id, inputspec );						
 					} else
 						derr << "Empty icon line." << endl;
 					continue;
@@ -76,15 +82,19 @@ void InputManager::parseInputPrefs( TextReader &reader, bool replace )
 
 				InputSpec spec;
 				string err;
-				if ( PARSE_SUCCESS( parseInputSpecString( inputspec, spec, err ) ) ) {
-					if ( bindings.bind( control_id, spec, replace ) )
-						derr << "Success. Driver = " << drivers[ spec.driver ]->getName() << endl;
-					else
+				InputParserState state;
+
+				if ( PARSE_SUCCESS( state = parseInputSpecString( inputspec, spec, err ) ) ) {
+					if ( !bindings.bind( control_id, spec, replace ) )
 						derr << "Binding failed." << endl;
-				} else derr << "Parse failed - " << err << endl;
+				} 
+				else 
+				{
+					derr << "Parse failed - " << err << " (state = " << state << ")" << endl;
+				}
 			} else derr << "Control ID not found." << endl;
 
-		} else derr << "Blank line." << endl;
+		} 
 	}
 }
 
@@ -165,10 +175,10 @@ void InputManager::Advance()
 		idleNext = idleNext && driverIdle;
 
 		if ( !driverIdle ) {
-		InputMode driverInputMode = driver->getInputMode();
-		if ( driverInputMode > nextInputMode )
-			nextInputMode = driverInputMode; // This prefers the Gamepad
-	}
+			InputMode driverInputMode = driver->getInputMode();
+			if ( driverInputMode > nextInputMode )
+				nextInputMode = driverInputMode; // This prefers the Gamepad
+		}
 	}
 
 	m_idle = idleNext;

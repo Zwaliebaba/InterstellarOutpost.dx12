@@ -9,18 +9,18 @@ class GodDish : public Building
 {
 public:
     bool    m_activated;
-    float   m_timer;
+    double   m_timer;
     int     m_numSpawned;
     bool    m_spawnSpam;
-
+    
 public:
     GodDish();
 
     void Initialise( Building *_template );
 
     bool Advance        ();
-    void Render         ( float _predictionTime );
-    void RenderAlphas   ( float _predictionTime );
+    void Render         ( double _predictionTime );
+    void RenderAlphas   ( double _predictionTime );
 
     bool IsInView       ();
 

@@ -1,10 +1,10 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <math.h>
 #include <stdio.h>
 
-
-#include "math_utils.h"
+#include "lib/debug_utils.h"
+#include "lib/math_utils.h"
 
 #include "app.h"
 #include "location.h"
@@ -12,7 +12,7 @@
 #include "main.h"
 
 
-#define COEF_OF_RESTITUTION	0.85f
+#define COEF_OF_RESTITUTION	0.85
 
 
 // ****************************************************************************
@@ -37,7 +37,7 @@ WorldObjectId::WorldObjectId()
 WorldObjectId::WorldObjectId( unsigned char _teamId,
                               int _unitId,
                               int _index,
-                              int _uniqueId )
+                              int _uniqueId )                              
 {
     Set( _teamId, _unitId, _index, _uniqueId );
 }
@@ -48,10 +48,10 @@ void WorldObjectId::Set( unsigned char _teamId,
                          int _index,
                          int _uniqueId )
 {
-    DEBUG_ASSERT( _teamId < ID_MAXTEAMS );
-    DEBUG_ASSERT( _unitId < ID_MAXUNITS );
-    DEBUG_ASSERT( _index < ID_MAXTROOPS );
-
+    AppDebugAssert( _teamId < ID_MAXTEAMS );
+    AppDebugAssert( _unitId < ID_MAXUNITS );
+    AppDebugAssert( _index < ID_MAXTROOPS );
+    
     m_teamId = _teamId;
     m_unitId = _unitId;
     m_index = _index;
@@ -102,6 +102,11 @@ void WorldObjectId::GenerateUniqueId()
     m_uniqueId = s_nextUniqueId;
 }
 
+void WorldObjectId::ResetUniqueIdSeed()
+{
+	s_nextUniqueId = 0;
+}
+
 
 // ****************************************************************************
 //  Class WorldObject
@@ -112,9 +117,8 @@ WorldObject::WorldObject()
 :   m_onGround(false),
     m_enabled(true),
     m_type(0)
-{
+{    
 }
-
 
 WorldObject::~WorldObject()
 {
@@ -130,14 +134,14 @@ void WorldObject::BounceOffLandscape()
 	// and our current position as the point of impact (it will be correct on
 	// average)
 	Vector3 lastPos = m_pos;// - m_vel * g_advanceTime;
-	Vector3 impactPos = (m_pos + lastPos) * 0.5f;
+	Vector3 impactPos = (m_pos + lastPos) * 0.5;
 	m_pos = impactPos;
 	m_pos.y = g_app->m_location->m_landscape.m_heightMap->GetValue(m_pos.x, m_pos.z);
-
+    
     Vector3 normal = g_app->m_location->m_landscape.m_normalMap->GetValue(m_pos.x, m_pos.z);
-    Vector3 incomingVel = m_vel * -1.0f;
-    float dotProd = normal * incomingVel;
-    m_vel = 2.0f * dotProd * normal - incomingVel;
+    Vector3 incomingVel = m_vel * -1.0;
+    double dotProd = normal * incomingVel;        
+    m_vel = 2.0 * dotProd * normal - incomingVel;
     m_vel *= COEF_OF_RESTITUTION;
 }
 
@@ -148,16 +152,34 @@ bool WorldObject::Advance()
 }
 
 
-void WorldObject::Render( float _time )
+void WorldObject::Render( double _time )
 {
 }
 
 
-bool WorldObject::RenderPixelEffect( float predictionTime )
+bool WorldObject::RenderPixelEffect( double predictionTime )
 {
     return false;
 }
 
+
+char *WorldObject::LogState( char *_message )
+{
+    static char s_result[1024];
+    
+    static char buf1[32], buf2[32], buf3[32], buf4[32];
+
+    sprintf( s_result, "%sWOBJ Type[%d] Id[%d] pos[%s,%s,%s], vel[%s]",
+                        (_message)?_message:"",
+                        m_type,
+                        m_id.GetUniqueId(),
+                        HashDouble( m_pos.x, buf1 ),
+                        HashDouble( m_pos.y, buf2 ),
+                        HashDouble( m_pos.z, buf3 ),
+                        HashDouble( m_vel.x + m_vel.y + m_vel.z, buf4 ) );
+
+    return s_result;
+}
 
 
 // ****************************************************************************
@@ -166,17 +188,17 @@ bool WorldObject::RenderPixelEffect( float predictionTime )
 
 // *** Constructor
 Light::Light()
-{
-    m_colour[0] = 1.3f;
-    m_colour[1] = 1.3f;
-    m_colour[2] = 1.3f;
-    m_colour[3] = 0.0f;
+{    
+    m_colour[0] = 1.3;
+    m_colour[1] = 1.3;
+    m_colour[2] = 1.3;
+    m_colour[3] = 0.0;
 
     SetFront( Vector3(0,0,1) );
 }
 
 
-void Light::SetColour(float colour[4])
+void Light::SetColour(double colour[4])
 {
 	m_colour[0] = colour[0];
 	m_colour[1] = colour[1];
@@ -185,7 +207,7 @@ void Light::SetColour(float colour[4])
 }
 
 
-void Light::SetFront(float front[4])
+void Light::SetFront(double front[4])
 {
 	m_front[0] = front[0];
 	m_front[1] = front[1];
@@ -199,13 +221,13 @@ void Light::SetFront(Vector3 front)
 	m_front[0] = front.x;
 	m_front[1] = front.y;
 	m_front[2] = front.z;
-	m_front[3] = 0.0f;
+	m_front[3] = 0.0;
 }
 
 
 void Light::Normalise()
 {
-	float mag = sqrtf(m_front[0] * m_front[0] +
+	double mag = iv_sqrt(m_front[0] * m_front[0] +
 					  m_front[1] * m_front[1] +
 					  m_front[2] * m_front[2]);
 	m_front[0] /= mag;

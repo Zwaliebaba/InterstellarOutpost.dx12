@@ -1,12 +1,13 @@
-#include "pch.h"
-#include "hi_res_time.h"
-#include "resource.h"
-#include "window_manager.h"
-#include "text_renderer.h"
-#include "language_table.h"
+#include "lib/universal_include.h"
+#include "lib/hi_res_time.h"
+#include "lib/resource.h"
+#include "lib/window_manager.h"
+#include "lib/text_renderer.h"
+#include "lib/language_table.h"
 
 #include "sound/sound_library_2d.h"
 #include "sound/sound_library_3d.h"
+#include "sound/soundsystem.h"
 
 #include "app.h"
 #include "renderer.h"
@@ -21,16 +22,22 @@ class BuyOnlineButton : public DarwiniaButton
         DemoEndWindow *window = (DemoEndWindow *) m_parent;
         if( window->m_saveGame ) g_app->SaveProfile( true, true );
 
-     //   g_soundLibrary2d->Stop();
-	    //delete g_soundLibrary3d; g_soundLibrary3d = NULL;
-	    //delete g_soundLibrary2d; g_soundLibrary2d = NULL;
+        if( g_app->m_soundSystem->IsInitialized() && g_soundLibrary2d )
+        {
+            g_soundLibrary2d->Stop();
+            if( g_soundLibrary3d )
+                delete g_soundLibrary3d;
+            delete g_soundLibrary2d;
+            g_soundLibrary3d = NULL;
+            g_soundLibrary2d = NULL;
+        }
 
-     //   delete g_app->m_resource;
-     //   delete g_windowManager;
+        delete g_app->m_resource;
 
-        WindowManager::OpenWebsite( "http://store.introversion.co.uk" );
+		g_windowManager->OpenWebsite( g_app->GetBuyNowURL() );
+		delete g_windowManager;
 
-		g_app->m_requestQuit = true;
+	    exit(0);
     }
 
     void Render( int realX, int realY, bool highlighted, bool clicked )
@@ -43,7 +50,7 @@ class BuyOnlineButton : public DarwiniaButton
 
         //
         // Fill
-
+                
         glShadeModel( GL_SMOOTH );
         glBegin( GL_QUADS );
             glColor4f( 0.2f, 0.2f, 0.5f, buttonAlpha );        glVertex2i( realX, realY );
@@ -69,7 +76,7 @@ class BuyOnlineButton : public DarwiniaButton
         // Caption
 
         float textSize = m_h * 0.5f;
-
+        
         for( int i = 0; i < 2; ++i )
         {
             if( i == 0 )
@@ -82,10 +89,9 @@ class BuyOnlineButton : public DarwiniaButton
                 g_gameFont.SetRenderOutline(false);
                 glColor4f( 1.0f, 1.0f, 1.0f, alpha );
             }
-
+        
             g_gameFont.DrawText2DCentre( realX+m_w/2+13, realY+m_h/2-25, textSize, m_caption );
-			g_gameFont.DrawText2DCentre( realX+m_w/2, realY+m_h/2+30, 11, "http://store.introversion.co.uk" );
-
+            g_gameFont.DrawText2DCentre( realX+m_w/2, realY+m_h/2+30, 11, g_app->GetBuyNowURL() );
         }
     }
 };
@@ -100,14 +106,20 @@ class ExitDemoButton : public DarwiniaButton
         {
             if( window->m_saveGame ) g_app->SaveProfile( true, true );
 
-            g_app->m_requestQuit = true;
+            if( g_app->m_soundSystem->IsInitialized() && g_soundLibrary2d )
+            {
+                g_soundLibrary2d->Stop();
+                if( g_soundLibrary3d )
+                    delete g_soundLibrary3d;
+                delete g_soundLibrary2d;
+                g_soundLibrary3d = NULL;
+                g_soundLibrary2d = NULL;
+            }
 
-         //   g_soundLibrary2d->Stop();
-	        //delete g_soundLibrary3d; g_soundLibrary3d = NULL;
-	        //delete g_soundLibrary2d; g_soundLibrary2d = NULL;
+            delete g_app->m_resource;
+            delete g_windowManager;
 
-         //   delete g_app->m_resource;
-         //   delete g_windowManager;
+            exit(0);
         }
     }
 
@@ -119,7 +131,7 @@ class ExitDemoButton : public DarwiniaButton
         float buttonAlpha = alpha;
         if( !highlighted && !clicked ) buttonAlpha *= 0.7f;
 
-        if( !window->ShowExitButton() )
+        if( !window->ShowExitButton() ) 
         {
             alpha = min( 0.1f, alpha );
             buttonAlpha = min( 0.1f, buttonAlpha );
@@ -127,7 +139,7 @@ class ExitDemoButton : public DarwiniaButton
 
         //
         // Fill
-
+            
         glShadeModel( GL_SMOOTH );
         glBegin( GL_QUADS );
             glColor4f( 0.2f, 0.2f, 0.5f, buttonAlpha );        glVertex2i( realX, realY );
@@ -153,14 +165,14 @@ class ExitDemoButton : public DarwiniaButton
         // Caption
 
         float textSize = m_h * 0.5f;
-
+    
         glColor4f( alpha, alpha, alpha, 0.0f );
         g_gameFont.SetRenderOutline(true);
         g_gameFont.DrawText2DCentre( realX+m_w/2+8, realY+m_h/2-3, textSize, m_caption );
-
+        
         g_gameFont.SetRenderOutline(false);
         glColor4f( 1.0f, 1.0f, 1.0f, alpha );
-        g_gameFont.DrawText2DCentre( realX+m_w/2+8, realY+m_h/2-3, textSize, m_caption );
+        g_gameFont.DrawText2DCentre( realX+m_w/2+8, realY+m_h/2-3, textSize, m_caption );        
     }
 };
 
@@ -184,7 +196,7 @@ DemoEndWindow::DemoEndWindow( float _fadeInTime, bool _saveGame )
     SetSize( 800, 600 );
     SetPosition(screenW/2-m_w/2,
                 screenH/2-m_h/2);
-
+    
     m_timer = GetHighResTime();
     m_fadeInTime = _fadeInTime;
 }
@@ -192,21 +204,24 @@ DemoEndWindow::DemoEndWindow( float _fadeInTime, bool _saveGame )
 
 void DemoEndWindow::Create()
 {
-    ExitDemoButton *exit = new ExitDemoButton();
-	int buttonW = 210;
-    exit->SetShortProperties( LANGUAGEPHRASE("launchpad_button_exitdemo"), m_w/2-buttonW/2, 520, buttonW, 40 );
-    RegisterButton( exit );
+    int buttonW = 250;
+    int buttonX = m_w - buttonW - 20;
+    int buttonH = 50;    
+    int y = m_h;
 
+    ExitDemoButton *exit = new ExitDemoButton();
+    exit->SetShortProperties( "launchpad_button_exitdemo", m_w/2-70, 520, 140, 40, LANGUAGEPHRASE("launchpad_button_exitdemo") );
+    RegisterButton( exit );
+    
     BuyOnlineButton *buy = new BuyOnlineButton();
-	buttonW = 420;
-    buy->SetShortProperties( LANGUAGEPHRASE("launchpad_button_buynow"), m_w/2-buttonW/2, 360, buttonW, 100 );
+    buy->SetShortProperties( "launchpad_button_buynow", m_w/2-150, 360, 300, 100, LANGUAGEPHRASE("launchpad_button_buynow") );
     RegisterButton( buy );
 }
 
 
 float DemoEndWindow::GetAlpha()
 {
-    float timeNow = GetHighResTime();
+    double timeNow = GetHighResTime();
 
     float alpha = ( timeNow - m_timer ) / m_fadeInTime;
     alpha = max( alpha, 0.0f );
@@ -218,15 +233,15 @@ float DemoEndWindow::GetAlpha()
 
 bool DemoEndWindow::ShowExitButton()
 {
-    float timePassed = GetHighResTime() - m_timer;
+    double timePassed = GetHighResTime() - m_timer;
     return( timePassed > 4 );
 }
 
 
 void DemoEndWindow::Render( bool hasFocus )
-{
+{    
     float alpha = GetAlpha();
-
+    
     //
     // Main body fill
 
@@ -264,23 +279,27 @@ void DemoEndWindow::Render( bool hasFocus )
 
     for( int i = 0; i < 2; ++i )
     {
-        if( i == 0 )
+        if( i == 0 ) 
         {
             glColor4f( alpha, alpha, alpha, 0.0 );
             g_gameFont.SetRenderOutline(true);
         }
 
-        if( i == 1 )
+        if( i == 1 ) 
         {
             glColor4f( 1.0f, 1.0f, 1.0f, alpha );
             g_gameFont.SetRenderOutline(false);
         }
 
+#ifdef EGAMESBUILD
+        g_gameFont.DrawText2DCentre( m_x+m_w/2+20, m_y+80,  100, LANGUAGEPHRASE("launchpad_buyme_1") );
+#else
         g_gameFont.DrawText2DCentre( m_x+m_w/2+20, m_y+50,  70, LANGUAGEPHRASE("launchpad_buyme_1") );
         g_gameFont.DrawText2DCentre( m_x+m_w/2+10, m_y+150, 20, LANGUAGEPHRASE("launchpad_buyme_2") );
         g_gameFont.DrawText2DCentre( m_x+m_w/2+10, m_y+180, 20, LANGUAGEPHRASE("launchpad_buyme_3") );
         g_gameFont.DrawText2DCentre( m_x+m_w/2+10, m_y+250, 20, LANGUAGEPHRASE("launchpad_buyme_4") );
         g_gameFont.DrawText2DCentre( m_x+m_w/2+10, m_y+280, 20, LANGUAGEPHRASE("launchpad_buyme_5") );
+#endif
     }
 
 
@@ -289,4 +308,7 @@ void DemoEndWindow::Render( bool hasFocus )
 
     EclWindow::Render( hasFocus );
 }
+
+
+
 

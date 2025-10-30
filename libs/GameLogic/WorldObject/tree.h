@@ -10,32 +10,44 @@ class Tree : public Building
 protected:
     int     m_branchDisplayListId;
     int     m_leafDisplayListId;
-    void    RenderBranch   ( Vector3 _from, Vector3 _to, int _iterations,
+    void    RenderBranch   ( Vector3 _from, Vector3 _to, int _iterations, 
                              bool _calcRadius, bool _renderBranch, bool _renderLeaf );
 
+	void	GenerateLeaves();
+	void	GenerateBranches();
+
     Vector3 m_hitcheckCentre;
-    float   m_hitcheckRadius;
+    double   m_hitcheckRadius;
     int     m_numLeafs;
 
-    float   m_fireDamage;
-    float   m_onFire;
+    double   m_fireDamage;
+    double   m_onFire;
     bool    m_burnSoundPlaying;
-
-    float   GetActualHeight( float _predictionTime );
+    
+    double   GetActualHeight( double _predictionTime );
 
 	unsigned char m_leafColourArray[4];
 	unsigned char m_branchColourArray[4];
-
+	
 public:
-    float   m_height;
-    float   m_budsize;
-    float   m_pushUp;
-    float   m_pushOut;
+    double   m_height;
+    double   m_budsize;
+    double   m_pushUp;
+    double   m_pushOut;
     int     m_iterations;
     int     m_seed;
     int     m_leafColour;
     int     m_branchColour;
 	int		m_leafDropRate;
+    int     m_spiritDropRate;
+    
+    int     m_spawnsRemaining;                       // Time to spread and create another tree
+    double  m_spawnTimer;
+    bool    m_destroyable;
+    bool    m_evil;
+    float   m_corruptCheckTimer;
+    bool    m_renderCorruptShadow;
+    bool    m_corrupted;
 
 public:
     Tree();
@@ -43,28 +55,39 @@ public:
 
     void Initialise     ( Building *_template );
     void SetDetail      ( int _detail );
+    void Clone          ( Tree *tree );
 
     bool Advance        ();
 
 	void DeleteDisplayLists();
     void Generate       ();
-    void Render         ( float _predictionTime );
-    void RenderAlphas   ( float _predictionTime );
+    void Render         ( double _predictionTime );
+    void RenderAlphas   ( double _predictionTime );
     void RenderHitCheck ();
 
     bool PerformDepthSort( Vector3 &_centrePos );
 
-    void Damage         ( float _damage );
+    void Damage         ( double _damage );
+    void SetFireAmount  ( double _amount );
+    double GetFireAmount ();
+    bool IsOnFire();
+    double GetBurnRange();
 
-    bool DoesSphereHit          (Vector3 const &_pos, float _radius);
+    void CreateAnotherTree();
+
+    bool DoesSphereHit          (Vector3 const &_pos, double _radius);
     bool DoesShapeHit           (Shape *_shape, Matrix34 _transform);
-    bool DoesRayHit             (Vector3 const &_rayStart, Vector3 const &_rayDir,
-                                 float _rayLen=1e10, Vector3 *_pos=NULL, Vector3 *_norm=NULL);        // pos/norm will not always be available
+    bool DoesRayHit             (Vector3 const &_rayStart, Vector3 const &_rayDir, 
+                                 double _rayLen=1e10, Vector3 *_pos=NULL, Vector3 *_norm=NULL);        // pos/norm will not always be available
 
     void ListSoundEvents( LList<char *> *_list );
 
-    void Read           ( TextReader *_in, bool _dynamic );
-    void Write          ( FileWriter *_out );
+    void Read           ( TextReader *_in, bool _dynamic );     
+    void Write          ( TextWriter *_out );	
+
+    char *LogState       ( char *message=NULL );
+
+    bool IsInView();
 };
 
 

@@ -1,9 +1,9 @@
 #ifndef INCLUDED_INPUTDRIVER_CONJOIN_H
 #define INCLUDED_INPUTDRIVER_CONJOIN_H
 
-#include "auto_vector.h"
-#include "input/inputdriver.h"
-#include "input/inputspeclist.h"
+#include "lib/auto_vector.h"
+#include "lib/input/inputdriver.h"
+#include "lib/input/inputspeclist.h"
 
 
 // Enables input specifications to be combined using "&&" in the preferences

@@ -1,11 +1,12 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <math.h>
 
-
-#include "shape.h"
-#include "math_utils.h"
-#include "debug_render.h"
+#include "lib/debug_utils.h"
+#include "lib/shape.h"
+#include "lib/math_utils.h"
+#include "lib/debug_render.h"
+#include "lib/math/random_number.h"
 
 #include "app.h"
 #include "camera.h"
@@ -19,6 +20,7 @@
 #include "global_world.h"
 #include "routing_system.h"
 #include "particle_system.h"
+#include "gametimer.h"
 
 #include "worldobject/teleport.h"
 #include "worldobject/insertion_squad.h"
@@ -30,10 +32,10 @@ LList<TeleportMap> Teleport::m_teleportMap;
 // *** Constructor
 Teleport::Teleport()
 :   Building(),
-    m_timeSync(0.0f),
-    m_sendPeriod(1.0f),
+    m_timeSync(0.0),
+    m_sendPeriod(1.0),
     m_entrance(NULL)
-{
+{   
 }
 
 
@@ -41,17 +43,19 @@ Teleport::Teleport()
 void Teleport::SetShape( Shape *_shape )
 {
     Building::SetShape( _shape );
-
-    m_entrance = m_shape->m_rootFragment->LookupMarker( "MarkerTeleportEntrance" );
+    
+    const char entranceName[] = "MarkerTeleportEntrance";
+    m_entrance = m_shape->m_rootFragment->LookupMarker( entranceName );
+    AppReleaseAssert( m_entrance, "Teleport: Can't get Marker(%s) from shape(%s), probably a corrupted file\n", entranceName, m_shape->m_name );
 }
 
 
 // *** Advance
 bool Teleport::Advance ()
-{
+{    
     m_timeSync -= SERVER_ADVANCE_PERIOD;
-    if( m_timeSync < 0.0f ) m_timeSync = 0.0f;
-
+    if( m_timeSync < 0.0 ) m_timeSync = 0.0;
+    
     //
     // Advance people who are in transit
 
@@ -102,8 +106,8 @@ bool Teleport::IsInView()
     Vector3 startPoint = GetStartPoint();
     Vector3 endPoint = GetEndPoint();
 
-    Vector3 midPoint = ( startPoint + endPoint ) / 2.0f;
-    float radius = ( startPoint - endPoint ).Mag() / 2.0f;
+    Vector3 midPoint = ( startPoint + endPoint ) / 2.0;
+    double radius = ( startPoint - endPoint ).Mag() / 2.0;
     radius += m_radius;
 
     if( g_app->m_camera->SphereInViewFrustum( midPoint, radius ) )
@@ -115,15 +119,15 @@ bool Teleport::IsInView()
 }
 
 
-void Teleport::RenderAlphas ( float predictionTime )
+void Teleport::RenderAlphas ( double predictionTime )
 {
 //    Vector3 pos, front;
 //    GetEntrance( pos, front );
-//    RenderSphere( pos, 3.0f, RGBAColour(255,0,0) );
-//    RenderSphere( pos, 15.0f, RGBAColour(255,0,0) );
-
+//    RenderSphere( pos, 3.0, RGBAColour(255,0,0) );
+//    RenderSphere( pos, 15.0, RGBAColour(255,0,0) );
+    
     //RenderHitCheck();
-
+    
     glEnable        ( GL_BLEND );
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
     glDisable       ( GL_CULL_FACE );
@@ -160,26 +164,26 @@ void Teleport::RenderSpirit( Vector3 const &_pos, int _teamId )
     int spiritOuterSize = 6;
 
     RGBAColour colour;
-    if( _teamId >= 0 ) colour = g_app->m_location->m_teams[ _teamId ].m_colour;
+    if( _teamId >= 0 ) colour = g_app->m_location->m_teams[ _teamId ]->m_colour;      
 
-    float size = spiritInnerSize;
-    glColor4ub(colour.r, colour.g, colour.b, innerAlpha );
+    double size = spiritInnerSize;
+    glColor4ub(colour.r, colour.g, colour.b, innerAlpha );            
 
     glBegin( GL_QUADS );
-        glVertex3fv( (pos - g_app->m_camera->GetUp()*size).GetData() );
-        glVertex3fv( (pos + g_app->m_camera->GetRight()*size).GetData() );
-        glVertex3fv( (pos + g_app->m_camera->GetUp()*size).GetData() );
-        glVertex3fv( (pos - g_app->m_camera->GetRight()*size).GetData() );
-    glEnd();
+        glVertex3dv( (pos - g_app->m_camera->GetUp()*size).GetData() );
+        glVertex3dv( (pos + g_app->m_camera->GetRight()*size).GetData() );
+        glVertex3dv( (pos + g_app->m_camera->GetUp()*size).GetData() );
+        glVertex3dv( (pos - g_app->m_camera->GetRight()*size).GetData() );
+    glEnd();    
 
     size = spiritOuterSize;
-    glColor4ub(colour.r, colour.g, colour.b, outerAlpha );
+    glColor4ub(colour.r, colour.g, colour.b, outerAlpha );            
     glBegin( GL_QUADS );
-        glVertex3fv( (pos - g_app->m_camera->GetUp()*size).GetData() );
-        glVertex3fv( (pos + g_app->m_camera->GetRight()*size).GetData() );
-        glVertex3fv( (pos + g_app->m_camera->GetUp()*size).GetData() );
-        glVertex3fv( (pos - g_app->m_camera->GetRight()*size).GetData() );
-    glEnd();
+        glVertex3dv( (pos - g_app->m_camera->GetUp()*size).GetData() );
+        glVertex3dv( (pos + g_app->m_camera->GetRight()*size).GetData() );
+        glVertex3dv( (pos + g_app->m_camera->GetUp()*size).GetData() );
+        glVertex3dv( (pos - g_app->m_camera->GetRight()*size).GetData() );
+    glEnd();    
 }
 
 
@@ -191,7 +195,7 @@ bool Teleport::Connected()
 
 bool Teleport::ReadyToSend()
 {
-    return( m_timeSync <= 0.0f );
+    return( m_timeSync <= 0.0 );
 }
 
 void Teleport::EnterTeleport( WorldObjectId _id, bool _relay )
@@ -202,15 +206,15 @@ void Teleport::EnterTeleport( WorldObjectId _id, bool _relay )
     if( entity )
     {
         Vector3 oldPos = entity->m_pos;
-
+        
         if( !_relay )
         {
-            Unit *oldUnit = g_app->m_location->GetUnit( _id );
+            Unit *oldUnit = g_app->m_location->GetUnit( _id ); 
             if( oldUnit )
             {
                 //
                 // Look for the new unit that i'm going to
-
+    
                 int newUnitId = -1;
                 for( int i = 0; i < m_teleportMap.Size(); ++i )
                 {
@@ -218,66 +222,70 @@ void Teleport::EnterTeleport( WorldObjectId _id, bool _relay )
                     if( map->m_teamId == _id.GetTeamId() &&
                         map->m_fromUnitId == _id.GetUnitId() )
                     {
-                        newUnitId = map->m_toUnitId;
+                        newUnitId = map->m_toUnitId;                
                     }
                 }
 
-                DEBUG_ASSERT( oldUnit );
-
+                AppDebugAssert( oldUnit );
+        
                 Unit *newUnit = NULL;
 
                 if( newUnitId != -1 )
                 {
-                    if( g_app->m_location->m_teams[ _id.GetTeamId() ].m_units.ValidIndex( newUnitId ) )
+                    if( g_app->m_location->m_teams[ _id.GetTeamId() ]->m_units.ValidIndex( newUnitId ) )
                     {
-                        newUnit = g_app->m_location->m_teams[ _id.GetTeamId() ].m_units[ newUnitId ];
+                        newUnit = g_app->m_location->m_teams[ _id.GetTeamId() ]->m_units[ newUnitId ];
                     }
                     else
                     {
                         newUnitId = -1;
                     }
                 }
-
+            
                 if( newUnitId == -1 )
                 {
                     //
                     // Oh well, i'm the first, so create a new unit
-                    newUnit = g_app->m_location->m_teams[ _id.GetTeamId() ].NewUnit( oldUnit->m_troopType,
-                                                                                  oldUnit->m_entities.NumUsed(),
+                    newUnit = g_app->m_location->m_teams[ _id.GetTeamId() ]->NewUnit( oldUnit->m_troopType, 
+                                                                                  oldUnit->m_entities.NumUsed(), 
                                                                                   &newUnitId,
 																			      m_pos);
 
                     //
                     // Special case :
-                    // If this was an insertion squad we just broke up,
+                    // If this was an insertion squad we just broke up, 
                     // then we must create a Task to represent the new squad
 
                     if( oldUnit->m_troopType == Entity::TypeInsertionSquadie )
                     {
                         // Shut down the old task
-                        for( int i = 0; i < g_app->m_taskManager->m_tasks.Size(); ++i )
+
+                        float oldTimer = -1.0f;
+                        for( int i = 0; i < g_app->m_location->m_teams[ _id.GetTeamId() ]->m_taskManager->m_tasks.Size(); ++i )
                         {
-                            Task *task = g_app->m_taskManager->m_tasks[i];
+                            Task *task = g_app->m_location->m_teams[ _id.GetTeamId() ]->m_taskManager->m_tasks[i];
                             if( task->m_type == GlobalResearch::TypeSquad &&
                                 task->m_objId == WorldObjectId( oldUnit->m_teamId, oldUnit->m_unitId, -1, -1 ) )
                             {
-                                g_app->m_taskManager->m_tasks.RemoveData(i);
+                                oldTimer = task->m_lifeTimer;
+                                g_app->m_location->m_teams[ _id.GetTeamId() ]->m_taskManager->m_tasks.RemoveData(i);
                                 delete task;
                                 break;
                             }
                         }
-
-                        Task *task = new Task();
+                        
+                        Task *task = new Task( newUnit->m_teamId );
                         task->m_type = GlobalResearch::TypeSquad;
                         task->m_state = Task::StateRunning;
-                        task->m_objId.Set( newUnit->m_teamId, newUnit->m_unitId, -1, -1 );
-                        bool success = g_app->m_taskManager->RegisterTask( task );
-                        if( success ) g_app->m_taskManager->SelectTask( task->m_id );
+                        task->m_objId.Set( newUnit->m_teamId, newUnit->m_unitId, -1, -1 );    
+                        if( g_app->Multiplayer() ) task->m_lifeTimer = oldTimer;
+                        bool success = g_app->m_location->m_teams[ _id.GetTeamId() ]->m_taskManager->RegisterTask( task );
+                        if( success )  g_app->m_location->m_teams[ _id.GetTeamId() ]->m_taskManager->SelectTask( task->m_id );
 
                         ((InsertionSquad *)newUnit)->m_weaponType = ((InsertionSquad *)oldUnit)->m_weaponType;
                         ((InsertionSquad *)newUnit)->m_controllerId = ((InsertionSquad *)oldUnit)->m_controllerId;
                         ((InsertionSquad *)oldUnit)->m_controllerId = -1;
-                        Task *controller = g_app->m_taskManager->GetTask( ((InsertionSquad *)newUnit)->m_controllerId );
+                        Task *controller = g_app->m_location->m_teams[ _id.GetTeamId() ]->m_taskManager->GetTask( ((InsertionSquad *)newUnit)->m_controllerId );
                         if( controller )
                         {
                             controller->m_objId = task->m_objId;
@@ -285,22 +293,22 @@ void Teleport::EnterTeleport( WorldObjectId _id, bool _relay )
                         }
                     }
 
-
+                    
                     if( oldUnit->m_routeId != -1 )
                     {
                         newUnit->m_routeId = oldUnit->m_routeId;
-                        newUnit->m_routeWayPointId = oldUnit->m_routeWayPointId+1;
+                        newUnit->m_routeWayPointId = oldUnit->m_routeWayPointId+1;                    
                     }
                     else
                     {
                         Vector3 exitPos, exitFront;
-                        GetExit( exitPos, exitFront );
-                        Vector3 newWayPoint(exitPos + exitFront * 50.0f);
-                        newWayPoint += Vector3( syncsfrand(35.0f), 0.0f, syncsfrand(35.0f) );
+                        GetExit( exitPos, exitFront );                    
+                        Vector3 newWayPoint(exitPos + exitFront * 50.0);
+                        newWayPoint += Vector3( SFRAND(35.0), 0.0, SFRAND(35.0) );
                         newWayPoint.y = g_app->m_location->m_landscape.m_heightMap->GetValue( newWayPoint.x, newWayPoint.z );
 				        newUnit->SetWayPoint(newWayPoint);
                     }
-
+                
                     TeleportMap map;
                     map.m_teamId = entity->m_id.GetTeamId();
                     map.m_fromUnitId = oldUnit->m_unitId;
@@ -308,7 +316,7 @@ void Teleport::EnterTeleport( WorldObjectId _id, bool _relay )
                     m_teleportMap.PutDataAtStart( map );
                 }
 
-                DEBUG_ASSERT( newUnit );
+                AppDebugAssert( newUnit );
 
 
                 // Put me into the new unit
@@ -317,7 +325,7 @@ void Teleport::EnterTeleport( WorldObjectId _id, bool _relay )
                 Entity *newEntity = newUnit->NewEntity( &newUnitIndex );
                 int newUniqueId = newEntity->m_id.GetUniqueId();
                 *newEntity = *entity;
-                entity = newEntity;
+                entity = newEntity;                                      
                 entity->m_id.SetUnitId(newUnitId);
                 entity->m_id.SetIndex(newUnitIndex);
                 entity->m_id.SetUniqueId(newUniqueId);
@@ -329,8 +337,8 @@ void Teleport::EnterTeleport( WorldObjectId _id, bool _relay )
             }
         }
 
-        entity->m_pos = GetStartPoint();
-        UpdateEntityInTransit( entity );
+        entity->m_pos = GetStartPoint();   
+        UpdateEntityInTransit( entity );                
 
         WorldObjectId newId( entity->m_id );
         m_inTransit.PutData(newId);
@@ -349,24 +357,24 @@ bool Teleport::GetEntrance( Vector3 &_pos, Vector3 &_front )
 
 bool Teleport::GetExit( Vector3 &_pos, Vector3 &_front )
 {
-    DEBUG_ASSERT( false );
+    AppDebugAssert( false );
     return false;
 }
 
 Vector3 Teleport::GetStartPoint()
 {
-    DEBUG_ASSERT(false);
+    AppDebugAssert(false);
     return Vector3();
 }
 
 Vector3 Teleport::GetEndPoint()
 {
-    DEBUG_ASSERT(false);
+    AppDebugAssert(false);
     return Vector3();
 }
 
 bool Teleport::UpdateEntityInTransit( Entity *_entity )
 {
-    DEBUG_ASSERT(false);
+    AppDebugAssert(false);
     return false;
 }

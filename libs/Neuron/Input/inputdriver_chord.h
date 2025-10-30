@@ -1,8 +1,8 @@
 #ifndef INCLUDED_INPUTDRIVER_CHORD_H
 #define INCLUDED_INPUTDRIVER_CHORD_H
 
-#include "input/inputdriver.h"
-#include "input/inputspeclist.h"
+#include "lib/input/inputdriver.h"
+#include "lib/input/inputspeclist.h"
 
 
 // Enables partial input specifications to be combined using "++" in the

@@ -1,13 +1,13 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <math.h>
 #include <memory.h>
 
-#include "matrix33.h"
+#include "lib/matrix33.h"
+#include "lib/debug_utils.h"
 
 
-
-float Matrix33::m_openGLFormat[16];
+double Matrix33::m_openGLFormat[16];
 
 
 // ****************************************************************************
@@ -39,7 +39,7 @@ Matrix33::Matrix33( Vector3 const &_r, Vector3 const &_u, Vector3 const &_f )
 }
 
 
-Matrix33::Matrix33( float _yaw, float _dive, float _roll )
+Matrix33::Matrix33( double _yaw, double _dive, double _roll )
 {
 	SetToIdentity();
 	RotateAroundZ( _roll );
@@ -48,7 +48,7 @@ Matrix33::Matrix33( float _yaw, float _dive, float _roll )
 }
 
 
-Matrix33::Matrix33( float _rx, float _ry, float _rz, float _ux, float _uy, float _uz, float _fx, float _fy, float _fz )
+Matrix33::Matrix33( double _rx, double _ry, double _rz, double _ux, double _uy, double _uz, double _fx, double _fy, double _fz )
 :	r(_rx,_ry,_rz),
 	u(_ux,_uy,_uz),
 	f(_fx,_fy,_fz)
@@ -120,12 +120,12 @@ void Matrix33::OrientFU( Vector3 const & _f, Vector3 const & _u )
 	u = f ^ r;
 }
 
-Matrix33 const &Matrix33::RotateAroundR( float angle )
+Matrix33 const &Matrix33::RotateAroundR( double angle )
 {
-	float c = (float)cos( angle );
-	float s = (float)sin( angle );
+	double c = (double)iv_cos( angle );
+	double s = (double)iv_sin( angle );
 
-	float t;
+	double t;
 
 	t = u.x *  c + f.x * s;
 	f.x = u.x * -s + f.x * c;
@@ -142,12 +142,12 @@ Matrix33 const &Matrix33::RotateAroundR( float angle )
 	return *this;
 }
 
-Matrix33 const &Matrix33::RotateAroundU( float angle )
+Matrix33 const &Matrix33::RotateAroundU( double angle )
 {
-	float c = (float)cos( angle );
-	float s = (float)sin( angle );
+	double c = (double)iv_cos( angle );
+	double s = (double)iv_sin( angle );
 
-	float t;
+	double t;
 
 	t =	f.x * c + r.x * s;
 	r.x = f.x * -s + r.x * c;
@@ -164,12 +164,12 @@ Matrix33 const &Matrix33::RotateAroundU( float angle )
 	return *this;
 }
 
-Matrix33 const &Matrix33::RotateAroundF( float angle )
+Matrix33 const &Matrix33::RotateAroundF( double angle )
 {
-	float c = (float)cos( angle );
-	float s = (float)sin( angle );
+	double c = (double)iv_cos( angle );
+	double s = (double)iv_sin( angle );
 
-	float t;
+	double t;
 
 	t =	  r.x *  c + u.x * s;
 	u.x = r.x * -s + u.x * c;
@@ -186,12 +186,12 @@ Matrix33 const &Matrix33::RotateAroundF( float angle )
 	return *this;
 }
 
-Matrix33 const &Matrix33::RotateAroundX( float angle )
+Matrix33 const &Matrix33::RotateAroundX( double angle )
 {
-	float c = (float)cos( angle );
-	float s = (float)sin( angle );
+	double c = (double)iv_cos( angle );
+	double s = (double)iv_sin( angle );
 
-	float t;
+	double t;
 
 	t = r.y *  c + r.z * s;
 	r.z = r.y * -s + r.z * c;
@@ -208,12 +208,12 @@ Matrix33 const &Matrix33::RotateAroundX( float angle )
 	return *this;
 }
 
-Matrix33 const &Matrix33::RotateAroundY( float angle )
+Matrix33 const &Matrix33::RotateAroundY( double angle )
 {
-	float c = (float)cos( angle );
-	float s = (float)sin( angle );
+	double c = (double)iv_cos( angle );
+	double s = (double)iv_sin( angle );
 
-	float t;
+	double t;
 
 	t = r.z *  c + r.x * s;
 	r.x = r.z * -s + r.x * c;
@@ -230,12 +230,12 @@ Matrix33 const &Matrix33::RotateAroundY( float angle )
 	return *this;
 }
 
-Matrix33 const &Matrix33::RotateAroundZ( float angle )
+Matrix33 const &Matrix33::RotateAroundZ( double angle )
 {
-	float c = (float)cos( angle );
-	float s = (float)sin( angle );
+	double c = (double)iv_cos( angle );
+	double s = (double)iv_sin( angle );
 
-	float t;
+	double t;
 
 	t = r.x *  c + r.y * s;
 	r.y = r.x * -s + r.y * c;
@@ -256,23 +256,23 @@ Matrix33 const &Matrix33::RotateAroundZ( float angle )
 // when you want to do a rotation based on the result of a cross product
 Matrix33 const &Matrix33::RotateAround( Vector3 const &_rotationAxis )
 {
-	float magSquared = _rotationAxis.MagSquared();
-	if (magSquared < 0.00001f * 0.00001f)
+	double magSquared = _rotationAxis.MagSquared();
+	if (magSquared < 0.00001 * 0.00001)
 	{
 		return *this;
 	}
 
-	float mag = sqrtf(magSquared);
+	double mag = iv_sqrt(magSquared);
 	return FastRotateAround(_rotationAxis/mag, mag);
 }
 
 // Assumes normal is already normalised
-Matrix33 const &Matrix33::FastRotateAround( Vector3 const & _norm, float _angle )
+Matrix33 const &Matrix33::FastRotateAround( Vector3 const & _norm, double _angle )
 {
-	float s = (float)sin(_angle);
-	float c = (float)cos(_angle);
+	double s = (double)iv_sin(_angle);
+	double c = (double)iv_cos(_angle);
 
-	float dot = r * _norm;
+	double dot = r * _norm;
 	Vector3 a = _norm * dot;
 	Vector3 n1 = r - a;
 	Vector3 n2 = _norm ^ n1;
@@ -293,14 +293,14 @@ Matrix33 const &Matrix33::FastRotateAround( Vector3 const & _norm, float _angle 
 	return *this;
 }
 
-Matrix33 const &Matrix33::RotateAround( Vector3 const & _onorm, float _angle )
+Matrix33 const &Matrix33::RotateAround( Vector3 const & _onorm, double _angle )
 {
 	Vector3 norm = _onorm;
 	norm.Normalise();
-	float s = (float)sin(_angle);
-	float c = (float)cos(_angle);
+	double s = (double)iv_sin(_angle);
+	double c = (double)iv_cos(_angle);
 
-	float dot = r * norm;
+	double dot = r * norm;
 	Vector3 a = norm * dot;
 	Vector3 n1 = r - a;
 	Vector3 n2 = norm ^ n1;
@@ -323,7 +323,7 @@ Matrix33 const &Matrix33::RotateAround( Vector3 const & _onorm, float _angle )
 
 Matrix33 const &Matrix33::Transpose()
 {
-	float t = r.y;
+	double t = r.y;
 	r.y = u.x;
 	u.x = t;
 	t = r.z;
@@ -339,21 +339,21 @@ Matrix33 const &Matrix33::Transpose()
 Matrix33 const &Matrix33::Invert()
 {
 	// pick up values
-	float a1 = r.x;
-	float a2 = r.y;
-	float a3 = r.z;
-	float b1 = u.x;
-	float b2 = u.y;
-	float b3 = u.z;
-	float c1 = f.x;
-	float c2 = f.y;
-	float c3 = f.z;
+	double a1 = r.x;
+	double a2 = r.y;
+	double a3 = r.z;
+	double b1 = u.x;
+	double b2 = u.y;
+	double b3 = u.z;
+	double c1 = f.x;
+	double c2 = f.y;
+	double c3 = f.z;
 
 	// generate adjoint of matrix
 	r.x = (b2*c3-c2*b3);
 	u.x =-(b1*c3-c1*b3);
 	f.x = (b1*c2-c1*b2);
-
+	
 	r.y =-(a2*c3-c2*a3);
 	u.y = (a1*c3-c1*a3);
 	f.y =-(a1*c2-c1*a2);
@@ -363,10 +363,10 @@ Matrix33 const &Matrix33::Invert()
 	f.z = (a1*b2-b1*a2);
 
 	// calculate determinant (adjoint is useful at this stage)
-	float det = a1 * r.x + a2 * u.x + a3 * f.x;
+	double det = a1 * r.x + a2 * u.x + a3 * f.x;
 
 	// scale result by 1/det
-	det = 1.0f / det;
+	det = 1.0 / det;
 	r.x = r.x * det ;
 	r.y = r.y * det ;
 	r.z = r.z * det ;
@@ -386,38 +386,38 @@ Matrix33 const &Matrix33::Invert()
 Vector3 Matrix33::DecomposeToYDR() const
 {
 	//x = dive, y = yaw, z = roll
-	float x,y,z;
+	double x,y,z;
 	DecomposeToYDR( &x, &y, &z );
 	return Vector3( x, y, z );
 }
 
-void Matrix33::DecomposeToYDR( float *_y, float *_d, float *_r ) const
+void Matrix33::DecomposeToYDR( double *_y, double *_d, double *_r ) const
 {
 	//work with a copy..
 	Matrix33 workingMat( *this );
 
 	//get the yaw
-	*_y = -(float)atan2( workingMat.f.x, workingMat.f.z );
+	*_y = -(double)atan2( workingMat.f.x, workingMat.f.z );
 
 	//get the dive
 	//	can't use asin( workingMat.f.y ) 'cos occasionally we get
 	//	blasted precision problems. this sorts us out..
-	*_d = (float)atan2( workingMat.f.y, workingMat.u.y );
+	*_d = (double)atan2( workingMat.f.y, workingMat.u.y );
 
 	//rotate the matrix back by -yaw and -dive (one at a time)
 	workingMat.RotateAroundY( -*_y );
 	workingMat.RotateAroundX( -*_d );
 
 	//now the roll
-	*_r = -(float)atan2( workingMat.r.y, workingMat.r.x );
+	*_r = -(double)atan2( workingMat.r.y, workingMat.r.x );
 }
 
 void Matrix33::SetToIdentity()
 {
 	memset(this, 0, sizeof(Matrix33));
-	r.x = 1.0f;
-	u.y = 1.0f;
-	f.z = 1.0f;
+	r.x = 1.0;
+	u.y = 1.0;
+	f.z = 1.0;
 }
 
 void Matrix33::Normalise()
@@ -438,25 +438,25 @@ Vector3	Matrix33::InverseMultiplyVector(Vector3 const &s) const
 
 void Matrix33::OutputToDebugStream()
 {
-	DebugTrace("%4.1f %4.1f %4.1f\n", r.x, r.y, r.z );
-	DebugTrace("%4.1f %4.1f %4.1f\n", f.x, f.y, f.z );
-	DebugTrace("%4.1f %4.1f %4.1f\n", u.x, u.y, u.z );
+	AppDebugOut("%4.1 %4.1 %4.1\n", r.x, r.y, r.z );	
+	AppDebugOut("%4.1 %4.1 %4.1\n", f.x, f.y, f.z );	
+	AppDebugOut("%4.1 %4.1 %4.1\n", u.x, u.y, u.z );	
 }
 
-float *Matrix33::ConvertToOpenGLFormat(Vector3 const *_pos)
+double *Matrix33::ConvertToOpenGLFormat(Vector3 const *_pos)
 {
 	m_openGLFormat[0] = r.x;
 	m_openGLFormat[1] = r.y;
 	m_openGLFormat[2] = r.z;
-	m_openGLFormat[3] = 0.0f;
+	m_openGLFormat[3] = 0.0;
 	m_openGLFormat[4] = u.x;
 	m_openGLFormat[5] = u.y;
 	m_openGLFormat[6] = u.z;
-	m_openGLFormat[7] = 0.0f;
+	m_openGLFormat[7] = 0.0;
 	m_openGLFormat[8] = f.x;
 	m_openGLFormat[9] = f.y;
 	m_openGLFormat[10] = f.z;
-	m_openGLFormat[11] = 0.0f;
+	m_openGLFormat[11] = 0.0;
 
 	if (_pos)
 	{
@@ -466,11 +466,11 @@ float *Matrix33::ConvertToOpenGLFormat(Vector3 const *_pos)
 	}
 	else
 	{
-		m_openGLFormat[12] = 0.0f;
-		m_openGLFormat[13] = 0.0f;
-		m_openGLFormat[14] = 0.0f;
+		m_openGLFormat[12] = 0.0;
+		m_openGLFormat[13] = 0.0;
+		m_openGLFormat[14] = 0.0;
 	}
-	m_openGLFormat[15] = 1.0f;
+	m_openGLFormat[15] = 1.0;
 
 	return m_openGLFormat;
 }

@@ -1,6 +1,6 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-#include "input/inputfilterspec.h"
+#include "lib/input/inputfilterspec.h"
 
 
 unsigned long newFilterSpecID() {

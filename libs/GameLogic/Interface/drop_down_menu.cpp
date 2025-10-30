@@ -1,12 +1,12 @@
-#include "pch.h"
-#include "text_renderer.h"
-#include "string_utils.h"
+#include "lib/universal_include.h"
+#include "lib/text_renderer.h"
+#include "lib/string_utils.h"
 
 #include <string.h>
 
 #include "app.h"
 #include "renderer.h"
-
+#include "network/networkvalue.h"
 #include "interface/drop_down_menu.h"
 
 
@@ -15,7 +15,7 @@
 // ****************************************************************************
 
 DropDownOptionData::DropDownOptionData(const char *_word, int _value)
-	: m_word(NewStr(_word)), m_value(_value)
+	: m_word(newStr(_word)), m_value(_value)
 {
 }
 
@@ -37,6 +37,14 @@ DropDownWindow::DropDownWindow( char *_name, char *_parentName )
     strcpy( m_parentName, _parentName );
 }
 
+DropDownWindow::~DropDownWindow()
+{
+    if( s_window == this )
+    {
+        s_window = NULL;
+    }
+}
+
 
 void DropDownWindow::Update()
 {
@@ -54,8 +62,9 @@ DropDownWindow *DropDownWindow::CreateDropDownWindow( char *_name, char *_parent
 {
     if( s_window )
     {
-        EclRemoveWindow( s_window->m_name );
+        DropDownWindow *removeMe = s_window;
         s_window = NULL;
+        EclRemoveWindow( removeMe->m_name );        
     }
 
     s_window = new DropDownWindow( _name, _parentName );
@@ -67,8 +76,9 @@ void DropDownWindow::RemoveDropDownWindow()
 {
     if( s_window )
     {
-        EclRemoveWindow( s_window->m_name );
+        DropDownWindow *removeMe = s_window;
         s_window = NULL;
+        EclRemoveWindow( removeMe->m_name );
     }
 }
 
@@ -83,6 +93,7 @@ DropDownMenu::DropDownMenu(bool _sortItems)
 :   DarwiniaButton(),
     m_currentOption(-1),
     m_int(NULL),
+	m_ownInt(false),
 	m_sortItems(_sortItems),
 	m_nextValue(0)
 {
@@ -92,6 +103,8 @@ DropDownMenu::DropDownMenu(bool _sortItems)
 DropDownMenu::~DropDownMenu()
 {
     Empty();
+	if( m_ownInt )
+		delete m_int;
 }
 
 
@@ -99,8 +112,8 @@ void DropDownMenu::Empty()
 {
     m_options.EmptyAndDelete();
 	m_nextValue = 0;
-
-    SelectOption( -1 );
+    
+    //SelectOption( -1 );
 }
 
 
@@ -120,7 +133,7 @@ void DropDownMenu::AddOption( char const *_word, int _value )
 		int i;
 		for (i = 0; i < size; ++i)
 		{
-			if (_stricmp(_word, m_options[i]->m_word) < 0)
+			if (stricmp(_word, m_options[i]->m_word) < 0)
 			{
 				break;
 			}
@@ -137,17 +150,21 @@ void DropDownMenu::AddOption( char const *_word, int _value )
 void DropDownMenu::SelectOption( int _value )
 {
 	m_currentOption = FindValue(_value);
-
-    if( m_currentOption < 0 || m_currentOption >= m_options.Size() )
+    
+	if(  m_currentOption < 0 || m_currentOption >= m_options.Size() )
     {
-        SetCaption( m_name );
+        SetCaption( LANGUAGEPHRASE(m_name) );
     }
-    else
+    else if ( ISLANGUAGEPHRASE(m_options[m_currentOption]->m_word) )
     {
-        SetCaption( m_options[m_currentOption]->m_word );
+        SetCaption( LANGUAGEPHRASE(m_options[m_currentOption]->m_word) );
     }
+	else
+	{
+		SetCaption( m_options[m_currentOption]->m_word );
+	}
 
-    if( m_int && _value != -1 ) *m_int = _value;
+    if( m_int ) *m_int = _value;
 }
 
 
@@ -156,7 +173,7 @@ bool DropDownMenu::SelectOption2(char const *_option)
 	for (int i = 0; i < m_options.Size(); ++i)
 	{
 		char *itemName = m_options[i]->m_word;
-		if (_stricmp(itemName, _option) == 0)
+		if (stricmp(itemName, _option) == 0)
 		{
 			SelectOption(m_options[i]->m_value);
 			return true;
@@ -173,26 +190,38 @@ int DropDownMenu::GetSelectionValue()
 	{
 		return m_options[m_currentOption]->m_value;
 	}
-
+	
 	return -1;
 }
 
 
-char const *DropDownMenu::GetSelectionName()
+void DropDownMenu::GetSelectionName(UnicodeString &_dest)
 {
 	if (m_currentOption < 0 || m_currentOption > m_options.Size())
 	{
-		return NULL;
+		_dest = UnicodeString();
 	}
-	return m_options[m_currentOption]->m_word;
+	else
+	{
+		_dest = LANGUAGEPHRASE(m_options[m_currentOption]->m_word);
+	}
 }
 
 
 void DropDownMenu::RegisterInt( int *_int )
 {
-    m_int = _int;
+    m_int = new LocalInt( *_int );
+	m_ownInt = true;
 
     SelectOption( *m_int );
+}
+
+void DropDownMenu::RegisterNetworkInt( NetworkInt *_int )
+{
+	m_int = _int;
+	m_ownInt = false;
+
+	SelectOption( *m_int );
 }
 
 
@@ -221,7 +250,7 @@ void DropDownMenu::Render( int realX, int realY, bool highlighted, bool clicked 
         DarwiniaButton::Render( realX, realY, highlighted, clicked );
     }
 
-    glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
+    glColor4f( 1.0, 1.0, 1.0, 1.0 );
     glBegin( GL_TRIANGLES );
         glVertex2i( realX + m_w - 12, realY + 5 );
         glVertex2i( realX + m_w - 3, realY + 5 );
@@ -237,7 +266,7 @@ void DropDownMenu::CreateMenu()
     EclRegisterWindow( window );
 
     int screenH = g_app->m_renderer->ScreenH();
-    int numColumnsRequired = 1 + ( m_h * m_options.Size() ) / (screenH * 0.8f);
+    int numColumnsRequired = 1 + ( m_h * m_options.Size() ) / (screenH * 0.8);
     int numPerColumn =  ceil( (float) m_options.Size() / (float) numColumnsRequired );
 
     int index = 0;
@@ -248,14 +277,15 @@ void DropDownMenu::CreateMenu()
         {
             if( index >= m_options.Size() ) break;
 
-            char *thisOption = m_options[index]->m_word;
+            char *thisOption = m_options[index]->m_word;            
             char thisName[64];
             sprintf( thisName, "%s %d", m_name, index );
 
             int w = m_w - 4;
 
             DropDownMenuOption *menuOption = new DropDownMenuOption();
-            menuOption->SetProperties( thisName, col*m_w+2, (i+1)*m_h, w, m_h, thisOption );
+			UnicodeString u(thisOption);
+            menuOption->SetProperties( thisName, col*m_w+2, (i+1)*m_h, w, m_h, u );
             menuOption->SetParentMenu( m_parent, this, m_options[index]->m_value );
             window->RegisterButton( menuOption );
 			window->m_buttonOrder.PutData( menuOption );
@@ -268,12 +298,12 @@ void DropDownMenu::CreateMenu()
         }
     }
 
-    window->SetSize( m_w*numColumnsRequired, (numPerColumn+1) * m_h );
+    window->SetSize( m_w*numColumnsRequired, (numPerColumn+1) * m_h );    
 }
 
 
 void DropDownMenu::RemoveMenu()
-{
+{    
     DropDownWindow::RemoveDropDownWindow();
 }
 
@@ -282,7 +312,7 @@ void DropDownMenu::MouseUp()
 {
 	if (m_disabled)
 		return;
-
+		
     if( IsMenuVisible() )
     {
         RemoveMenu();
@@ -325,14 +355,14 @@ void DropDownMenuOption::SetParentMenu( EclWindow *_window, DropDownMenu *_menu,
         delete [] m_parentWindowName;
         m_parentWindowName = NULL;
     }
-    m_parentWindowName = NewStr( _window->m_name );
+    m_parentWindowName = newStr( _window->m_name );
 
     if( m_parentMenuName )
     {
         delete [] m_parentMenuName;
         m_parentMenuName = NULL;
     }
-    m_parentMenuName = NewStr( _menu->m_name );
+    m_parentMenuName = newStr( _menu->m_name );    
 
 //    m_menuIndex = _index;
 	m_value = _value;
@@ -343,7 +373,7 @@ void DropDownMenuOption::Render( int realX, int realY, bool highlighted, bool cl
 {
     //BorderlessButton::Render( realX, realY, highlighted, clicked );
     //return;
-
+    
     DarwiniaWindow *window = (DarwiniaWindow *)EclGetWindow( m_parentWindowName );
     if( window )
     {

@@ -80,7 +80,7 @@ extern ActiveTextureARB gglActiveTextureARB;
 #define GL_BUFFER_MAPPED_ARB                            0x88BC
 
 #define GL_BUFFER_MAP_POINTER_ARB                       0x88BD
-
+			
 typedef ptrdiff_t GLintptrARB;
 typedef ptrdiff_t GLsizeiptrARB;
 
@@ -108,9 +108,12 @@ extern glUnmapBufferARB				gglUnmapBufferARB;
 extern glGetBufferParameterivARB	gglGetBufferParameterivARB;
 extern glGetBufferPointervARB		gglGetBufferPointervARB;
 
-// Extension for full-screen anti-aliasing
-typedef bool (__stdcall *ChoosePixelFormatARB) (HDC, const int *, const float *, unsigned int, int *, unsigned int *);
+// Extension for full-screen anti-aliasing (Windows only)
+#ifdef WIN32
+typedef bool (__stdcall *ChoosePixelFormatARB) (HDC, const int *, const double *, unsigned int, int *, unsigned int *);
 extern ChoosePixelFormatARB gglChoosePixelFormatARB;
+#endif
+
 #define WGL_SAMPLE_BUFFERS_ARB              0x2041
 #define WGL_SAMPLES_ARB                     0x2042
 #define WGL_DOUBLE_BUFFER_ARB               0x2011
@@ -126,5 +129,6 @@ extern ChoosePixelFormatARB gglChoosePixelFormatARB;
 
 void InitialiseOGLExtensions();
 int IsOGLExtensionSupported(const char *extension);
+int IsOGLExtensionPerfectlySupported(const char *extension);
 
 #endif

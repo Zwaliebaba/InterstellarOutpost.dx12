@@ -1,15 +1,15 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-
-#include "file_writer.h"
-#include "hi_res_time.h"
-#include "math_utils.h"
-#include "profiler.h"
-#include "resource.h"
-#include "shape.h"
-#include "text_renderer.h"
-#include "text_stream_readers.h"
-#include "debug_render.h"
+#include "lib/debug_utils.h"
+#include "lib/filesys/text_file_writer.h"
+#include "lib/hi_res_time.h"
+#include "lib/math_utils.h"
+#include "lib/profiler.h"
+#include "lib/resource.h"
+#include "lib/shape.h"
+#include "lib/text_renderer.h"
+#include "lib/filesys/text_stream_readers.h"
+#include "lib/debug_render.h"
 
 #include "worldobject/generichub.h"
 #include "worldobject/darwinian.h"
@@ -25,7 +25,6 @@
 #include "user_input.h"
 
 #include "sound/soundsystem.h"
-
 
 // ****************************************************************************
 // Class DynamicBase
@@ -45,7 +44,7 @@ void DynamicBase::Initialise( Building *_template )
     SetShapeName( ((DynamicBase *) _template)->m_shapeName );
 }
 
-void DynamicBase::Render( float _predictionTime )
+void DynamicBase::Render( double _predictionTime )
 {
     if( m_shape )
     {
@@ -53,7 +52,7 @@ void DynamicBase::Render( float _predictionTime )
     }
     else
     {
-        RenderSphere( m_pos, 40.0f );
+        RenderSphere( m_pos, 40.0 );
     }
 	/*Matrix34 mat(m_front, m_up, m_pos);
 	m_shape->Render(_predictionTime, mat);*/
@@ -79,7 +78,7 @@ void DynamicBase::Read( TextReader *_in, bool _dynamic )
     SetShapeName( _in->GetNextToken() );
 }
 
-void DynamicBase::Write( FileWriter *_out )
+void DynamicBase::Write( TextWriter *_out )
 {
     Building::Write( _out );
 
@@ -108,7 +107,7 @@ void DynamicBase::SetShapeName( char *_shapeName )
 
         Matrix34 mat( m_front, m_up, m_pos );
 
-        m_centrePos = m_shape->CalculateCentre( mat );
+        m_centrePos = m_shape->CalculateCentre( mat );        
         m_radius = m_shape->CalculateRadius( mat, m_centrePos );
     }
 }
@@ -167,7 +166,7 @@ bool DynamicHub::Advance()
         // This can happen if a user captures the control tower, exits the level and saves,
         // then returns to the level.  The tower is captured and cannot be changed, but
         // the m_enabled state of this building has been lost.
-
+        
         bool towerFound = false;
         for( int i = 0; i < g_app->m_location->m_buildings.Size(); ++i )
         {
@@ -181,7 +180,7 @@ bool DynamicHub::Advance()
                     {
                         towerFound = true;
                         if( tower->m_id.GetTeamId() == m_id.GetTeamId() )
-                        {
+                        {                        
                             m_reprogrammed = true;
                             break;
                         }
@@ -222,7 +221,7 @@ bool DynamicHub::Advance()
                 {
                     gb->m_online = true;
                     g_app->m_globalWorld->EvaluateEvents();
-                }
+                } 
             }
             else if( !g_app->m_location->MissionComplete() )
             {
@@ -241,7 +240,7 @@ bool DynamicHub::Advance()
 }
 
 
-void DynamicHub::Render( float _predictionTime )
+void DynamicHub::Render( double _predictionTime )
 {
     DynamicBase::Render( _predictionTime );
 }
@@ -266,7 +265,7 @@ void DynamicHub::DeactivateLink()
 
 bool DynamicHub::ChangeScore( int _points )
 {
-    if( m_reprogrammed &&
+    if( m_reprogrammed && 
         m_currentScore < m_requiredScore )
     {
         m_currentScore += _points;
@@ -284,7 +283,7 @@ void DynamicHub::Read( TextReader *_in, bool _dynamic )
     m_minActiveLinks = atoi( _in->GetNextToken() );
 }
 
-void DynamicHub::Write( FileWriter *_out )
+void DynamicHub::Write( TextWriter *_out )
 {
     DynamicBase::Write( _out );
     _out->printf( "%-8d", m_requiredScore );
@@ -292,22 +291,22 @@ void DynamicHub::Write( FileWriter *_out )
     _out->printf( "%-8d", m_minActiveLinks );
 }
 
-char *DynamicHub::GetObjectiveCounter()
+void DynamicHub::GetObjectiveCounter(UnicodeString& _dest)
 {
-    static char result[256];
+    static wchar_t result[256];
 
     if( m_requiredScore > 0 )
     {
-        float current = m_currentScore;
-        float required = m_requiredScore;
-        float percentComplete = current / required * 100.0f;
-        sprintf( result, "percent complete: %.0f", percentComplete );
+        double current = m_currentScore;
+        double required = m_requiredScore;
+        double percentComplete = current / required * 100.0;
+        swprintf( result, sizeof(result)/sizeof(wchar_t), L"percent complete: %.0f", percentComplete );
     }
     else
     {
-        sprintf( result, "" );
+        swprintf( result, sizeof(result)/sizeof(wchar_t), L"" );
     }
-    return result;
+    _dest = UnicodeString(result);
 }
 
 int DynamicHub::PointsPerHub()
@@ -323,7 +322,7 @@ DynamicNode::DynamicNode()
 :   DynamicBase(),
     m_operating(false),
     m_scoreValue(0),
-    m_scoreTimer(1.0f),
+    m_scoreTimer(1.0),
     m_scoreSupplied(0)
 {
     m_type = TypeDynamicNode;
@@ -369,7 +368,7 @@ bool DynamicNode::Advance()
         }
     }
     else
-    {
+    {     
         if( GetNumPortsOccupied() < GetNumPorts() )
         {
             DynamicHub *hub = (DynamicHub *)g_app->m_location->GetBuilding( m_buildingLink );
@@ -384,9 +383,9 @@ bool DynamicNode::Advance()
             if( m_scoreValue > 0 )
             {
                 m_scoreTimer -= SERVER_ADVANCE_PERIOD;
-                if( m_scoreTimer <= 0.0f )
+                if( m_scoreTimer <= 0.0 )
                 {
-                    m_scoreTimer = 1.0f;
+                    m_scoreTimer = 1.0;
                     DynamicHub *hub = (DynamicHub *)g_app->m_location->GetBuilding( m_buildingLink );
                     if( hub && hub->m_type == Building::TypeDynamicHub )
                     {
@@ -415,7 +414,7 @@ void DynamicNode::RenderPorts()
 }
 
 
-void DynamicNode::Render( float _predictionTime )
+void DynamicNode::Render( double _predictionTime )
 {
     if( g_app->m_editing )
     {
@@ -430,7 +429,7 @@ void DynamicNode::Render( float _predictionTime )
 }
 
 
-void DynamicNode::RenderAlphas( float _predictionTime )
+void DynamicNode::RenderAlphas( double _predictionTime )
 {
     DynamicBase::RenderAlphas( _predictionTime );
 }
@@ -463,7 +462,7 @@ void DynamicNode::Read( TextReader *_in, bool _dynamic )
     m_scoreSupplied = atoi( _in->GetNextToken() );
 }
 
-void DynamicNode::Write( FileWriter *_out )
+void DynamicNode::Write( TextWriter *_out )
 {
     DynamicBase::Write( _out );
     _out->printf( "%-8d", m_scoreValue );

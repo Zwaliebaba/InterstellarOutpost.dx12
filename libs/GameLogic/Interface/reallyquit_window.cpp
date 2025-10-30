@@ -1,4 +1,4 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include "app.h"
 #include "renderer.h"
@@ -18,17 +18,17 @@ void ReallyQuitWindow::Create()
 	DarwiniaWindow::Create();
 
 	int y = 0, h = 30;
-
+		
     DarwiniaButton *exit = new GameExitButton();
-    exit->SetShortProperties( "Leave Darwinia", 10, y+=h, m_w-20, 20 );
+    exit->SetShortProperties( "Leave Darwinia", 10, y+=h, m_w-20, 20, UnicodeString("Leave " APP_NAME) );
     exit->m_fontSize = 13;
     exit->m_centered = true;
     RegisterButton( exit );
 
     DarwiniaButton *close = new CloseButton();
-    close->SetShortProperties( "No. Play On!", 10, y+=h, m_w-20, 20 );
+    close->SetShortProperties( "No. Play On!", 10, y+=h, m_w-20, 20, UnicodeString("No. Player On!") );
     close->m_fontSize = 13;
     close->m_centered = true;
     RegisterButton( close );
 }
-
+	

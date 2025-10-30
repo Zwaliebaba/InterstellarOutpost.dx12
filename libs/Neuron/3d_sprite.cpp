@@ -1,6 +1,6 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-#include "3d_sprite.h"
+#include "lib/3d_sprite.h"
 
 #include "app.h"
 #include "camera.h"
@@ -10,7 +10,7 @@
 void Render3DSprite(Vector3 const &_pos, float _width, float _height, int _textureId)
 {
 	Vector3 camUp = g_app->m_camera->GetUp();
-	Vector3 camRight = (camUp ^ g_app->m_camera->GetFront()) * (_width * 0.5f);
+	Vector3 camRight = (camUp ^ g_app->m_camera->GetFront()) * (_width * 0.5);
 	camUp *= _height;
 
 	Vector3 bottomLeft(_pos - camRight);
@@ -26,13 +26,13 @@ void Render3DSprite(Vector3 const &_pos, float _width, float _height, int _textu
 	glTexParameteri	(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 	glBegin(GL_QUADS);
 		glTexCoord2f(1, 1);
-		glVertex3fv(topLeft.GetData());
+		glVertex3dv(topLeft.GetData());
 		glTexCoord2f(0, 1);
-		glVertex3fv(topRight.GetData());
+		glVertex3dv(topRight.GetData());
 		glTexCoord2f(0, 0);
-		glVertex3fv(bottomRight.GetData());
+		glVertex3dv(bottomRight.GetData());
 		glTexCoord2f(1, 0);
-		glVertex3fv(bottomLeft.GetData());
+		glVertex3dv(bottomLeft.GetData());
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 	glEnable(GL_CULL_FACE);

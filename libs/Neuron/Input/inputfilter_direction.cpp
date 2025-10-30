@@ -1,6 +1,6 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
-#include "input/inputfilter_direction.h"
+#include "lib/input/inputfilter_direction.h"
 
 
 enum CompassDirection {

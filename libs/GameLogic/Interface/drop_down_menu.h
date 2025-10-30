@@ -5,6 +5,8 @@
 #include <limits.h>
 
 #include "interface/darwinia_window.h"
+#include "lib/language_table.h"
+#include "lib/unicode/unicode_string.h"
 
 
 class DropDownOptionData
@@ -30,6 +32,7 @@ public:
 
 public:
     DropDownWindow( char *_name, char *_parentName );
+    ~DropDownWindow();
     void Update();
 
     // There can be only one
@@ -38,31 +41,35 @@ public:
 };
 
 
+class NetworkInt;
+
 class DropDownMenu : public DarwiniaButton
 {
 protected:
     LList   <DropDownOptionData *> m_options;
     int     m_currentOption;
-    int     *m_int;
+	NetworkInt *m_int;
+	bool	m_ownInt;
 	bool	m_sortItems;
 	int		m_nextValue;	// Used by AddOption if a value isn't passed in as an argument
-
+    
 public:
     DropDownMenu(bool _sortItems = false);
     ~DropDownMenu();
 
-    void            Empty               ();
-    void            AddOption           ( char const *_option, int _value = INT_MIN );
-    int             GetSelectionValue   ();
-	char const *	GetSelectionName	();
-    virtual void    SelectOption        ( int _option );
-	bool			SelectOption2		( char const *_option );
-
-    void    CreateMenu();
+    void					Empty               ();
+    void					AddOption           ( char const *_option, int _value = INT_MIN );
+    int						GetSelectionValue   ();
+	void					GetSelectionName	( UnicodeString& _dest);
+    virtual void			SelectOption        ( int _option );
+	bool					SelectOption2		( char const *_option );
+    
+    virtual void    CreateMenu();
     void    RemoveMenu();
     bool    IsMenuVisible();
 
     void    RegisterInt( int *_int );
+	void	RegisterNetworkInt( NetworkInt *_int );
 
 	int		FindValue(int _value);	// Returns an index into m_options
 

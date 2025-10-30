@@ -3,12 +3,12 @@
 
 #ifdef DEBUG_RENDER_ENABLED
 
-#include "fast_darray.h"
-#include "vector3.h"
+#include "lib/tosser/fast_darray.h"
+#include "lib/vector3.h"
 
 
 //*****************************************************************************
-// Class
+// Class 
 //*****************************************************************************
 
 class PersistRenderItem

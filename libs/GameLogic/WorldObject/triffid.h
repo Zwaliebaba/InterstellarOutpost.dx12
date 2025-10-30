@@ -10,12 +10,14 @@ class Triffid : public Building
 protected:
     ShapeMarker     *m_launchPoint;
     ShapeMarker     *m_stem;
-    float           m_timerSync;
-    float           m_damage;
+    double           m_timerSync;
+    double           m_damage;
     bool            m_triggered;
-    float           m_triggerTimer;
+    double           m_triggerTimer;
     bool            m_renderDamaged;
 
+    int             m_numEggs;
+    
 public:
     enum
     {
@@ -25,74 +27,81 @@ public:
         SpawnSpirits,
         SpawnEggs,
         SpawnTriffidEggs,
+        SpawnAnts,
+        SpawnSporeGenerator,
+        SpawnSoulDestroyer,
         SpawnDarwinians,
         NumSpawnTypes
     };
 
     bool            m_spawn[NumSpawnTypes];
-    float           m_size;
-    float           m_reloadTime;
-    float           m_pitch;
-    float           m_force;
-    float           m_variance;                 // Horizontal
+    double           m_size;
+    double           m_reloadTime;
+    double           m_pitch;                    
+    double           m_force;
+    double           m_variance;                 // Horizontal 
 
     int             m_useTrigger;               // Num enemies required to trigger
     Vector3         m_triggerLocation;          // Offset from m_pos
-    float           m_triggerRadius;
-
-    Matrix34        GetHead();                  // So to speak
+    double           m_triggerRadius;
+    
+    Matrix34        GetHead( double _predictionTime );                 // So to speak
 
 public:
     Triffid();
-
+    
     void Initialise     ( Building *_template );
     bool Advance        ();
     void Launch         ();
-    void Render         ( float _predictionTime );
-    void RenderAlphas   ( float _predictionTime );
+    void Render         ( double _predictionTime );
+    void RenderAlphas   ( double _predictionTime );
 
-    void Damage         ( float _damage );
+    void Damage         ( double _damage );
 
     void ListSoundEvents( LList<char *> *_list );
 
-    bool DoesRayHit     (Vector3 const &_rayStart, Vector3 const &_rayDir,
-                         float _rayLen=1e10, Vector3 *_pos=NULL, Vector3 *_norm=NULL);
+    bool DoesRayHit     (Vector3 const &_rayStart, Vector3 const &_rayDir, 
+                         double _rayLen=1e10, Vector3 *_pos=NULL, Vector3 *_norm=NULL);
 
     static char *GetSpawnName( int _spawnType );
-    static char *GetSpawnNameTranslated( int _spawnType );
-
-    void Read   ( TextReader *_in, bool _dynamic );
-    void Write  ( FileWriter *_out );
+    static void GetSpawnNameTranslated( int _spawnType, UnicodeString &_dest );
+    
+    void Read   ( TextReader *_in, bool _dynamic );     
+    void Write  ( TextWriter *_out );							
 };
 
 
 // ============================================================================
 // Triffid Egg
 
-#define TRIFFIDEGG_BOUNCEFRICTION 0.65f
+#define TRIFFIDEGG_BOUNCEFRICTION 0.65
 
 class TriffidEgg : public Entity
-{
+{    
 protected:
     Vector3     m_up;
-    float       m_force;
-    float       m_timerSync;
-    float       m_life;
-
+    double       m_force;
+    double       m_timerSync;
+    double       m_life;
+    
 public:
-    float       m_size;
+    double       m_size;
     int         m_spawnType;
     Vector3     m_spawnPoint;
-    float       m_spawnRange;
-
+    double       m_spawnRange;
+    
 public:
     TriffidEgg();
+    void Begin();
 
-    void ChangeHealth       ( int _amount );
+    bool ChangeHealth       ( int _amount, int _damageType );
     void Spawn              ();
     bool Advance            ( Unit *_unit );
-    void Render             ( float _predictionTime );
-    bool RenderPixelEffect  ( float _predictionTime );
+    void Render             ( double _predictionTime );
+    bool RenderPixelEffect  ( double _predictionTime );
+
+	void ResetTimer			();
+    void SetTimer           ( double _time );
 
     void ListSoundEvents    ( LList<char *> *_list );
 };

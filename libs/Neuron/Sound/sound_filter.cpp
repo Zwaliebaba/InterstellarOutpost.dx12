@@ -1,7 +1,7 @@
-#include "pch.h"
-
-#include "math_utils.h"
-#include "profiler.h"
+#include "lib/universal_include.h"
+#include "lib/debug_utils.h"
+#include "lib/math_utils.h"
+#include "lib/profiler.h"
 
 #include "sound/soundsystem.h"
 #include "sound/sound_filter.h"
@@ -27,7 +27,7 @@ DspResLowPass::DspResLowPass(int _sampleRate)
 	CalcCoefs(1000.0, 1.0f, 1.0f);
 }
 
-
+	
 void DspResLowPass::CalcCoefs( float _frequency, float _resonance, float _gain )
 {
 	m_gain = _gain;
@@ -37,16 +37,16 @@ void DspResLowPass::CalcCoefs( float _frequency, float _resonance, float _gain )
 
 	float ratio = _frequency / 44100.0f;
 	// Don't let frequency get too close to Nyquist or filter will blow up
-	if( ratio >= 0.499f ) ratio = 0.499f;
+	if( ratio >= 0.499f ) ratio = 0.499f; 
 	float omega = 2.0f * M_PI * ratio;
 
-	m_cosOmega = (float) cos(omega);
-	m_sinOmega = (float) sin(omega);
+	m_cosOmega = (float) iv_cos(omega);
+	m_sinOmega = (float) iv_sin(omega);
 	float alpha = m_sinOmega / (2.0f * _resonance);
 
 	float scalar = 1.0f / (1.0f + alpha);
 	float omc = (1.0f - m_cosOmega);
-
+    
 	m_a0 = omc * 0.5f * scalar;
 	m_a1 = omc * scalar;
     m_a2 = m_a0;
@@ -67,7 +67,7 @@ void DspResLowPass::SetParameters( float const *_params )
 // Perform core IIR filter calculation with permutation.
 void DspResLowPass::Process(signed short *_data, unsigned int _numSamples)
 {
-	START_PROFILE( g_app->m_profiler, "DspResLowPass" );
+	START_PROFILE( "DspResLowPass" );
 
     float xn;
 	for( unsigned int i=0; i<_numSamples; ++i)
@@ -101,7 +101,7 @@ void DspResLowPass::Process(signed short *_data, unsigned int _numSamples)
 	// which can cause the FPU to interrupt the CPU.
 	m_yn1 += (float) 1.0E-26;
 
-    END_PROFILE( g_app->m_profiler, "DspResLowPass" );
+    END_PROFILE(  "DspResLowPass" );
 }
 
 
@@ -125,7 +125,7 @@ void DspBitCrusher::SetParameters ( float const *_params )
 
 void DspBitCrusher::Process( signed short *_data, unsigned int _numSamples)
 {
-    float valueRange = powf(2, m_bitRate);
+    float valueRange = iv_pow(2, m_bitRate);
     float stepSize = 65536.0 / valueRange;
 
     for( int i = 0; i < _numSamples; ++i )
@@ -217,7 +217,7 @@ void DspGargle::ProcessSquare(signed short *_data, unsigned int _numSamples)
 
 void DspGargle::Process(signed short *_data, unsigned int _numSamples)
 {
-    START_PROFILE( g_app->m_profiler, "DspGargle" );
+    START_PROFILE( "DspGargle" );
 
 	if (m_waveType == WaveTriangle)
 	{
@@ -228,7 +228,7 @@ void DspGargle::Process(signed short *_data, unsigned int _numSamples)
 		ProcessSquare(_data, _numSamples);
 	}
 
-    END_PROFILE( g_app->m_profiler, "DspGargle" );
+    END_PROFILE(  "DspGargle" );
 }
 
 
@@ -270,7 +270,7 @@ void DspEcho::SetParameters(float const *_params)
 {
 	int oldEnd = 0.001f * m_delay * m_sampleRate;
 	int newEnd = 0.001f * _params[1] * m_sampleRate;
-
+	
 	if (newEnd > oldEnd)
 	{
 		int growth = newEnd - oldEnd;
@@ -285,9 +285,9 @@ void DspEcho::SetParameters(float const *_params)
 
 void DspEcho::Process(signed short *_data, unsigned int _numSamples)
 {
-    START_PROFILE( g_app->m_profiler, "DspEcho" );
-
-	DEBUG_ASSERT(m_buffer);
+    START_PROFILE( "DspEcho" );
+    
+	AppDebugAssert(m_buffer);
 
 	int delayInSamples = 0.001f * m_delay * m_sampleRate;
 	float wetProportion = m_wetDryMix * 0.01f;
@@ -296,7 +296,7 @@ void DspEcho::Process(signed short *_data, unsigned int _numSamples)
 
 //	int i, j, k=0, s;
 //	int const delaySize = 3 * m_sampleRate;
-//
+//	
 //	while (k < _numSamples)
 //	{
 //		for(i = m_currentBufferIndex; i < delaySize; ++i, ++k)
@@ -304,7 +304,7 @@ void DspEcho::Process(signed short *_data, unsigned int _numSamples)
 //			if (k >= _numSamples) break;
 //
 //			// Calc where to read the delayed sample data from
-//			if (i >= delayInSamples)	j = i - delayInSamples;
+//			if (i >= delayInSamples)	j = i - delayInSamples;    
 //			else						j = i - delayInSamples + delaySize;
 //
 //			// Add the delayed sample to the input sample
@@ -334,9 +334,9 @@ void DspEcho::Process(signed short *_data, unsigned int _numSamples)
 			float temp = _data[i];
 			float result = _data[i] * dryProportion +
 						   m_buffer[j] * wetProportion;
-			if (result < -32766.0f)
+			if (result < -32766.0f) 
 				result = -32766.0f;
-			else if (result > 32766.0f)
+			else if (result > 32766.0f) 
 				result = 32766.0f;
 			_data[i] = Round(result);
 			m_buffer[j] = m_buffer[j] * attenuation + temp;
@@ -345,7 +345,7 @@ void DspEcho::Process(signed short *_data, unsigned int _numSamples)
 		m_currentBufferIndex = (finalIndex + 1) % delayInSamples;
 	}
 
-    END_PROFILE( g_app->m_profiler, "DspEcho" );
+    END_PROFILE(  "DspEcho" );
 }
 
 
@@ -396,7 +396,7 @@ void DspReverb::Process(signed short *_data, unsigned int _numSamples)
 
 	int i, j, k=0, s;
 	int const delaySize = 3 * m_sampleRate;
-
+	
 	while (k < _numSamples)
 	{
 		for(i = m_currentBufferIndex; i < delaySize; ++i, ++k)
@@ -407,7 +407,7 @@ void DspReverb::Process(signed short *_data, unsigned int _numSamples)
 			for (int unitIndex = 0; unitIndex < 6; ++unitIndex)
 			{
 				// Calc where to read the delayed sample data from
-				if (i >= m_delays[unitIndex])	j = i - m_delays[unitIndex];
+				if (i >= m_delays[unitIndex])	j = i - m_delays[unitIndex];    
 				else							j = i - m_delays[unitIndex] + delaySize;
 
 				// Add the delayed sample to the input sample

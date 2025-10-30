@@ -1,8 +1,8 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <stdio.h>
 
-#include "language_table.h"
+#include "lib/language_table.h"
 
 #include "interface/input_field.h"
 #include "interface/lights_window.h"
@@ -26,7 +26,7 @@ public:
 	int m_lightNum;
 
 	LightButton(int num): m_lightNum(num) {}
-
+	
 	void MouseUp()
 	{
 		if (m_lightNum == -1)
@@ -42,7 +42,7 @@ public:
 
 	void Render(int realX, int realY, bool highlighted, bool clicked)
 	{
-		if (g_app->m_locationEditor->m_selectionId == m_lightNum)
+		if (g_app->m_locationEditor->m_selectionId == m_lightNum) 
 		{
 			DarwiniaButton::Render(realX, realY, highlighted, true);
 		}
@@ -91,7 +91,7 @@ class NewLightButton : public DarwiniaButton
 // ****************************************************************************
 
 LightsEditWindow::LightsEditWindow( char *name )
-:	DarwiniaWindow(name)
+:	DarwiniaWindow(name) 
 {
 }
 
@@ -104,6 +104,7 @@ LightsEditWindow::~LightsEditWindow()
 
 void LightsEditWindow::Create()
 {
+	char buttonName[256];
 	DarwiniaWindow::Create();
 
 	int height = 5;
@@ -111,55 +112,52 @@ void LightsEditWindow::Create()
 	int buttonWidth = m_w - 50;
 
     NewLightButton *newLight = new NewLightButton();
-    newLight->SetShortProperties( LANGUAGEPHRASE("editor_newlight"), 10, height += pitch, m_w - 20 );
+    newLight->SetShortProperties("editor_newlight" , 10, height += pitch, m_w - 20, -1, LANGUAGEPHRASE("editor_newlight") );
     RegisterButton( newLight );
 
 	LightButton *button = new LightButton(-1);
-	char buttonName[64];
-	sprintf(buttonName, LANGUAGEPHRASE("editor_deselectlights") );
-	button->SetShortProperties(buttonName, 10, height += pitch, m_w - 20);
+	button->SetShortProperties("editor_deselectlights", 10, height += pitch, m_w - 20, -1, LANGUAGEPHRASE("editor_deselectlights"));
 	RegisterButton(button);
-
+	
     height += 6;
 
     for (int i = 0; i < g_app->m_location->m_lights.Size(); i++)
 	{
 		button = new LightButton(i);
-
+        
         Light *light = g_app->m_location->m_lights.GetData(i);
-		sprintf(buttonName, "%s %d", LANGUAGEPHRASE("editor_selectlight"), i);
-		button->SetShortProperties(buttonName, 10, height += pitch, m_w - 20);
+		button->SetShortProperties("editor_selectlight", 10, height += pitch, m_w - 20, -1, LANGUAGEPHRASE("editor_selectlight"));
 		RegisterButton(button);
 
         height += pitch;
 
         LabelButton *label = new LabelButton();
-        label->SetShortProperties( LANGUAGEPHRASE("editor_adjustbrightness"), 10, height, m_w - 50 );
+        label->SetShortProperties( "editor_adjustbrightness", 10, height, m_w - 50, -1, LANGUAGEPHRASE("editor_adjustbrightness") );
         RegisterButton( label );
-
+        
         LightGammaButton *gammaDown = new LightGammaButton(i);
         sprintf(buttonName, "down %d", i);
-        gammaDown->SetShortProperties( buttonName, m_w - 42, height, 15 );
+		gammaDown->SetShortProperties( buttonName, m_w - 42, height, 15, -1, LANGUAGEPHRASE(buttonName) );
         gammaDown->SetCaption( "<" );
-        gammaDown->m_change = 0.9f;
+        gammaDown->m_change = 0.9;
         RegisterButton( gammaDown );
 
         LightGammaButton *gammaUp = new LightGammaButton(i);
         sprintf(buttonName, "up %d", i );
-        gammaUp->SetShortProperties( buttonName, m_w - 25, height, 15 );
+        gammaUp->SetShortProperties( buttonName, m_w - 25, height, 15, -1, LANGUAGEPHRASE(buttonName) );
         gammaUp->SetCaption( ">" );
-        gammaUp->m_change = 1.1f;
+        gammaUp->m_change = 1.1;
         RegisterButton( gammaUp );
 
  		sprintf(buttonName, "Y%d", i);
-		CreateValueControl(buttonName, InputField::TypeFloat, &(light->m_front[1]), height += pitch, 0.01f, -20, 20, NULL );
+		CreateValueControl(buttonName, &(light->m_front[1]), height += pitch, 0.01, -20, 20, NULL );
 
 		sprintf(buttonName, "R%d", i);
-		CreateValueControl(buttonName, InputField::TypeFloat, &(light->m_colour[0]), height += pitch, 0.02f, 0, 5, NULL );
+		CreateValueControl(buttonName, &(light->m_colour[0]), height += pitch, 0.02, 0, 5, NULL );
  		sprintf(buttonName, "G%d", i);
-		CreateValueControl(buttonName, InputField::TypeFloat, &(light->m_colour[1]), height += pitch, 0.02f, 0, 5, NULL );
+		CreateValueControl(buttonName, &(light->m_colour[1]), height += pitch, 0.02, 0, 5, NULL );
  		sprintf(buttonName, "B%d", i);
-		CreateValueControl(buttonName, InputField::TypeFloat, &(light->m_colour[2]), height += pitch, 0.02f, 0, 5, NULL );
+		CreateValueControl(buttonName, &(light->m_colour[2]), height += pitch, 0.02, 0, 5, NULL );
 
 		height += 6;
 	}

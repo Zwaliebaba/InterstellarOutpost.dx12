@@ -1,9 +1,9 @@
-#include "pch.h"
+#include "lib/universal_include.h"
 
 #include <string>
 #include <sstream>
 
-#include "input/inputspec.h"
+#include "lib/input/inputspec.h"
 
 using namespace std;
 
@@ -44,7 +44,7 @@ const string &InputSpecTokens::operator[] ( unsigned _index ) const
 }
 
 
-std::unique_ptr<InputSpecTokens> InputSpecTokens::operator()( int _start, int _end ) const {
+auto_ptr<InputSpecTokens> InputSpecTokens::operator()( int _start, int _end ) const {
 
 	vector<string> vec;
 	vec.clear();
@@ -61,7 +61,7 @@ std::unique_ptr<InputSpecTokens> InputSpecTokens::operator()( int _start, int _e
 			vec.push_back( (*this)[ idx ] );
 	}
 
-	std::unique_ptr<InputSpecTokens> tokens( new InputSpecTokens( vec ) );
+	auto_ptr<InputSpecTokens> tokens( new InputSpecTokens( vec ) );
 	return tokens;
 }
 

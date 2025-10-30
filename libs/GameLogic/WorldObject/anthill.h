@@ -4,10 +4,10 @@
 
 #include "worldobject/building.h"
 
-#define ANTHILL_SEARCHRANGE     400.0f
+#define ANTHILL_SEARCHRANGE     400.0 
 
 
-class FileWriter;
+class TextWriter;
 
 
 struct AntObjective
@@ -23,13 +23,14 @@ class AntHill : public Building
 protected:
     LList<AntObjective *> m_objectives;
 
-    float   m_objectiveTimer;
-    float   m_spawnTimer;
-    float   m_eggConvertTimer;
+    double   m_objectiveTimer;
+    double   m_spawnTimer;
+    double   m_eggConvertTimer;
     int     m_health;
     int     m_unitId;
     int     m_populationLock;
     bool    m_renderDamaged;
+    int     m_antInsideCheck;
 
 protected:
     bool SearchingArea          ( Vector3  _pos );
@@ -43,23 +44,28 @@ protected:
 
     bool PopulationLocked();
 
+    void SpawnAnt               ( Vector3 &waypoint, WorldObjectId targetId );
+
 public:
     int m_numAntsInside;
     int m_numSpiritsInside;
-
+    
 public:
     AntHill();
+	~AntHill();
 
     void Initialise( Building *_template );
 
     bool Advance();
-    void Render ( float _predictionTime );
-    void Damage ( float _damage );
-	void Destroy( float _intensity );
+    void Render ( double _predictionTime );
+    void Damage ( double _damage );
+	void Destroy( double _intensity );
 
-    void Read   ( TextReader *_in, bool _dynamic );
-    void Write  ( FileWriter *_out );
+    void Burn   ();
 
+    void Read   ( TextReader *_in, bool _dynamic );     
+    void Write  ( TextWriter *_out );		
+    
     void ListSoundEvents( LList<char *> *_list );
 };
 

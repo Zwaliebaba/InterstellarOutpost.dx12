@@ -2,20 +2,21 @@
 #ifndef _included_incubator_h
 #define _included_incubator_h
 
-#include "fast_darray.h"
+#include "lib/tosser/fast_darray.h"
 
 #include "worldobject/building.h"
 #include "worldobject/spirit.h"
 
 class ShapeMarker;
 
-#define INCUBATOR_PROCESSTIME       5.0f
+#define INCUBATOR_PROCESSTIME                  5.0
+#define INCUBATOR_PROCESSTIME_MULTIPLAYER      0.2
 
 struct IncubatorIncoming
 {
     Vector3 m_pos;
     int     m_entrance;
-    float   m_alpha;
+    double   m_alpha;
 };
 
 
@@ -29,8 +30,8 @@ protected:
     ShapeMarker     *m_spiritEntrance[3];
 
     int             m_troopType;
-    float           m_timer;
-
+    double           m_timer;
+    
     LList           <IncubatorIncoming *> m_incoming;
 
 public:
@@ -41,18 +42,18 @@ public:
     ~Incubator();
 
     void Initialise ( Building *_template );
-
-    bool Advance    ();
+    
+    bool Advance    ();   
     void SpawnEntity();
     void AddSpirit  ( Spirit *_spirit );
 
-    void Render         ( float _predictionTime );
-    void RenderAlphas   ( float _predictionTime );
+    void Render         ( double _predictionTime );
+    void RenderAlphas   ( double _predictionTime );
 
     int  NumSpiritsInside();
 
-    void Read   ( TextReader *_in, bool _dynamic );
-    void Write  ( FileWriter *_out );
+    void Read   ( TextReader *_in, bool _dynamic );     
+    void Write  ( TextWriter *_out );							
 
     void GetDockPoint( Vector3 &_pos, Vector3 &_front );
 

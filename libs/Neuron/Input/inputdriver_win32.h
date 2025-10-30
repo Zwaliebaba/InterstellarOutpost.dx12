@@ -4,9 +4,9 @@
 
 #include <string>
 
-#include "input/inputdriver_simple.h"
-#include "input/keydefs.h"
-#include "input/win32_eventproc.h"
+#include "lib/input/inputdriver_simple.h"
+#include "lib/input/keydefs.h"
+#include "lib/input/win32_eventproc.h"
 
 #define NUM_MB 3
 #define NUM_AXES 3
@@ -18,7 +18,7 @@ private:
 	int lastAcceptedDriver; // We're handling multiple driver types
 
 	bool acceptDriver( std::string const &name );
-
+	
 	control_id_t getControlID( std::string const &name );
 
 	inputtype_t getControlType( control_id_t control_id );

@@ -15,28 +15,28 @@
  * Here is a version withouts divisions (a little faster)
  * int NoDivTriTriIsect(float V0[3],float V1[3],float V2[3],
  *                      float U0[3],float U1[3],float U2[3]);
- *
+ * 
  * This version computes the line of intersection as well (if they are not coplanar):
- * int tri_tri_intersect_with_isectline(float V0[3],float V1[3],float V2[3],
+ * int tri_tri_intersect_with_isectline(float V0[3],float V1[3],float V2[3], 
  *				        float U0[3],float U1[3],float U2[3],int *coplanar,
  *				        float isectpt1[3],float isectpt2[3]);
  * coplanar returns whether the tris are coplanar
  * isectpt1, isectpt2 are the endpoints of the line of intersection
  */
 
-#include "pch.h"
+#include "lib/universal_include.h"
 #include <math.h>
 
-#include "vector3.h"
+#include "lib/vector3.h"
 
 #define FABS(x) ((float)fabs(x))        /* implement as is fastest on your machine */
 
-/* if USE_EPSILON_TEST is true then we do a check:
+/* if USE_EPSILON_TEST is true then we do a check: 
          if |dv|<EPSILON then dv=0.0;
    else no check is done (which is less robust)
 */
-#define USE_EPSILON_TEST TRUE
-#define EPSILON 0.000001f
+#define USE_EPSILON_TEST TRUE  
+#define EPSILON 0.000001
 
 
 /* some macros */
@@ -47,13 +47,13 @@
 
 #define DOT(v1,v2) (v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2])
 
-#define SUB(dest,v1,v2) dest[0]=v1[0]-v2[0]; dest[1]=v1[1]-v2[1]; dest[2]=v1[2]-v2[2];
+#define SUB(dest,v1,v2) dest[0]=v1[0]-v2[0]; dest[1]=v1[1]-v2[1]; dest[2]=v1[2]-v2[2]; 
 
-#define ADD(dest,v1,v2) dest[0]=v1[0]+v2[0]; dest[1]=v1[1]+v2[1]; dest[2]=v1[2]+v2[2];
+#define ADD(dest,v1,v2) dest[0]=v1[0]+v2[0]; dest[1]=v1[1]+v2[1]; dest[2]=v1[2]+v2[2]; 
 
 #define MULT(dest,v,factor) dest[0]=factor*v[0]; dest[1]=factor*v[1]; dest[2]=factor*v[2];
 
-#define SET(dest,src) dest[0]=src[0]; dest[1]=src[1]; dest[2]=src[2];
+#define SET(dest,src) dest[0]=src[0]; dest[1]=src[1]; dest[2]=src[2]; 
 
 /* sort so that a<=b */
 #define SORT(a,b)       \
@@ -71,27 +71,27 @@
 
 
 #define COMPUTE_INTERVALS(VV0,VV1,VV2,D0,D1,D2,D0D1,D0D2,isect0,isect1) \
-  if(D0D1>0.0f)                                         \
+  if(D0D1>0.0)                                         \
   {                                                     \
     /* here we know that D0D2<=0.0 */                   \
     /* that is D0, D1 are on the same side, D2 on the other or on the plane */ \
     ISECT(VV2,VV0,VV1,D2,D0,D1,isect0,isect1);          \
   }                                                     \
-  else if(D0D2>0.0f)                                    \
+  else if(D0D2>0.0)                                    \
   {                                                     \
     /* here we know that d0d1<=0.0 */                   \
     ISECT(VV1,VV0,VV2,D1,D0,D2,isect0,isect1);          \
   }                                                     \
-  else if(D1*D2>0.0f || D0!=0.0f)                       \
+  else if(D1*D2>0.0 || D0!=0.0)                       \
   {                                                     \
     /* here we know that d0d1<=0.0 or that D0!=0.0 */   \
     ISECT(VV0,VV1,VV2,D0,D1,D2,isect0,isect1);          \
   }                                                     \
-  else if(D1!=0.0f)                                     \
+  else if(D1!=0.0)                                     \
   {                                                     \
     ISECT(VV1,VV0,VV2,D1,D0,D2,isect0,isect1);          \
   }                                                     \
-  else if(D2!=0.0f)                                     \
+  else if(D2!=0.0)                                     \
   {                                                     \
     ISECT(VV2,VV0,VV1,D2,D0,D1,isect0,isect1);          \
   }                                                     \
@@ -105,7 +105,7 @@
 
 /* this edge to edge test is based on Franlin Antonio's gem:
    "Faster Line Segment Intersection", in Graphics Gems III,
-   pp. 199-202 */
+   pp. 199-202 */ 
 #define EDGE_EDGE_TEST(V0,U0,U1)                      \
   Bx=U0[i0]-U1[i0];                                   \
   By=U0[i1]-U1[i1];                                   \
@@ -124,7 +124,7 @@
     {                                                 \
       if(e<=0 && e>=f) return 1;                      \
     }                                                 \
-  }
+  }                                
 
 #define EDGE_AGAINST_TRI_EDGES(V0,V1,U0,U1,U2) \
 {                                              \
@@ -164,8 +164,8 @@
   }                                         \
 }
 
-int coplanar_tri_tri(float const N[3],float const V0[3], float const V1[3], float const V2[3],
-                     float const U0[3], float const U1[3], float const U2[3])
+int coplanar_tri_tri(double const N[3],double const V0[3], double const V1[3], double const V2[3],
+                     double const U0[3], double const U1[3], double const U2[3])
 {
    float A[3];
    short i0,i1;
@@ -176,7 +176,7 @@ int coplanar_tri_tri(float const N[3],float const V0[3], float const V1[3], floa
    A[2]=fabs(N[2]);
    if(A[0]>A[1])
    {
-      if(A[0]>A[2])
+      if(A[0]>A[2])  
       {
           i0=1;      /* A[0] is greatest */
           i1=2;
@@ -192,20 +192,20 @@ int coplanar_tri_tri(float const N[3],float const V0[3], float const V1[3], floa
       if(A[2]>A[1])
       {
           i0=0;      /* A[2] is greatest */
-          i1=1;
+          i1=1;                                           
       }
       else
       {
           i0=0;      /* A[1] is greatest */
           i1=2;
       }
-    }
-
+    }               
+                
     /* test all edges of triangle 1 against the edges of triangle 2 */
     EDGE_AGAINST_TRI_EDGES(V0,V1,U0,U1,U2);
     EDGE_AGAINST_TRI_EDGES(V1,V2,U0,U1,U2);
     EDGE_AGAINST_TRI_EDGES(V2,V0,U0,U1,U2);
-
+                
     /* finally, test if tri1 is totally contained in tri2 or vice versa */
     POINT_IN_TRI(V0,U0,U1,U2);
     POINT_IN_TRI(U0,V0,V1,V2);
@@ -216,27 +216,27 @@ int coplanar_tri_tri(float const N[3],float const V0[3], float const V1[3], floa
 
 #define NEWCOMPUTE_INTERVALS(VV0,VV1,VV2,D0,D1,D2,D0D1,D0D2,A,B,C,X0,X1) \
 { \
-        if(D0D1>0.0f) \
+        if(D0D1>0.0) \
         { \
                 /* here we know that D0D2<=0.0 */ \
             /* that is D0, D1 are on the same side, D2 on the other or on the plane */ \
                 A=VV2; B=(VV0-VV2)*D2; C=(VV1-VV2)*D2; X0=D2-D0; X1=D2-D1; \
         } \
-        else if(D0D2>0.0f)\
+        else if(D0D2>0.0)\
         { \
                 /* here we know that d0d1<=0.0 */ \
             A=VV1; B=(VV0-VV1)*D1; C=(VV2-VV1)*D1; X0=D1-D0; X1=D1-D2; \
         } \
-        else if(D1*D2>0.0f || D0!=0.0f) \
+        else if(D1*D2>0.0 || D0!=0.0) \
         { \
                 /* here we know that d0d1<=0.0 or that D0!=0.0 */ \
                 A=VV0; B=(VV1-VV0)*D0; C=(VV2-VV0)*D0; X0=D0-D1; X1=D0-D2; \
         } \
-        else if(D1!=0.0f) \
+        else if(D1!=0.0) \
         { \
                 A=VV1; B=(VV0-VV1)*D1; C=(VV2-VV1)*D1; X0=D1-D0; X1=D1-D2; \
         } \
-        else if(D2!=0.0f) \
+        else if(D2!=0.0) \
         { \
                 A=VV2; B=(VV0-VV2)*D2; C=(VV1-VV2)*D2; X0=D2-D0; X1=D2-D1; \
         } \
@@ -248,29 +248,29 @@ int coplanar_tri_tri(float const N[3],float const V0[3], float const V1[3], floa
 }
 
 
-bool TriTriIntersection(Vector3 const &_v0, Vector3 const &_v1, Vector3 const &_v2,
+bool TriTriIntersection(Vector3 const &_v0, Vector3 const &_v1, Vector3 const &_v2, 
 						Vector3 const &_u0, Vector3 const &_u1, Vector3 const &_u2)
 {
-  float const *V0 = _v0.GetDataConst();
-  float const *V1 = _v1.GetDataConst();
-  float const *V2 = _v2.GetDataConst();
-  float const *U0 = _u0.GetDataConst();
-  float const *U1 = _u1.GetDataConst();
-  float const *U2 = _u2.GetDataConst();
+  double const *V0 = _v0.GetDataConst();
+  double const *V1 = _v1.GetDataConst();
+  double const *V2 = _v2.GetDataConst();
+  double const *U0 = _u0.GetDataConst();
+  double const *U1 = _u1.GetDataConst();
+  double const *U2 = _u2.GetDataConst();
 
-  float E1[3],E2[3];
-  float N1[3],N2[3],d1,d2;
-  float du0,du1,du2,dv0,dv1,dv2;
-  float D[3];
-  float isect1[2], isect2[2];
-  float du0du1,du0du2,dv0dv1,dv0dv2;
+  double E1[3],E2[3];
+  double N1[3],N2[3],d1,d2;
+  double du0,du1,du2,dv0,dv1,dv2;
+  double D[3];
+  double isect1[2], isect2[2];
+  double du0du1,du0du2,dv0dv1,dv0dv2;
   short index;
-  float vp0,vp1,vp2;
-  float up0,up1,up2;
-  float bb,cc,max;
-  float a,b,c,x0,x1;
-  float d,e,f,y0,y1;
-  float xx,yy,xxyy,tmp;
+  double vp0,vp1,vp2;
+  double up0,up1,up2;
+  double bb,cc,max;
+  double a,b,c,x0,x1;
+  double d,e,f,y0,y1;
+  double xx,yy,xxyy,tmp;
 
   /* compute plane equation of triangle(V0,V1,V2) */
   SUB(E1,V1,V0);
@@ -293,7 +293,7 @@ bool TriTriIntersection(Vector3 const &_v0, Vector3 const &_v1, Vector3 const &_
   du0du1=du0*du1;
   du0du2=du0*du2;
 
-  if(du0du1>0.0f && du0du2>0.0f) /* same sign on all of them + not equal 0 ? */
+  if(du0du1>0.0 && du0du2>0.0) /* same sign on all of them + not equal 0 ? */
     return false;                    /* no intersection occurs */
 
   /* compute plane of triangle (U0,U1,U2) */
@@ -317,7 +317,7 @@ bool TriTriIntersection(Vector3 const &_v0, Vector3 const &_v1, Vector3 const &_
   dv0dv1=dv0*dv1;
   dv0dv2=dv0*dv2;
 
-  if(dv0dv1>0.0f && dv0dv2>0.0f) /* same sign on all of them + not equal 0 ? */
+  if(dv0dv1>0.0 && dv0dv2>0.0) /* same sign on all of them + not equal 0 ? */
     return false;                    /* no intersection occurs */
 
   /* compute direction of intersection line */
