@@ -10,16 +10,36 @@
       "name": "windows-base",
       "hidden": true,
       "generator": "Visual Studio 17 2022",
+      "toolchainFile": "C:/Users/zwali/source/repos/vcpkg/scripts/buildsystems/vcpkg.cmake",
       "architecture": {
         "value": "x64",
         "strategy": "set"
       },
       "binaryDir": "${sourceDir}/out/build/${presetName}",
       "cacheVariables": {
-        "CMAKE_CXX_STANDARD": "23",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "CMAKE_C_COMPILER": "cl.exe",
-        "CMAKE_CXX_COMPILER": "cl.exe"
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "CMAKE_TOOLCHAIN_FILE": "C:/Users/zwali/source/repos/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_FEATURE_FLAGS": "manifests",
+        "VCPKG_TARGET_TRIPLET": "x64-windows"
+      }
+    },
+    {
+      "name": "windows-arm64-base",
+      "hidden": true,
+      "generator": "Visual Studio 17 2022",
+      "toolchainFile": "C:/Users/zwali/source/repos/vcpkg/scripts/buildsystems/vcpkg.cmake",
+      "architecture": {
+        "value": "ARM64",
+        "strategy": "set"
+      },
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "CMAKE_TOOLCHAIN_FILE": "C:/Users/zwali/source/repos/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_FEATURE_FLAGS": "manifests",
+        "VCPKG_TARGET_TRIPLET": "arm64-windows"
       }
     },
     {
@@ -28,8 +48,7 @@
       "description": "Debug build for Windows using Visual Studio 2022",
       "inherits": "windows-base",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "ENABLE_TESTING": "ON",
+        "BUILD_TESTING": "ON",
         "ENABLE_PCH": "ON",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
       }
@@ -40,20 +59,29 @@
       "description": "Release build for Windows using Visual Studio 2022",
       "inherits": "windows-base",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "ENABLE_TESTING": "OFF",
+        "BUILD_TESTING": "OFF",
         "ENABLE_PCH": "ON",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
       }
     },
     {
-      "name": "windows-relwithdebinfo",
-      "displayName": "Windows x64 RelWithDebInfo",
-      "description": "Release with Debug Info build for Windows",
-      "inherits": "windows-base",
+      "name": "windows-arm64-debug",
+      "displayName": "Windows ARM64 Debug",
+      "description": "Debug build for Windows ARM64 using Visual Studio 2022",
+      "inherits": "windows-arm64-base",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "ENABLE_TESTING": "ON",
+        "BUILD_TESTING": "ON",
+        "ENABLE_PCH": "ON",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+      }
+    },
+    {
+      "name": "windows-arm64-release",
+      "displayName": "Windows ARM64 Release",
+      "description": "Release build for Windows ARM64 using Visual Studio 2022",
+      "inherits": "windows-arm64-base",
+      "cacheVariables": {
+        "BUILD_TESTING": "OFF",
         "ENABLE_PCH": "ON",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
       }
@@ -75,11 +103,18 @@
       "configuration": "Release"
     },
     {
-      "name": "windows-relwithdebinfo",
-      "configurePreset": "windows-relwithdebinfo",
-      "displayName": "Build Windows RelWithDebInfo",
-      "description": "Build release with debug info configuration",
-      "configuration": "RelWithDebInfo"
+      "name": "windows-arm64-debug",
+      "configurePreset": "windows-arm64-debug",
+      "displayName": "Build Windows ARM64 Debug",
+      "description": "Build ARM64 debug configuration",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-arm64-release",
+      "configurePreset": "windows-arm64-release",
+      "displayName": "Build Windows ARM64 Release",
+      "description": "Build ARM64 release configuration",
+      "configuration": "Release"
     }
   ],
   "testPresets": [
@@ -94,11 +129,11 @@
       }
     },
     {
-      "name": "windows-relwithdebinfo",
-      "configurePreset": "windows-relwithdebinfo",
-      "displayName": "Test Windows RelWithDebInfo",
-      "description": "Run tests in release with debug info mode",
-      "configuration": "RelWithDebInfo",
+      "name": "windows-arm64-debug",
+      "configurePreset": "windows-arm64-debug",
+      "displayName": "Test Windows ARM64 Debug",
+      "description": "Run tests in ARM64 debug mode",
+      "configuration": "Debug",
       "output": {
         "outputOnFailure": true
       }

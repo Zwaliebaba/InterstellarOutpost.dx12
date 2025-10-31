@@ -1,8 +1,7 @@
 # Standard Project Settings
 # Common CMake settings and options for the project
 
-# Generate compile_commands.json for IDE support and tools like clang-tidy
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# compile_commands.json is enabled in the root CMakeLists.txt
 
 # Set default build type if not specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -30,44 +29,24 @@ foreach(CONFIG ${CMAKE_CONFIGURATION_TYPES})
 endforeach()
 
 # Project options
-option(ENABLE_TESTING "Enable test building" ON)
 option(ENABLE_PCH "Enable precompiled headers" ON)
 option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
 # Platform detection
-if(WIN32)
-  add_compile_definitions(PLATFORM_WINDOWS)
-  if(MSVC)
-  
-    # Enable multi-processor compilation
-    add_compile_options(/MP)
-        
-    # Allow legacy C++ code patterns (permissive mode without strictness)
-    add_compile_options(/permissive)
-        
-    # Enable C++20++ features for Visual Studio
-    add_compile_options(/std:c++latest)
-        
-    # Set runtime library
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-    endif()
-elseif(UNIX AND NOT APPLE)
-    add_compile_definitions(PLATFORM_LINUX)
-elseif(APPLE)
-    add_compile_definitions(PLATFORM_MACOS)
-endif()
+add_compile_definitions(PLATFORM_WINDOWS)
 
-# C++ Standard Settings
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+    add_compile_options(/permissive-)
+
+    # Use Windows Unicode APIs by default and NOT MBCS/UTF-8 char API mappings
+    add_compile_definitions(UNICODE _UNICODE)
+
+    # Ensure resource compiler also uses Unicode
+    string(APPEND CMAKE_RC_FLAGS " /DUNICODE /D_UNICODE")
 
 message(STATUS "=================================================")
 message(STATUS "  Project: ${PROJECT_NAME} v${PROJECT_VERSION}")
 message(STATUS "  Build Type: ${CMAKE_BUILD_TYPE}")
-message(STATUS "  C++ Standard: ${CMAKE_CXX_STANDARD}")
 message(STATUS "  Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "  Generator: ${CMAKE_GENERATOR}")
-message(STATUS "  Testing: ${ENABLE_TESTING}")
 message(STATUS "  PCH: ${ENABLE_PCH}")
 message(STATUS "=================================================")

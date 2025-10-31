@@ -16,7 +16,7 @@ function(add_project_test TEST_NAME)
     add_executable(${TEST_NAME} ${ARG_SOURCES})
     
     # Link libraries using alias targets
-  target_link_libraries(${TEST_NAME} PRIVATE ${ARG_LIBRARIES})
+    target_link_libraries(${TEST_NAME} PRIVATE ${ARG_LIBRARIES})
     
     # Include directories
     target_include_directories(${TEST_NAME}
@@ -35,8 +35,10 @@ function(add_project_test TEST_NAME)
     FOLDER "Tests"
     )
     
-    # Register with CTest
-    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+  # Register with CTest, forcing working directory to the test's output dir
+  add_test(NAME ${TEST_NAME}
+    COMMAND ${CMAKE_COMMAND} -E chdir "$<TARGET_FILE_DIR:${TEST_NAME}>" "$<TARGET_FILE:${TEST_NAME}>"
+  )
     
     # Set timeout
     if(ARG_TIMEOUT)
@@ -45,16 +47,19 @@ function(add_project_test TEST_NAME)
    set_tests_properties(${TEST_NAME} PROPERTIES TIMEOUT ${TEST_TIMEOUT_SHORT})
     endif()
     
-    # Set working directory for tests
-    set_tests_properties(${TEST_NAME} PROPERTIES
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    )
 endfunction()
 
-# Test for Neuron library
-add_project_test(test_neuron
-    SOURCES test_neuron.cpp
-    LIBRARIES InterstellarOutpost::Neuron
+# Test for NeuronCore library
+add_project_test(test_neuron_core
+    SOURCES test_neuron_core.cpp
+    LIBRARIES InterstellarOutpost::NeuronCore
+    TIMEOUT ${TEST_TIMEOUT_SHORT}
+)
+
+# Test for NeuronClient library
+add_project_test(test_neuron_client
+    SOURCES test_neuron_client.cpp
+    LIBRARIES InterstellarOutpost::NeuronClient
     TIMEOUT ${TEST_TIMEOUT_SHORT}
 )
 
@@ -62,8 +67,9 @@ add_project_test(test_neuron
 add_project_test(test_gamelogic
     SOURCES test_gamelogic.cpp
     LIBRARIES 
-   InterstellarOutpost::GameLogic
-        InterstellarOutpost::Neuron
+      InterstellarOutpost::GameLogic
+      InterstellarOutpost::NeuronCore
+      InterstellarOutpost::NeuronClient
     TIMEOUT ${TEST_TIMEOUT_SHORT}
 )
 
@@ -71,17 +77,18 @@ add_project_test(test_gamelogic
 add_project_test(test_integration
     SOURCES test_integration.cpp
     LIBRARIES 
-        InterstellarOutpost::GameLogic
-   InterstellarOutpost::Neuron
+      InterstellarOutpost::GameLogic
+      InterstellarOutpost::NeuronCore
+      InterstellarOutpost::NeuronClient
     TIMEOUT ${TEST_TIMEOUT_LONG}
 )
 
 # Add custom test target for running all tests
 add_custom_target(run_tests
-    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --parallel ${CMAKE_BUILD_PARALLEL_LEVEL}
-    DEPENDS test_neuron test_gamelogic test_integration
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMENT "Running all tests..."
+  COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --parallel ${CMAKE_BUILD_PARALLEL_LEVEL} -C $<CONFIG>
+  DEPENDS test_neuron_core test_neuron_client test_gamelogic test_integration
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  COMMENT "Running all tests..."
 )
 
 set_target_properties(run_tests PROPERTIES FOLDER "Tests")

@@ -2,28 +2,20 @@
 # Game logic and world object management
 
 # Collect source files by subdirectory
-file(GLOB GAMELOGIC_CORE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-file(GLOB GAMELOGIC_CORE_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-file(GLOB GAMELOGIC_INTERFACE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/Interface/*.cpp")
-file(GLOB GAMELOGIC_INTERFACE_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/Interface/*.h")
-file(GLOB GAMELOGIC_WORLDOBJECT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/WorldObject/*.cpp")
-file(GLOB GAMELOGIC_WORLDOBJECT_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/WorldObject/*.h")
+file(GLOB GAMELOGIC_CORE_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+file(GLOB GAMELOGIC_CORE_HEADERS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 
 # Combine all sources
 set(GAMELOGIC_SOURCES
     ${GAMELOGIC_CORE_SOURCES}
-    ${GAMELOGIC_INTERFACE_SOURCES}
-    ${GAMELOGIC_WORLDOBJECT_SOURCES}
 )
 
 set(GAMELOGIC_HEADERS
     ${GAMELOGIC_CORE_HEADERS}
-    ${GAMELOGIC_INTERFACE_HEADERS}
-    ${GAMELOGIC_WORLDOBJECT_HEADERS}
 )
 
-# Create GameLogic static library
-add_library(GameLogic STATIC
+# Create GameLogic library (respects BUILD_SHARED_LIBS)
+add_library(GameLogic
     ${GAMELOGIC_SOURCES}
     ${GAMELOGIC_HEADERS}
 )
@@ -38,7 +30,8 @@ target_include_directories(GameLogic
         $<INSTALL_INTERFACE:include/GameLogic>
     PRIVATE
       # GameLogic needs access to src headers
-    ${CMAKE_SOURCE_DIR}/src
+        ${CMAKE_SOURCE_DIR}/src
+        ${CMAKE_SOURCE_DIR}/libs/NeuronClient
 )
 
 # Precompiled headers
@@ -49,13 +42,13 @@ if(ENABLE_PCH AND EXISTS "${CMAKE_SOURCE_DIR}/src/pch.h")
     )
 endif()
 
-# Set C++20 standard
-target_compile_features(GameLogic PUBLIC cxx_std_20)
+# Set C++23 standard
+target_compile_features(GameLogic PUBLIC cxx_std_23)
 
 # Link dependencies using alias
 target_link_libraries(GameLogic 
     PUBLIC 
-      InterstellarOutpost::Neuron
+      InterstellarOutpost::NeuronCore
 )
 
 # Apply compiler warnings

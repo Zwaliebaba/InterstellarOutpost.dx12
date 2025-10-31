@@ -1,5 +1,3 @@
-#include "GameLogic.h"
-#include "Neuron.h"
 #include <iostream>
 #include <cassert>
 #include <chrono>

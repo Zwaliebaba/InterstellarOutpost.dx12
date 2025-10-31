@@ -30,7 +30,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/README.md")
     set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
 endif()
 
-# Platform-specific packaging
+# Platform-specific packaging (Windows only)
 if(WIN32)
     # Windows NSIS installer
     set(CPACK_GENERATOR "NSIS;ZIP")
@@ -39,7 +39,7 @@ if(WIN32)
     set(CPACK_NSIS_DISPLAY_NAME "${PROJECT_NAME}")
     set(CPACK_NSIS_PACKAGE_NAME "${PROJECT_NAME}")
     set(CPACK_NSIS_URL_INFO_ABOUT "https://github.com/yourusername/${PROJECT_NAME}")
-    
+
     # Create desktop shortcut
     set(CPACK_NSIS_CREATE_ICONS_EXTRA
         "CreateShortCut '$DESKTOP\\\\${PROJECT_NAME}.lnk' '$INSTDIR\\\\bin\\\\${PROJECT_NAME}.exe'"
@@ -47,21 +47,6 @@ if(WIN32)
     set(CPACK_NSIS_DELETE_ICONS_EXTRA
         "Delete '$DESKTOP\\\\${PROJECT_NAME}.lnk'"
     )
-elseif(APPLE)
-    # macOS bundle
-    set(CPACK_GENERATOR "DragNDrop;TGZ")
-elseif(UNIX)
-    # Linux packages
-    set(CPACK_GENERATOR "TGZ;DEB;RPM")
-    
-    # Debian package specific
-    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "InterstellarOutpost Team")
-    set(CPACK_DEBIAN_PACKAGE_SECTION "games")
-    set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-    
-    # RPM package specific
-    set(CPACK_RPM_PACKAGE_LICENSE "MIT")
-    set(CPACK_RPM_PACKAGE_GROUP "Amusements/Games")
 endif()
 
 # Components
