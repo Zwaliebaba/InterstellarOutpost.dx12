@@ -1,112 +1,93 @@
-# InterstellarOutpost AI Coding Instructions
+# InterstellarOutpost.dx12 – AI agent working notes
 
-## Architecture Overview
+These instructions make AI coding agents productive in this Windows/MSVC C++23 game project. They distill the repo’s architecture, workflows, and conventions; stick to these patterns and file locations.
 
-InterstellarOutpost is a C++20/23 real-time strategy game built with a modular architecture:
+## Context
+Project Type: Game
+Project Name: Interstellar Outpost 
+Language: C++
+Framework / Libraries: STL / CMake / CTest
+Architecture: Modular / RAII / OOP
 
-- **Main Application (`src/`)**: Game loop, rendering, input handling, and state management
-- **Neuron Library (`libs/Neuron/`)**: Core engine systems - graphics, input, sound, networking
-- **GameLogic Library (`libs/GameLogic/`)**: Game-specific logic, entities, and world management
+## General guidelines
+- Code Style: The project uses an .editorconfig file to enforce coding standards. Follow the rules defined in .editorconfig for indentation, line endings, and other formatting. Additional information can be found on the wiki at Implementation. The code requires C++23 features.
+- Error Handling: Use C++ exceptions for error handling and uses RAII smart pointers to ensure resources are properly managed. For some functions that return HRESULT error codes, they are marked noexcept, use std::nothrow for memory allocation, and should not throw exceptions.
 
-Key architectural patterns:
-- Entity-Component-System design with `Entity`, `Unit`, `Team`, and `WorldObject` hierarchies
-- Client-server networking with `ClientToServer` and `Server` classes
-- Time-sliced simulation: 10 slices per frame at 10Hz server tick rate (`globals.h`)
-- Modular subsystems accessed via `g_app` singleton with subsystem managers
+## Patterns
 
-## Essential Build & Development Workflow
+### Patterns to Follow
+Use RAII for all resource ownership (memory, file handles, etc.).
+Many classes utilize the pImpl idiom to hide implementation details, and to enable optimized memory alignment in the implementation.
+Use std::unique_ptr for exclusive ownership and std::shared_ptr for shared ownership.
+Use winrt::com_ptr for COM object management.
+Make use of anonymous namespaces to limit scope of functions and variables.
+Make use of DEBUG_ASSERT for debugging checks, but be sure to validate input parameters in release builds.
+Make use of the DebugTrace helper to log diagnostic messages, particularly at the point of throwing an exception.
 
-### CMake Build System
-- Uses **CMake Presets** - always use presets, not manual cmake commands:
-  ```powershell
-  cmake --preset windows-debug
-  cmake --build --preset windows-debug
-  ```
-- Build configurations: `windows-debug`, `windows-release`, `windows-relwithdebinfo`
-- **Critical**: `gamedata/` directory auto-copies to build output - required for runtime
+### Patterns to Avoid
 
-### Testing Strategy
-- Unit tests per library: `test_neuron.cpp`, `test_gamelogic.cpp`  
-- Integration test: `test_integration.cpp`
-- Run via: `ctest --preset windows-debug` or VS Code task "Build InterstellarOutpost (Debug)"
-- Tests expect working directory to be `build/bin/[Config]/`
+- Don’t use raw pointers for ownership.
+- Avoid macros for constants—prefer `constexpr` or `inline` `const`.
+- Don’t put implementation logic in header files unless using templates.
+- Avoid using `using namespace` in header files to prevent polluting the global namespace.
 
-### Project-Specific Conventions
+## No speculation
 
-#### Memory Management
-- Uses **shared ownership** patterns - many objects stored in global managers
-- Raw pointers are common and expected (legacy codebase pattern)
-- RAII for resources, but manual cleanup in destructors is normal
+When creating documentation:
 
-#### Code Organization
-- **Precompiled Headers**: `src/pch.h` included in all compilation units
-- **Cross-library dependencies**: Neuron and GameLogic both access `src/` headers
-- **Global Access**: `g_app`, `g_inputManager`, `g_prefsManager` - use these, don't create new globals
+### Document Only What Exists
 
-#### Naming Patterns
-- Classes: `PascalCase` (e.g., `LocationInput`, `TaskManager`)
-- Members: `m_camelCase` (e.g., `m_locationId`, `m_userInput`)
-- Globals: `g_camelCase` (e.g., `g_app`, `g_gameTime`)
-- File organization: `.h/.cpp` pairs, headers contain full class definitions
+- Only document features, patterns, and decisions that are explicitly present in the source code.
+- Only include configurations and requirements that are clearly specified.
+- Do not make assumptions about implementation details.
 
-## Core Game Loop Architecture
+### Handle Missing Information
 
-The main loop in `main.cpp` follows this pattern:
-1. **LocationGameLoop()**: Real-time gameplay with client-server sync
-2. **GlobalWorldGameLoop()**: World map/meta-game navigation  
-3. **MainMenuLoop()**: Frontend menus
+- Ask the user questions to gather missing information.
+- Document gaps in current implementation or specifications.
+- List open questions that need to be addressed.
 
-Key timing variables in `main.cpp`:
-- `g_gameTime`: Current simulation time
-- `g_advanceTime`: Delta time for current frame
-- `g_predictionTime`: Client prediction offset
-- Time-sliced physics: advance 1-10 slices per frame based on network timing
+### Source Material
 
-## Critical Integration Points
+- Always cite the specific source file and line numbers for documented features.
+- Link directly to relevant source code when possible.
+- Indicate when information comes from requirements vs. implementation.
 
-### Input System (`src/user_input.cpp`, Neuron library)
-- Multi-modal: keyboard/mouse + gamepad support
-- Input preprocessing through driver chain in `InputManager`
-- UI state affects input routing (windows open = block game input)
+### Verification Process
 
-### Rendering Pipeline (`src/renderer.cpp`)
-- Immediate-mode OpenGL rendering
-- Camera system with multiple modes: `ModeFreeMovement`, `ModeSphereWorld`, `ModeMainMenu`
-- Effect processing via `EffectProcessor` for post-processing
+- Review each documented item against source code whenever related to the task.
+- Remove any speculative content.
+- Ensure all documentation is verifiable against the current state of the codebase.
 
-### Audio System (Neuron/Sound)
-- 2D + 3D audio libraries (`g_soundLibrary2d`, `g_soundLibrary3d`)
-- Event-driven audio triggers via `SoundSystem::TriggerOtherEvent()`
-- Ambient audio tied to game state transitions
+## Data and assets
+- `gamedata/` is auto‑mirrored to `bin/<Config>/gamedata` by a root custom target (`copy_gamedata`). If assets are “missing,” check that mirror path exists.
 
-### Networking (Neuron/Network)
-- Deterministic client-server with rollback (`ClientToServer`, `Server`)
-- Fixed-timestep server at 10Hz with client prediction
-- Sync validation via `GenerateSyncValue()` function
+## CMake patterns to follow
+- Link only via alias targets. Example from `src/CMakeLists.txt`:
+	- `target_link_libraries(InterstellarOutpost PRIVATE InterstellarOutpost::NeuronCore InterstellarOutpost::NeuronClient InterstellarOutpost::GameLogic)`
+- Tests are simple executables registered with CTest (no external framework required). Use the helper in `tests/CMakeLists.txt`:
+	- `add_project_test(test_name SOURCES test_xyz.cpp LIBRARIES InterstellarOutpost::GameLogic ... TIMEOUT 30)`
+	- Working dir is forced to the test’s target output folder so `gamedata` resolves.
 
-## Development Guidelines
+## Source layout highlights
+- App: `src/` (entry in `main.cpp`, app wiring, rendering, input, state). Key files: `GameApp.cpp/.h`, `Renderer.*`, `camera.*`, `user_input.*`, `taskmanager*`, `location*`, `global_world*`.
+- Engine libs: `libs/NeuronCore` (core utilities, JSON, PIX), `libs/NeuronClient` (client subsystems), `libs/GameLogic` (entities, world rules). Each has its own `CMakeLists.txt` and exposes a namespaced alias.
 
-### Adding New Features
-1. **Entities**: Inherit from `Entity` or `WorldObject`, register in appropriate manager
-2. **UI**: Use ECL window system (see `interface/` directories)
-3. **Game Logic**: Add to location-based or global world systems
-4. **Config**: Use `PrefsManager` for settings, store in `gamedata/default_preferences.txt`
+### Pointers to read first
+- `README.md` (quickstart + architecture), `CMakePresets.json` (presets), root `CMakeLists.txt` (enforced policies and `copy_gamedata`).
+- `src/main.cpp` for the game loops and timing; `tests/CMakeLists.txt` for adding tests; `libs/*/CMakeLists.txt` for alias/visibility patterns.
 
-### Debugging Patterns
-- Use `DebugTrace()` for logging (not `printf` or `std::cout`)
-- Camera debug modes available: `Camera::DebugModeAuto`, `DebugModeAlways`
-- Profile with built-in profiler: `START_PROFILE()` / `END_PROFILE()` macros
+## Code Review Instructions
 
-### Visual Studio Integration
-- Project uses folder structure for IDE organization
-- Debugging working directory auto-configured to `build/bin/[Config]/`
-- IntelliSense benefits from `CMAKE_EXPORT_COMPILE_COMMANDS=ON`
+When reviewing code, focus on the following aspects:
 
-## Data Directories
-
-- `gamedata/`: Runtime assets, scripts, preferences - **must be present in build output**
-- `gamedata/shaders/`: GLSL shaders
-- `gamedata/scripts/`: Game scripts and cutscenes  
-- `gamedata/levels/`: Level definitions and mission files
-
-When adding new content, ensure it's copied to build directory or add to `src/CMakeLists.txt` post-build commands.
+- Adherence to coding standards defined in `.editorconfig`.
+- Make coding recommendations based on the *C++ Core Guidelines*.
+- Proper use of RAII and smart pointers.
+- Correct error handling practices and C++ Exception safety.
+- Clarity and maintainability of the code.
+- Adequate comments where necessary.
+- Compliance with the project's architecture and design patterns.
+- Ensure that all public functions and classes are covered by unit tests located on tests\ where applicable. Report any gaps in test coverage.
+- Check for performance implications, especially in geometry processing algorithms.
+- Provide brutally honest feedback on code quality, design, and potential improvements as needed.

@@ -9,7 +9,8 @@
 class InputTransform
 {
   public:
-    virtual bool operator()() = 0;
+  virtual ~InputTransform() = default;
+  virtual bool operator()() = 0;
 };
 
 // ==================== class ControlEventFunctor ====================

@@ -1,193 +1,120 @@
-# InterstellarOutpost
+<div align="center">
 
-A C++20 interstellar outpost game
+# InterstellarOutpost.dx12
+
+A C++23 real‑time strategy game prototype using a modular engine, Windows/MSVC toolchain, and CMake presets.
+
+</div>
 
 ## Overview
 
-InterstellarOutpost is a demonstration project showcasing modern C++20 features, modular architecture, and comprehensive testing. The system consists of:
+InterstellarOutpost is a Windows‑only game project structured as a main application plus two engine libraries. It features a deterministic client/server simulation, a time‑sliced game loop, and a content pipeline that mirrors runtime assets into the build output automatically.
 
-- **InterstellarOutpost**: Main application coordinating outpost operations
-- **Neuron Library**: Neural network processing system for advanced data analysis
-- **GameLogic Library**: Resource management and game state processing
+Key components:
+- Main app (`src/`): rendering, input, game state, and the game loops (see `src/main.cpp`)
+- Engine core (`libs/NeuronCore/`): shared systems and utilities (JSON, PIX markers)
+- Client systems (`libs/NeuronClient/`): client‑side subsystems used by the app
+- Game logic (`libs/GameLogic/`): entities, world, and gameplay rules
+
+> [!NOTE]
+> The runtime expects the working directory to be the configuration output folder (for example `.../out/build/windows-debug/bin/Debug/`). The build auto‑copies `gamedata/` there so assets resolve at runtime and in tests.
 
 ## Features
 
-- **C++20 Standard**: Leverages modern C++ features including concepts, ranges, and improved template metaprogramming
-- **Modular Architecture**: Clean separation between neural processing and game logic
-- **CMake Build System**: Cross-platform build configuration with Visual Studio support
-- **Comprehensive Testing**: Unit tests and integration tests using CTest framework
-- **Resource Management**: Energy, minerals, food, and population tracking
-- **Neural Processing**: Data processing simulation with configurable parameters
+- C++23 targets with precompiled headers per target
+- Deterministic client/server with rollback, 10Hz server tick, client prediction
+- Time‑sliced simulation (up to 10 slices per frame) with built‑in profiler macros
+- Modular libraries with clear alias targets: `InterstellarOutpost::NeuronCore`, `::NeuronClient`, `::GameLogic`
+- Content mirroring: `gamedata/` auto‑copied to `bin/<Config>/gamedata`
+- CTest integration with per‑target working directories
 
-## Project Structure
+## Quickstart (Windows + Visual Studio 2022)
 
-```
-InterstellarOutpost/
-├── src/                     # Main application
-│   ├── main.cpp
-│   └── CMakeLists.txt
-├── libs/                    # Custom libraries
-│   ├── Neuron/             # Neural processing library
-│   │   ├── include/Neuron/
-│   │   │   └── Neuron.h
-│   │   ├── src/
-│   │   │   └── Neuron.cpp
-│   │   └── CMakeLists.txt
-│   └── GameLogic/          # Game logic library
-│       ├── include/GameLogic/
-│       │   └── GameLogic.h
-│       ├── src/
-│       │   └── GameLogic.cpp
-│       └── CMakeLists.txt
-├── tests/                   # Test suite
-│   ├── test_neuron.cpp
-│   ├── test_gamelogic.cpp
-│   ├── test_integration.cpp
-│   └── CMakeLists.txt
-├── build/                   # Build output (generated)
-├── .github/
-│   └── copilot-instructions.md
-├── CMakeLists.txt          # Root CMake configuration
-└── README.md
-```
+Use the provided CMake presets. x64 and ARM64 are supported.
 
-## Prerequisites
-
-- **CMake**: Version 3.20 or higher
-- **C++ Compiler**: 
-  - Visual Studio 2019/2022 with C++20 support (Windows)
-  - GCC 10+ or Clang 11+ (Linux/macOS)
-- **Operating System**: Windows 10/11, Linux, or macOS
-
-## Building the Project
-
-### Windows (Visual Studio)
-
-1. **Clone and navigate to the project**:
-   ```powershell
-   cd path/to/InterstellarOutpost
-   ```
-
-2. **Create build directory**:
-   ```powershell
-   mkdir build
-   cd build
-   ```
-
-3. **Configure with CMake**:
-   ```powershell
-   cmake .. -G "Visual Studio 17 2022" -A x64
-   ```
-
-4. **Build the project**:
-   ```powershell
-   cmake --build . --config Debug
-   ```
-
-### Linux/macOS
-
-1. **Create build directory**:
-   ```bash
-   mkdir build && cd build
-   ```
-
-2. **Configure and build**:
-   ```bash
-   cmake ..
-   cmake --build .
-   ```
-
-## Running the Application
-
-After building, run the main executable:
-
-### Windows
 ```powershell
-.\build\bin\Debug\InterstellarOutpost.exe
+# Configure
+cmake --preset windows-debug
+
+# Build
+cmake --build --preset windows-debug
+
+# Run tests (Debug)
+ctest --preset windows-debug
 ```
 
-### Linux/macOS
-```bash
-./build/bin/InterstellarOutpost
+Run the game from the build output:
+
+```powershell
+# Debug config uses a postfix
+./out/build/windows-debug/bin/Debug/InterstellarOutpost_d.exe
+
+# Release config (no postfix)
+./out/build/windows-release/bin/Release/InterstellarOutpost.exe
 ```
 
-## Running Tests
+> [!TIP]
+> If you prefer ARM64 on Windows, use the `windows-arm64-*` presets.
 
-Execute the test suite using CTest:
+> [!WARNING]
+> Presets reference a vcpkg toolchain file. If your local vcpkg path differs, edit `CMakePresets.json` or set the appropriate cache variables to point to your vcpkg installation.
 
-```bash
-cd build
-ctest --verbose
+## Architecture
+
+- Game loop (`src/main.cpp`):
+	- LocationGameLoop(): real‑time play with client/server sync, physics slices, rendering
+	- GlobalWorldGameLoop(): world map/meta progression and menus
+	- Built‑ins: profiler (`START_PROFILE/END_PROFILE`), input routing, UI windows
+- Networking: deterministic client/server at 10Hz (`Server`, `NetworkClient`), sync validation via `GenerateSyncValue()`
+- Rendering and camera: `Renderer`, `camera`, post‑effects and fade in/out handling
+- Input system: layered drivers (Win32, XInput, aliases, chords, prefs) via `InputManager`
+- Audio: 2D/3D libraries with ambient/event triggers through `SoundSystem`
+
+> [!NOTE]
+> Engine libraries propagate PIX GPU event marker support via vcpkg’s `winpixevent` and define `HAVE_PIX` for conditional compilation.
+
+## Project layout
+
+```
+src/                 # Main application (game loops, rendering, input, state)
+libs/
+	NeuronCore/        # Core engine utilities (JSON, PIX, shared headers)
+	NeuronClient/      # Client subsystems used by the app
+	GameLogic/         # Entities, world objects, gameplay systems
+gamedata/            # Assets and config; auto‑copied to bin/<Config>/gamedata
+tests/               # CTest targets (unit + integration)
+cmake/               # Shared CMake modules and install config
 ```
 
-Individual tests can be run directly:
-- `./tests/test_neuron` - Neuron library tests
-- `./tests/test_gamelogic` - GameLogic library tests  
-- `./tests/test_integration` - Integration tests
+## Development
 
-## Library Documentation
+- Build options: enable tests via preset `BUILD_TESTING=ON`; PCH via `ENABLE_PCH=ON` (default in presets)
+- Targets use alias names; link against `InterstellarOutpost::NeuronCore`, `::NeuronClient`, `::GameLogic`
+- Working directory is set per‑config to `bin/<Config>` for debugging in VS
+- JSON via `nlohmann_json` (vcpkg); PIX via `winpixevent` (vcpkg)
 
-### Neuron Library
+> [!IMPORTANT]
+> Always run from the configuration folder (`bin/Debug` or `bin/Release`) so the game can find `gamedata/`. Tests are also registered to run from their own output dirs and assume assets are present there.
 
-The Neuron library provides neural network processing capabilities:
+## Testing
 
-```cpp
-#include <Neuron/Neuron.h>
+All tests are CTest‑driven with per‑target working directories. Typical flow:
 
-Neuron::NeuronSystem neuronSystem;
-neuronSystem.initialize();
-
-std::string result = neuronSystem.processData("input_data");
-std::cout << result << std::endl;
-
-neuronSystem.shutdown();
+```powershell
+cmake --preset windows-debug
+cmake --build --preset windows-debug
+ctest --preset windows-debug
 ```
 
-### GameLogic Library
+Named targets include: `test_neuron_core`, `test_neuron_client`, `test_gamelogic`, and `test_integration`.
 
-The GameLogic library manages outpost resources and game state:
+## Troubleshooting
 
-```cpp
-#include <GameLogic/GameLogic.h>
-
-GameLogic::GameSystem gameSystem;
-gameSystem.initialize();
-
-// Add resources
-gameSystem.addResource(GameLogic::ResourceType::Energy, 50);
-
-// Check resource levels
-int energy = gameSystem.getResourceAmount(GameLogic::ResourceType::Energy);
-
-// Update game state
-gameSystem.update(1.0f); // 1 second delta time
-
-gameSystem.shutdown();
-```
-
-## Development Guidelines
-
-- **Code Style**: Follow modern C++20 best practices
-- **Memory Management**: Use RAII and smart pointers
-- **Error Handling**: Prefer exceptions for error conditions
-- **Testing**: Write tests for all new functionality
-- **Documentation**: Comment public APIs and complex algorithms
-
-## Contributing
-
-1. Ensure code compiles without warnings
-2. Add appropriate tests for new features
-3. Update documentation as needed
-4. Follow the existing code style
-
-## License
-
-This project is created for educational and demonstration purposes.
-
-## Version History
-
-- **v1.0.0**: Initial release with basic neural processing and resource management
+- vcpkg toolchain not found: edit `CMakePresets.json` `toolchainFile`/`CMAKE_TOOLCHAIN_FILE` to your vcpkg path
+- Missing assets at runtime: verify `gamedata/` exists under `out/build/<preset>/bin/<Config>/gamedata`
+- Running from IDE: ensure the debugger working directory is `bin/<Config>` (set automatically per target)
 
 ---
 
-**🚀 Welcome to your InterstellarOutpost!**
+If you’d like a quick tour, start at `src/main.cpp` for the loop, then browse `libs/GameLogic/` for entities and `libs/NeuronCore/` for engine utilities.
+
