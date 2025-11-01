@@ -2,7 +2,7 @@
   "version": 8,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 20,
+    "minor": 21,
     "patch": 0
   },
   "configurePresets": [
@@ -48,8 +48,8 @@
       "description": "Debug build for Windows using Visual Studio 2022",
       "inherits": "windows-base",
       "cacheVariables": {
-        "BUILD_TESTING": "ON",
-        "ENABLE_PCH": "ON",
+        "IO_BUILD_TESTS": "ON",
+        "IO_ENABLE_PCH": "ON",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
       }
     },
@@ -59,8 +59,8 @@
       "description": "Release build for Windows using Visual Studio 2022",
       "inherits": "windows-base",
       "cacheVariables": {
-        "BUILD_TESTING": "OFF",
-        "ENABLE_PCH": "ON",
+        "IO_BUILD_TESTS": "OFF",
+        "IO_ENABLE_PCH": "ON",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
       }
     },
@@ -70,8 +70,8 @@
       "description": "Debug build for Windows ARM64 using Visual Studio 2022",
       "inherits": "windows-arm64-base",
       "cacheVariables": {
-        "BUILD_TESTING": "ON",
-        "ENABLE_PCH": "ON",
+        "IO_BUILD_TESTS": "ON",
+        "IO_ENABLE_PCH": "ON",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
       }
     },
@@ -81,8 +81,8 @@
       "description": "Release build for Windows ARM64 using Visual Studio 2022",
       "inherits": "windows-arm64-base",
       "cacheVariables": {
-        "BUILD_TESTING": "OFF",
-        "ENABLE_PCH": "ON",
+        "IO_BUILD_TESTS": "OFF",
+        "IO_ENABLE_PCH": "ON",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
       }
     }

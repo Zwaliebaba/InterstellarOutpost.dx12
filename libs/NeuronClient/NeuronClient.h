@@ -15,12 +15,10 @@
 using namespace winrt;
 
 //********************************************************
-#include <C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)/Include/d3dx9.h>
 #include <d3d9.h>
 #include "opengl_directx.h"
 
 #pragma comment(lib, "d3d9.lib")
-#pragma comment(lib, "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)/Lib/X64/d3dx9.lib")
 
 //********************************************************
 

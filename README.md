@@ -88,7 +88,7 @@ cmake/               # Shared CMake modules and install config
 
 ## Development
 
-- Build options: enable tests via preset `BUILD_TESTING=ON`; PCH via `ENABLE_PCH=ON` (default in presets)
+- Build options: control tests with `IO_BUILD_TESTS` (ON by default), toggle PCH via `IO_ENABLE_PCH`, and opt into warnings-as-errors with `IO_WARNINGS_AS_ERRORS`
 - Targets use alias names; link against `InterstellarOutpost::NeuronCore`, `::NeuronClient`, `::GameLogic`
 - Working directory is set per‑config to `bin/<Config>` for debugging in VS
 - JSON via `nlohmann_json` (vcpkg); PIX via `winpixevent` (vcpkg)

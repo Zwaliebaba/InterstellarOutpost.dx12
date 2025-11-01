@@ -1,74 +1,52 @@
-# Main Application
-# InterstellarOutpost executable
+# InterstellarOutpost executable and runtime wiring
 
-# Collect source files
-file(GLOB APP_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-file(GLOB APP_HEADERS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+file(GLOB app_sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+file(GLOB app_headers CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 
-# Create main executable with WIN32 flag for Windows GUI subsystem
-add_executable(${PROJECT_NAME} WIN32
-    ${APP_SOURCES}
-    ${APP_HEADERS}
-)
+add_executable(${PROJECT_NAME} WIN32 ${app_sources} ${app_headers})
 
-# Link libraries using alias targets
 target_link_libraries(${PROJECT_NAME}
-    PRIVATE 
+    PRIVATE
         InterstellarOutpost::NeuronCore
         InterstellarOutpost::NeuronClient
         InterstellarOutpost::GameLogic
 )
 
-# PIX setup is provided via NeuronCore (PUBLIC link + HAVE_PIX)
-
-# Include directories
 target_include_directories(${PROJECT_NAME}
     PRIVATE
-      ${CMAKE_CURRENT_SOURCE_DIR}
-      ${CMAKE_SOURCE_DIR}/libs/NeuronCore
-      ${CMAKE_SOURCE_DIR}/libs/NeuronClient
-      ${CMAKE_SOURCE_DIR}/libs/GameLogic
+        ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# Precompiled headers
-if(ENABLE_PCH AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
-    target_precompile_headers(${PROJECT_NAME}
- PRIVATE
-      "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/pch.h>"
-    )
+io_apply_target_defaults(${PROJECT_NAME})
+io_enable_warnings(${PROJECT_NAME})
+io_enable_pch(${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
+
+if(MSVC)
+    if(CMAKE_CONFIGURATION_TYPES)
+        foreach(config ${CMAKE_CONFIGURATION_TYPES})
+            string(TOUPPER "${config}" config_upper)
+            set_property(TARGET ${PROJECT_NAME} PROPERTY
+                VS_DEBUGGER_WORKING_DIRECTORY_${config_upper} "${CMAKE_RUNTIME_OUTPUT_DIRECTORY_${config_upper}}")
+        endforeach()
+    else()
+        set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    endif()
 endif()
 
-# Set C++23 standard per target
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
-
-# Apply compiler warnings
-set_project_warnings(${PROJECT_NAME})
-
-# Platform-specific settings
-    # For each configuration, set the specific VS working directory to the target output dir
-    foreach(CONFIG ${CMAKE_CONFIGURATION_TYPES})
-        string(TOUPPER ${CONFIG} CONFIG_UPPER)
-        set_target_properties(${PROJECT_NAME} PROPERTIES
-            VS_DEBUGGER_WORKING_DIRECTORY_${CONFIG_UPPER} "${CMAKE_BINARY_DIR}/bin/${CONFIG}"
-        )
-    endforeach()
-
-# Set target properties
 set_target_properties(${PROJECT_NAME} PROPERTIES
     OUTPUT_NAME "InterstellarOutpost"
     DEBUG_POSTFIX "_d"
     FOLDER "Applications"
 )
 
-# Installation rules (optional)
 install(TARGETS ${PROJECT_NAME}
-    RUNTIME DESTINATION bin
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     COMPONENT Applications
 )
 
-if(EXISTS "${GAMEDATA_SOURCE_DIR}")
-    install(DIRECTORY "${GAMEDATA_SOURCE_DIR}"
-        DESTINATION bin
+if(EXISTS "${GAMEDATA_SRC_DIR}")
+    install(DIRECTORY "${GAMEDATA_SRC_DIR}"
+        DESTINATION ${CMAKE_INSTALL_BINDIR}
         COMPONENT Data
     )
 endif()

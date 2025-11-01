@@ -1,52 +1,65 @@
-# Standard Project Settings
-# Common CMake settings and options for the project
+# Standard project settings shared by every target.
 
-# compile_commands.json is enabled in the root CMakeLists.txt
+include_guard(GLOBAL)
 
-# Set default build type if not specified
+# Choose a sensible default build type for single-config generators.
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    message(STATUS "Setting build type to 'RelWithDebInfo' as none was specified.")
-    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build." FORCE)
-    # Set possible values for cmake-gui
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-        "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+    message(STATUS "Defaulting CMAKE_BUILD_TYPE to RelWithDebInfo")
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Build type" FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release MinSizeRel RelWithDebInfo)
 endif()
 
-# Enable folders in IDE for better organization
+# Keep generated projects organised when opening in an IDE.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# Output directories for binaries and libraries
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+# Normalise output directories so every generator produces the same layout.
+set(_io_bin_dir "${CMAKE_BINARY_DIR}/bin")
+set(_io_lib_dir "${CMAKE_BINARY_DIR}/lib")
 
-# Make output directories configuration-aware for multi-config generators
-foreach(CONFIG ${CMAKE_CONFIGURATION_TYPES})
-    string(TOUPPER ${CONFIG} CONFIG_UPPER)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONFIG_UPPER} ${CMAKE_BINARY_DIR}/bin/${CONFIG})
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONFIG_UPPER} ${CMAKE_BINARY_DIR}/lib/${CONFIG})
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CONFIG_UPPER} ${CMAKE_BINARY_DIR}/lib/${CONFIG})
-endforeach()
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${_io_bin_dir}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${_io_lib_dir}")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${_io_lib_dir}")
 
-# Project options
-option(ENABLE_PCH "Enable precompiled headers" ON)
-option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
+if(CMAKE_CONFIGURATION_TYPES)
+    foreach(config ${CMAKE_CONFIGURATION_TYPES})
+        string(TOUPPER "${config}" config_upper)
+        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${config_upper} "${_io_bin_dir}/${config}")
+        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${config_upper} "${_io_lib_dir}/${config}")
+        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${config_upper} "${_io_lib_dir}/${config}")
+    endforeach()
+endif()
 
-# Platform detection
-add_compile_definitions(PLATFORM_WINDOWS)
+# Common feature toggles.  BUILD_SHARED_LIBS remains the canonical CMake switch.
+option(IO_ENABLE_PCH "Enable target-specific precompiled headers" ON)
+option(BUILD_SHARED_LIBS "Build libraries as shared objects" OFF)
 
-    add_compile_options(/permissive-)
-
-    # Use Windows Unicode APIs by default and NOT MBCS/UTF-8 char API mappings
-    add_compile_definitions(UNICODE _UNICODE)
-
-    # Ensure resource compiler also uses Unicode
+if(MSVC)
+    # Ensure the resource compiler also respects the UNICODE settings applied per-target.
     string(APPEND CMAKE_RC_FLAGS " /DUNICODE /D_UNICODE")
+endif()
 
-message(STATUS "=================================================")
-message(STATUS "  Project: ${PROJECT_NAME} v${PROJECT_VERSION}")
-message(STATUS "  Build Type: ${CMAKE_BUILD_TYPE}")
-message(STATUS "  Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
-message(STATUS "  Generator: ${CMAKE_GENERATOR}")
-message(STATUS "  PCH: ${ENABLE_PCH}")
-message(STATUS "=================================================")
+# Helper to stamp our standard compile features/definitions onto a target.
+function(io_apply_target_defaults target)
+    if(NOT TARGET "${target}")
+        message(FATAL_ERROR "io_apply_target_defaults: target '${target}' does not exist")
+    endif()
+
+    target_compile_features(${target} PUBLIC cxx_std_23)
+    target_compile_definitions(${target} PUBLIC PLATFORM_WINDOWS UNICODE _UNICODE)
+    target_compile_options(${target} PRIVATE /permissive-)
+endfunction()
+
+# Helper to enable a precompiled header when requested and available.
+function(io_enable_pch target header)
+    if(NOT IO_ENABLE_PCH)
+        return()
+    endif()
+
+    if(NOT TARGET "${target}")
+        message(FATAL_ERROR "io_enable_pch: target '${target}' does not exist")
+    endif()
+
+    if(EXISTS "${header}")
+        target_precompile_headers(${target} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:${header}>")
+    endif()
+endfunction()
