@@ -3,10 +3,6 @@
 
 #include "opengl_directx_internals.h"
 
-// We use  device to save the commands for display list setting.
-
-#include <vector>
-
 #define DLIST_DEV_NOT_IMPLEMENTED { DEBUG_ASSERT(FALSE); return 0; }
 #define DLIST_DEV_NOT_IMPLEMENTED_VOID { DEBUG_ASSERT(FALSE); }
 

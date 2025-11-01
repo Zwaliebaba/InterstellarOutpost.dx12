@@ -1,5 +1,4 @@
 #include "pch.h"
-
 #include "opengl_directx_dlist_dev.h"
 #include "opengl_directx_dlist.h"
 

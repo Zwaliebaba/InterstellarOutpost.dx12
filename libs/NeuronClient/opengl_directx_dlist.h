@@ -1,7 +1,6 @@
 #ifndef OPENGL_DIRECTX_DLIST_H
 #define OPENGL_DIRECTX_DLIST_H
 
-#include <vector>
 #include "opengl_directx_internals.h"
 
 namespace OpenGLD3D

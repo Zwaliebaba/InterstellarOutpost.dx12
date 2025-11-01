@@ -1,7 +1,5 @@
 #include "pch.h"
-#ifdef USE_DIRECT3D
 #include "opengl_directx_matrix_stack.h"
-
 #include "opengl_directx_dlist_dev.h"
 #include "opengl_directx_internals.h"
 
@@ -102,4 +100,3 @@ const D3DXMATRIX& MatrixStackDisplayList::GetTransform() const
 void MatrixStackDisplayList::Push() { m_device->RecordPushMatrix(m_actual); }
 
 void MatrixStackDisplayList::Pop() { m_device->RecordPopMatrix(m_actual); }
-#endif // USE_DIRECT3D

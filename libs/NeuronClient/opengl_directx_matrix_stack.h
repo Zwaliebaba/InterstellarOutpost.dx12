@@ -36,7 +36,6 @@ namespace OpenGLD3D
       void Pop() override;
 
       void SetTransform() override;
-      bool Modified() const;
       const D3DXMATRIX& GetTransform() const override;
 
     private:
@@ -57,7 +56,6 @@ namespace OpenGLD3D
       void Pop() override;
 
       void SetTransform() override;
-      bool Modified() const;
       const D3DXMATRIX& GetTransform() const override;
 
     private:

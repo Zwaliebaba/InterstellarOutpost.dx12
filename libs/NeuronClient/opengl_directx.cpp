@@ -14,34 +14,6 @@
 using namespace OpenGLD3D;
 
 #define FRAMES_PER_SECOND_COUNTER
-//#define D3DTS_WORLD D3DTS_VIEW
-
-// Notes:
-// OpenGL uses a RH coordinate system (+ve Z goes into the monitor),
-// Direct3D uses LH coordinate system (-ve Z goes into the monitor)
-// Matrix format is different in the two systems (One is the transpose of the other)
-// gluLookAt -> D3DXMatrixLookAtRH (LH) ?
-// gluOrtho, gluOrtho2D -> D3DXMatrixOrthoRH (LH) ?
-
-/* TODO:
-
-	- Implement GL_FOG_HINT and GL_POLYGON_HINT properly.
-	- Proper error reporting in glGetError, gluErrorString
-	- Line width emulation
-
-
-	. Create matrix stack class, with modified flag, transform type (View / Projection)
-		- constructor to get the current device transform
-			- initialise with D3DTRANSFORMSTATETYPE
-		- destructor so that it releases the internal matrix stack
-		- Load
-		- Multiply
-		- Modified			(need to set the transform to sync up)
-		- SetTransform		(set the device)
-		- GetTransform
-
-		- Look in the code for all ->SetTransform and ->GetTransform and recode as appropriate
-*/
 
 namespace OpenGLD3D
 {

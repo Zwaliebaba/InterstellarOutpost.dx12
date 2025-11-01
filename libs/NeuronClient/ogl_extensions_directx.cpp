@@ -1,12 +1,6 @@
 #include "pch.h"
-
-#ifdef USE_DIRECT3D
-
 #include "ogl_extensions.h"
-
 #include "opengl_directx_internals.h"
-
-#include <map>
 
 MultiTexCoord2fARB gglMultiTexCoord2fARB = nullptr;
 ActiveTextureARB gglActiveTextureARB = nullptr;
@@ -120,4 +114,3 @@ void InitialiseOGLExtensions()
 }
 
 int IsOGLExtensionSupported(const char* extension) { return 0; }
-#endif // USE_DIRECT3D
