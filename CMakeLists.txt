@@ -38,8 +38,20 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(StandardProjectSettings)
 include(CompilerWarnings)
 
+# Testing Framework Configuration
+# ================================
+# This project uses a lightweight custom test harness (tests/common/TestHarness.h)
+# for unit and integration testing. Tests are registered with CTest and labeled
+# appropriately for filtering (unit vs integration).
+#
+# Enable/disable tests with: -DIO_BUILD_TESTS=ON/OFF (default: ON in debug builds)
+# Run unit tests only: ctest -L unit
+# Run integration tests: ctest -L integration
+# Run all tests: ctest --output-on-failure
+
 include(CTest)
 option(IO_BUILD_TESTS "Build unit and integration test targets" ${BUILD_TESTING})
+
 if(IO_BUILD_TESTS)
     set(BUILD_TESTING ON CACHE BOOL "Enable CTest targets" FORCE)
 else()

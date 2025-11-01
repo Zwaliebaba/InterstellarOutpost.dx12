@@ -98,15 +98,64 @@ cmake/               # Shared CMake modules and install config
 
 ## Testing
 
-All tests are CTest‑driven with per‑target working directories. Typical flow:
+InterstellarOutpost uses a comprehensive testing strategy with both **unit tests** (fast, isolated) and **integration tests** (multi-component, may require GPU/assets).
+
+### Quick Start
 
 ```powershell
+# Configure with tests enabled (default in debug builds)
 cmake --preset windows-debug
+
+# Build
 cmake --build --preset windows-debug
-ctest --preset windows-debug
+
+# Run unit tests only (fast, < 2 minutes)
+ctest --preset windows-debug -L unit --output-on-failure
+
+# Run all tests
+ctest --preset windows-debug --output-on-failure
 ```
 
-Named targets include: `test_neuron_core`, `test_neuron_client`, `test_gamelogic`, and `test_integration`.
+### Test Organization
+
+- **Unit tests** (`tests/unit/`): Fast, isolated tests of individual classes/functions
+  - Run on every commit/PR in CI
+  - No external dependencies (GPU, network, etc.)
+  - Labeled with `unit` for CTest filtering
+
+- **Integration tests** (`tests/integration/`): Multi-component end-to-end tests
+  - Run nightly or on manual trigger
+  - May require GPU, gamedata/ assets, networking
+  - Labeled with `integration` for CTest filtering
+
+### Selective Test Execution
+
+```powershell
+# Unit tests only (recommended for fast iteration)
+ctest --preset windows-debug -L unit
+
+# Integration tests only
+ctest --preset windows-debug -L integration
+
+# Specific module tests
+ctest --preset windows-debug -L neuroncore
+ctest --preset windows-debug -L gamelogic
+
+# Run specific test by name
+ctest --preset windows-debug -R unit_camera_basics --verbose
+```
+
+### CI Integration
+
+Tests run automatically via GitHub Actions:
+- **Unit tests**: Every push/PR (fast feedback)
+- **Integration tests**: Nightly or manual trigger (slower, may need GPU)
+
+See [TESTING.md](TESTING.md) for comprehensive testing documentation including:
+- Writing new tests
+- Test framework API
+- Testability guidelines and refactoring recommendations
+- Troubleshooting common issues
 
 ## Troubleshooting
 
