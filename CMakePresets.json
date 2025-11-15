@@ -38,11 +38,11 @@
             }
         },
         {
-            "name": "x86-debug",
-            "displayName": "x86 Debug",
+            "name": "arm64-debug",
+            "displayName": "arm64 Debug",
             "inherits": "windows-base",
             "architecture": {
-                "value": "x86",
+                "value": "arm64",
                 "strategy": "external"
             },
             "cacheVariables": {
@@ -50,9 +50,9 @@
             }
         },
         {
-            "name": "x86-release",
-            "displayName": "x86 Release",
-            "inherits": "x86-debug",
+            "name": "arm64-release",
+            "displayName": "arm64 Release",
+            "inherits": "arm64-debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }

@@ -13,7 +13,7 @@ Checks: >
   -readability-magic-numbers
 
 WarningsAsErrors: '*,-clang-diagnostic-unused-function'
-HeaderFilterRegex: '^(src|libs/(Neuron|GameLogic))/'
+HeaderFilterRegex: '^(IOClient|IOServer|libs/(NeuronCore|NeuronClient|NeuronServer|GameLogic))/'
 AnalyzeTemporaryDtors: false
 FormatStyle: file
 
