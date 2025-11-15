@@ -20,6 +20,7 @@ FormatStyle: file
 ExtraArgsBefore:
   - -std=c++23
   - -D_USE_MATH_DEFINES
+  - -DNOMINMAX
 
 CheckOptions:
   - key: modernize-use-nullptr.NullMacros
