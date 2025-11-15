@@ -1,40 +1,57 @@
-cmake_minimum_required(VERSION 3.20)
+﻿# CMakeList.txt : Top-level CMake project file, do global configuration
+# and include sub-projects here.
+#
+cmake_minimum_required (VERSION 3.21)
 
-# Project configuration
-project(InterstellarOutpost 
-    VERSION 1.0.0
-    DESCRIPTION "An interstellar outpost management system"
-    LANGUAGES CXX
-)
-
-# Prevent in-source builds
-if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
-    message(FATAL_ERROR
-        "In-source builds are not allowed. Please create a separate build directory and run cmake from there.\n"
-    "Remove CMakeCache.txt and CMakeFiles/ if they were created in the source directory.")
+# Enable Hot Reload for MSVC compilers if supported.
+if (POLICY CMP0141)
+  cmake_policy(SET CMP0141 NEW)
+  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-# Add cmake modules to the path
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+set(INTERSTELLAROUTPOST_VERSION 1.0.0)
 
-# Include standard project settings
-include(StandardProjectSettings)
+project ("Interstellar Outpost"
+  VERSION ${INTERSTELLAROUTPOST_VERSION}
+  DESCRIPTION "Interstellar Outpost"
+  LANGUAGES CXX)
 
-# Include compiler warnings configuration
-include(CompilerWarnings)
+# https://devblogs.microsoft.com/cppblog/spectre-mitigations-in-msvc/
+option(ENABLE_SPECTRE_MITIGATION "Build using /Qspectre for MSVC" OFF)
 
-# Add libraries
-add_subdirectory(libs/Neuron)
-add_subdirectory(libs/GameLogic)
+# Disable iterator debugging in Debug configurations with the MSVC CRT
+option(DISABLE_MSVC_ITERATOR_DEBUGGING "Disable iterator debugging in Debug configurations with the MSVC CRT" OFF)
 
-# Add main executable
-add_subdirectory(src)
+# Enable Static Code Analysis
+option(ENABLE_CODE_ANALYSIS "Use Static Code Analysis on build" OFF)
 
-# Enable testing if requested
-if(ENABLE_TESTING)
-    enable_testing()
-    add_subdirectory(tests)
-endif()
+# Enable Code Coverage
+option(ENABLE_CODE_COVERAGE "Build with code-coverage" OFF)
 
-# Installation and packaging
-include(InstallConfig)
+# Enable Code Profiling
+option(ENABLE_CODE_PROFILING "Build for profiling" OFF)
+
+# Enable Fuzz Testing
+option(BUILD_FUZZING "Build for fuzz testing" OFF)
+
+# Set C++ standard to C++23
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Set output directories for binaries and libraries.
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+
+include(build/CompilerAndLinker.cmake)
+
+# Include sub-projects.
+add_subdirectory ("IOClient")
+add_subdirectory ("IOServer")
+add_subdirectory ("Lib/NeuronCore")
+add_subdirectory ("Lib/NeuronClient")
+add_subdirectory ("Lib/NeuronServer")
+
+
+
