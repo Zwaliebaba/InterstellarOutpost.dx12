@@ -48,6 +48,9 @@ function(ApplyTargetDefaults target)
     target_compile_features(${target} PUBLIC cxx_std_23)
     target_compile_definitions(${target} PRIVATE ${COMPILER_DEFINES})
     target_compile_options(${target} PRIVATE ${COMPILER_SWITCHES})
+    if(LINKER_SWITCHES)
+        target_link_options(${target} PRIVATE ${LINKER_SWITCHES})
+    endif()
 endfunction()
 
 # Helper to enable a precompiled header when requested and available.

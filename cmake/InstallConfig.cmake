@@ -32,6 +32,10 @@ endif()
 
 # Platform-specific packaging (Windows only)
 if(WIN32)
+    set(_io_nsis_shortcut_target "${PROJECT_NAME}.exe")
+    if(DEFINED APP_CLIENT_OUTPUT_NAME AND NOT APP_CLIENT_OUTPUT_NAME STREQUAL "")
+        set(_io_nsis_shortcut_target "${APP_CLIENT_OUTPUT_NAME}.exe")
+    endif()
     # Windows NSIS installer
     set(CPACK_GENERATOR "NSIS;ZIP")
     set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
@@ -42,7 +46,7 @@ if(WIN32)
 
     # Create desktop shortcut
     set(CPACK_NSIS_CREATE_ICONS_EXTRA
-        "CreateShortCut '$DESKTOP\\\\${PROJECT_NAME}.lnk' '$INSTDIR\\\\bin\\\\${PROJECT_NAME}.exe'"
+        "CreateShortCut '$DESKTOP\\\\${PROJECT_NAME}.lnk' '$INSTDIR\\\\bin\\\\${_io_nsis_shortcut_target}'"
     )
     set(CPACK_NSIS_DELETE_ICONS_EXTRA
         "Delete '$DESKTOP\\\\${PROJECT_NAME}.lnk'"

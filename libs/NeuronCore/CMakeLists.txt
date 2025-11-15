@@ -14,9 +14,14 @@ target_include_directories(NeuronCore
 ApplyTargetDefaults(NeuronCore)
 EnablePch(NeuronCore "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
 
-find_package(winpixevent CONFIG REQUIRED)
-target_link_libraries(NeuronCore PUBLIC Microsoft::WinPixEventRuntime)
-target_compile_definitions(NeuronCore PUBLIC HAVE_PIX)
+find_package(cppwinrt CONFIG REQUIRED)
+target_link_libraries(NeuronCore PUBLIC Microsoft::CppWinRT)
+
+if(ENABLE_PIX_PROFILING)
+    find_package(winpixevent CONFIG REQUIRED)
+    target_link_libraries(NeuronCore PUBLIC Microsoft::WinPixEventRuntime)
+    target_compile_definitions(NeuronCore PUBLIC HAVE_PIX)
+endif()
 
 set_target_properties(NeuronCore PROPERTIES FOLDER "Libraries")
 

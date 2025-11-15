@@ -5,6 +5,8 @@ cmake_minimum_required (VERSION 3.21)
 
 set(APP_CLIENT "IOCClient")
 set(APP_SERVER "IOServer")
+set(APP_CLIENT_OUTPUT_NAME "InterstellarOutpostClient")
+set(APP_SERVER_OUTPUT_NAME "InterstellarOutpostServer")
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
@@ -14,8 +16,13 @@ endif()
 
 # Integrate vcpkg toolchain if available
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-  set(CMAKE_TOOLCHAIN_FILE "C:/Program Files/Microsoft Visual Studio/18/Community/VC/vcpkg/scripts/buildsystems/vcpkg.cmake"
-      CACHE STRING "Vcpkg toolchain file")
+  if(DEFINED ENV{VCPKG_ROOT})
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        CACHE STRING "Vcpkg toolchain file")
+  elseif(EXISTS "C:/Program Files/Microsoft Visual Studio/18/Community/VC/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    set(CMAKE_TOOLCHAIN_FILE "C:/Program Files/Microsoft Visual Studio/18/Community/VC/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        CACHE STRING "Vcpkg toolchain file")
+  endif()
 endif()
 
 set(INTERSTELLAROUTPOST_VERSION 1.0.0)
@@ -29,9 +36,6 @@ project ("InterstellarOutpost"
 
   # Enable building of unit tests
   option(BUILD_TESTING "Build unit tests" OFF)
-
-# Enable usage of CTest for testing
-include(CTest)
 
 # Enable Spectre Mitigations for MSVC compilers
 # https://devblogs.microsoft.com/cppblog/spectre-mitigations-in-msvc/
@@ -52,15 +56,16 @@ option(ENABLE_CODE_PROFILING "Build for profiling" OFF)
 # Enable Fuzz Testing
 option(BUILD_FUZZING "Build for fuzz testing" OFF)
 
+# Enable PIX instrumentation support
+option(ENABLE_PIX_PROFILING "Link against WinPixEventRuntime for GPU instrumentation" ON)
+
 # Set C++ standard to C++23
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Set output directories for binaries and libraries.
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/libs")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/libs")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+# Optional game data directory for install packaging
+set(GAMEDATA_SRC_DIR "" CACHE PATH "Optional path to packaged game data directory")
 
 # Include standard project settings and compiler warnings.
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
@@ -68,16 +73,19 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(CompilerAndLinker)
 include(StandardProjectSettings)
 
-# Include sub-projects.
-add_subdirectory ("IOClient")
-add_subdirectory ("IOServer")
+# Include sub-projects (libraries before executables).
 add_subdirectory ("libs/NeuronCore")
 add_subdirectory ("libs/NeuronClient")
 add_subdirectory ("libs/NeuronServer")
+add_subdirectory ("libs/GameLogic")
+add_subdirectory ("IOClient")
+add_subdirectory ("IOServer")
 
 if(BUILD_TESTING)
-    enable_testing()
-    add_subdirectory(tests)
+  # Enable usage of CTest for testing
+  include(CTest)
+  enable_testing()
+  add_subdirectory(tests)
 endif()
 
 # Installation and packaging configuration (must appear after defining install() rules).

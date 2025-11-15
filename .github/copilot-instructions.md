@@ -75,8 +75,6 @@ cmake --build build --config Debug
    ```
 3. Add `add_subdirectory("libs/MySystem")` to root `CMakeLists.txt`
 
-**Debug Postfix**: Executables and libraries use `_d` suffix in Debug builds (`DEBUG_POSTFIX "_d"`)
-
 **PIX Integration**: NeuronCore links `Microsoft::WinPixEventRuntime` with `HAVE_PIX` define for GPU profiling
 
 ### Important Options & Features

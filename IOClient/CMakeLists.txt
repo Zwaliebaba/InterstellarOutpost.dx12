@@ -20,8 +20,6 @@ target_include_directories(${APP_CLIENT}
 ApplyTargetDefaults(${APP_CLIENT})
 EnablePch(${APP_CLIENT} "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
 
-target_link_options(${APP_CLIENT} PRIVATE ${LINKER_SWITCHES})
-
 if(MSVC)
     if(CMAKE_CONFIGURATION_TYPES)
         foreach(config ${CMAKE_CONFIGURATION_TYPES})
@@ -35,8 +33,7 @@ if(MSVC)
 endif()
 
 set_target_properties(${APP_CLIENT} PROPERTIES
-    OUTPUT_NAME "InterstellarOutpost"
-    DEBUG_POSTFIX "_d"
+    OUTPUT_NAME "${APP_CLIENT_OUTPUT_NAME}"
     FOLDER "Applications"
 )
 

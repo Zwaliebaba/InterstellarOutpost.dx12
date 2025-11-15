@@ -3,7 +3,7 @@
 file(GLOB app_sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 file(GLOB app_headers CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 
-add_executable(${APP_SERVER} WIN32 ${app_sources} ${app_headers})
+add_executable(${APP_SERVER} ${app_sources} ${app_headers})
 
 target_link_libraries(${APP_SERVER}
     PRIVATE
@@ -33,8 +33,7 @@ if(MSVC)
 endif()
 
 set_target_properties(${APP_SERVER} PROPERTIES
-    OUTPUT_NAME "InterstellarOutpost"
-    DEBUG_POSTFIX "_d"
+    OUTPUT_NAME "${APP_SERVER_OUTPUT_NAME}"
     FOLDER "Applications"
 )
 
