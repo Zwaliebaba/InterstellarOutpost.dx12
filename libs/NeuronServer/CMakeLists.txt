@@ -8,8 +8,10 @@ add_library(InterstellarOutpost::NeuronServer ALIAS NeuronServer)
 
 target_include_directories(NeuronServer
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${PROJECT_SOURCE_DIR}/libs/NeuronCore
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/libs/NeuronCore>
+    $<INSTALL_INTERFACE:${INTERSTELLAROUTPOST_INSTALL_INCLUDEDIR}/NeuronServer>
+    $<INSTALL_INTERFACE:${INTERSTELLAROUTPOST_INSTALL_INCLUDEDIR}/NeuronCore>
 )
 
 target_link_libraries(NeuronServer
@@ -19,6 +21,21 @@ target_link_libraries(NeuronServer
 
 ApplyTargetDefaults(NeuronServer)
 EnablePch(NeuronServer "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
+
+install(TARGETS NeuronServer
+    EXPORT ${INTERSTELLAROUTPOST_EXPORT_NAME}
+    ARCHIVE DESTINATION ${INTERSTELLAROUTPOST_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${INTERSTELLAROUTPOST_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${INTERSTELLAROUTPOST_INSTALL_BINDIR}
+    COMPONENT Libraries
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    DESTINATION ${INTERSTELLAROUTPOST_INSTALL_INCLUDEDIR}/NeuronServer
+    COMPONENT Headers
+    FILES_MATCHING
+        PATTERN "*.h"
+)
 
 set_target_properties(NeuronServer PROPERTIES FOLDER "Libraries")
 

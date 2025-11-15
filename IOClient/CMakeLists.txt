@@ -20,15 +20,29 @@ target_include_directories(${APP_CLIENT}
 ApplyTargetDefaults(${APP_CLIENT})
 EnablePch(${APP_CLIENT} "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
 
+set(_io_client_output_dir "${PROJECT_SOURCE_DIR}/bin/Client")
+set_target_properties(${APP_CLIENT} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${_io_client_output_dir}"
+)
+
+if(CMAKE_CONFIGURATION_TYPES)
+    foreach(config ${CMAKE_CONFIGURATION_TYPES})
+        string(TOUPPER "${config}" config_upper)
+        set_target_properties(${APP_CLIENT} PROPERTIES
+            "RUNTIME_OUTPUT_DIRECTORY_${config_upper}" "${_io_client_output_dir}/${config}"
+        )
+    endforeach()
+endif()
+
 if(MSVC)
     if(CMAKE_CONFIGURATION_TYPES)
         foreach(config ${CMAKE_CONFIGURATION_TYPES})
             string(TOUPPER "${config}" config_upper)
             set_property(TARGET ${APP_CLIENT} PROPERTY
-                VS_DEBUGGER_WORKING_DIRECTORY_${config_upper} "${CMAKE_RUNTIME_OUTPUT_DIRECTORY_${config_upper}}")
+                VS_DEBUGGER_WORKING_DIRECTORY_${config_upper} "${_io_client_output_dir}/${config}")
         endforeach()
     else()
-        set_property(TARGET ${APP_CLIENT} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+        set_property(TARGET ${APP_CLIENT} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${_io_client_output_dir}")
     endif()
 endif()
 
@@ -38,13 +52,7 @@ set_target_properties(${APP_CLIENT} PROPERTIES
 )
 
 install(TARGETS ${APP_CLIENT}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    COMPONENT Applications
+    EXPORT ${INTERSTELLAROUTPOST_EXPORT_NAME}
+    RUNTIME DESTINATION ${INTERSTELLAROUTPOST_INSTALL_CLIENT_BINDIR}
+    COMPONENT Client
 )
-
-if(EXISTS "${GAMEDATA_SRC_DIR}")
-    install(DIRECTORY "${GAMEDATA_SRC_DIR}"
-        DESTINATION ${CMAKE_INSTALL_BINDIR}
-        COMPONENT Data
-    )
-endif()

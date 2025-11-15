@@ -7,6 +7,7 @@ set(APP_CLIENT "IOCClient")
 set(APP_SERVER "IOServer")
 set(APP_CLIENT_OUTPUT_NAME "InterstellarOutpostClient")
 set(APP_SERVER_OUTPUT_NAME "InterstellarOutpostServer")
+set(INTERSTELLAROUTPOST_EXPORT_NAME "InterstellarOutpostTargets")
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
@@ -64,14 +65,18 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Optional game data directory for install packaging
-set(GAMEDATA_SRC_DIR "" CACHE PATH "Optional path to packaged game data directory")
-
 # Include standard project settings and compiler warnings.
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 include(CompilerAndLinker)
+include(GNUInstallDirs)
 include(StandardProjectSettings)
+
+set(INTERSTELLAROUTPOST_INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR})
+set(INTERSTELLAROUTPOST_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
+set(INTERSTELLAROUTPOST_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}")
+set(INTERSTELLAROUTPOST_INSTALL_CLIENT_BINDIR "${INTERSTELLAROUTPOST_INSTALL_BINDIR}/Client")
+set(INTERSTELLAROUTPOST_INSTALL_SERVER_BINDIR "${INTERSTELLAROUTPOST_INSTALL_BINDIR}/Server")
 
 # Include sub-projects (libraries before executables).
 add_subdirectory ("libs/NeuronCore")

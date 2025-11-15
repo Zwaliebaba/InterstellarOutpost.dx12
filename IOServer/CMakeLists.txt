@@ -20,15 +20,29 @@ target_include_directories(${APP_SERVER}
 ApplyTargetDefaults(${APP_SERVER})
 EnablePch(${APP_SERVER} "${CMAKE_CURRENT_SOURCE_DIR}/pch.h")
 
+set(_io_server_output_dir "${PROJECT_SOURCE_DIR}/bin/Server")
+set_target_properties(${APP_SERVER} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${_io_server_output_dir}"
+)
+
+if(CMAKE_CONFIGURATION_TYPES)
+    foreach(config ${CMAKE_CONFIGURATION_TYPES})
+        string(TOUPPER "${config}" config_upper)
+        set_target_properties(${APP_SERVER} PROPERTIES
+            "RUNTIME_OUTPUT_DIRECTORY_${config_upper}" "${_io_server_output_dir}/${config}"
+        )
+    endforeach()
+endif()
+
 if(MSVC)
     if(CMAKE_CONFIGURATION_TYPES)
         foreach(config ${CMAKE_CONFIGURATION_TYPES})
             string(TOUPPER "${config}" config_upper)
             set_property(TARGET ${APP_SERVER} PROPERTY
-                VS_DEBUGGER_WORKING_DIRECTORY_${config_upper} "${CMAKE_RUNTIME_OUTPUT_DIRECTORY_${config_upper}}")
+                VS_DEBUGGER_WORKING_DIRECTORY_${config_upper} "${_io_server_output_dir}/${config}")
         endforeach()
     else()
-        set_property(TARGET ${APP_SERVER} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+        set_property(TARGET ${APP_SERVER} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${_io_server_output_dir}")
     endif()
 endif()
 
@@ -38,6 +52,7 @@ set_target_properties(${APP_SERVER} PROPERTIES
 )
 
 install(TARGETS ${APP_SERVER}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    COMPONENT Applications
+    EXPORT ${INTERSTELLAROUTPOST_EXPORT_NAME}
+    RUNTIME DESTINATION ${INTERSTELLAROUTPOST_INSTALL_SERVER_BINDIR}
+    COMPONENT Server
 )
