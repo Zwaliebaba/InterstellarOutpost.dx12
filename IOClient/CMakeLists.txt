@@ -51,6 +51,21 @@ set_target_properties(${APP_CLIENT} PROPERTIES
     FOLDER "Applications"
 )
 
+set(_io_client_data_dir "${CMAKE_CURRENT_SOURCE_DIR}/GameData")
+if(EXISTS "${_io_client_data_dir}")
+    add_custom_command(TARGET ${APP_CLIENT} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${_io_client_data_dir}"
+            "$<TARGET_FILE_DIR:${APP_CLIENT}>/GameData"
+        COMMENT "Copying IOClient GameData assets"
+    )
+
+    install(DIRECTORY "${_io_client_data_dir}/"
+        DESTINATION "${INTERSTELLAROUTPOST_INSTALL_CLIENT_BINDIR}/GameData"
+        COMPONENT Client
+    )
+endif()
+
 install(TARGETS ${APP_CLIENT}
     EXPORT ${INTERSTELLAROUTPOST_EXPORT_NAME}
     RUNTIME DESTINATION ${INTERSTELLAROUTPOST_INSTALL_CLIENT_BINDIR}

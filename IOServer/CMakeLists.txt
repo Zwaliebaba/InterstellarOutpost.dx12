@@ -51,6 +51,21 @@ set_target_properties(${APP_SERVER} PROPERTIES
     FOLDER "Applications"
 )
 
+set(_io_server_data_dir "${CMAKE_CURRENT_SOURCE_DIR}/GameData")
+if(EXISTS "${_io_server_data_dir}")
+    add_custom_command(TARGET ${APP_SERVER} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${_io_server_data_dir}"
+            "$<TARGET_FILE_DIR:${APP_SERVER}>/GameData"
+        COMMENT "Copying IOServer GameData assets"
+    )
+
+    install(DIRECTORY "${_io_server_data_dir}/"
+        DESTINATION "${INTERSTELLAROUTPOST_INSTALL_SERVER_BINDIR}/GameData"
+        COMPONENT Server
+    )
+endif()
+
 install(TARGETS ${APP_SERVER}
     EXPORT ${INTERSTELLAROUTPOST_EXPORT_NAME}
     RUNTIME DESTINATION ${INTERSTELLAROUTPOST_INSTALL_SERVER_BINDIR}

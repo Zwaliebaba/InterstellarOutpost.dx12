@@ -94,7 +94,7 @@ if(WIN32 AND _io_nsis_makensis)
 endif()
 
 # Components
-set(CPACK_COMPONENTS_ALL Client Server SharedData Libraries Headers Symbols)
+set(CPACK_COMPONENTS_ALL Client Server Libraries Headers Symbols)
 
 set(CPACK_COMPONENT_CLIENT_DISPLAY_NAME "Client Application")
 set(CPACK_COMPONENT_SERVER_DISPLAY_NAME "Dedicated Server")
@@ -110,7 +110,7 @@ set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION "Reusable engine libraries")
 set(CPACK_COMPONENT_HEADERS_DESCRIPTION "Development headers and CMake package files")
 set(CPACK_COMPONENT_SYMBOLS_DESCRIPTION "PDB symbol files for diagnostics")
 
-set(CPACK_COMPONENT_CLIENT_DEPENDS Libraries;SharedData)
+set(CPACK_COMPONENT_CLIENT_DEPENDS Libraries)
 set(CPACK_COMPONENT_SERVER_DEPENDS Libraries)
 set(CPACK_COMPONENT_SYMBOLS_DEPENDS Client;Server)
 set(CPACK_COMPONENT_SYMBOLS_HIDDEN TRUE)
