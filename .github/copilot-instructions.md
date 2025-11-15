@@ -111,7 +111,6 @@ cmake --build build --config Debug
 - CPack configured for Windows: NSIS installer + ZIP archive
 - Components: Applications, Libraries, Headers, Data
 - Desktop shortcut creation included
-- Install prefix: `CMAKE_INSTALL_BINDIR`, `CMAKE_INSTALL_LIBDIR`, `CMAKE_INSTALL_DATADIR`
 
 ### Common Pitfalls
 

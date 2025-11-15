@@ -14,7 +14,7 @@ endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Normalise output directories so every generator produces the same layout.
-set(_io_bin_dir "${CMAKE_BINARY_DIR}/bin")
+set(_io_bin_dir "${PROJECT_SOURCE_DIR}/bin")
 set(_io_lib_dir "${CMAKE_BINARY_DIR}/libs")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${_io_bin_dir}")
