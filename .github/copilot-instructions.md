@@ -1,6 +1,11 @@
-# InterstellarOutpost AI Coding Instructions
+# InterstellarOutpost.dx12 – AI agent working notes
 
-## Architecture Overview
+These instructions make AI coding agents productive in this Windows/MSVC C++23 game project. They distill the repo’s architecture, workflows, and conventions; stick to these patterns and file locations.
 
-InterstellarOutpost is a C++20/23 real-time strategy game built with a modular architecture:
+## Context
+Project Type: Game
+Project Name: Interstellar Outpost 
+Language: C++
+Framework / Libraries: STL / CMake / CTest
+Architecture: Modular / RAII / OOP
 
