@@ -62,3 +62,21 @@
 #include <restrictederrorinfo.h>
 #include <unknwn.h>
 
+#include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/Windows.Globalization.h>
+#include <winrt/Windows.Storage.Streams.h>
+#include <winrt/Windows.System.Threading.Core.h>
+#include <winrt/Windows.System.UserProfile.h>
+#include <winrt/Windows.System.h>
+
+using namespace winrt;
+
+#include "Debug.h"
+#include "GameMath.h"
+
+#include "NeuronHelper.h"
+
+using namespace Neuron;
+
+#include "TimerCore.h"
+#include "FileSys.h"
