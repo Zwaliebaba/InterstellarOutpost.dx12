@@ -78,5 +78,11 @@ using namespace winrt;
 
 using namespace Neuron;
 
-#include "TimerCore.h"
 #include "FileSys.h"
+#include "TimerCore.h"
+
+namespace Neuron::Core
+{
+  int Startup();
+  void Shutdown();
+}// namespace Neuron::Core

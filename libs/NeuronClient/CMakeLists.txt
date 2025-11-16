@@ -1,5 +1,7 @@
 ﻿# NeuronClient – presentation, audio, and input subsystems
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Graphics/Shaders)
+
 file(GLOB neuronclient_sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 file(GLOB neuronclient_headers CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 
