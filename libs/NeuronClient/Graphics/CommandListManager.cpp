@@ -70,7 +70,7 @@ void CommandQueue::Create(ID3D12Device *pDevice)
   pDevice->CreateCommandQueue(&QueueDesc, IID_GRAPHICS_PPV_ARGS(m_CommandQueue));
   m_CommandQueue->SetName(L"CommandListManager::m_CommandQueue");
 
-  ASSERT_SUCCEEDED(pDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_GRAPHICS_PPV_ARGS(m_pFence)));
+  check_hresult(pDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_GRAPHICS_PPV_ARGS(m_pFence)));
   m_pFence->SetName(L"CommandListManager::m_pFence");
   m_pFence->Signal((uint64_t) m_Type << 56);
 
@@ -95,7 +95,7 @@ void CommandListManager::Create(ID3D12Device *pDevice)
 
 void CommandListManager::CreateNewCommandList(D3D12_COMMAND_LIST_TYPE Type, ID3D12GraphicsCommandList **List, ID3D12CommandAllocator **Allocator)
 {
-  ASSERT(Type != D3D12_COMMAND_LIST_TYPE_BUNDLE, "Bundles are not yet supported");
+  ASSERT_TEXT(Type != D3D12_COMMAND_LIST_TYPE_BUNDLE, "Bundles are not yet supported");
   switch (Type)
   {
     case D3D12_COMMAND_LIST_TYPE_DIRECT:
@@ -111,7 +111,7 @@ void CommandListManager::CreateNewCommandList(D3D12_COMMAND_LIST_TYPE Type, ID3D
       break;
   }
 
-  ASSERT_SUCCEEDED(m_Device->CreateCommandList(1, Type, *Allocator, nullptr, IID_GRAPHICS_PPV_ARGS(List)));
+  check_hresult(m_Device->CreateCommandList(1, Type, *Allocator, nullptr, IID_PPV_ARGS(&List)));
   (*List)->SetName(L"CommandList");
 }
 
@@ -119,7 +119,7 @@ uint64_t CommandQueue::ExecuteCommandList(ID3D12CommandList *List)
 {
   std::lock_guard<std::mutex> LockGuard(m_FenceMutex);
 
-  ASSERT_SUCCEEDED(((ID3D12GraphicsCommandList *) List)->Close());
+  check_hresult(((ID3D12GraphicsCommandList *) List)->Close());
 
   // Kickoff the command list
   m_CommandQueue->ExecuteCommandLists(1, &List);

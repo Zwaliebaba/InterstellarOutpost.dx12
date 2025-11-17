@@ -28,7 +28,7 @@ ID3D12DescriptorHeap *DescriptorAllocator::RequestNewHeap(D3D12_DESCRIPTOR_HEAP_
   Desc.NodeMask = 1;
 
   com_ptr<ID3D12DescriptorHeap> pHeap;
-  ASSERT_SUCCEEDED(Graphics::g_Device->CreateDescriptorHeap(&Desc, IID_GRAPHICS_PPV_ARGS(pHeap)));
+  check_hresult(Graphics::g_Device->CreateDescriptorHeap(&Desc, IID_GRAPHICS_PPV_ARGS(pHeap)));
   sm_DescriptorHeapPool.emplace_back(pHeap);
   return pHeap.get();
 }
@@ -61,7 +61,7 @@ void DescriptorHeap::Create(const std::wstring &Name, D3D12_DESCRIPTOR_HEAP_TYPE
   m_HeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
   m_HeapDesc.NodeMask = 1;
 
-  ASSERT_SUCCEEDED(g_Device->CreateDescriptorHeap(&m_HeapDesc, IID_GRAPHICS_PPV_ARGS(m_Heap.ReleaseAndGetAddressOf())));
+  check_hresult(g_Device->CreateDescriptorHeap(&m_HeapDesc, IID_GRAPHICS_PPV_ARGS(m_Heap.ReleaseAndGetAddressOf())));
 
 #ifdef RELEASE
   (void) Name;

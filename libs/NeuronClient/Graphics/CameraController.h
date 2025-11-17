@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include "../Core/Math/BoundingSphere.h"
 #include "GameCore.h"
 #include "VectorMath.h"
 

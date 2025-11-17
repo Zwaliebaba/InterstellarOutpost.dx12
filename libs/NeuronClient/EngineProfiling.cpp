@@ -227,7 +227,7 @@ public:
       }
     }
 
-    ERROR("All attempts to find a previous timing sample failed");
+    Fatal("All attempts to find a previous timing sample failed");
     return nullptr;
   }
 
@@ -451,7 +451,7 @@ void NestedTimingTree::PopProfilingMarker(CommandContext *Context)
 
 void NestedTimingTree::Update(void)
 {
-  ASSERT(sm_SelectedScope != nullptr, "Corrupted profiling data structure");
+  ASSERT_TEXT(sm_SelectedScope != nullptr, "Corrupted profiling data structure");
 
   if (sm_SelectedScope == &sm_RootScope)
   {

@@ -1,16 +1,3 @@
-//
-// Copyright (c) Microsoft. All rights reserved.
-// This code is licensed under the MIT License (MIT).
-// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
-// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
-// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
-//
-// Developed by Minigraph
-//
-// Author(s):  James Stanard
-//
-
 #include "pch.h"
 #include "BitonicSort.h"
 #include "CommandContext.h"
@@ -86,7 +73,7 @@ void BitonicSort::Sort(ComputeContext &Context, GpuBuffer &KeyIndexList, GpuBuff
   const uint32_t AlignedMaxNumElements = Math::AlignPowerOfTwo(MaxNumElements);
   const uint32_t MaxIterations = Math::Log2(std::max(2048u, AlignedMaxNumElements)) - 10;
 
-  ASSERT(ElementSizeBytes == 4 || ElementSizeBytes == 8, "Invalid key-index list for bitonic sort");
+  ASSERT_TEXT(ElementSizeBytes == 4 || ElementSizeBytes == 8, "Invalid key-index list for bitonic sort");
 
   Context.SetRootSignature(s_RootSignature);
 
@@ -148,14 +135,14 @@ template<typename T> inline void VerifySort(T *List, uint32_t ListLength, bool b
 
   for (uint32_t i = 0; i < ListLength - 1; ++i)
   {
-    ASSERT((List[i] & IndexMask) < ListLength, "Corrupted list index detected");
+    ASSERT_TEXT((List[i] & IndexMask) < ListLength, "Corrupted list index detected");
 
-    if (bAscending) ASSERT(List[i] <= List[i + 1], "Invalid sort order:  non-ascending");
+    if (bAscending) ASSERT_TEXT(List[i] <= List[i + 1], "Invalid sort order:  non-ascending");
     else
-      ASSERT(List[i] >= List[i + 1], "Invalid sort order:  non-descending");
+      ASSERT_TEXT(List[i] >= List[i + 1], "Invalid sort order:  non-descending");
   }
 
-  ASSERT((List[ListLength - 1] & IndexMask) < ListLength, "Corrupted list index detected");
+  ASSERT_TEXT((List[ListLength - 1] & IndexMask) < ListLength, "Corrupted list index detected");
 }
 
 void TestBitonicSort(uint32_t ListSize, bool b64Bit, bool bAscending)

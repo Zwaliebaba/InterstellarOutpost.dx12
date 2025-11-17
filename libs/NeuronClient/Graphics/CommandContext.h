@@ -64,13 +64,6 @@ private:
   std::mutex sm_ContextAllocationMutex;
 };
 
-struct NonCopyable
-{
-  NonCopyable() = default;
-  NonCopyable(const NonCopyable &) = delete;
-  NonCopyable &operator=(const NonCopyable &) = delete;
-};
-
 class CommandContext : NonCopyable
 {
   friend ContextManager;
@@ -98,7 +91,7 @@ public:
 
   GraphicsContext &GetGraphicsContext()
   {
-    ASSERT(m_Type != D3D12_COMMAND_LIST_TYPE_COMPUTE, "Cannot convert async compute context to graphics");
+    ASSERT_TEXT(m_Type != D3D12_COMMAND_LIST_TYPE_COMPUTE, "Cannot convert async compute context to graphics");
     return reinterpret_cast<GraphicsContext &>(*this);
   }
 

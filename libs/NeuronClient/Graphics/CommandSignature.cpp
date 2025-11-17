@@ -58,7 +58,7 @@ void CommandSignature::Finalize(const RootSignature *RootSignature)
   else
     pRootSig = nullptr;
 
-  ASSERT_SUCCEEDED(g_Device->CreateCommandSignature(&CommandSignatureDesc, pRootSig, IID_GRAPHICS_PPV_ARGS(m_Signature)));
+  check_hresult(g_Device->CreateCommandSignature(&CommandSignatureDesc, pRootSig, IID_GRAPHICS_PPV_ARGS(m_Signature)));
 
   m_Signature->SetName(L"CommandSignature");
 

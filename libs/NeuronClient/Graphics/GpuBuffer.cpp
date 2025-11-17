@@ -28,7 +28,7 @@ void GpuBuffer::Create(const std::wstring &name, uint32_t NumElements, uint32_t 
   HeapProps.CreationNodeMask = 1;
   HeapProps.VisibleNodeMask = 1;
 
-  ASSERT_SUCCEEDED(
+  check_hresult(
       g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &ResourceDesc, m_UsageState, nullptr, IID_GRAPHICS_PPV_ARGS(m_pResource)));
 
   m_GpuVirtualAddress = m_pResource->GetGPUVirtualAddress();
@@ -63,7 +63,7 @@ void GpuBuffer::Create(const std::wstring &name, uint32_t NumElements, uint32_t 
   HeapProps.CreationNodeMask = 1;
   HeapProps.VisibleNodeMask = 1;
 
-  ASSERT_SUCCEEDED(
+  check_hresult(
       g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &ResourceDesc, m_UsageState, nullptr, IID_GRAPHICS_PPV_ARGS(m_pResource)));
 
   m_GpuVirtualAddress = m_pResource->GetGPUVirtualAddress();
@@ -91,8 +91,7 @@ void GpuBuffer::CreatePlaced(const std::wstring &name, ID3D12Heap *pBackingHeap,
 
   m_UsageState = D3D12_RESOURCE_STATE_COMMON;
 
-  ASSERT_SUCCEEDED(
-      g_Device->CreatePlacedResource(pBackingHeap, HeapOffset, &ResourceDesc, m_UsageState, nullptr, IID_GRAPHICS_PPV_ARGS(m_pResource)));
+  check_hresult(g_Device->CreatePlacedResource(pBackingHeap, HeapOffset, &ResourceDesc, m_UsageState, nullptr, IID_GRAPHICS_PPV_ARGS(m_pResource)));
 
   m_GpuVirtualAddress = m_pResource->GetGPUVirtualAddress();
 

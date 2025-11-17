@@ -335,7 +335,7 @@ void CommandContext::TransitionResource(GpuResource &Resource, D3D12_RESOURCE_ST
 
   if (OldState != NewState)
   {
-    ASSERT(m_NumBarriersToFlush < 16, "Exceeded arbitrary limit on buffered barriers");
+    ASSERT_TEXT(m_NumBarriersToFlush < 16, "Exceeded arbitrary limit on buffered barriers");
     D3D12_RESOURCE_BARRIER &BarrierDesc = m_ResourceBarrierBuffer[m_NumBarriersToFlush++];
 
     BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -370,7 +370,7 @@ void CommandContext::BeginResourceTransition(GpuResource &Resource, D3D12_RESOUR
 
   if (OldState != NewState)
   {
-    ASSERT(m_NumBarriersToFlush < 16, "Exceeded arbitrary limit on buffered barriers");
+    ASSERT_TEXT(m_NumBarriersToFlush < 16, "Exceeded arbitrary limit on buffered barriers");
     D3D12_RESOURCE_BARRIER &BarrierDesc = m_ResourceBarrierBuffer[m_NumBarriersToFlush++];
 
     BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -389,7 +389,7 @@ void CommandContext::BeginResourceTransition(GpuResource &Resource, D3D12_RESOUR
 
 void CommandContext::InsertUAVBarrier(GpuResource &Resource, bool FlushImmediate)
 {
-  ASSERT(m_NumBarriersToFlush < 16, "Exceeded arbitrary limit on buffered barriers");
+  ASSERT_TEXT(m_NumBarriersToFlush < 16, "Exceeded arbitrary limit on buffered barriers");
   D3D12_RESOURCE_BARRIER &BarrierDesc = m_ResourceBarrierBuffer[m_NumBarriersToFlush++];
 
   BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
@@ -401,7 +401,7 @@ void CommandContext::InsertUAVBarrier(GpuResource &Resource, bool FlushImmediate
 
 void CommandContext::InsertAliasBarrier(GpuResource &Before, GpuResource &After, bool FlushImmediate)
 {
-  ASSERT(m_NumBarriersToFlush < 16, "Exceeded arbitrary limit on buffered barriers");
+  ASSERT_TEXT(m_NumBarriersToFlush < 16, "Exceeded arbitrary limit on buffered barriers");
   D3D12_RESOURCE_BARRIER &BarrierDesc = m_ResourceBarrierBuffer[m_NumBarriersToFlush++];
 
   BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_ALIASING;

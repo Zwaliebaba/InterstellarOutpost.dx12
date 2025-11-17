@@ -35,8 +35,8 @@ void ReadbackBuffer::Create(const std::wstring &name, uint32_t NumElements, uint
   ResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
   ResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-  ASSERT_SUCCEEDED(g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &ResourceDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
-                                                     IID_GRAPHICS_PPV_ARGS(m_pResource)));
+  check_hresult(g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &ResourceDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+                                                  IID_GRAPHICS_PPV_ARGS(m_pResource)));
 
   m_GpuVirtualAddress = m_pResource->GetGPUVirtualAddress();
 

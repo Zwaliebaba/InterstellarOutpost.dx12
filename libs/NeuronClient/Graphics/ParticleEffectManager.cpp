@@ -503,8 +503,8 @@ void ParticleEffectManager::Initialize(uint32_t MaxDisplayWidth, uint32_t MaxDis
   HeapProps.VisibleNodeMask = 1;
 
   ID3D12Resource *tex = nullptr;
-  ASSERT_SUCCEEDED(g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &TexDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
-                                                     IID_GRAPHICS_PPV_ARGS(tex)));
+  check_hresult(g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &TexDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+                                                  IID_GRAPHICS_PPV_ARGS(tex)));
   tex->SetName(L"Particle TexArray");
   TextureArray = GpuResource(tex, D3D12_RESOURCE_STATE_COPY_DEST);
   tex->Release();

@@ -2,14 +2,13 @@
 #include "pch.h"
 #include "ColorBuffer.h"
 #include "CommandContext.h"
-#include "EsramAllocator.h"
 #include "GraphicsCommon.h"
 
 using namespace Graphics;
 
 void ColorBuffer::CreateDerivedViews(ID3D12Device *Device, DXGI_FORMAT Format, uint32_t ArraySize, uint32_t NumMips)
 {
-  ASSERT(ArraySize == 1 || NumMips == 1, "We don't support auto-mips on texture arrays");
+  ASSERT_TEXT(ArraySize == 1 || NumMips == 1, "We don't support auto-mips on texture arrays");
 
   m_NumMipMaps = NumMips - 1;
 

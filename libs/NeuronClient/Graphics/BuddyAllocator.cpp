@@ -74,7 +74,7 @@ void BuddyAllocator::Initialize()
     desc.Alignment = MIN_PLACED_BUFFER_SIZE;
     desc.Flags = D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS;
 
-    ASSERT_SUCCEEDED(g_Device->CreateHeap(&desc, IID_GRAPHICS_PPV_ARGS(m_pBackingHeap)));
+    check_hresult(g_Device->CreateHeap(&desc, IID_PPV_ARGS(&m_pBackingHeap)));
   }
   else
   {
@@ -187,14 +187,6 @@ BuddyBlock *BuddyAllocator::Allocate(uint32_t numElements, uint32_t elementSize,
     return new BuddyBlock();
   }
 }
-
-/*
-void BuddyAllocator::Deallocate(BuddyBlock* pBlock)
-{
-    pBlock->m_fenceValue = g_CommandManager.GetNextFenceValue();
-    m_deferredDeletionQueue.push(pBlock);
-}
-*/
 
 void BuddyAllocator::DeallocateInternal(BuddyBlock *pBlock)
 {

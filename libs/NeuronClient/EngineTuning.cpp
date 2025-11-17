@@ -1,5 +1,3 @@
-
-
 #include "pch.h"
 #include "Graphics/Color.h"
 #include "Graphics/CommandContext.h"
@@ -196,7 +194,7 @@ EngineVar *VariableGroup::NextVariable(EngineVar *curVar)
   for (; iter != m_Children.end(); ++iter)
     if (curVar == iter->second) break;
 
-  ASSERT(iter != m_Children.end(), "Did not find engine variable in its designated group");
+  ASSERT_TEXT(iter != m_Children.end(), "Did not find engine variable in its designated group");
 
   auto nextIter = iter;
   ++nextIter;
@@ -212,7 +210,7 @@ EngineVar *VariableGroup::PrevVariable(EngineVar *curVar)
   for (; iter != m_Children.end(); ++iter)
     if (curVar == iter->second) break;
 
-  ASSERT(iter != m_Children.end(), "Did not find engine variable in its designated group");
+  ASSERT_TEXT(iter != m_Children.end(), "Did not find engine variable in its designated group");
 
   if (iter == m_Children.begin()) return this;
 
@@ -508,7 +506,7 @@ void EngineTuning::Initialize(void)
 
   for (int32_t i = 0; i < s_UnregisteredCount; ++i)
   {
-    ASSERT(strlen(s_UnregisteredPath[i]) > 0, "Register = %d\n", i);
+    ASSERT_TEXT(strlen(s_UnregisteredPath[i]) > 0, "Register = %d\n", i);
     ASSERT(s_UnregisteredVariable[i] != nullptr);
     AddToVariableGraph(s_UnregisteredPath[i], *s_UnregisteredVariable[i]);
   }
@@ -665,7 +663,7 @@ void EngineTuning::AddToVariableGraph(const string &path, EngineVar &var)
     else
     {
       nextGroup = dynamic_cast<VariableGroup *>(node);
-      ASSERT(nextGroup != nullptr, "Attempted to trash the tweak graph");
+      ASSERT_TEXT(nextGroup != nullptr, "Attempted to trash the tweak graph");
       group = nextGroup;
     }
   }

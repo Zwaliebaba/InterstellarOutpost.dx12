@@ -143,7 +143,7 @@ namespace Graphics
     ResolutionToUINT(eResolution((int) NativeResolution), NativeWidth, NativeHeight);
 
     if (g_NativeWidth == NativeWidth && g_NativeHeight == NativeHeight) return;
-    DEBUGPRINT("Changing native resolution to %ux%u", NativeWidth, NativeHeight);
+    DebugTrace("Changing native resolution to %ux%u", NativeWidth, NativeHeight);
 
     g_NativeWidth = NativeWidth;
     g_NativeHeight = NativeHeight;
@@ -161,7 +161,7 @@ namespace Graphics
 
     SelectedDisplayRes = DisplayResolution;
     ResolutionToUINT((eResolution) SelectedDisplayRes, g_DisplayWidth, g_DisplayHeight);
-    DEBUGPRINT("Changing display resolution to %ux%u", g_DisplayWidth, g_DisplayHeight);
+    DebugTrace("Changing display resolution to %ux%u", g_DisplayWidth, g_DisplayHeight);
 
     g_CommandManager.IdleGPU();
 
@@ -211,19 +211,19 @@ void Display::Resize(uint32_t width, uint32_t height)
   g_DisplayWidth = width;
   g_DisplayHeight = height;
 
-  DEBUGPRINT("Changing display resolution to %ux%u", width, height);
+  DebugTrace("Changing display resolution to %ux%u", width, height);
 
   g_PreDisplayBuffer.Create(L"PreDisplay Buffer", width, height, 1, SwapChainFormat);
 
   for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i) g_DisplayPlane[i].Destroy();
 
   ASSERT(s_SwapChain1 != nullptr);
-  ASSERT_SUCCEEDED(s_SwapChain1->ResizeBuffers(SWAP_CHAIN_BUFFER_COUNT, width, height, SwapChainFormat, 0));
+  check_hresult(s_SwapChain1->ResizeBuffers(SWAP_CHAIN_BUFFER_COUNT, width, height, SwapChainFormat, 0));
 
   for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
   {
     com_ptr<ID3D12Resource> DisplayPlane;
-    ASSERT_SUCCEEDED(s_SwapChain1->GetBuffer(i, IID_GRAPHICS_PPV_ARGS(DisplayPlane)));
+    check_hresult(s_SwapChain1->GetBuffer(i, IID_GRAPHICS_PPV_ARGS(DisplayPlane)));
     g_DisplayPlane[i].CreateFromSwapChain(L"Primary SwapChain Buffer", DisplayPlane.Detach());
   }
 
@@ -240,7 +240,7 @@ void Display::Initialize(void)
   ASSERT(s_SwapChain1 == nullptr, "Graphics has already been initialized");
 
   com_ptr<IDXGIFactory4> dxgiFactory;
-  ASSERT_SUCCEEDED(CreateDXGIFactory2(0, IID_GRAPHICS_PPV_ARGS(dxgiFactory)));
+  check_hresult(CreateDXGIFactory2(0, IID_GRAPHICS_PPV_ARGS(dxgiFactory)));
 
   DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
   swapChainDesc.Width = g_DisplayWidth;
@@ -258,8 +258,8 @@ void Display::Initialize(void)
   DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsSwapChainDesc = {};
   fsSwapChainDesc.Windowed = TRUE;
 
-  ASSERT_SUCCEEDED(dxgiFactory->CreateSwapChainForHwnd(g_CommandManager.GetCommandQueue(), GameCore::g_hWnd, &swapChainDesc, &fsSwapChainDesc,
-                                                       nullptr, &s_SwapChain1));
+  check_hresult(dxgiFactory->CreateSwapChainForHwnd(g_CommandManager.GetCommandQueue(), GameCore::g_hWnd, &swapChainDesc, &fsSwapChainDesc, nullptr,
+                                                    &s_SwapChain1));
 
 #if CONDITIONALLY_ENABLE_HDR_OUTPUT
   {
@@ -284,7 +284,7 @@ void Display::Initialize(void)
   for (uint32_t i = 0; i < SWAP_CHAIN_BUFFER_COUNT; ++i)
   {
     com_ptr<ID3D12Resource> DisplayPlane;
-    ASSERT_SUCCEEDED(s_SwapChain1->GetBuffer(i, IID_GRAPHICS_PPV_ARGS(DisplayPlane)));
+    check_hresult(s_SwapChain1->GetBuffer(i, IID_GRAPHICS_PPV_ARGS(DisplayPlane)));
     g_DisplayPlane[i].CreateFromSwapChain(L"Primary SwapChain Buffer", DisplayPlane.Detach());
   }
 

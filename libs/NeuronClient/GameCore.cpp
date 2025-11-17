@@ -1,4 +1,3 @@
-
 #include "pch.h"
 #include <shellapi.h>
 #include "GameCore.h"
@@ -97,7 +96,7 @@ namespace GameCore
     wcex.lpszMenuName = nullptr;
     wcex.lpszClassName = className;
     wcex.hIconSm = LoadIcon(hInst, IDI_APPLICATION);
-    ASSERT(0 != RegisterClassEx(&wcex), "Unable to register a window");
+    ASSERT_TEXT(0 != RegisterClassEx(&wcex), "Unable to register a window");
 
     // Create window
     RECT rc = {0, 0, (LONG) g_DisplayWidth, (LONG) g_DisplayHeight};

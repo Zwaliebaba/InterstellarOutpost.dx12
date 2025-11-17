@@ -72,7 +72,7 @@ namespace Graphics
 
     // Obtain the DXGI factory
     com_ptr<IDXGIFactory4> dxgiFactory;
-    ASSERT_SUCCEEDED(CreateDXGIFactory2(0, IID_GRAPHICS_PPV_ARGS(dxgiFactory)));
+    check_hresult(CreateDXGIFactory2(0, IID_GRAPHICS_PPV_ARGS(dxgiFactory)));
 
     com_ptr<IDXGIAdapter1> pAdapter;
 
@@ -161,7 +161,7 @@ void Graphics::Initialize(bool RequireDXRSupport)
 
   // Obtain the DXGI factory
   com_ptr<IDXGIFactory6> dxgiFactory;
-  ASSERT_SUCCEEDED(CreateDXGIFactory2(dxgiFactoryFlags, IID_GRAPHICS_PPV_ARGS(dxgiFactory)));
+  check_hresult(CreateDXGIFactory2(dxgiFactoryFlags, IID_GRAPHICS_PPV_ARGS(dxgiFactory)));
 
   // Create the D3D graphics device
   com_ptr<IDXGIAdapter1> pAdapter;
@@ -213,8 +213,8 @@ void Graphics::Initialize(bool RequireDXRSupport)
     if (bUseWarpDriver) Utility::Print("WARP software adapter requested.  Initializing...\n");
     else
       Utility::Print("Failed to find a hardware adapter.  Falling back to WARP.\n");
-    ASSERT_SUCCEEDED(dxgiFactory->EnumWarpAdapter(IID_GRAPHICS_PPV_ARGS(pAdapter)));
-    ASSERT_SUCCEEDED(D3D12CreateDevice(pAdapter.get(), D3D_FEATURE_LEVEL_11_0, IID_GRAPHICS_PPV_ARGS(pDevice)));
+    check_hresult(dxgiFactory->EnumWarpAdapter(IID_GRAPHICS_PPV_ARGS(pAdapter)));
+    check_hresult(D3D12CreateDevice(pAdapter.get(), D3D_FEATURE_LEVEL_11_0, IID_GRAPHICS_PPV_ARGS(pDevice)));
     g_Device = pDevice.detach();
   }
 #ifndef RELEASE

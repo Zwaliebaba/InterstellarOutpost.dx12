@@ -43,7 +43,7 @@ ID3D12DescriptorHeap *DynamicDescriptorHeap::RequestDescriptorHeap(D3D12_DESCRIP
     HeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
     HeapDesc.NodeMask = 1;
     com_ptr<ID3D12DescriptorHeap> HeapPtr;
-    ASSERT_SUCCEEDED(g_Device->CreateDescriptorHeap(&HeapDesc, IID_GRAPHICS_PPV_ARGS(HeapPtr)));
+    check_hresult(g_Device->CreateDescriptorHeap(&HeapDesc, IID_GRAPHICS_PPV_ARGS(HeapPtr)));
     sm_DescriptorHeapPool[idx].emplace_back(HeapPtr);
     return HeapPtr.get();
   }

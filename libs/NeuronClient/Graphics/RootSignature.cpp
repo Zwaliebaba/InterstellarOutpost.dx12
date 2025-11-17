@@ -124,9 +124,9 @@ void RootSignature::Finalize(const std::wstring &name, D3D12_ROOT_SIGNATURE_FLAG
   {
     com_ptr<ID3DBlob> pOutBlob, pErrorBlob;
 
-    ASSERT_SUCCEEDED(D3D12SerializeRootSignature(&RootDesc, D3D_ROOT_SIGNATURE_VERSION_1, pOutBlob.GetAddressOf(), pErrorBlob.GetAddressOf()));
+    check_hresult(D3D12SerializeRootSignature(&RootDesc, D3D_ROOT_SIGNATURE_VERSION_1, pOutBlob.GetAddressOf(), pErrorBlob.GetAddressOf()));
 
-    ASSERT_SUCCEEDED(g_Device->CreateRootSignature(1, pOutBlob->GetBufferPointer(), pOutBlob->GetBufferSize(), IID_GRAPHICS_PPV_ARGS(m_Signature)));
+    check_hresult(g_Device->CreateRootSignature(1, pOutBlob->GetBufferPointer(), pOutBlob->GetBufferSize(), IID_GRAPHICS_PPV_ARGS(m_Signature)));
 
     m_Signature->SetName(name.c_str());
 

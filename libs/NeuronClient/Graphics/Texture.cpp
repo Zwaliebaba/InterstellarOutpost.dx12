@@ -62,8 +62,8 @@ void Texture::Create2D(size_t RowPitchBytes, size_t Width, size_t Height, DXGI_F
   HeapProps.CreationNodeMask = 1;
   HeapProps.VisibleNodeMask = 1;
 
-  ASSERT_SUCCEEDED(g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &texDesc, m_UsageState, nullptr,
-                                                     IID_GRAPHICS_PPV_ARGS(m_pResource.ReleaseAndGetAddressOf())));
+  check_hresult(g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &texDesc, m_UsageState, nullptr,
+                                                  IID_GRAPHICS_PPV_ARGS(m_pResource.ReleaseAndGetAddressOf())));
 
   m_pResource->SetName(L"Texture");
 
@@ -108,8 +108,8 @@ void Texture::CreateCube(size_t RowPitchBytes, size_t Width, size_t Height, DXGI
   HeapProps.CreationNodeMask = 1;
   HeapProps.VisibleNodeMask = 1;
 
-  ASSERT_SUCCEEDED(g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &texDesc, m_UsageState, nullptr,
-                                                     IID_GRAPHICS_PPV_ARGS(m_pResource.ReleaseAndGetAddressOf())));
+  check_hresult(g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &texDesc, m_UsageState, nullptr,
+                                                  IID_GRAPHICS_PPV_ARGS(m_pResource.ReleaseAndGetAddressOf())));
 
   m_pResource->SetName(L"Texture");
 

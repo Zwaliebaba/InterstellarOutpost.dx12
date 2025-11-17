@@ -44,15 +44,15 @@ void GpuTimeManager::Initialize(uint32_t MaxNumTimers)
   BufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
   BufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-  ASSERT_SUCCEEDED(Graphics::g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &BufferDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
-                                                               IID_GRAPHICS_PPV_ARGS(sm_ReadBackBuffer)));
+  check_hresult(Graphics::g_Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &BufferDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+                                                            IID_GRAPHICS_PPV_ARGS(sm_ReadBackBuffer)));
   sm_ReadBackBuffer->SetName(L"GpuTimeStamp Buffer");
 
   D3D12_QUERY_HEAP_DESC QueryHeapDesc;
   QueryHeapDesc.Count = MaxNumTimers * 2;
   QueryHeapDesc.NodeMask = 1;
   QueryHeapDesc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
-  ASSERT_SUCCEEDED(Graphics::g_Device->CreateQueryHeap(&QueryHeapDesc, IID_GRAPHICS_PPV_ARGS(sm_QueryHeap)));
+  check_hresult(Graphics::g_Device->CreateQueryHeap(&QueryHeapDesc, IID_GRAPHICS_PPV_ARGS(sm_QueryHeap)));
   sm_QueryHeap->SetName(L"GpuTimeStamp QueryHeap");
 
   sm_MaxNumTimers = (uint32_t) MaxNumTimers;
@@ -87,7 +87,7 @@ void GpuTimeManager::BeginReadBack(void)
   D3D12_RANGE Range;
   Range.Begin = 0;
   Range.End = (sm_NumTimers * 2) * sizeof(uint64_t);
-  ASSERT_SUCCEEDED(sm_ReadBackBuffer->Map(0, &Range, reinterpret_cast<void **>(&sm_TimeStampBuffer)));
+  check_hresult(sm_ReadBackBuffer->Map(0, &Range, reinterpret_cast<void **>(&sm_TimeStampBuffer)));
 
   sm_ValidTimeStart = sm_TimeStampBuffer[0];
   sm_ValidTimeEnd = sm_TimeStampBuffer[1];

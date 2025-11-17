@@ -48,7 +48,7 @@ ID3D12CommandAllocator *CommandAllocatorPool::RequestAllocator(uint64_t Complete
     if (AllocatorPair.first <= CompletedFenceValue)
     {
       pAllocator = AllocatorPair.second;
-      ASSERT_SUCCEEDED(pAllocator->Reset());
+      check_hresult(pAllocator->Reset());
       m_ReadyAllocators.pop();
     }
   }
@@ -56,7 +56,7 @@ ID3D12CommandAllocator *CommandAllocatorPool::RequestAllocator(uint64_t Complete
   // If no allocator's were ready to be reused, create a new one
   if (pAllocator == nullptr)
   {
-    ASSERT_SUCCEEDED(m_Device->CreateCommandAllocator(m_cCommandListType, IID_GRAPHICS_PPV_ARGS(pAllocator)));
+    check_hresult(m_Device->CreateCommandAllocator(m_cCommandListType, IID_PPV_ARGS(&pAllocator)));
     wchar_t AllocatorName[32];
     swprintf(AllocatorName, 32, L"CommandAllocator %zu", m_AllocatorPool.size());
     pAllocator->SetName(AllocatorName);

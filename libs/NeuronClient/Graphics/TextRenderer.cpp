@@ -82,7 +82,7 @@ namespace TextRenderer
 
       m_Texture.Create2D(textureWidth, textureWidth, textureHeight, DXGI_FORMAT_R8_SNORM, texelData);
 
-      DEBUGPRINT("Loaded SDF font:  %ls (ver. %d.%d)", fontName, header->majorVersion, header->minorVersion);
+      DebugTrace("Loaded SDF font:  %ls (ver. %d.%d)", fontName, header->majorVersion, header->minorVersion);
     }
 
     bool Load(const wstring &fileName)
@@ -91,7 +91,7 @@ namespace TextRenderer
 
       if (ba->size() == 0)
       {
-        ERROR("Cannot open file %ls", fileName.c_str());
+        Fatal("Cannot open file %ls", fileName.c_str());
         return false;
       }
 
