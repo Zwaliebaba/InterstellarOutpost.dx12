@@ -4,6 +4,11 @@
 
 #include "DeviceNotify.h"
 #include "Graphics/DirectXHelper.h"
+#include "Graphics/VectorMath.h"
+
+#include "EngineProfiling.h"
+#include "EngineTuning.h"
+#include "Utility.h"
 
 #include "GameMain.h"
 

@@ -2,8 +2,17 @@
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Graphics/Shaders)
 
-file(GLOB neuronclient_sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-file(GLOB neuronclient_headers CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+file(GLOB neuronclient_sources CONFIGURE_DEPENDS
+  "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Math/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Graphics/*.cpp"
+)
+file(GLOB neuronclient_headers CONFIGURE_DEPENDS 
+  "${CMAKE_CURRENT_SOURCE_DIR}/*.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Math/*.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Graphics/*.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Graphics/Shaders/Compiled.h"
+)
 
 add_library(NeuronClient ${neuronclient_sources} ${neuronclient_headers})
 add_library(InterstellarOutpost::NeuronClient ALIAS NeuronClient)

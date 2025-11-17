@@ -72,7 +72,9 @@
 using namespace winrt;
 
 #include "Debug.h"
-#include "GameMath.h"
+//#include "GameMath.h"
+#include <DirectXMath.h>
+using namespace DirectX;
 
 #include "NeuronHelper.h"
 
