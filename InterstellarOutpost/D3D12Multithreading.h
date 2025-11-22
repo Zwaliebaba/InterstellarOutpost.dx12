@@ -3,7 +3,6 @@
 #include "Camera.h"
 #include "DXSample.h"
 #include "SquidRoom.h"
-#include "StepTimer.h"
 
 class FrameResource;
 
@@ -87,10 +86,6 @@ private:
   LightState m_lights[NumLights];
   Camera m_lightCameras[NumLights];
   Camera m_camera;
-  StepTimer m_timer;
-  StepTimer m_cpuTimer;
-  int m_titleCount;
-  double m_cpuTime;
 
   // Synchronization objects.
   HANDLE m_workerBeginRenderFrame[NumContexts];

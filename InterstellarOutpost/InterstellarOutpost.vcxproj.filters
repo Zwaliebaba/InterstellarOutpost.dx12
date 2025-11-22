@@ -21,7 +21,7 @@
     <ClCompile Include="D3D12Multithreading.cpp" />
     <ClCompile Include="DXSample.cpp" />
     <ClCompile Include="FrameResource.cpp" />
-    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="WinMain.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="Win32Application.cpp" />
   </ItemGroup>
@@ -33,7 +33,6 @@
     <ClInclude Include="FrameResource.h" />
     <ClInclude Include="SquidRoom.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="StepTimer.h" />
     <ClInclude Include="Win32Application.h" />
   </ItemGroup>
 </Project>

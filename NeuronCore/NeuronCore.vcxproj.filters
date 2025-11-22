@@ -4,6 +4,9 @@
     <Filter Include="Project Files">
       <UniqueIdentifier>{37a5d473-584a-4942-9546-158c04f8ecde}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameMath">
+      <UniqueIdentifier>{39b31e1c-17a5-43c5-af22-d8168720a1cb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
@@ -17,14 +20,18 @@
     <ClInclude Include="Debug.h" />
     <ClInclude Include="DeviceNotify.h" />
     <ClInclude Include="FileSys.h" />
-    <ClInclude Include="GameMath.h" />
     <ClInclude Include="Hash.h" />
-    <ClInclude Include="MathCommon.h" />
     <ClInclude Include="Neuron.h" />
     <ClInclude Include="NeuronHelper.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="TimerCore.h" />
     <ClInclude Include="WndProcManager.h" />
+    <ClInclude Include="GameMath.h">
+      <Filter>GameMath</Filter>
+    </ClInclude>
+    <ClInclude Include="MathCommon.h">
+      <Filter>GameMath</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FileSys.cpp" />

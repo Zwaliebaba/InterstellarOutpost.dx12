@@ -2,6 +2,8 @@
 
 void CoreEngine::Startup()
 {
+  init_apartment();
+
   if (!XMVerifyCPUSupport())
     Fatal(L"CPU does not support the right technology");
 

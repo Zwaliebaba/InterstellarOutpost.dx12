@@ -17,6 +17,8 @@ using namespace winrt;
 #include "DirectXHelper.h"
 #include "PixProfiler.h"
 
+#include "GraphicsCore.h"
+
 #include "GameMain.h"
 
 namespace Neuron::Client

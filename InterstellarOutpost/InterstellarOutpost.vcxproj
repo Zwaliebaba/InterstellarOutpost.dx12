@@ -27,7 +27,7 @@
     <ClCompile Include="D3D12Multithreading.cpp" />
     <ClCompile Include="DXSample.cpp" />
     <ClCompile Include="FrameResource.cpp" />
-    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="WinMain.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pch.h</PrecompiledHeaderFile>
@@ -42,7 +42,6 @@
     <ClInclude Include="FrameResource.h" />
     <ClInclude Include="SquidRoom.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="StepTimer.h" />
     <ClInclude Include="Win32Application.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -78,6 +77,11 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <EnableMicrosoftCodeAnalysis>false</EnableMicrosoftCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <MaxNumberOfProcesses>0</MaxNumberOfProcesses>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>

@@ -7,6 +7,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{412aa6b3-76ce-48bb-85b5-06ce512d35d5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{15a1fe5b-1363-4ff9-8353-d41e156b0dc9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
@@ -27,14 +30,28 @@
   <ItemGroup>
     <ClCompile Include="NeuronClient.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="GraphicsCore.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Color.h" />
-    <ClInclude Include="d3dx12.h" />
-    <ClInclude Include="DirectXHelper.h" />
     <ClInclude Include="GameMain.h" />
     <ClInclude Include="NeuronClient.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="PixProfiler.h" />
+    <ClInclude Include="Color.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="d3dx12.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXHelper.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="PixProfiler.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsCore.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

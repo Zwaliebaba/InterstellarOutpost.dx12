@@ -1,80 +1,53 @@
-//*********************************************************
-//
-// Copyright (c) Microsoft. All rights reserved.
-// This code is licensed under the MIT License (MIT).
-// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
-// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
-// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
-//
-//*********************************************************
-
 #include "pch.h"
-#include "Camera.h"
 
-Camera* Camera::mCamera = nullptr;
+#include "Camera.h"
 
 Camera::Camera()
 {
-    Reset();
-    mCamera = this;
+  Reset();
 }
 
-Camera::~Camera()
+void Camera::Get3DViewProjMatrices(XMFLOAT4X4 *view, XMFLOAT4X4 *proj, float fovInDegrees, float screenWidth, float screenHeight) const
 {
-    mCamera = nullptr;
-}
 
-Camera* Camera::get()
-{
-    return mCamera;
-}
+  float aspectRatio = (float) screenWidth / (float) screenHeight;
+  float fovAngleY = fovInDegrees * XM_PI / 180.0F;
 
-void Camera::Get3DViewProjMatrices(XMFLOAT4X4 *view, XMFLOAT4X4 *proj, float fovInDegrees, float screenWidth, float screenHeight)
-{
-    
-    float aspectRatio = (float)screenWidth / (float)screenHeight;
-    float fovAngleY = fovInDegrees * XM_PI / 180.0f;
+  if (aspectRatio < 1.0F) { fovAngleY /= aspectRatio; }
 
-    if (aspectRatio < 1.0f)
-    {
-        fovAngleY /= aspectRatio;
-    }
-
-    XMStoreFloat4x4(view, XMMatrixTranspose(XMMatrixLookAtRH(mEye, mAt, mUp)));
-    XMStoreFloat4x4(proj, XMMatrixTranspose(XMMatrixPerspectiveFovRH(fovAngleY, aspectRatio, 0.01f, 125.0f)));
+  XMStoreFloat4x4(view, XMMatrixTranspose(XMMatrixLookAtRH(m_eye, m_at, m_up)));
+  XMStoreFloat4x4(proj, XMMatrixTranspose(XMMatrixPerspectiveFovRH(fovAngleY, aspectRatio, 0.01f, 125.0f)));
 }
 
 void Camera::GetOrthoProjMatrices(XMFLOAT4X4 *view, XMFLOAT4X4 *proj, float width, float height)
 {
-    XMStoreFloat4x4(view, XMMatrixTranspose(XMMatrixLookAtRH(mEye, mAt, mUp)));
-    XMStoreFloat4x4(proj, XMMatrixTranspose(XMMatrixOrthographicRH(width, height, 0.01f, 125.0f)));
+  XMStoreFloat4x4(view, XMMatrixTranspose(XMMatrixLookAtRH(m_eye, m_at, m_up)));
+  XMStoreFloat4x4(proj, XMMatrixTranspose(XMMatrixOrthographicRH(width, height, 0.01F, 125.0F)));
 }
 void Camera::RotateYaw(float deg)
 {
-    XMMATRIX rotation = XMMatrixRotationAxis(mUp, deg);
+  XMMATRIX rotation = XMMatrixRotationAxis(m_up, deg);
 
-    mEye = XMVector3TransformCoord(mEye, rotation);
+  m_eye = XMVector3TransformCoord(m_eye, rotation);
 }
 
 void Camera::RotatePitch(float deg)
 {
-    XMVECTOR right = XMVector3Normalize(XMVector3Cross(mEye, mUp));
-    XMMATRIX rotation = XMMatrixRotationAxis(right, deg);
+  XMVECTOR right = XMVector3Normalize(XMVector3Cross(m_eye, m_up));
+  XMMATRIX rotation = XMMatrixRotationAxis(right, deg);
 
-    mEye = XMVector3TransformCoord(mEye, rotation);
+  m_eye = XMVector3TransformCoord(m_eye, rotation);
 }
 
 void Camera::Reset()
 {
-    mEye = XMVectorSet(0.0f, 15.0f, -30.0f, 0.0f);
-    mAt = XMVectorSet(0.0f, 8.0f, 0.0f, 0.0f);
-    mUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+  m_eye = XMVectorSet(0.0F, 15.0F, -30.0F, 0.0F);
+  m_at = XMVectorSet(0.0F, 8.0F, 0.0F, 0.0F);
 }
 
 void Camera::Set(XMVECTOR eye, XMVECTOR at, XMVECTOR up)
 {
-    mEye = eye;
-    mAt = at;
-    mUp = up;
+  m_eye = eye;
+  m_at = at;
+  m_up = up;
 }

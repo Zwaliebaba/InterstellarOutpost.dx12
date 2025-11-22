@@ -12,7 +12,7 @@ bool D3D12Multithreading::s_bIsEnhancedBarriersEnabled = false;
 
 D3D12Multithreading::D3D12Multithreading(UINT width, UINT height, std::wstring name)
   : DXSample(width, height, name), m_frameIndex(0), m_viewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)),
-    m_scissorRect(0, 0, static_cast<LONG>(width), static_cast<LONG>(height)), m_keyboardInput(), m_titleCount(0), m_cpuTime(0),
+    m_scissorRect(0, 0, static_cast<LONG>(width), static_cast<LONG>(height)), m_keyboardInput(), 
     m_fenceValue(0), m_rtvDescriptorSize(0), m_currentFrameResourceIndex(0), m_pCurrentFrameResource(nullptr)
 {
   s_app = this;
@@ -695,7 +695,7 @@ void D3D12Multithreading::LoadContexts()
 // Update frame-based values.
 void D3D12Multithreading::OnUpdate()
 {
-  m_timer.Tick(NULL);
+  float frameTime = Timer::Core::Update();
 
   PIXSetMarker(m_commandQueue.get(), 0, L"Getting last completed fence.");
 
@@ -718,8 +718,6 @@ void D3D12Multithreading::OnUpdate()
     CloseHandle(eventHandle);
   }
 
-  m_cpuTimer.Tick(NULL);
-  float frameTime = static_cast<float>(m_timer.GetElapsedSeconds());
   float frameChange = 2.0f * frameTime;
 
   if (m_keyboardInput.leftArrowPressed) m_camera.RotateYaw(-frameChange);
@@ -780,23 +778,6 @@ void D3D12Multithreading::OnRender()
     m_commandQueue->ExecuteCommandLists(_countof(m_pCurrentFrameResource->m_batchSubmit) - NumContexts - 2,
                                         m_pCurrentFrameResource->m_batchSubmit + NumContexts + 2);
 #endif
-
-    m_cpuTimer.Tick(NULL);
-    if (m_titleCount == TitleThrottle)
-    {
-      WCHAR cpu[64];
-      swprintf_s(cpu, L"%.4f CPU", m_cpuTime / m_titleCount);
-      SetCustomWindowText(cpu);
-
-      m_titleCount = 0;
-      m_cpuTime = 0;
-    }
-    else
-    {
-      m_titleCount++;
-      m_cpuTime += m_cpuTimer.GetElapsedSeconds() * 1000;
-      m_cpuTimer.ResetElapsedTime();
-    }
 
     // Present and update the frame index for the next frame.
     PIXBeginEvent(m_commandQueue.get(), 0, L"Presenting to screen");
