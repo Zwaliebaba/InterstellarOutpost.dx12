@@ -9,7 +9,7 @@
 //
 //*********************************************************
 
-#include "stdafx.h"
+#include "pch.h"
 #include "Camera.h"
 
 Camera* Camera::mCamera = nullptr;

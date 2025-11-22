@@ -4,10 +4,16 @@
     <Filter Include="Project Files">
       <UniqueIdentifier>{3696fb89-49c9-42cc-a859-aea638b8a8ef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameData">
+      <UniqueIdentifier>{acf8b6c3-5814-4417-acc4-f540f5b03273}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
       <Filter>Project Files</Filter>
+    </None>
+    <None Include="GameData\SquidRoom.bin">
+      <Filter>GameData</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

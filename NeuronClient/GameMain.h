@@ -7,7 +7,9 @@
 namespace Neuron
 {
   class GameMain
-    : public implements<GameMain, Windows::Foundation::IInspectable>, public IDeviceNotify, protected ASyncLoader
+      : public implements<GameMain, Windows::Foundation::IInspectable>,
+        public IDeviceNotify,
+        protected ASyncLoader
   {
   public:
     GameMain() = default;
@@ -24,28 +26,17 @@ namespace Neuron
 
     // The update method will be invoked once per frame.  Both state updating and scene
     // rendering should be handled by this method.
-    // 
+    //
     virtual void Update(float _deltaT) = 0;
 
     // Official rendering pass
     virtual void RenderScene() = 0;
 
     // Optional UI (overlay) rendering pass.  This is LDR.  The buffer is already cleared.
-    virtual void RenderCanvas()
-    {
-    }
-
-    virtual void OnActivated()
-    {
-    }
-
-    virtual void OnDeactivated()
-    {
-    }
-
-    virtual void OnSuspending()
-    {
-    }
+    virtual void RenderCanvas() {}
+    virtual void OnActivated() {}
+    virtual void OnDeactivated() {}
+    virtual void OnSuspending() {}
 
     virtual void OnResuming()
     {
@@ -54,18 +45,18 @@ namespace Neuron
 
     virtual void OnWindowMoved()
     {
-      const auto r = Graphics::Core::GetOutputSize();
-      Graphics::Core::WindowSizeChanged(r.right - r.left, r.bottom - r.top);
+      // const auto r = Graphics::Core::GetOutputSize();
+      // Graphics::Core::WindowSizeChanged(r.right - r.left, r.bottom - r.top);
     }
 
     virtual void OnDisplayChange()
     {
-      Graphics::Core::UpdateColorSpace();
+      // Graphics::Core::UpdateColorSpace();
     }
 
     virtual void OnWindowSizeChanged(int width, int height)
     {
-      Graphics::Core::WindowSizeChanged(width, height);
+      // Graphics::Core::WindowSizeChanged(width, height);
     }
 
     // IDeviceNotify
@@ -77,4 +68,4 @@ namespace Neuron
     {
     }
   };
-}
+}// namespace Neuron

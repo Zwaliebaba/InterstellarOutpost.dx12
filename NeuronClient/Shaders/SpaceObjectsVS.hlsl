@@ -2,22 +2,22 @@
 
 PSInput main(float3 position : POSITION, float3 normal : NORMAL, float2 uv : TEXCOORD0, float3 tangent : TANGENT)
 {
-    PSInput result;
+  PSInput result;
 
-    float4 newPosition = float4(position, 1.0f);
+  float4 newPosition = float4(position, 1.0f);
 
-    normal.z *= -1.0f;
-    newPosition = mul(newPosition, model);
+  normal.z *= -1.0f;
+  newPosition = mul(newPosition, model);
 
-    result.worldpos = newPosition;
+  result.worldpos = newPosition;
 
-    newPosition = mul(newPosition, view);
-    newPosition = mul(newPosition, projection);
+  newPosition = mul(newPosition, view);
+  newPosition = mul(newPosition, projection);
 
-    result.position = newPosition;
-    result.uv = uv;
-    result.normal = normal;
-    result.tangent = tangent;
+  result.position = newPosition;
+  result.uv = uv;
+  result.normal = normal;
+  result.tangent = tangent;
 
-    return result;
+  return result;
 }

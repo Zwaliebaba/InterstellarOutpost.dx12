@@ -5,23 +5,23 @@ AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: None
 AlignOperands: Align
 AllowAllArgumentsOnNextLine: false
-AllowAllConstructorInitializersOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortBlocksOnASingleLine: Always
 AllowShortCaseLabelsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: All
+AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: Always
 AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: true
 AlwaysBreakAfterReturnType: None
 AlwaysBreakTemplateDeclarations: Yes
-BreakBeforeBraces: Custom
+BreakBeforeBraces: Allman
 BraceWrapping:
   AfterCaseLabel: false
   AfterClass: false
   AfterControlStatement: Never
   AfterEnum: false
-  AfterFunction: false
+  AfterFunction: true
   AfterNamespace: false
   AfterUnion: false
   BeforeCatch: false
@@ -33,8 +33,9 @@ BreakBeforeBinaryOperators: None
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: BeforeColon
 BreakInheritanceList: BeforeColon
-ColumnLimit: 0
+ColumnLimit: 130
 CompactNamespaces: false
+ConstructorInitializerIndentWidth: 2
 ContinuationIndentWidth: 4
 IndentCaseLabels: true
 IndentPPDirectives: None
@@ -64,3 +65,23 @@ SpacesInParentheses: false
 SpacesInSquareBrackets: false
 TabWidth: 2
 UseTab: Never
+
+# Control include grouping
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^"pch\.h"'
+    Priority: -1
+    SortPriority: 0
+  - Regex: '^"[^/]*"'
+    Priority: 2
+    SortPriority: 1
+  - Regex: '^<[^/]*>'
+    Priority: 1
+    SortPriority: 2
+
+# Prefer packing multiple arguments/parameters on the same line
+BinPackArguments: true
+BinPackParameters: true
+
+# Discourage breaking before the first call parameter
+PenaltyBreakBeforeFirstCallParameter: 1000
