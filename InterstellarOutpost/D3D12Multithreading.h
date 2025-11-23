@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Camera.h"
-#include "DXSample.h"
 #include "SquidRoom.h"
 
 class FrameResource;
@@ -28,20 +27,20 @@ struct SceneConstantBuffer
   LightState lights[NumLights];
 };
 
-class D3D12Multithreading : public DXSample
+class D3D12Multithreading : public GameMain
 {
 public:
-  D3D12Multithreading(UINT width, UINT height, std::wstring name);
+  D3D12Multithreading();
   virtual ~D3D12Multithreading();
 
   static D3D12Multithreading *Get() { return s_app; }
 
   static bool IsEnhancedBarriersEnabled() { return s_bIsEnhancedBarriersEnabled; }
 
-  virtual void OnInit();
-  virtual void OnUpdate();
-  virtual void OnRender();
-  virtual void OnDestroy();
+  virtual Windows::Foundation::IAsyncAction Startup();
+  virtual void Shutdown();
+  virtual void Update(float _deltaT);
+  virtual void RenderScene();
   virtual void OnKeyDown(UINT8 key);
   virtual void OnKeyUp(UINT8 key);
 
@@ -58,12 +57,9 @@ private:
   // Pipeline objects.
   CD3DX12_VIEWPORT m_viewport;
   CD3DX12_RECT m_scissorRect;
-  com_ptr<IDXGISwapChain3> m_swapChain;
-  com_ptr<ID3D12Device10> m_device;
-  com_ptr<ID3D12Resource> m_renderTargets[FrameCount];
+  com_ptr<ID3D12Resource> m_renderTargets[Graphics::Core::GetMaxBackBufferCount()];
   com_ptr<ID3D12Resource> m_depthStencil;
   com_ptr<ID3D12CommandAllocator> m_commandAllocator;
-  com_ptr<ID3D12CommandQueue> m_commandQueue;
   com_ptr<ID3D12RootSignature> m_rootSignature;
   com_ptr<ID3D12DescriptorHeap> m_rtvHeap;
   com_ptr<ID3D12DescriptorHeap> m_dsvHeap;
@@ -101,7 +97,7 @@ private:
   static D3D12Multithreading *s_app;
 
   // Frame resources.
-  FrameResource *m_frameResources[FrameCount];
+  FrameResource* m_frameResources[Graphics::Core::GetMaxBackBufferCount()];
   FrameResource *m_pCurrentFrameResource;
   int m_currentFrameResourceIndex;
 

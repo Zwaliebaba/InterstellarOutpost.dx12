@@ -7,19 +7,21 @@
 #include "CompiledShaders/SpaceObjectsPS.h"
 #include "CompiledShaders/SpaceObjectsVS.h"
 
-D3D12Multithreading *D3D12Multithreading::s_app = nullptr;
+D3D12Multithreading* D3D12Multithreading::s_app = nullptr;
 bool D3D12Multithreading::s_bIsEnhancedBarriersEnabled = false;
 
-D3D12Multithreading::D3D12Multithreading(UINT width, UINT height, std::wstring name)
-  : DXSample(width, height, name), m_frameIndex(0), m_viewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)),
-    m_scissorRect(0, 0, static_cast<LONG>(width), static_cast<LONG>(height)), m_keyboardInput(), 
-    m_fenceValue(0), m_rtvDescriptorSize(0), m_currentFrameResourceIndex(0), m_pCurrentFrameResource(nullptr)
+D3D12Multithreading::D3D12Multithreading()
+  : m_frameIndex(0), m_fenceEvent(nullptr), m_fenceValue(0), m_rtvDescriptorSize(0), m_keyboardInput(),
+    m_currentFrameResourceIndex(0), m_pCurrentFrameResource(nullptr)
 {
   s_app = this;
 
   m_keyboardInput.animate = true;
-
-  check_hresult(DXGIDeclareAdapterRemovalSupport());
+  auto outputSize = Graphics::Core::GetOutputSize();
+  m_viewport = CD3DX12_VIEWPORT(0.0F, 0.0F, static_cast<float>(outputSize.right - outputSize.left),
+                                static_cast<float>(outputSize.bottom - outputSize.top));
+  m_scissorRect = CD3DX12_RECT(0, 0, static_cast<LONG>(outputSize.right - outputSize.left),
+                               static_cast<LONG>(outputSize.bottom - outputSize.top));
 }
 
 D3D12Multithreading::~D3D12Multithreading()
@@ -27,11 +29,16 @@ D3D12Multithreading::~D3D12Multithreading()
   s_app = nullptr;
 }
 
-void D3D12Multithreading::OnInit()
+Windows::Foundation::IAsyncAction D3D12Multithreading::Startup()
 {
+  StartLoading();
+
   LoadPipeline();
   LoadAssets();
   LoadContexts();
+
+  FinishLoading();
+  co_return;
 }
 
 // Load the rendering pipeline dependencies.
@@ -53,67 +60,35 @@ void D3D12Multithreading::LoadPipeline()
     }
   }
 #endif
-
-  com_ptr<IDXGIFactory4> factory;
-  check_hresult(CreateDXGIFactory2(dxgiFactoryFlags, IID_GRAPHICS_PPV_ARGS(factory)));
-
-  com_ptr<IDXGIAdapter1> hardwareAdapter;
-  GetHardwareAdapter(factory.get(), hardwareAdapter.put(), true);
-
-  check_hresult(D3D12CreateDevice(hardwareAdapter.get(), D3D_FEATURE_LEVEL_11_0, IID_GRAPHICS_PPV_ARGS(m_device)));
+  auto factory = Graphics::Core::GetDXGIFactory();
+  auto hardwareAdapter = Graphics::Core::GetAdapter();
+  auto device = Graphics::Core::GetD3DDevice();
+  auto commandQueue = Graphics::Core::GetCommandQueue();
+  auto swapChain = Graphics::Core::GetSwapChain();
 
   D3D12_FEATURE_DATA_D3D12_OPTIONS12 options12 = {};
-  check_hresult(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS12, &options12, sizeof(options12)));
+  check_hresult(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS12, &options12, sizeof(options12)));
   s_bIsEnhancedBarriersEnabled = static_cast<bool>(options12.EnhancedBarriersSupported);
 
-  // Describe and create the command queue.
-  D3D12_COMMAND_QUEUE_DESC queueDesc = {};
-  queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-  queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-
-  check_hresult(m_device->CreateCommandQueue(&queueDesc, IID_GRAPHICS_PPV_ARGS(m_commandQueue)));
-  NAME_D3D12_OBJECT(m_commandQueue);
-
-  // Describe and create the swap chain.
-  DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
-  swapChainDesc.BufferCount = FrameCount;
-  swapChainDesc.Width = m_width;
-  swapChainDesc.Height = m_height;
-  swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-  swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-  swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-  swapChainDesc.SampleDesc.Count = 1;
-
-  com_ptr<IDXGISwapChain1> swapChain;
-  check_hresult(
-      factory->CreateSwapChainForHwnd(m_commandQueue.get(),// Swap chain needs the queue so that it can force a flush on it.
-                                      Win32Application::GetHwnd(), &swapChainDesc, nullptr, nullptr, swapChain.put()));
-
-  // This sample does not support fullscreen transitions.
-  check_hresult(factory->MakeWindowAssociation(Win32Application::GetHwnd(), DXGI_MWA_NO_ALT_ENTER));
-
-  swapChain.try_as(m_swapChain);
-  ASSERT(m_swapChain);
-
-  m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+  m_frameIndex = swapChain->GetCurrentBackBufferIndex();
 
   // Create descriptor heaps.
   {
     // Describe and create a render target view (RTV) descriptor heap.
     D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
-    rtvHeapDesc.NumDescriptors = FrameCount;
+    rtvHeapDesc.NumDescriptors = Graphics::Core::GetMaxBackBufferCount();
     rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
     rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    check_hresult(m_device->CreateDescriptorHeap(&rtvHeapDesc, IID_GRAPHICS_PPV_ARGS(m_rtvHeap)));
+    check_hresult(device->CreateDescriptorHeap(&rtvHeapDesc, IID_GRAPHICS_PPV_ARGS(m_rtvHeap)));
 
     // Describe and create a depth stencil view (DSV) descriptor heap.
     // Each frame has its own depth stencils (to write shadows onto)
     // and then there is one for the scene itself.
     D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
-    dsvHeapDesc.NumDescriptors = 1 + FrameCount * 1;
+    dsvHeapDesc.NumDescriptors = 1 + Graphics::Core::GetMaxBackBufferCount() * 1;
     dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
     dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    check_hresult(m_device->CreateDescriptorHeap(&dsvHeapDesc, IID_GRAPHICS_PPV_ARGS(m_dsvHeap)));
+    check_hresult(device->CreateDescriptorHeap(&dsvHeapDesc, IID_GRAPHICS_PPV_ARGS(m_dsvHeap)));
 
     // Describe and create a shader resource view (SRV) and constant
     // buffer view (CBV) descriptor heap.  Heap layout: null views,
@@ -121,13 +96,13 @@ void D3D12Multithreading::LoadPipeline()
     // frame 1's 2x constant buffer, frame 2's shadow buffer, frame 2's
     // 2x constant buffers, etc...
     const UINT nullSrvCount = 2;// Null descriptors are needed for out of bounds behavior reads.
-    const UINT cbvCount = FrameCount * 2;
-    const UINT srvCount = _countof(SampleAssets::Textures) + (FrameCount * 1);
+    const UINT cbvCount = Graphics::Core::GetMaxBackBufferCount() * 2;
+    const UINT srvCount = _countof(SampleAssets::Textures) + (Graphics::Core::GetMaxBackBufferCount() * 1);
     D3D12_DESCRIPTOR_HEAP_DESC cbvSrvHeapDesc = {};
     cbvSrvHeapDesc.NumDescriptors = nullSrvCount + cbvCount + srvCount;
     cbvSrvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     cbvSrvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    check_hresult(m_device->CreateDescriptorHeap(&cbvSrvHeapDesc, IID_GRAPHICS_PPV_ARGS(m_cbvSrvHeap)));
+    check_hresult(device->CreateDescriptorHeap(&cbvSrvHeapDesc, IID_GRAPHICS_PPV_ARGS(m_cbvSrvHeap)));
     NAME_D3D12_OBJECT(m_cbvSrvHeap);
 
     // Describe and create a sampler descriptor heap.
@@ -135,18 +110,22 @@ void D3D12Multithreading::LoadPipeline()
     samplerHeapDesc.NumDescriptors = 2;// One clamp and one wrap sampler.
     samplerHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
     samplerHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    check_hresult(m_device->CreateDescriptorHeap(&samplerHeapDesc, IID_GRAPHICS_PPV_ARGS(m_samplerHeap)));
+    check_hresult(device->CreateDescriptorHeap(&samplerHeapDesc, IID_GRAPHICS_PPV_ARGS(m_samplerHeap)));
     NAME_D3D12_OBJECT(m_samplerHeap);
 
-    m_rtvDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    m_rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
   }
 
-  check_hresult(m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_GRAPHICS_PPV_ARGS(m_commandAllocator)));
+  check_hresult(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_GRAPHICS_PPV_ARGS(m_commandAllocator)));
 }
 
 // Load the sample assets.
 void D3D12Multithreading::LoadAssets()
 {
+  auto device = Graphics::Core::GetD3DDevice();
+  auto swapChain = Graphics::Core::GetSwapChain();
+  auto commandQueue = Graphics::Core::GetCommandQueue();
+
   // Create the root signature.
   {
     D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
@@ -154,7 +133,7 @@ void D3D12Multithreading::LoadAssets()
     // This is the highest version the sample supports. If CheckFeatureSupport succeeds, the HighestVersion returned will not be greater than this.
     featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
 
-    if (FAILED(m_device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
+    if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
     {
       featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
     }
@@ -182,7 +161,7 @@ void D3D12Multithreading::LoadAssets()
     com_ptr<ID3DBlob> error;
     check_hresult(
         D3DX12SerializeVersionedRootSignature(&rootSignatureDesc, featureData.HighestVersion, signature.put(), error.put()));
-    check_hresult(m_device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(),
+    check_hresult(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(),
                                                 IID_GRAPHICS_PPV_ARGS(m_rootSignature)));
     NAME_D3D12_OBJECT(m_rootSignature);
   }
@@ -211,11 +190,11 @@ void D3D12Multithreading::LoadAssets()
     psoDesc.SampleMask = UINT_MAX;
     psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     psoDesc.NumRenderTargets = 1;
-    psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-    psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+    psoDesc.RTVFormats[0] = Graphics::Core::GetBackBufferFormat();
+    psoDesc.DSVFormat = Graphics::Core::GetDepthBufferFormat();
     psoDesc.SampleDesc.Count = 1;
 
-    check_hresult(m_device->CreateGraphicsPipelineState(&psoDesc, IID_GRAPHICS_PPV_ARGS(m_pipelineState)));
+    check_hresult(device->CreateGraphicsPipelineState(&psoDesc, IID_GRAPHICS_PPV_ARGS(m_pipelineState)));
     NAME_D3D12_OBJECT(m_pipelineState);
 
     // Alter the description and create the PSO for rendering
@@ -225,21 +204,21 @@ void D3D12Multithreading::LoadAssets()
     psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
     psoDesc.NumRenderTargets = 0;
 
-    check_hresult(m_device->CreateGraphicsPipelineState(&psoDesc, IID_GRAPHICS_PPV_ARGS(m_pipelineStateShadowMap)));
+    check_hresult(device->CreateGraphicsPipelineState(&psoDesc, IID_GRAPHICS_PPV_ARGS(m_pipelineStateShadowMap)));
     NAME_D3D12_OBJECT(m_pipelineStateShadowMap);
   }
 
   // Create temporary command list for initial GPU setup.
   com_ptr<ID3D12GraphicsCommandList8> commandList;
-  check_hresult(m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocator.get(), m_pipelineState.get(),
+  check_hresult(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocator.get(), m_pipelineState.get(),
                                             IID_GRAPHICS_PPV_ARGS(commandList)));
 
   // Create render target views (RTVs).
   CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart());
-  for (UINT i = 0; i < FrameCount; i++)
+  for (UINT i = 0; i < Graphics::Core::GetBackBufferCount(); i++)
   {
-    check_hresult(m_swapChain->GetBuffer(i, IID_GRAPHICS_PPV_ARGS(m_renderTargets[i])));
-    m_device->CreateRenderTargetView(m_renderTargets[i].get(), nullptr, rtvHandle);
+    check_hresult(swapChain->GetBuffer(i, IID_GRAPHICS_PPV_ARGS(m_renderTargets[i])));
+    device->CreateRenderTargetView(m_renderTargets[i].get(), nullptr, rtvHandle);
     rtvHandle.Offset(1, m_rtvDescriptorSize);
 
     NAME_D3D12_OBJECT_INDEXED(m_renderTargets, i);
@@ -261,14 +240,14 @@ void D3D12Multithreading::LoadAssets()
     {
       auto heapproperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
       auto shadowTextureDesc1 = CD3DX12_RESOURCE_DESC1(shadowTextureDesc);
-      check_hresult(m_device->CreateCommittedResource3(&heapproperties, D3D12_HEAP_FLAG_NONE, &shadowTextureDesc1,
+      check_hresult(device->CreateCommittedResource3(&heapproperties, D3D12_HEAP_FLAG_NONE, &shadowTextureDesc1,
                                                        D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_WRITE, &clearValue, nullptr, 0, nullptr,
                                                        IID_GRAPHICS_PPV_ARGS(m_depthStencil)));
     }
     else
     {
       auto heapproperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-      check_hresult(m_device->CreateCommittedResource(&heapproperties, D3D12_HEAP_FLAG_NONE, &shadowTextureDesc,
+      check_hresult(device->CreateCommittedResource(&heapproperties, D3D12_HEAP_FLAG_NONE, &shadowTextureDesc,
                                                       D3D12_RESOURCE_STATE_DEPTH_WRITE, &clearValue,
                                                       IID_GRAPHICS_PPV_ARGS(m_depthStencil)));
     }
@@ -276,7 +255,7 @@ void D3D12Multithreading::LoadAssets()
     NAME_D3D12_OBJECT(m_depthStencil);
 
     // Create the depth stencil view.
-    m_device->CreateDepthStencilView(m_depthStencil.get(), nullptr, m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
+    device->CreateDepthStencilView(m_depthStencil.get(), nullptr, m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
   }
 
   // Load scene assets.
@@ -289,7 +268,7 @@ void D3D12Multithreading::LoadAssets()
     {
       auto heapproperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
       auto vertexBufferDesc = CD3DX12_RESOURCE_DESC1::Buffer(SampleAssets::VertexDataSize);
-      check_hresult(m_device->CreateCommittedResource3(&heapproperties, D3D12_HEAP_FLAG_NONE, &vertexBufferDesc,
+      check_hresult(device->CreateCommittedResource3(&heapproperties, D3D12_HEAP_FLAG_NONE, &vertexBufferDesc,
                                                        D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr, nullptr, 0, nullptr,
                                                        IID_GRAPHICS_PPV_ARGS(m_vertexBuffer)));
     }
@@ -297,7 +276,7 @@ void D3D12Multithreading::LoadAssets()
     {
       auto heapproperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
       auto vertexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(SampleAssets::VertexDataSize);
-      check_hresult(m_device->CreateCommittedResource(&heapproperties, D3D12_HEAP_FLAG_NONE, &vertexBufferDesc,
+      check_hresult(device->CreateCommittedResource(&heapproperties, D3D12_HEAP_FLAG_NONE, &vertexBufferDesc,
                                                       D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
                                                       IID_GRAPHICS_PPV_ARGS(m_vertexBuffer)));
     }
@@ -309,7 +288,7 @@ void D3D12Multithreading::LoadAssets()
       {
         auto heapproperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
         auto vertexBufferDesc = CD3DX12_RESOURCE_DESC1::Buffer(SampleAssets::VertexDataSize);
-        check_hresult(m_device->CreateCommittedResource3(&heapproperties, D3D12_HEAP_FLAG_NONE, &vertexBufferDesc,
+        check_hresult(device->CreateCommittedResource3(&heapproperties, D3D12_HEAP_FLAG_NONE, &vertexBufferDesc,
                                                          D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr, nullptr, 0, nullptr,
                                                          IID_GRAPHICS_PPV_ARGS(m_vertexBufferUpload)));
       }
@@ -317,7 +296,7 @@ void D3D12Multithreading::LoadAssets()
       {
         auto heapproperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
         auto vertexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(SampleAssets::VertexDataSize);
-        check_hresult(m_device->CreateCommittedResource(&heapproperties, D3D12_HEAP_FLAG_NONE, &vertexBufferDesc,
+        check_hresult(device->CreateCommittedResource(&heapproperties, D3D12_HEAP_FLAG_NONE, &vertexBufferDesc,
                                                         D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
                                                         IID_GRAPHICS_PPV_ARGS(m_vertexBufferUpload)));
       }
@@ -364,7 +343,7 @@ void D3D12Multithreading::LoadAssets()
     {
       auto heapproperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
       auto indexBufferDesc = CD3DX12_RESOURCE_DESC1::Buffer(SampleAssets::IndexDataSize);
-      check_hresult(m_device->CreateCommittedResource3(&heapproperties, D3D12_HEAP_FLAG_NONE, &indexBufferDesc,
+      check_hresult(device->CreateCommittedResource3(&heapproperties, D3D12_HEAP_FLAG_NONE, &indexBufferDesc,
                                                        D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr, nullptr, 0, nullptr,
                                                        IID_GRAPHICS_PPV_ARGS(m_indexBuffer)));
     }
@@ -372,7 +351,7 @@ void D3D12Multithreading::LoadAssets()
     {
       auto heapproperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
       auto indexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(SampleAssets::IndexDataSize);
-      check_hresult(m_device->CreateCommittedResource(&heapproperties, D3D12_HEAP_FLAG_NONE, &indexBufferDesc,
+      check_hresult(device->CreateCommittedResource(&heapproperties, D3D12_HEAP_FLAG_NONE, &indexBufferDesc,
                                                       D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
                                                       IID_GRAPHICS_PPV_ARGS(m_indexBuffer)));
     }
@@ -384,7 +363,7 @@ void D3D12Multithreading::LoadAssets()
       {
         auto heapproperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
         auto indexBufferDesc = CD3DX12_RESOURCE_DESC1::Buffer(SampleAssets::IndexDataSize);
-        check_hresult(m_device->CreateCommittedResource3(&heapproperties, D3D12_HEAP_FLAG_NONE, &indexBufferDesc,
+        check_hresult(device->CreateCommittedResource3(&heapproperties, D3D12_HEAP_FLAG_NONE, &indexBufferDesc,
                                                          D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr, nullptr, 0, nullptr,
                                                          IID_GRAPHICS_PPV_ARGS(m_indexBufferUpload)));
       }
@@ -392,7 +371,7 @@ void D3D12Multithreading::LoadAssets()
       {
         auto heapproperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
         auto indexBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(SampleAssets::IndexDataSize);
-        check_hresult(m_device->CreateCommittedResource(&heapproperties, D3D12_HEAP_FLAG_NONE, &indexBufferDesc,
+        check_hresult(device->CreateCommittedResource(&heapproperties, D3D12_HEAP_FLAG_NONE, &indexBufferDesc,
                                                         D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
                                                         IID_GRAPHICS_PPV_ARGS(m_indexBufferUpload)));
       }
@@ -436,7 +415,7 @@ void D3D12Multithreading::LoadAssets()
   // Create shader resources.
   {
     // Get the CBV SRV descriptor size for the current device.
-    const UINT cbvSrvDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    const UINT cbvSrvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     // Get a handle to the start of the descriptor heap.
     CD3DX12_CPU_DESCRIPTOR_HANDLE cbvSrvHandle(m_cbvSrvHeap->GetCPUDescriptorHandleForHeapStart());
@@ -452,10 +431,10 @@ void D3D12Multithreading::LoadAssets()
       nullSrvDesc.Texture2D.MostDetailedMip = 0;
       nullSrvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 
-      m_device->CreateShaderResourceView(nullptr, &nullSrvDesc, cbvSrvHandle);
+      device->CreateShaderResourceView(nullptr, &nullSrvDesc, cbvSrvHandle);
       cbvSrvHandle.Offset(cbvSrvDescriptorSize);
 
-      m_device->CreateShaderResourceView(nullptr, &nullSrvDesc, cbvSrvHandle);
+      device->CreateShaderResourceView(nullptr, &nullSrvDesc, cbvSrvHandle);
       cbvSrvHandle.Offset(cbvSrvDescriptorSize);
     }
 
@@ -465,7 +444,7 @@ void D3D12Multithreading::LoadAssets()
     for (UINT i = 0; i < srvCount; i++)
     {
       // Describe and create a Texture2D.
-      const SampleAssets::TextureResource &tex = SampleAssets::Textures[i];
+      const SampleAssets::TextureResource& tex = SampleAssets::Textures[i];
       CD3DX12_RESOURCE_DESC texDesc(D3D12_RESOURCE_DIMENSION_TEXTURE2D, 0, tex.Width, tex.Height, 1,
                                     static_cast<UINT16>(tex.MipLevels), tex.Format, 1, 0, D3D12_TEXTURE_LAYOUT_UNKNOWN,
                                     D3D12_RESOURCE_FLAG_NONE);
@@ -474,14 +453,14 @@ void D3D12Multithreading::LoadAssets()
       {
         auto heapproperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
         auto texDesc1 = CD3DX12_RESOURCE_DESC1(texDesc);
-        check_hresult(m_device->CreateCommittedResource3(&heapproperties, D3D12_HEAP_FLAG_NONE, &texDesc1,
+        check_hresult(device->CreateCommittedResource3(&heapproperties, D3D12_HEAP_FLAG_NONE, &texDesc1,
                                                          D3D12_BARRIER_LAYOUT_COPY_DEST, nullptr, nullptr, 0, nullptr,
                                                          IID_GRAPHICS_PPV_ARGS(m_textures[i])));
       }
       else
       {
         auto heapproperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-        check_hresult(m_device->CreateCommittedResource(&heapproperties, D3D12_HEAP_FLAG_NONE, &texDesc,
+        check_hresult(device->CreateCommittedResource(&heapproperties, D3D12_HEAP_FLAG_NONE, &texDesc,
                                                         D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
                                                         IID_GRAPHICS_PPV_ARGS(m_textures[i])));
       }
@@ -496,7 +475,7 @@ void D3D12Multithreading::LoadAssets()
         {
           auto heapproperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
           auto uploadBufferDesc = CD3DX12_RESOURCE_DESC1::Buffer(uploadBufferSize);
-          check_hresult(m_device->CreateCommittedResource3(&heapproperties, D3D12_HEAP_FLAG_NONE, &uploadBufferDesc,
+          check_hresult(device->CreateCommittedResource3(&heapproperties, D3D12_HEAP_FLAG_NONE, &uploadBufferDesc,
                                                            D3D12_BARRIER_LAYOUT_UNDEFINED, nullptr, nullptr, 0, nullptr,
                                                            IID_GRAPHICS_PPV_ARGS(m_textureUploads[i])));
         }
@@ -504,7 +483,7 @@ void D3D12Multithreading::LoadAssets()
         {
           auto heapproperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
           auto uploadBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize);
-          check_hresult(m_device->CreateCommittedResource(&heapproperties, D3D12_HEAP_FLAG_NONE, &uploadBufferDesc,
+          check_hresult(device->CreateCommittedResource(&heapproperties, D3D12_HEAP_FLAG_NONE, &uploadBufferDesc,
                                                           D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
                                                           IID_GRAPHICS_PPV_ARGS(m_textureUploads[i])));
         }
@@ -550,7 +529,7 @@ void D3D12Multithreading::LoadAssets()
       srvDesc.Texture2D.MipLevels = tex.MipLevels;
       srvDesc.Texture2D.MostDetailedMip = 0;
       srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-      m_device->CreateShaderResourceView(m_textures[i].get(), &srvDesc, cbvSrvHandle);
+      device->CreateShaderResourceView(m_textures[i].get(), &srvDesc, cbvSrvHandle);
 
       // Move to the next descriptor slot.
       cbvSrvHandle.Offset(cbvSrvDescriptorSize);
@@ -561,7 +540,7 @@ void D3D12Multithreading::LoadAssets()
   // Create the samplers.
   {
     // Get the sampler descriptor size for the current device.
-    const UINT samplerDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+    const UINT samplerDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
 
     // Get a handle to the start of the descriptor heap.
     CD3DX12_CPU_DESCRIPTOR_HANDLE samplerHandle(m_samplerHeap->GetCPUDescriptorHandleForHeapStart());
@@ -580,7 +559,7 @@ void D3D12Multithreading::LoadAssets()
     wrapSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
     wrapSamplerDesc.BorderColor[0] = wrapSamplerDesc.BorderColor[1] = wrapSamplerDesc.BorderColor[2] =
         wrapSamplerDesc.BorderColor[3] = 0;
-    m_device->CreateSampler(&wrapSamplerDesc, samplerHandle);
+    device->CreateSampler(&wrapSamplerDesc, samplerHandle);
 
     // Move the handle to the next slot in the descriptor heap.
     samplerHandle.Offset(samplerDescriptorSize);
@@ -599,7 +578,7 @@ void D3D12Multithreading::LoadAssets()
         clampSamplerDesc.BorderColor[3] = 0;
     clampSamplerDesc.MinLOD = 0;
     clampSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
-    m_device->CreateSampler(&clampSamplerDesc, samplerHandle);
+    device->CreateSampler(&clampSamplerDesc, samplerHandle);
   }
 
   // Create lights.
@@ -621,13 +600,13 @@ void D3D12Multithreading::LoadAssets()
 
   // Close the command list and use it to execute the initial GPU setup.
   check_hresult(commandList->Close());
-  ID3D12CommandList *ppCommandLists[] = {commandList.get()};
-  m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+  ID3D12CommandList* ppCommandLists[] = {commandList.get()};
+  commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
   // Create frame resources.
-  for (int i = 0; i < FrameCount; i++)
+  for (int i = 0; i < Graphics::Core::GetMaxBackBufferCount(); i++)
   {
-    m_frameResources[i] = new FrameResource(m_device.get(), m_pipelineState.get(), m_pipelineStateShadowMap.get(),
+    m_frameResources[i] = new FrameResource(device, m_pipelineState.get(), m_pipelineStateShadowMap.get(),
                                             m_dsvHeap.get(), m_cbvSrvHeap.get(), &m_viewport, i);
     m_frameResources[i]->WriteConstantBuffers(&m_viewport, &m_camera, m_lightCameras, m_lights);
   }
@@ -636,7 +615,7 @@ void D3D12Multithreading::LoadAssets()
 
   // Create synchronization objects and wait until assets have been uploaded to the GPU.
   {
-    check_hresult(m_device->CreateFence(m_fenceValue, D3D12_FENCE_FLAG_NONE, IID_GRAPHICS_PPV_ARGS(m_fence)));
+    check_hresult(device->CreateFence(m_fenceValue, D3D12_FENCE_FLAG_NONE, IID_GRAPHICS_PPV_ARGS(m_fence)));
     m_fenceValue++;
 
     // Create an event handle to use for frame synchronization.
@@ -649,7 +628,7 @@ void D3D12Multithreading::LoadAssets()
 
     // Signal and increment the fence value.
     const UINT64 fenceToWaitFor = m_fenceValue;
-    check_hresult(m_commandQueue->Signal(m_fence.get(), fenceToWaitFor));
+    check_hresult(commandQueue->Signal(m_fence.get(), fenceToWaitFor));
     m_fenceValue++;
 
     // Wait until the fence is completed.
@@ -666,7 +645,7 @@ void D3D12Multithreading::LoadContexts()
   {
     static unsigned int WINAPI thunk(LPVOID lpParameter)
     {
-      ThreadParameter *parameter = reinterpret_cast<ThreadParameter *>(lpParameter);
+      ThreadParameter* parameter = reinterpret_cast<ThreadParameter*>(lpParameter);
       D3D12Multithreading::Get()->WorkerThread(parameter->threadIndex);
       return 0;
     }
@@ -693,18 +672,20 @@ void D3D12Multithreading::LoadContexts()
 }
 
 // Update frame-based values.
-void D3D12Multithreading::OnUpdate()
+void D3D12Multithreading::Update(float _deltaT)
 {
-  float frameTime = Timer::Core::Update();
+  auto commandQueue = Graphics::Core::GetCommandQueue();
 
-  PIXSetMarker(m_commandQueue.get(), 0, L"Getting last completed fence.");
+  if (IsLoading()) { return; }
+
+  PIXSetMarker(commandQueue, 0, L"Getting last completed fence.");
 
   // Get current GPU progress against submitted workload. Resources still scheduled
   // for GPU execution cannot be modified or else undefined behavior will result.
   const UINT64 lastCompletedFence = m_fence->GetCompletedValue();
 
   // Move to the next frame resource.
-  m_currentFrameResourceIndex = (m_currentFrameResourceIndex + 1) % FrameCount;
+  m_currentFrameResourceIndex = (m_currentFrameResourceIndex + 1) % Graphics::Core::GetMaxBackBufferCount();
   m_pCurrentFrameResource = m_frameResources[m_currentFrameResourceIndex];
 
   // Make sure that this frame resource isn't still in use by the GPU.
@@ -718,7 +699,7 @@ void D3D12Multithreading::OnUpdate()
     CloseHandle(eventHandle);
   }
 
-  float frameChange = 2.0f * frameTime;
+  float frameChange = 2.0f * _deltaT;
 
   if (m_keyboardInput.leftArrowPressed) m_camera.RotateYaw(-frameChange);
   if (m_keyboardInput.rightArrowPressed) m_camera.RotateYaw(frameChange);
@@ -738,8 +719,10 @@ void D3D12Multithreading::OnUpdate()
       XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
       m_lightCameras[i].Set(eye, at, up);
 
-      m_lightCameras[i].Get3DViewProjMatrices(&m_lights[i].view, &m_lights[i].projection, 90.0f, static_cast<float>(m_width),
-                                              static_cast<float>(m_height));
+      auto outputSize = Graphics::Core::GetOutputSize();
+      float width = outputSize.right - outputSize.left;
+      float height = outputSize.bottom - outputSize.top;
+      m_lightCameras[i].Get3DViewProjMatrices(&m_lights[i].view, &m_lights[i].projection, 90.0f, width, height);
     }
   }
 
@@ -747,48 +730,47 @@ void D3D12Multithreading::OnUpdate()
 }
 
 // Render the scene.
-void D3D12Multithreading::OnRender()
+void D3D12Multithreading::RenderScene()
 {
-    BeginFrame();
+  auto swapChain = Graphics::Core::GetSwapChain();
+  auto device = Graphics::Core::GetD3DDevice();
+  auto commandQueue = Graphics::Core::GetCommandQueue();
 
-#if SINGLETHREADED
-    for (int i = 0; i < NumContexts; i++) { WorkerThread(i); }
-    MidFrame();
-    EndFrame();
-    m_commandQueue->ExecuteCommandLists(_countof(m_pCurrentFrameResource->m_batchSubmit), m_pCurrentFrameResource->m_batchSubmit);
-#else
-    for (int i = 0; i < NumContexts; i++)
-    {
-      SetEvent(m_workerBeginRenderFrame[i]);// Tell each worker to start drawing.
-    }
+  if (IsLoading()) { return; }
 
-    MidFrame();
-    EndFrame();
+  BeginFrame();
 
-    WaitForMultipleObjects(NumContexts, m_workerFinishShadowPass, TRUE, INFINITE);
+  for (int i = 0; i < NumContexts; i++)
+  {
+    SetEvent(m_workerBeginRenderFrame[i]);// Tell each worker to start drawing.
+  }
 
-    // You can execute command lists on any thread. Depending on the work
-    // load, apps can choose between using ExecuteCommandLists on one thread
-    // vs ExecuteCommandList from multiple threads.
-    m_commandQueue->ExecuteCommandLists(NumContexts + 2, m_pCurrentFrameResource->m_batchSubmit);// Submit PRE, MID and shadows.
+  MidFrame();
+  EndFrame();
 
-    WaitForMultipleObjects(NumContexts, m_workerFinishedRenderFrame, TRUE, INFINITE);
+  WaitForMultipleObjects(NumContexts, m_workerFinishShadowPass, TRUE, INFINITE);
 
-    // Submit remaining command lists.
-    m_commandQueue->ExecuteCommandLists(_countof(m_pCurrentFrameResource->m_batchSubmit) - NumContexts - 2,
-                                        m_pCurrentFrameResource->m_batchSubmit + NumContexts + 2);
-#endif
+  // You can execute command lists on any thread. Depending on the work
+  // load, apps can choose between using ExecuteCommandLists on one thread
+  // vs ExecuteCommandList from multiple threads.
+  commandQueue->ExecuteCommandLists(NumContexts + 2, m_pCurrentFrameResource->m_batchSubmit);// Submit PRE, MID and shadows.
 
-    // Present and update the frame index for the next frame.
-    PIXBeginEvent(m_commandQueue.get(), 0, L"Presenting to screen");
-    check_hresult(m_swapChain->Present(1, 0));
-    PIXEndEvent(m_commandQueue.get());
-    m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+  WaitForMultipleObjects(NumContexts, m_workerFinishedRenderFrame, TRUE, INFINITE);
 
-    // Signal and increment the fence value.
-    m_pCurrentFrameResource->m_fenceValue = m_fenceValue;
-    check_hresult(m_commandQueue->Signal(m_fence.get(), m_fenceValue));
-    m_fenceValue++;
+  // Submit remaining command lists.
+  commandQueue->ExecuteCommandLists(_countof(m_pCurrentFrameResource->m_batchSubmit) - NumContexts - 2,
+                                      m_pCurrentFrameResource->m_batchSubmit + NumContexts + 2);
+
+  // Present and update the frame index for the next frame.
+  PIXBeginEvent(commandQueue, 0, L"Presenting to screen");
+  check_hresult(swapChain->Present(1, 0));
+  PIXEndEvent(commandQueue);
+  m_frameIndex = swapChain->GetCurrentBackBufferIndex();
+
+  // Signal and increment the fence value.
+  m_pCurrentFrameResource->m_fenceValue = m_fenceValue;
+  check_hresult(commandQueue->Signal(m_fence.get(), m_fenceValue));
+  m_fenceValue++;
 }
 
 // Release sample's D3D objects.
@@ -796,9 +778,6 @@ void D3D12Multithreading::ReleaseD3DResources()
 {
   m_fence = nullptr;
   ResetComPtrArray(&m_renderTargets);
-  m_commandQueue = nullptr;
-  m_swapChain = nullptr;
-  m_device = nullptr;
 }
 
 // Tears down D3D resources and reinitializes them.
@@ -807,22 +786,26 @@ void D3D12Multithreading::RestoreD3DResources()
   // Give GPU a chance to finish its execution in progress.
   WaitForGpu();
   ReleaseD3DResources();
-  OnInit();
+  Startup();
 }
 
 // Wait for pending GPU work to complete.
 void D3D12Multithreading::WaitForGpu()
 {
+  auto commandQueue = Graphics::Core::GetCommandQueue();
+
   // Schedule a Signal command in the queue.
-  check_hresult(m_commandQueue->Signal(m_fence.get(), m_fenceValue));
+  check_hresult(commandQueue->Signal(m_fence.get(), m_fenceValue));
 
   // Wait until the fence has been processed.
   check_hresult(m_fence->SetEventOnCompletion(m_fenceValue, m_fenceEvent));
   WaitForSingleObjectEx(m_fenceEvent, INFINITE, FALSE);
 }
 
-void D3D12Multithreading::OnDestroy()
+void D3D12Multithreading::Shutdown()
 {
+  auto commandQueue = Graphics::Core::GetCommandQueue();
+
   // Ensure that the GPU is no longer referencing resources that are about to be
   // cleaned up by the destructor.
   {
@@ -830,7 +813,7 @@ void D3D12Multithreading::OnDestroy()
     const UINT64 lastCompletedFence = m_fence->GetCompletedValue();
 
     // Signal and increment the fence value.
-    check_hresult(m_commandQueue->Signal(m_fence.get(), m_fenceValue));
+    check_hresult(commandQueue->Signal(m_fence.get(), m_fenceValue));
     m_fenceValue++;
 
     // Wait until the previous frame is finished.
@@ -987,9 +970,10 @@ void D3D12Multithreading::EndFrame()
 // describing the worker's thread index.
 void D3D12Multithreading::WorkerThread(int threadIndex)
 {
+  auto device = Graphics::Core::GetD3DDevice();
+
   assert(threadIndex >= 0);
   assert(threadIndex < NumContexts);
-#if !SINGLETHREADED
 
   while (threadIndex >= 0 && threadIndex < NumContexts)
   {
@@ -997,9 +981,8 @@ void D3D12Multithreading::WorkerThread(int threadIndex)
 
     WaitForSingleObject(m_workerBeginRenderFrame[threadIndex], INFINITE);
 
-#endif
-    ID3D12GraphicsCommandList *pShadowCommandList = m_pCurrentFrameResource->m_shadowCommandLists[threadIndex].get();
-    ID3D12GraphicsCommandList *pSceneCommandList = m_pCurrentFrameResource->m_sceneCommandLists[threadIndex].get();
+    ID3D12GraphicsCommandList* pShadowCommandList = m_pCurrentFrameResource->m_shadowCommandLists[threadIndex].get();
+    ID3D12GraphicsCommandList* pSceneCommandList = m_pCurrentFrameResource->m_sceneCommandLists[threadIndex].get();
 
     //
     // Shadow pass
@@ -1028,10 +1011,8 @@ void D3D12Multithreading::WorkerThread(int threadIndex)
 
     check_hresult(pShadowCommandList->Close());
 
-#if !SINGLETHREADED
     // Submit shadow pass.
     SetEvent(m_workerFinishShadowPass[threadIndex]);
-#endif
 
     //
     // Scene pass
@@ -1047,7 +1028,7 @@ void D3D12Multithreading::WorkerThread(int threadIndex)
     PIXBeginEvent(pSceneCommandList, 0, L"Worker drawing scene pass...");
 
     D3D12_GPU_DESCRIPTOR_HANDLE cbvSrvHeapStart = m_cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
-    const UINT cbvSrvDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    const UINT cbvSrvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     const UINT nullSrvCount = 2;
     for (int j = threadIndex; j < _countof(SampleAssets::Draws); j += NumContexts)
     {
@@ -1064,18 +1045,16 @@ void D3D12Multithreading::WorkerThread(int threadIndex)
     PIXEndEvent(pSceneCommandList);
     check_hresult(pSceneCommandList->Close());
 
-#if !SINGLETHREADED
     // Tell main thread that we are done.
     SetEvent(m_workerFinishedRenderFrame[threadIndex]);
   }
-#endif
 }
 
-void D3D12Multithreading::SetCommonPipelineState(ID3D12GraphicsCommandList *pCommandList)
+void D3D12Multithreading::SetCommonPipelineState(ID3D12GraphicsCommandList* pCommandList)
 {
   pCommandList->SetGraphicsRootSignature(m_rootSignature.get());
 
-  ID3D12DescriptorHeap *ppHeaps[] = {m_cbvSrvHeap.get(), m_samplerHeap.get()};
+  ID3D12DescriptorHeap* ppHeaps[] = {m_cbvSrvHeap.get(), m_samplerHeap.get()};
   pCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
   pCommandList->RSSetViewports(1, &m_viewport);

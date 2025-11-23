@@ -51,6 +51,7 @@ namespace Neuron::Graphics
     static UINT GetCurrentFrameIndex() { return m_backBufferIndex; }
     static UINT GetPreviousFrameIndex() { return m_backBufferIndex == 0 ? m_backBufferCount - 1 : m_backBufferIndex - 1; }
     static UINT GetBackBufferCount() { return m_backBufferCount; }
+    static constexpr UINT GetMaxBackBufferCount() { return MAX_BACK_BUFFER_COUNT; }
     static unsigned int GetDeviceOptions() { return m_options; }
     static LPCWSTR GetAdapterDescription() { return m_adapterDescription.c_str(); }
     static UINT GetAdapterID() { return m_adapterID; }

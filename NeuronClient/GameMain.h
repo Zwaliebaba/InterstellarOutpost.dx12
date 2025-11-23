@@ -6,10 +6,7 @@
 
 namespace Neuron
 {
-  class GameMain
-      : public implements<GameMain, Windows::Foundation::IInspectable>,
-        public IDeviceNotify,
-        protected ASyncLoader
+  class GameMain : public implements<GameMain, Windows::Foundation::IInspectable>, public IDeviceNotify, protected ASyncLoader
   {
   public:
     GameMain() = default;
@@ -20,6 +17,9 @@ namespace Neuron
     // should still be initialized in the constructor such as pointers and flags.
     virtual Windows::Foundation::IAsyncAction Startup() = 0;
     virtual void Shutdown() = 0;
+
+    virtual void OnKeyDown(UINT8 /*key*/) {}
+    virtual void OnKeyUp(UINT8 /*key*/) {}
 
     virtual void CreateDeviceDependentResources() {}
     virtual void CreateWindowSizeDependentResources() {}
@@ -38,34 +38,24 @@ namespace Neuron
     virtual void OnDeactivated() {}
     virtual void OnSuspending() {}
 
-    virtual void OnResuming()
-    {
-      Timer::Core::ResetElapsedTime();
-    }
+    virtual void OnResuming() { Timer::Core::ResetElapsedTime(); }
 
     virtual void OnWindowMoved()
     {
-      // const auto r = Graphics::Core::GetOutputSize();
-      // Graphics::Core::WindowSizeChanged(r.right - r.left, r.bottom - r.top);
+      const auto r = Graphics::Core::GetOutputSize();
+      Graphics::Core::WindowSizeChanged(r.right - r.left, r.bottom - r.top, false);
     }
 
     virtual void OnDisplayChange()
     {
-      // Graphics::Core::UpdateColorSpace();
+      //Graphics::Core::UpdateColorSpace();
     }
 
-    virtual void OnWindowSizeChanged(int width, int height)
-    {
-      // Graphics::Core::WindowSizeChanged(width, height);
-    }
+    virtual void OnWindowSizeChanged(int width, int height) { Graphics::Core::WindowSizeChanged(width, height, false); }
 
     // IDeviceNotify
-    void OnDeviceLost() override
-    {
-    }
+    void OnDeviceLost() override {}
 
-    void OnDeviceRestored() override
-    {
-    }
+    void OnDeviceRestored() override {}
   };
 }// namespace Neuron

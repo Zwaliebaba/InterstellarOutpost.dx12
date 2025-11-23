@@ -103,8 +103,10 @@ FrameResource::FrameResource(ID3D12Device10 *pDevice, ID3D12PipelineState *pPso,
   CD3DX12_CPU_DESCRIPTOR_HANDLE cbvSrvCpuHandle(pCbvSrvHeap->GetCPUDescriptorHandleForHeapStart());
   CD3DX12_GPU_DESCRIPTOR_HANDLE cbvSrvGpuHandle(pCbvSrvHeap->GetGPUDescriptorHandleForHeapStart());
   m_nullSrvHandle = cbvSrvGpuHandle;
-  cbvSrvCpuHandle.Offset(nullSrvCount + textureCount + (frameResourceIndex * FrameCount), cbvSrvDescriptorSize);
-  cbvSrvGpuHandle.Offset(nullSrvCount + textureCount + (frameResourceIndex * FrameCount), cbvSrvDescriptorSize);
+  cbvSrvCpuHandle.Offset(nullSrvCount + textureCount + (frameResourceIndex * Graphics::Core::GetMaxBackBufferCount()),
+                         cbvSrvDescriptorSize);
+  cbvSrvGpuHandle.Offset(nullSrvCount + textureCount + (frameResourceIndex * Graphics::Core::GetMaxBackBufferCount()),
+                         cbvSrvDescriptorSize);
 
   // Describe and create a shader resource view (SRV) for the shadow depth
   // texture and cache the GPU descriptor handle. This SRV is for sampling
