@@ -686,7 +686,7 @@ void D3D12Multithreading::Update(float _deltaT)
 
   // Move to the next frame resource.
   m_currentFrameResourceIndex = (m_currentFrameResourceIndex + 1) % Graphics::Core::GetMaxBackBufferCount();
-  m_pCurrentFrameResource = m_frameResources[m_currentFrameResourceIndex];
+  m_pCurrentFrameResource = m_frameResources[m_currentFrameResourceIndex];  // Make sure that this frame resource isn't still in use by the GPU.
 
   // Make sure that this frame resource isn't still in use by the GPU.
   // If it is, wait for it to complete.
