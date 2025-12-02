@@ -1,8 +1,0 @@
-<Solution>
-  <Configurations>
-    <Platform Name="x64" />
-  </Configurations>
-  <Project Path="InterstellarOutpost/InterstellarOutpost.vcxproj" Id="4a76cbca-a3ca-4dc7-a0f1-993f2015ac5b" />
-  <Project Path="NeuronClient/NeuronClient.vcxproj" Id="3ab8bb09-7afe-4814-a2ea-ce56d7fa5206" />
-  <Project Path="NeuronCore/NeuronCore.vcxproj" Id="769b2ff7-b19c-4b3b-a6fe-9d0454ea7b0c" />
-</Solution>
