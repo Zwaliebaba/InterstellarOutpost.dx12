@@ -1,10 +1,7 @@
 #include "pch.h"
 #include "unicode_text_stream_reader.h"
 #include "clienttoserver.h"
-#include "metaserver_defines.h"
-#include "metaserver.h"
 #include "authentication.h"
-#include "matchmaker.h"
 #include "hi_res_time.h"
 #include "language_table.h"
 #include "mouse_cursor.h"
@@ -552,25 +549,6 @@ bool App::TrySetLanguage(std::string _language)
   return true;
 }
 
-void App::InitMetaServer()
-{
-  char key[256], path[512];
-
-  strcpy(path, GetProfileDirectory());
-  char fullFileName[512];
-  sprintf(fullFileName, "%sauthkey.dev", path);
-
-  Authentication_LoadKey(key, fullFileName);
-  Authentication_SetKey(key);
-
-  Authentication_RequestStatus(key, METASERVER_GAMETYPE_MULTIWINIA);
-  auto metaServerLocation = "metaserver-mwdev.introversion.co.uk";
-
-  MetaServer_Initialise();
-  MetaServer_Connect(metaServerLocation, PORT_METASERVER_CLIENT_LISTEN);
-  MatchMaker_LocateService(metaServerLocation, PORT_METASERVER_LISTEN);
-}
-
 bool App::Multiplayer() { return g_app->m_gameMode == GameModeMultiwinia; }
 
 bool App::IsSinglePlayer() { return (g_app->m_gameMode == GameModeCampaign || g_app->m_gameMode == GameModePrologue); }
@@ -807,10 +785,6 @@ void App::Initialise()
   m_soundSystem = new SoundSystem();
   m_clientToServer = new ClientToServer();
 
-  DebugTrace("Inits 1: %f\n", GetHighResTime() - start);
-  start = GetHighResTime();
-
-  InitMetaServer();
   DebugTrace("Inits 2: %f\n", GetHighResTime() - start);
   start = GetHighResTime();
 

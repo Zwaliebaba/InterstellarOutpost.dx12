@@ -1007,18 +1007,8 @@ void GameMenuWindow::JoinServer(int _serverNumber)
     delete m_joinServer;
   m_joinServer = new Directory(*server);
 
-  char localIp[256];
-  int localPort;
-  bool haveIdentity = g_app->m_clientToServer->GetIdentity(localIp, &localPort);
   char* serverIp = server->GetDataString(NET_METASERVER_IP);
   int serverPort = server->HasData(NET_METASERVER_PORT) ? server->GetDataInt(NET_METASERVER_PORT) : -1;
-
-  if (haveIdentity && stricmp(serverIp, localIp) == 0)
-  {
-    // Their public IP matches ours, so it's probably a LAN game.
-    serverIp = server->GetDataString(NET_METASERVER_LOCALIP);
-    serverPort = server->GetDataInt(NET_METASERVER_LOCALPORT);
-  }
 
   if (serverPort == -1)
     return;
@@ -1027,15 +1017,7 @@ void GameMenuWindow::JoinServer(int _serverNumber)
     g_app->m_clientToServer->m_password = m_serverPassword.Get();
 
   g_app->StartNetwork(false, serverIp, serverPort);
-
-#ifdef TESTBED_ENABLED
-  // We need a timeout on the game connecting screen if we are in testbed mode
-  if (g_app->GetTestBedMode() == TESTBED_ON)
-  {
-    g_app->m_fTestBedDelay = 0.0f;
-    g_app->m_fTestBedLastTime = GetHighResTime();
-  }
-#endif
+  
   m_newPage = PageGameConnecting;
 }
 
@@ -1049,25 +1031,8 @@ void GameMenuWindow::JoinServerAsSpectator(int _serverNumber)
     delete m_joinServer;
   m_joinServer = new Directory(*server);
 
-  char localIp[256];
-  int localPort;
-  bool haveIdentity = g_app->m_clientToServer->GetIdentity(localIp, &localPort);
   char* serverIp = server->GetDataString(NET_METASERVER_IP);
   int serverPort = server->GetDataInt(NET_METASERVER_PORT);
-
-  if (haveIdentity && stricmp(serverIp, localIp) == 0)
-  {
-    // Their public IP matches ours, so it's probably a LAN game.
-    serverIp = server->GetDataString(NET_METASERVER_LOCALIP);
-    serverPort = server->GetDataInt(NET_METASERVER_LOCALPORT);
-  }
-
-  if (haveIdentity && stricmp(serverIp, localIp) == 0)
-  {
-    // Their public IP matches ours, so it's probably a LAN game.
-    serverIp = server->GetDataString(NET_METASERVER_LOCALIP);
-    serverPort = server->GetDataInt(NET_METASERVER_LOCALPORT);
-  }
 
   g_app->StartNetwork(false, serverIp, serverPort);
   m_newPage = PageGameConnecting;
@@ -1999,8 +1964,6 @@ void GameMenuWindow::SetupDarwiniaPage()
 
 void GameMenuWindow::SetupQuickMatchGamePage()
 {
-  g_app->m_clientToServer->StartIdentifying();
-
   float leftX, leftY, leftW, leftH;
   float rightX, rightY, rightW, rightH;
   float fontLarge, fontMed, fontSmall;
@@ -2108,13 +2071,10 @@ void GameMenuWindow::SetupAchievementsPage()
 
 void GameMenuWindow::SetupJoinGamePage()
 {
-  g_app->m_clientToServer->StartIdentifying();
   MetaServer_RequestServerListWAN(METASERVER_GAMETYPE_MULTIWINIA);
 
   m_highlightedGameType = -1;
   m_highlightedLevel = -1;
-
-  //SetTitle( LANGUAGEPHRASE( "multiwinia_join_game_title" ) );			
 
   float leftX, leftY, leftW, leftH;
   float rightX, rightY, rightW, rightH;
@@ -2308,7 +2268,6 @@ void GameMenuWindow::ShutdownPage(int _page)
     break;
 
   case PageGameConnecting:
-    ShutdownGameConnectingPage();
     break;
 
   case PageAchievements:
@@ -2321,13 +2280,8 @@ void GameMenuWindow::ShutdownAchievementsPage() { m_achievementButtons.Empty(); 
 
 void GameMenuWindow::ShutdownJoinGamePage()
 {
-  if (m_newPage != PageGameConnecting)
-    g_app->m_clientToServer->StopIdentifying();
-
   m_serverButtons.Empty();
 }
-
-void GameMenuWindow::ShutdownGameConnectingPage() { g_app->m_clientToServer->StopIdentifying(); }
 
 void GameMenuWindow::UpdateMainPage()
 {

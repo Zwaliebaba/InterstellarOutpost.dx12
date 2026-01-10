@@ -138,8 +138,6 @@ class Server
     UnicodeString& GetPassword();
     void SetPassword(UnicodeString& _password);
 
-    bool GetIdentity(char* _ip, int* _port);
-
     int GetLocalPort();
 
     void StartListening();

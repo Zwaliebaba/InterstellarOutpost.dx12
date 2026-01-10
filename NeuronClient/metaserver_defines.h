@@ -41,7 +41,6 @@
  */
 
 
-#define     NET_MATCHMAKER_MESSAGE              "match"
 #define     NET_MATCHMAKER_REQUEST_IDENTITY     "aa"
 #define     NET_MATCHMAKER_IDENTIFY             "ab"
 #define     NET_MATCHMAKER_REQUEST_CONNECT      "ac"

@@ -23,7 +23,6 @@
 #include "markersystem.h"
 #include "factory.h"
 #include "radardish.h"
-#include "engineer.h"
 #include "laserfence.h"
 #include "shaman.h"
 #include "officer.h"
@@ -35,9 +34,6 @@
 #include "network_defines.h"
 #include "iframe.h"
 #include "ftp_manager.h"
-#include "matchmaker.h"
-#include "metaserver.h"
-#include "authentication.h"
 #include "work_queue.h"
 #include "metaserver_defines.h"
 #include "GameMenuWindow.h"
@@ -52,10 +48,6 @@
 
 static NetCallBackRetType ClientToServerListenCallback(NetUdpPacket* udpdata)
 {
-  static int s_bytesReceived = 0;
-  static double s_timer = 0.0;
-  static double s_interval = 5.0;
-
   if (udpdata)
   {
     NetIpAddress* fromAddr = &udpdata->m_clientAddress;
@@ -261,12 +253,6 @@ void ClientToServer::GetServerIp(char* _ip)
 
 int ClientToServer::GetServerPort() { return m_serverPort; }
 
-void ClientToServer::StartIdentifying() { MatchMaker_StartRequestingIdentity(m_listener); }
-
-void ClientToServer::StopIdentifying() { MatchMaker_StopRequestingIdentity(m_listener); }
-
-bool ClientToServer::GetIdentity(char* _ip, int* _port) { return MatchMaker_GetIdentity(m_listener, _ip, _port); }
-
 void ClientToServer::AdvanceSender()
 {
   static int s_bytesSent = 0;
@@ -337,16 +323,6 @@ void ClientToServer::AdvanceSender()
 
 void ClientToServer::Advance()
 {
-  Directory clientProperties;
-  clientProperties.CreateData(NET_METASERVER_AUTHKEY, 0x12345 /* salt */);
-  clientProperties.CreateData(NET_METASERVER_GAMENAME, APP_NAME);
-  clientProperties.CreateData(NET_METASERVER_GAMEVERSION, APP_VERSION);
-
-  if (g_app->m_originVersion)
-    clientProperties.CreateData(NET_METASERVER_ORIGINVERSION, g_app->m_originVersion);
-
-  MetaServer_SetClientProperties(&clientProperties);
-
   //
   // If we are disconnected burn all messages in the inbox
 
@@ -365,39 +341,6 @@ void ClientToServer::Advance()
 
   if (m_connectionState == StateConnecting && timeNow > m_retryTimer)
   {
-    //
-    // Attempt to hole punch
-    char ourIp[256];
-    int ourPort = -1;
-
-    int usePortForwarding = g_prefsManager->GetInt(PREFS_NETWORKUSEPORTFORWARDING, 0);
-
-    bool identityKnown = GetIdentity(ourIp, &ourPort);
-
-    if (usePortForwarding)
-      ourPort = m_listener->GetPort();
-
-    if (identityKnown)
-    {
-      char authKey[256];
-      Authentication_GetKey(authKey);
-
-      ASSERT(m_serverIp);
-      Directory ourDetails;
-
-      ourDetails.CreateData(NET_METASERVER_GAMENAME, APP_NAME);
-      ourDetails.CreateData(NET_METASERVER_GAMEVERSION, APP_VERSION);
-      ourDetails.CreateData(NET_METASERVER_AUTHKEY, authKey);
-      ourDetails.CreateData(NET_METASERVER_IP, ourIp);
-      ourDetails.CreateData(NET_METASERVER_PORT, ourPort);
-
-      DebugTrace("Our details: {}:{}\n", ourIp, ourPort);
-      MatchMaker_RequestConnection(m_listener, m_serverIp, m_serverPort, &ourDetails);
-    }
-    else
-      DebugTrace("CLIENT identity unknown.\n");
-
-    // Attempt to connect directly
     auto letter = new Directory();
     letter->CreateData(NET_DARWINIA_COMMAND, NET_DARWINIA_CLIENT_JOIN);
     letter->CreateData(NET_METASERVER_GAMEVERSION, APP_VERSION);
@@ -606,24 +549,6 @@ void ClientToServer::ReceiveLetter(Directory* letter, int _bandwidthUsed)
 
   //
   // Simulate network packet loss
-
-#ifdef TARGET_DEBUG
-  if (g_inputManager && g_inputManager->controlEvent(ControlDebugDropPacket))
-  {
-    delete letter;
-    return;
-  }
-#endif
-
-  //
-  // Is this part of the MatchMaker service?
-
-  if (strcmp(letter->m_name, NET_MATCHMAKER_MESSAGE) == 0)
-  {
-    MatchMaker_ReceiveMessage(m_listener, letter);
-    delete letter;
-    return;
-  }
 
   //
   // If we are disconnected, chuck this message in the bin
@@ -838,7 +763,6 @@ void ClientToServer::ClientLeave()
   m_outOfSyncClients.Empty();
   m_iframeHistory.EmptyAndDelete();
 
-  StopIdentifying();
   SAFE_DELETE(m_sendSocket);
 
   m_inboxMutex->Lock();

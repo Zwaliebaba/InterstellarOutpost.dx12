@@ -240,7 +240,6 @@ class GameMenuWindow : public DarwiniaWindow
 
     void ShutdownPage(int _page);
     void ShutdownJoinGamePage();
-    void ShutdownGameConnectingPage();
     void ShutdownAchievementsPage();
 
     void JoinServer(int _serverNumber);

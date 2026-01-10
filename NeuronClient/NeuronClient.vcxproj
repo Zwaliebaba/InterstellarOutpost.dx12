@@ -129,7 +129,6 @@
     <ClInclude Include="keydefs.h" />
     <ClInclude Include="keynames.h" />
     <ClInclude Include="listener.h" />
-    <ClInclude Include="matchmaker.h" />
     <ClInclude Include="metaserver.h" />
     <ClInclude Include="metaserver_defines.h" />
     <ClInclude Include="metaserver_defines_old.h" />
@@ -193,7 +192,6 @@
     <ClCompile Include="input_types.cpp" />
     <ClCompile Include="keynames.cpp" />
     <ClCompile Include="listener.cpp" />
-    <ClCompile Include="matchmaker.cpp" />
     <ClCompile Include="metaserver.cpp" />
     <ClCompile Include="movement2d.cpp" />
     <ClCompile Include="networkvalue.cpp" />

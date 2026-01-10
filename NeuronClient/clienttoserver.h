@@ -188,9 +188,6 @@ class ClientToServer
     void KeepAlive();
 
     int GetLocalPort(); // Returns local port client is listening on
-    void StartIdentifying();
-    void StopIdentifying();
-    bool GetIdentity(char* _ip, int* _port); // Get the public IP / Port for this client
     void GetServerIp(char* _ip);
     int GetServerPort();
 };

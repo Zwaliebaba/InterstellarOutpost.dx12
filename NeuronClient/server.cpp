@@ -25,9 +25,7 @@
 #include "game_menu.h"
 #include "soundsystem.h"
 #include "MapData.h"
-#include "metaserver.h"
 #include "authentication.h"
-#include "matchmaker.h"
 
 // ****************************************************************************
 // Class ServerTeam
@@ -90,9 +88,6 @@ Server::Server()
 Server::~Server()
 {
   DebugTrace("Shutting down server\n");
-  MetaServer_StopRegisteringOverLAN();
-  MetaServer_StopRegisteringOverWAN();
-  MatchMaker_StopRequestingIdentity(m_listener);
 
   m_listener->StopListening();
   delete m_listener;
@@ -544,17 +539,9 @@ void Server::ReceiveLetter(Directory* update, const char* fromIP, int _fromPort,
   update->CreateData(NET_DARWINIA_FROMIP, fromIP);
   update->CreateData(NET_DARWINIA_FROMPORT, _fromPort);
 
-  if (strcmp(update->m_name, NET_MATCHMAKER_MESSAGE) == 0)
-  {
-    MatchMaker_ReceiveMessage(m_listener, update);
-    delete update;
-  }
-  else
-  {
-    m_inboxMutex->Lock();
-    m_inbox.PutDataAtEnd(update);
-    m_inboxMutex->Unlock();
-  }
+  m_inboxMutex->Lock();
+  m_inbox.PutDataAtEnd(update);
+  m_inboxMutex->Unlock();
 }
 
 void Server::SendLetter(ServerToClientLetter* letter)
@@ -1508,59 +1495,10 @@ void Server::Advertise()
     Authentication_GetKey(authKey);
     serverProperties.CreateData(NET_METASERVER_AUTHKEY, authKey);
 
-    if (advertiseOnWan)
-    {
-      // TODO: If port portforwarding use localPort, otherwise use the identity 
-      // given by the matchmaker.
-
-      char publicIP[256];
-      int publicPort = -1;
-      bool identityKnown = GetIdentity(publicIP, &publicPort);
-      int usePortForwarding = g_prefsManager->GetInt(PREFS_NETWORKUSEPORTFORWARDING, 0);
-
-      if (usePortForwarding)
-        serverProperties.CreateData(NET_METASERVER_PORT, localPort);
-      else if (identityKnown)
-        serverProperties.CreateData(NET_METASERVER_PORT, publicPort);
-    }
-    else
-    {
-      // LAN advertisements
-      serverProperties.CreateData(NET_METASERVER_PORT, localPort);
-    }
-
-    MetaServer_SetServerProperties(&serverProperties);
-  }
-
-  // Advertising
-
-  bool singlePlayer = g_app->m_clientToServer->GetServerPort() == -1;
-
-  bool permittedToAdvertise = g_app->m_multiwinia->m_gameType != -1 && !singlePlayer;
-
-  bool shouldAdvertiseOnLan = permittedToAdvertise && advertiseOnLan;
-  bool shouldAdvertiseOnWan = permittedToAdvertise && advertiseOnWan;
-
-  // LAN Advertising
-  if (shouldAdvertiseOnLan && !MetaServer_IsRegisteringOverLAN())
-    MetaServer_StartRegisteringOverLAN();
-  else if (MetaServer_IsRegisteringOverLAN() && !shouldAdvertiseOnLan)
-    MetaServer_StopRegisteringOverLAN();
-
-  // WAN Advertising
-  if (shouldAdvertiseOnWan && !MetaServer_IsRegisteringOverWAN())
-  {
-    MatchMaker_StartRequestingIdentity(m_listener);
-    MetaServer_StartRegisteringOverWAN();
-  }
-  else if (MetaServer_IsRegisteringOverWAN() && !shouldAdvertiseOnWan)
-  {
-    MetaServer_StopRegisteringOverWAN();
-    MatchMaker_StopRequestingIdentity(m_listener);
+    // LAN advertisements
+    serverProperties.CreateData(NET_METASERVER_PORT, localPort);
   }
 }
-
-bool Server::GetIdentity(char* _ip, int* _port) { return MatchMaker_GetIdentity(m_listener, _ip, _port); }
 
 int Server::GetLocalPort()
 {

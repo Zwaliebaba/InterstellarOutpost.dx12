@@ -247,8 +247,6 @@ class App
     void SetLanguage(const char* _language, bool _test);
     bool TrySetLanguage(std::string _language);
 
-    void InitMetaServer();
-
     bool Multiplayer();
     bool IsSinglePlayer();
 
