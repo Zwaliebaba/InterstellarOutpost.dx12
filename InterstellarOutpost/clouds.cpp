@@ -263,7 +263,7 @@ void Clouds::RenderFlat( float _predictionTime )
     Vector3 offset  = m_offset + m_vel * _predictionTime;
 
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/clouds.bmp" ) );	
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\clouds.bmp" ) );	
     glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
     glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
@@ -325,7 +325,7 @@ void Clouds::RenderBlobby( float _predictionTime )
     int cloudDetail = g_prefsManager->GetInt( "RenderCloudDetail", 1 );
 
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/clouds.bmp", false ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\clouds.bmp", false ) );
     glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
     glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
@@ -407,7 +407,7 @@ void Clouds::RenderSky()
     glColor4f		(0.5, 0.5, 1.0, 0.3);
 
     glEnable        (GL_TEXTURE_2D);
-    glBindTexture   (GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laser.bmp" ) );
+    glBindTexture   (GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\laser.bmp" ) );
 
     glBegin( GL_QUADS );
     for( int x = xStart; x < xEnd; x += gridSize )

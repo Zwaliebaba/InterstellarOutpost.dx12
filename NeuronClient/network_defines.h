@@ -149,7 +149,6 @@
 #define     NET_DARWINIA_LASTSEQID						"eq"
 #define		NET_DARWINIA_XUID							"er"
 #define		NET_DARWINIA_ASSIGN_SPECTATOR				"es"
-#define		NET_DARWINIA_CLIENTISDEMO					"et"
 #define		NET_DARWINIA_ENCRYPTION_PADDING_STC			"eu"
 #define		NET_DARWINIA_SERVER_FULL					"ev"
 #define		NET_DARWINIA_MAKE_SPECTATOR					"ew"

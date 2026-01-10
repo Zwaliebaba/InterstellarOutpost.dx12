@@ -307,7 +307,7 @@ void BackPageButton::Render(int realX, int realY, bool highlighted, bool clicked
     // Render the icon
 
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/button_b.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\button_b.bmp"));
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glColor4f(1.0f, 1.0f, 1.0f, iconAlpha);
@@ -872,7 +872,7 @@ void DrawFillBox(float x, float y, float w, float h)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/interface_blur.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\interface_blur.bmp"));
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -892,7 +892,7 @@ void DrawFillBox(float x, float y, float w, float h)
   //
   // Main box cloudy glow effect
 
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/cloudyglow.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\cloudyglow.bmp"));
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -1289,7 +1289,7 @@ void GameMenuDropDownWindow::Render(bool hasFocus)
 
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/mwlogo.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\mwlogo.bmp"));
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -1571,7 +1571,7 @@ void RenderHighlightBeam(float x, float centreY, float w, float h)
 
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/menuhighlight.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\menuhighlight.bmp"));
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -1675,7 +1675,7 @@ void GameMenuCheckBox::Render(int realX, int realY, bool highlighted, bool click
 
     //glBlendFunc     ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/tick.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\tick.bmp"));
 
     glColor4f(0.6f, 1.0f, 0.4f, 1.0f);
     glBegin(GL_QUADS);

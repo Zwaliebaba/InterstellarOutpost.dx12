@@ -886,7 +886,7 @@ void SphereWorld::RenderSpirits()
   glDepthMask(false);
 
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/glow.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\glow.bmp"));
 
   Vector3 camRight = g_app->m_camera->GetRight();
   Vector3 camUp = g_app->m_camera->GetUp();
@@ -1087,7 +1087,7 @@ void SphereWorld::RenderHeaven()
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/glow.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\glow.bmp"));
 
   glBegin(GL_QUADS);
 
@@ -1117,7 +1117,7 @@ void SphereWorld::RenderHeaven()
   // Render god rays going down 
 
   /*
-      glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/godray.bmp" ) );
+      glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\godray.bmp" ) );
       
     for (int i = 0; i < g_app->m_globalWorld->m_locations.Size(); ++i)
     {        
@@ -1183,7 +1183,7 @@ void SphereWorld::RenderIslands()
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   glEnable(GL_BLEND);
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/starburst.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\starburst.bmp"));
 
   glBegin(GL_QUADS);
 

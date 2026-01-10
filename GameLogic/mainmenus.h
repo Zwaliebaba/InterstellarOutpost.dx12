@@ -138,7 +138,7 @@ public:
 			// Render the icon
 
 			glEnable        ( GL_TEXTURE_2D );
-			glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons/button_b.bmp" ) );
+			glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons\\button_b.bmp" ) );
 			glBlendFunc     ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 	        
 			glColor4f   ( 1.0f, 1.0f, 1.0f, iconAlpha );
@@ -187,13 +187,6 @@ public:
     : GameMenuButton( "multiwinia_menu_achievements" )
     {
     }
-};
-
-class LeaderBoardButton : public GameMenuButton
-{
-public:
-	LeaderBoardButton(char *_iconName);
-	void MouseUp();
 };
 
 class ConfirmResetButton : public GameMenuButton

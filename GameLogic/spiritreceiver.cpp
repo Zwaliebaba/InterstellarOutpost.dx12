@@ -136,7 +136,7 @@ void ReceiverBuilding::RenderAlphas ( double _predictionTime )
         if( buildingDetail == 1 )
         {
             glEnable        ( GL_TEXTURE_2D );
-            glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laser.bmp" ) );
+            glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\laser.bmp" ) );
             glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
             glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 
@@ -298,7 +298,7 @@ void ReceiverBuilding::BeginRenderUnprocessedSpirits()
     int buildingDetail = g_prefsManager->GetInt( "RenderBuildingDetail", 1 );
     if( buildingDetail == 1 )
     {
-        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/glow.bmp" ) );
+        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\glow.bmp" ) );
     }
 
 	s_nearPlaneStart = g_app->m_renderer->GetNearPlane();
@@ -778,7 +778,7 @@ void SpiritReceiver::RenderPorts()
 {
     glDisable       ( GL_CULL_FACE );
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/starburst.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\starburst.bmp" ) );
     glDepthMask     ( false );
     glEnable        ( GL_BLEND );
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
@@ -959,7 +959,7 @@ void UnprocessedSpirit::Render( double _predictionTime )
     int buildingDetail = g_prefsManager->GetInt( "RenderBuildingDetail", 1 );
     if( buildingDetail == 1 )
     {
-        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/glow.bmp" ) );
+        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\glow.bmp" ) );
     }
 
 	s_nearPlaneStart = g_app->m_renderer->GetNearPlane();

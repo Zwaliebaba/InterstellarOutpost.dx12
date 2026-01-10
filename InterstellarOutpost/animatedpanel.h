@@ -10,7 +10,6 @@ class AnimatedPanelObject;
 class AnimatedPanelKeyframe;
 
 
-// ============================================================================
 // AnimatedPanelObject
 
 
@@ -44,7 +43,6 @@ public:
 };
 
 
-// ============================================================================
 // AnimatedPanelObject
 
 
@@ -61,7 +59,6 @@ public:
 
 
 
-// ============================================================================
 // AnimatedPanelKeyframe
 
 class AnimatedPanelKeyframe

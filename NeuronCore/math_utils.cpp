@@ -39,50 +39,6 @@ double RampUpAndDown(double _startTime, double _duration, double _timeNow)
 	}
 }
 
-bool RequireSquareTextures()
-{
-
-#ifdef USE_DIRECT3D
-	return false;
-#endif
-
-	static bool requiresSquareTextures;
-	static bool initted = false;
-
-	if( !initted )
-	{
-		const char *extensions = (const char *) glGetString(GL_EXTENSIONS);
-		bool supportsRectangleTextures = 
-			strstr( extensions, "GL_ARB_texture_rectangle" ) != NULL;
-		requiresSquareTextures = !supportsRectangleTextures;
-		initted = true;
-	}
-
-	return requiresSquareTextures;	
-}
-
-bool RequirePowerOfTwoTextures()
-{
-	
-#ifdef USE_DIRECT3D
-	return false;
-#endif
-	
-	static bool requiresPowerOfTwoTextures;
-	static bool initted = false;
-	
-	if( !initted )
-	{
-		const char *extensions = (const char *) glGetString(GL_EXTENSIONS);
-		bool supportsNonPowerOfTwoTextures = 
-		strstr( extensions, "GL_ARB_texture_non_power_of_two" ) != NULL;
-		requiresPowerOfTwoTextures = !supportsNonPowerOfTwoTextures;
-		initted = true;
-	}
-	
-	return requiresPowerOfTwoTextures;	
-}
-
 unsigned nearestPowerOfTwo( unsigned _x )
 {
 	if( _x > (1 << 31) )

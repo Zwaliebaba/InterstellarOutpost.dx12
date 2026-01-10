@@ -1,27 +1,17 @@
 #ifndef __ADVANCEDOPTIONSMODEBUTTON__
 #define __ADVANCEDOPTIONSMODEBUTTON__
 
-
 class AdvancedOptionsModeButton : public GameMenuButton
 {
-public:
+  public:
     AdvancedOptionsModeButton()
-    : GameMenuButton( "AdvancedOptions" )
+      : GameMenuButton("AdvancedOptions") {}
+
+    void MouseUp() override
     {
-    }
+      GameMenuButton::MouseUp();
 
-    void MouseUp()
-    {
-        char authKey[256];
-        Authentication_GetKey( authKey );
-        bool demoKey = Authentication_IsDemoKey( authKey );
-
-        if( !demoKey )
-        {
-            GameMenuButton::MouseUp();
-
-            ((GameMenuWindow *) m_parent)->m_newPage = GameMenuWindow::PageAdvancedOptions;
-        }
+      static_cast<GameMenuWindow*>(m_parent)->m_newPage = GameMenuWindow::PageAdvancedOptions;
     }
 };
 

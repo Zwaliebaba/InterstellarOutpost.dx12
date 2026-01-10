@@ -100,6 +100,6 @@ void Snow::Render( double _predictionTime )
     double size = 20.0;
 
     glColor4f( 1.0, 1.0, 1.0, 1.0 );
-    Render3DSprite( predictedPos, size, size, g_app->m_resource->GetTexture( "textures/starburst.bmp" ) );
+    Render3DSprite( predictedPos, size, size, g_app->m_resource->GetTexture( "textures\\starburst.bmp" ) );
 }
 

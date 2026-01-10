@@ -525,7 +525,7 @@ void RoutingSystem::RenderRouteLine( Vector3 const &fromPos, Vector3 const &toPo
 
     glDisable       ( GL_CULL_FACE );
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/particle.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\particle.bmp" ) );
     glEnable        ( GL_BLEND );
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
@@ -581,7 +581,7 @@ void RoutingSystem::RenderRouteLine( Vector3 const &fromPos, Vector3 const &toPo
 
     //glDisable       ( GL_CULL_FACE );
     //glEnable        ( GL_TEXTURE_2D );    
-    //glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons/widearrow.bmp" ) );
+    //glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons\\widearrow.bmp" ) );
     //glTexParameterf ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
     //glTexParameterf ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     //glTexParameterf ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );

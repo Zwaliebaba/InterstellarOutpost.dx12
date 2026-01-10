@@ -37,7 +37,6 @@ bool IsProtocolMatch(Directory* d);
 
 class MapData;
 
-// ============================================================================
 // Game Menu
 
 class PlayerNameString : public NetworkUnicodeString
@@ -96,7 +95,6 @@ class GameMenuTitleButton : public DarwiniaButton
     void Render(int realX, int realY, bool highlighted, bool clicked) override;
 };
 
-// ============================================================================
 // Game Menu Components
 
 class GameMenuButton : public DarwiniaButton

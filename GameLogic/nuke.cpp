@@ -312,7 +312,7 @@ void Nuke::RenderHistory( double _predictionTime )
 {
     if( m_history.Size() > 0 && m_id.GetTeamId() != 255 )
     {
-        glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laser.bmp" ) );
+        glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\laser.bmp" ) );
 
         Vector3 predictedPos = m_pos + m_vel * SERVER_ADVANCE_PERIOD;
         Vector3 lastPos = predictedPos;
@@ -484,7 +484,7 @@ void Nuke::RenderGroundMarker()
     char filename[256];
     char shadow[256];
 
-    sprintf( filename, "icons/nukesymbol.bmp" );
+    sprintf( filename, "icons\\nukesymbol.bmp" );
     sprintf(shadow, "shadow_%s", filename);
 
     if( !g_app->m_resource->DoesTextureExist( shadow ) )

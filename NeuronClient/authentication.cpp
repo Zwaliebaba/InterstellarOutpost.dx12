@@ -3,13 +3,9 @@
 #include "HashData.h"
 #include "directory.h"
 #include "llist.h"
-#include "metaserver.h"
-#include "metaserver_defines.h"
 #include "net_mutex.h"
 
 static char s_authKey[256];
-
-const static char* s_invalidKeys[] = {"BTHETA-DKFOPQ-OGPUSS-CCKOPL-TNF", "OWRGIO-CLMQEE-URWUDL-SUVUCC-WYQ", nullptr};
 
 class AuthenticationResult
 {
@@ -31,23 +27,10 @@ static NetMutex s_authResultsMutex;
 
 static bool s_authThreadRunning = false;
 static int s_hashToken = 0;
-static bool s_enforceDemo = false;
 
 void Authentication_GenerateKey(char* _key, int _gameType /* 2 = Defcon, 4 = Multiwinia, ... */, bool _demoKey, bool _steamKey)
 {
   strcpy(_key, "DEMOTP-AXYVLW-SGIZLU-DNLXPK-OJS");
-}
-
-int Authentication_SimpleKeyCheck(const char* _key, int _gameType)
-{
-  if (Authentication_IsHashKey(_key))
-  {
-    // This is a hash of a key
-    // No way to perform a simple check, so must assume its ok
-    return AuthenticationAccepted;
-  }
-
-  return strlen(_key) == AUTHENTICATION_KEYLEN - 1 ? AuthenticationAccepted : AuthenticationKeyInvalid;
 }
 
 void Authentication_SaveKey(const char* _key, const char* _filename)
@@ -77,9 +60,6 @@ void Authentication_LoadKey(char* _key, const char* _filename)
     DebugTrace("Failed to load AuthKey : '%s'\n", _filename);
     sprintf(_key, "authkey not found");
   }
-
-  if (s_enforceDemo && !Authentication_IsDemoKey(_key))
-    strcpy(_key, "authkey not found");
 }
 
 void Authentication_SetKey(const char* _key)
@@ -97,17 +77,11 @@ void Authentication_SetKey(const char* _key)
     s_authKey[i] = '\x0';
   }
 
-  if (s_enforceDemo && !Authentication_IsDemoKey(s_authKey))
-    strcpy(s_authKey, "authkey not found");
-
   DebugTrace("Authentication key set : '{}'\n", s_authKey);
 }
 
 bool Authentication_IsKeyFound()
 {
-  if (s_enforceDemo && !Authentication_IsDemoKey(s_authKey))
-    return false;
-
   return true;
 }
 
@@ -140,125 +114,12 @@ void Authentication_GetKeyHash(char* _key)
   Authentication_GetKeyHash(keyTemp, _key, s_hashToken);
 }
 
-bool Authentication_IsDemoKey(const char* _key)
-{
-  for (int i = 0; s_invalidKeys[i]; ++i)
-  {
-    if (stricmp(_key, s_invalidKeys[i]) == 0)
-      return true;
-  }
-
-  if (Authentication_GetStatus(_key) == AuthenticationKeyNotFound)
-    return true;
-
-  if (Authentication_IsHashKey(_key))
-  {
-    // We can't tell in this case
-    return false;
-  }
-
-  return (strncmp(_key, "DEMO", 4) == 0);
-}
-
-void Anthentication_EnforceDemo() { s_enforceDemo = true; }
-
-bool Authentication_IsAmbrosiaKey(const char* _key)
-{
-  if (Authentication_IsHashKey(_key))
-  {
-    // We can't tell in this case
-    return false;
-  }
-
-  return (strncmp(_key, "AMBR", 4) == 0);
-}
-
 static NetCallBackRetType AuthenticationThread(void* _args)
 {
-  int gameType = (int)_args;
-
-#ifdef WAN_PLAY_ENABLED
-  //
-  // Every few seconds request the next key to be authenticated
-
-  while (true)
-  {
-    NetSleep(PERIOD_AUTHENTICATION_RETRY);
-
-    if (MetaServer_IsConnected())
-    {
-      char unknownKey[256];
-      char clientIp[256];
-      int keyId = -1;
-      bool unknownKeyFound = false;
-
-      //
-      // Look for a key that isnt yet authenticated
-
-      s_authResultsMutex.Lock();
-      for (int i = 0; i < s_authResults.Size(); ++i)
-      {
-        AuthenticationResult* authResult = s_authResults[i];
-        if (authResult->m_authResult == AuthenticationUnknown && authResult->m_numTries < 5)
-        {
-          strcpy(unknownKey, authResult->m_authKey);
-          strcpy(clientIp, authResult->m_ip);
-          keyId = authResult->m_keyId;
-          authResult->m_numTries++;
-          unknownKeyFound = true;
-          break;
-        }
-      }
-      s_authResultsMutex.Unlock();
-
-      //
-      // Check the key out
-
-      if (unknownKeyFound)
-      {
-        int basicResult = Authentication_SimpleKeyCheck(unknownKey, gameType);
-        if (basicResult < 0)
-        {
-          // The key is in the wrong format
-          Authentication_SetStatus(unknownKey, keyId, basicResult);
-          const char* resultString = Authentication_GetStatusString(basicResult);
-          DebugTrace("Key failed basic check : %s (result=%s)\n", unknownKey, resultString);
-        }
-        else if (Authentication_IsDemoKey(unknownKey))
-        {
-          // This is a demo key, and has passed the simple check
-          // Assume its valid from now on
-          Authentication_SetStatus(unknownKey, -1, AuthenticationAccepted);
-          DebugTrace("Auth Key accepted as DEMOKEY : %s\n", unknownKey);
-        }
-        else
-        {
-          // Request a proper auth check from the metaserver
-          Directory directory;
-          directory.SetName(NET_METASERVER_MESSAGE);
-          directory.CreateData(NET_METASERVER_COMMAND, NET_METASERVER_REQUEST_AUTH);
-          directory.CreateData(NET_METASERVER_AUTHKEY, unknownKey);
-          directory.CreateData(NET_METASERVER_AUTHKEYID, keyId);
-          directory.CreateData(NET_METASERVER_GAMENAME, APP_NAME);
-          directory.CreateData(NET_METASERVER_GAMEVERSION, APP_VERSION);
-
-          if (strcmp(clientIp, "unknown") != 0)
-            directory.CreateData(NET_METASERVER_IP, clientIp);
-
-          MetaServer_SendToMetaServer(&directory);
-
-          DebugTrace("Requesting authentication of key %s\n", unknownKey);
-        }
-      }
-    }
-  }
-
-#endif
-
   return 0;
 }
 
-int Authentication_GetKeyId(char* _key)
+int Authentication_GetKeyId(const char* _key)
 {
   int result = 0;
 

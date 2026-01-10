@@ -13,7 +13,6 @@
 // Additional functionality can be added later (restriction of
 // powerups running, for example)
 // Gary
-// ================================================================
 
 LList<int> RestrictionZone::s_restrictionZones;
 

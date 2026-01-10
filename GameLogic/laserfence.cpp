@@ -348,8 +348,8 @@ void LaserFence::RenderAlphas( double predictionTime )
 				topRight( nextFence->m_pos + Vector3(0,theirFenceHeight,0) ),
 				bottomRight( nextFence->m_pos - Vector3(0,theirFenceHeight/3,0) );
 
-			int laserFenceTextureId = g_app->m_resource->GetTexture( "textures/laserfence.bmp" );
-			int laserFence2TextureId = g_app->m_resource->GetTexture( "textures/laserfence2.bmp" );
+			int laserFenceTextureId = g_app->m_resource->GetTexture( "textures\\laserfence.bmp" );
+			int laserFence2TextureId = g_app->m_resource->GetTexture( "textures\\laserfence2.bmp" );
 
             if( m_solarMode || m_solarLinked )
             {
@@ -413,7 +413,7 @@ void LaserFence::RenderAlphas( double predictionTime )
             //
             // Blend another poly over the top for burn effect
 
-            glBindTexture       (GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laserfence2.bmp" ) );
+            glBindTexture       (GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\laserfence2.bmp" ) );
 	        glTexParameteri	    (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	        glTexParameteri	    (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
             glBlendFunc         (GL_SRC_ALPHA, GL_ONE);

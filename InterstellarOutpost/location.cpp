@@ -2029,7 +2029,7 @@ void Location::RenderWeapons()
   glEnable(GL_LINE_SMOOTH);
   glDisable(GL_CULL_FACE);
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/laser.bmp", false));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\laser.bmp", false));
 
   double nearPlaneStart = g_app->m_renderer->GetNearPlane();
   g_app->m_camera->SetupProjectionMatrix(nearPlaneStart * 1.2, g_app->m_renderer->GetFarPlane());

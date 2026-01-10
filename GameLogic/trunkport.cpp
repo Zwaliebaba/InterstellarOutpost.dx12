@@ -239,7 +239,7 @@ void TrunkPort::RenderAlphas( double predictionTime )
         glDepthMask     ( false );
 
         glEnable        ( GL_TEXTURE_2D );
-        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laserfence.bmp" ) );
+        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\laserfence.bmp" ) );
 
         double alphaValue = timeOpen;
         if( alphaValue > 0.7 ) alphaValue = 0.7;
@@ -282,7 +282,7 @@ void TrunkPort::RenderAlphas( double predictionTime )
         glEnd();
         
         glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
-        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/glow.bmp" ) );
+        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\glow.bmp" ) );
         
         if( !g_app->Multiplayer() )
         {

@@ -77,7 +77,7 @@ void CheckBox::Render(int realX, int realY, bool highlighted, bool clicked)
 
         //glBlendFunc     ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
         glEnable        ( GL_TEXTURE_2D );
-        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons/tick.bmp" ) );
+        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons\\tick.bmp" ) );
 
         glColor4f( 0.6f, 1.0f, 0.4f, 1.0f );
         glBegin( GL_QUADS );

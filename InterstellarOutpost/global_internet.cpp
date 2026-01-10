@@ -220,7 +220,7 @@ void GlobalInternet::Render()
 	int linksId = g_app->m_resource->GetDisplayList(DISPLAY_LIST_NAME_LINKS);
     if( linksId >= 0 )
     {
-        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laserfence2.bmp") );
+        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\laserfence2.bmp") );
 
         glCallList( linksId );
     }
@@ -265,7 +265,7 @@ void GlobalInternet::Render()
 	int nodesId = g_app->m_resource->GetDisplayList(DISPLAY_LIST_NAME_NODES);
     if( nodesId >= 0 )
     {
-        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/glow.bmp") );
+        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\glow.bmp") );
 
         glCallList( nodesId );
     }
@@ -396,7 +396,7 @@ void GlobalInternet::RenderPackets()
     glEnable        ( GL_BLEND );
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/starburst.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\starburst.bmp" ) );
     glDepthMask     ( false );
     
 	glBegin( GL_QUADS );

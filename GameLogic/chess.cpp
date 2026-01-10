@@ -201,7 +201,6 @@ void ChessBase::Write( TextWriter *_out )
 }
 
 
-// ============================================================================
 
 ChessPiece::ChessPiece()
 :   CarryableBuilding(),

@@ -144,7 +144,7 @@ void Spam::RenderAlphas( double _predictionTime )
     glEnable        ( GL_BLEND );
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/cloudyglow.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\cloudyglow.bmp" ) );
     
     double timeIndex = g_gameTime + m_id.GetUniqueId() * 10.0;
 
@@ -188,7 +188,7 @@ void Spam::RenderAlphas( double _predictionTime )
     alpha = 1.0 - m_timer / SpamReloadTime();
     alpha *= 0.3;
 
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/starburst.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\starburst.bmp" ) );
 
     int numStars = 10;
     if( buildingDetail == 2 ) numStars = 5;
@@ -344,7 +344,6 @@ void Spam::SetAsResearch()
 }
 
 
-// ============================================================================
 
 
 SpamInfection::SpamInfection()
@@ -671,7 +670,7 @@ void SpamInfection::Render( double _time )
     int numRepeats = 4;
 
     glEnable( GL_TEXTURE_2D );
-    glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laser.bmp" ) );
+    glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\laser.bmp" ) );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE );
 
     for( int j = 0; j < numRepeats; ++j )

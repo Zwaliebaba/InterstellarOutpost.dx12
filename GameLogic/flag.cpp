@@ -284,7 +284,7 @@ void Flag::Render( int _teamId, char *_fileName )
 
     if( m_target != g_zeroVector )
     {
-        glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons/arrow.bmp" ) );
+        glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons\\arrow.bmp" ) );
         glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
 
         glEnable ( GL_POLYGON_OFFSET_FILL );

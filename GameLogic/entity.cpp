@@ -559,7 +559,7 @@ static double s_nearPlaneStart;
 void Entity::BeginRenderShadow()
 {
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/glow.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\glow.bmp"));
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glDisable(GL_CULL_FACE);
@@ -836,8 +836,6 @@ char* Entity::LogState(char* _message)
 {
   static char s_result[1024];
 
-  static char buf1[32], buf2[32], buf3[32], buf4[32], buf5[32];
-
   sprintf(s_result, "%sENT Type[%s] Id[%d] pos[%5.2f,%5.2f,%5.2f], vel[%5.2f] front[%5.2f]", (_message) ? _message : "",
           GetTypeName(m_type), m_id.GetUniqueId(), m_pos.x, m_pos.y, m_pos.z, m_vel.x + m_vel.y + m_vel.z,
           m_front.x + m_front.y + m_front.z);
@@ -845,7 +843,7 @@ char* Entity::LogState(char* _message)
   return s_result;
 }
 
-void Entity::SetShape(char* _shapeName, bool _colourAll)
+void Entity::SetShape(const char* _shapeName, bool _colourAll)
 {
   char filename[256];
   Team* team = g_app->m_location->m_teams[m_id.GetTeamId()];
@@ -923,7 +921,7 @@ void Entity::ConvertShapeColoursToTeam(Shape* _shape, int _teamId, bool _convert
   _shape->BuildDisplayList();
 }
 
-void Entity::SetupTeamShape(char* _name, bool _convertAll)
+void Entity::SetupTeamShape(const char* _name, bool _convertAll)
 {
   if (g_app->IsSinglePlayer() || m_id.GetTeamId() == 255)
   {

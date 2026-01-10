@@ -174,7 +174,7 @@ void MineBuilding::RenderAlphas( double _predictionTime )
             if( buildingDetail == 1 )
             {
                 glEnable        ( GL_TEXTURE_2D );
-                glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laser.bmp" ) );
+                glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\laser.bmp" ) );
                 glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
                 glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
         
@@ -309,7 +309,7 @@ void MineBuilding::RenderCart( MineCart *_cart, double _predictionTime )
 	                    g_app->m_camera->SetupProjectionMatrix(nearPlaneStart * 1.1,
 							 			                       g_app->m_renderer->GetFarPlane());                    
                     
-                        Render3DSprite( polyMat.pos - Vector3(0,25,0), 50.0, 50.0, g_app->m_resource->GetTexture( "textures/glow.bmp" ) );                                                           
+                        Render3DSprite( polyMat.pos - Vector3(0,25,0), 50.0, 50.0, g_app->m_resource->GetTexture( "textures\\glow.bmp" ) );                                                           
 
                         g_app->m_camera->SetupProjectionMatrix(nearPlaneStart,
 								 		                       g_app->m_renderer->GetFarPlane());

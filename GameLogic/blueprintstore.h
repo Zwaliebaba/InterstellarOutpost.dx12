@@ -37,7 +37,6 @@ public:
 };
 
 
-// ============================================================================
 
 #define BLUEPRINTSTORE_NUMSEGMENTS  4
 
@@ -64,7 +63,6 @@ public:
 };
 
 
-// ============================================================================
 
 
 class BlueprintConsole : public BlueprintBuilding
@@ -84,7 +82,6 @@ public:
 };
 
 
-// ============================================================================
 
 
 class BlueprintRelay : public BlueprintBuilding

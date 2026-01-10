@@ -10,7 +10,6 @@ class MultiwiniaGameParameter;
 class RocketStatusPanel;
 
 
-// ============================================================================
 // class Multiwinia
 
 #define     MULTIWINIA_MAXPARAMS    64
@@ -199,7 +198,6 @@ public:
 };
 
 
-// ============================================================================
 // class MultiwiniaGameBlueprint
 
 class MultiwiniaGameBlueprint
@@ -221,7 +219,6 @@ public:
 
 
 
-// ============================================================================
 // class MultiwiniaGameParameter
 
 class MultiwiniaGameParameter

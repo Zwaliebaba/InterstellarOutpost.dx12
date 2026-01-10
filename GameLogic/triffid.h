@@ -71,7 +71,6 @@ public:
 };
 
 
-// ============================================================================
 // Triffid Egg
 
 #define TRIFFIDEGG_BOUNCEFRICTION 0.65

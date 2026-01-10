@@ -4071,7 +4071,7 @@ void Darwinian::Render(double _predictionTime, double _highDetail)
       glVertex3dv((predictedPos - entityRight * factor).GetData());
       glEnd();
 
-      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/glow.bmp"));
+      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\glow.bmp"));
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
       glDisable(GL_DEPTH_TEST);
       glEnable(GL_BLEND);
@@ -4191,7 +4191,7 @@ void Darwinian::Render(double _predictionTime, double _highDetail)
 
     if (m_infectionState == InfectionStateInfected && !m_dead)
     {
-      SetTexture("textures/glow.bmp");
+      SetTexture("textures\\glow.bmp");
       SetBlend(GL_SRC_ALPHA, GL_ONE, false);
       glEnable(GL_BLEND);
       //glDisable( GL_ALPHA_TEST );
@@ -4254,7 +4254,7 @@ void Darwinian::Render(double _predictionTime, double _highDetail)
     // Draw a glow if we have a booster
     if (m_boosterTaskId != -1 && !m_dead)
     {
-      SetTexture("textures/bubble.bmp");
+      SetTexture("textures\\bubble.bmp");
       SetBlend(GL_SRC_ALPHA, GL_ONE, false);
       glEnable(GL_BLEND);
       glDisable(GL_ALPHA_TEST);
@@ -4525,7 +4525,7 @@ void Darwinian::Render(double _predictionTime, double _highDetail)
         SetBlend(GL_SRC_ALPHA, GL_ONE, false);
         glColor4ub(colour.r, colour.g, colour.b, alpha);
         glEnable(GL_BLEND);
-        SetTexture("textures/laser.bmp");
+        SetTexture("textures\\laser.bmp");
         glBegin(GL_QUADS);
         glTexCoord2i(0, 0);
         glVertex3dv((fromPos - rightAngle).GetData());
@@ -4792,7 +4792,6 @@ void Darwinian::ListSoundEvents(LList<char*>* _list)
   _list->PutData("LiftBuilding");
 }
 
-// ===========================================================================
 
 BoxKite::BoxKite()
   : WorldObject(),
@@ -4885,7 +4884,7 @@ void BoxKite::Render(double _predictionTime)
   glColor4f(1.0, 0.75, 0.2, m_brightness);
 
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/starburst.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\starburst.bmp"));
 
   glBegin(GL_QUADS);
   glTexCoord2i(0, 0);

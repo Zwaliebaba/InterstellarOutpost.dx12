@@ -158,7 +158,7 @@ void FuelBuilding::RenderAlphas(double _predictionTime)
       Vector3 rightAngle = (g_app->m_camera->GetPos() - midPos) ^ (startPos - endPos);
       rightAngle.SetLength(25.0f);
 
-      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/fuel.bmp"));
+      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\fuel.bmp"));
       glEnable(GL_TEXTURE_2D);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -247,7 +247,6 @@ void FuelBuilding::Destroy(double _intensity)
   }
 }
 
-// ============================================================================
 
 FuelGenerator::FuelGenerator()
   : FuelBuilding(),
@@ -387,7 +386,6 @@ void FuelGenerator::GetObjectiveCounter(UnicodeString& _dest)
   _dest = UnicodeString(buffer);
 }
 
-// ============================================================================
 
 FuelPipe::FuelPipe()
   : FuelBuilding()
@@ -419,7 +417,6 @@ void FuelPipe::ListSoundEvents(LList<char*>* _list)
   _list->PutData("PumpFuel");
 }
 
-// ============================================================================
 
 FuelStation::FuelStation()
   : FuelBuilding(),
@@ -592,7 +589,7 @@ void FuelStation::RenderAlphas(double _predictionTime)
       //
       // Render lines for over effect
 
-      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/interface_grey.bmp"));
+      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\interface_grey.bmp"));
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
       glEnable(GL_TEXTURE_2D);
@@ -662,7 +659,7 @@ void FuelStation::RenderAlphas(double _predictionTime)
       //
       // Render projection effect
 
-      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/laser.bmp"));
+      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\laser.bmp"));
 
       Vector3 ourPos = m_pos + Vector3(0, 90, 0);
       Vector3 theirPos = m_pos + Vector3(0, 200, 0);
@@ -712,7 +709,6 @@ bool FuelStation::PerformDepthSort(Vector3& _centrePos)
   return true;
 }
 
-// ============================================================================
 
 void ConvertFragmentColours(ShapeFragment* _frag, RGBAColour _col)
 {
@@ -1561,7 +1557,7 @@ void EscapeRocket::RenderAlphas(double _predictionTime)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/starburst.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\starburst.bmp"));
     //glDisable       ( GL_DEPTH_TEST );
 
     float timeIndex = g_gameTime * 2;
@@ -1610,7 +1606,7 @@ void EscapeRocket::RenderAlphas(double _predictionTime)
     //
     // Central starbursts
 
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/starburst.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\starburst.bmp"));
 
     int numStars = 10;
     if (buildingDetail == 2)

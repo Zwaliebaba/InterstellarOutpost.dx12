@@ -182,7 +182,7 @@ void SpawnBuilding::RenderAlphas(double _predictionTime)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/laser.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\laser.bmp"));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glEnable(GL_TEXTURE_2D);
@@ -460,7 +460,6 @@ void SpawnBuilding::Write(TextWriter* _out)
   }
 }
 
-// ============================================================================
 
 SpawnLink::SpawnLink()
   : SpawnBuilding()
@@ -470,7 +469,6 @@ SpawnLink::SpawnLink()
   SetShape(g_app->m_resource->GetShape("spawnlink.shp"));
 }
 
-// ============================================================================
 
 int MasterSpawnPoint::s_masterSpawnPointId = -1;
 
@@ -579,7 +577,6 @@ void MasterSpawnPoint::GetObjectiveCounter(UnicodeString& _dest)
   _dest = UnicodeString(result);
 }
 
-// ============================================================================
 
 SpawnPoint::SpawnPoint()
   : SpawnBuilding(),
@@ -925,7 +922,7 @@ void SpawnPoint::RenderAlphas(double _predictionTime)
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/cloudyglow.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\cloudyglow.bmp"));
   glBegin(GL_QUADS);
 
   double timeIndex = g_gameTimer.GetAccurateTime();
@@ -984,7 +981,7 @@ void SpawnPoint::RenderPorts()
 {
   glDisable(GL_CULL_FACE);
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/starburst.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\starburst.bmp"));
   glDepthMask(false);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -1092,7 +1089,6 @@ void SpawnPoint::ListSoundEvents(LList<char*>* _list)
   _list->PutData("TurnOff");
 }
 
-// ============================================================================
 
 double SpawnPopulationLock::s_overpopulationTimer = 0.0;
 int SpawnPopulationLock::s_overpopulation = 0;

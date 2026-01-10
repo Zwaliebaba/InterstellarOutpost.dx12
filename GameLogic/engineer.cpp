@@ -835,7 +835,7 @@ bool Engineer::AdvanceToControlTower ()
 
 				if( !doneAlready )
 				{
-					g_app->m_markerSystem->RegisterMarker_Fixed( -1, ct->m_pos, "icons/icon_engineer.bmp", false );
+					g_app->m_markerSystem->RegisterMarker_Fixed( -1, ct->m_pos, "icons\\icon_engineer.bmp", false );
 					s_buildingIds.PutData(new UnicodeString(tempS));
 				}
 			}
@@ -1269,7 +1269,7 @@ void Engineer::Render( double predictionTime )
             glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
             glDepthMask     ( false );
             glEnable        ( GL_TEXTURE_2D );
-            glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laser.bmp" ) );
+            glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\laser.bmp" ) );
 
             glBegin( GL_QUADS );
                 glTexCoord2i(0,0);      glVertex3dv( (fromPos - rightAngle).GetData() );

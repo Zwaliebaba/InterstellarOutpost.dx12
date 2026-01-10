@@ -2165,7 +2165,6 @@ bool AI::HasDarwinianPowerup()
   return false;
 }
 
-// ============================================================================
 
 AITarget::AITarget()
   : Building(),
@@ -2929,7 +2928,6 @@ void AITarget::Write(TextWriter* _out)
   _out->printf("%-6d", m_checkCliffs);
 }
 
-// ============================================================================
 
 AISpawnPoint::AISpawnPoint()
   : Building(),

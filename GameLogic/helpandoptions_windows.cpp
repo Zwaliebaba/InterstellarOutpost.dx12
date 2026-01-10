@@ -1,58 +1,16 @@
 #include "pch.h"
-#include "preferences.h"
 #include "text_renderer.h"
-#include "window_manager.h"
 #include "resource.h"
 #include "language_table.h"
-
 #include "helpandoptions_windows.h"
 #include "scrollbar.h"
-
 #include "game_menu.h"
 #include "multiwinia.h"
-
 #include "ImageButton.h"
-#include "AuthPageButton.h"
-
 #include "crate.h"
-
 #include "unicode_string.h"
 
 #define MAX_PAGES 5
-
-class HelpWindowButton : public GameMenuButton
-{
-public:
-    HelpWindowButton()
-    :   GameMenuButton( UnicodeString() )
-    {
-    }
-
-    void MouseUp()
-	{	
-		g_app->m_soundSystem->TriggerOtherEvent( NULL, "MenuSelect", SoundSourceBlueprint::TypeMultiwiniaInterface );
-        g_app->m_renderer->InitialiseMenuTransition(1.0f, 1);
-        EclRegisterWindow( new SelectHelpWindow(), m_parent );
-        g_app->m_doMenuTransition = true;
-    }
-};
-
-class CrateHelpWindowButton : public GameMenuButton
-{
-public:
-    CrateHelpWindowButton()
-    :   GameMenuButton( UnicodeString() )
-    {
-    }
-
-    void MouseUp()
-    {
-        g_app->m_soundSystem->TriggerOtherEvent( NULL, "MenuSelect", SoundSourceBlueprint::TypeMultiwiniaInterface );
-        g_app->m_renderer->InitialiseMenuTransition(1.0f, 1);
-        EclRegisterWindow( new CrateHelpWindow(), m_parent );
-        g_app->m_doMenuTransition = true;
-    }
-};
 
 class OptionsButton : public GameMenuButton
 {
@@ -202,36 +160,11 @@ void HelpAndOptionsWindow::Create()
     RegisterButton( title );
     yPos += buttonH*1.3f;
 
-    GameMenuButton *button = new HelpWindowButton();
-    button->SetShortProperties( "multiwinia_menu_help", buttonX, yPos+=buttonH+gap, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_howtoplay") );
-    button->m_fontSize = fontSize;
-    RegisterButton( button );
-    m_buttonOrder.PutData( button );
-
-#ifdef INCLUDE_CRATE_HELP_WINDOW
-	button = new CrateHelpWindowButton();
-    button->SetShortProperties( "multiwinia_menu_cratehelp", buttonX, yPos+=buttonH+gap, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_cratehelp") );
-    button->m_fontSize = fontSize;
-    RegisterButton( button );
-    m_buttonOrder.PutData( button );
-#endif
-
-    button = new OptionsButton();
+    GameMenuButton* button = new OptionsButton();
     button->SetShortProperties( "multiwinia_menu_options", buttonX, yPos+=buttonH+gap, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_settings") );
     button->m_fontSize = fontSize;
     RegisterButton( button );
     m_buttonOrder.PutData( button );
-
-#if !defined MULTIWINIA_DEMOONLY 
-    if( g_app->m_atMainMenu)
-    {
-		AuthPageButton *auth = new AuthPageButton();
-		auth->SetShortProperties( "auth_page_button", buttonX, yPos+=buttonH+gap, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_auth") );
-		auth->m_fontSize = fontSize;
-		RegisterButton( auth );
-		m_buttonOrder.PutData( auth );
-    }
-#endif
 
     yPos = leftY + leftH - buttonH * 2;
 
@@ -470,7 +403,7 @@ CrateButton::CrateButton( int _crateNumber, float _fontSize )
 
 	Crate c;
 
-	sprintf( m_textureName, "icons/icon_%s.bmp", c.GetName(_crateNumber) );
+	sprintf( m_textureName, "icons\\icon_%s.bmp", c.GetName(_crateNumber) );
 	if( !g_app->m_resource->DoesTextureExist(m_textureName) )
 	{
 		m_noTexture = true;
@@ -571,7 +504,7 @@ void CrateButton::Render(int realX, int realY, bool highlighted, bool clicked)
 	float delta = m_imageWidth/2;
 
 	glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons/icon_shadow.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons\\icon_shadow.bmp" ) );
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR );
     glDepthMask     ( false );
     glColor4f( 0.9f, 0.9f, 0.9f, 0.0f );
@@ -589,7 +522,7 @@ void CrateButton::Render(int realX, int realY, bool highlighted, bool clicked)
 
 	// Crate icon
 	glEnable        ( GL_TEXTURE_2D );
-	glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture(m_noTexture ? "icons/icon_template.bmp" : m_textureName) );
+	glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture(m_noTexture ? "icons\\icon_template.bmp" : m_textureName) );
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
 
 	glColor4f   ( 1.0f, 1.0f, 1.0f, 1.0f );

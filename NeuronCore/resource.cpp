@@ -9,7 +9,6 @@
 #include "text_stream_readers.h"
 #include "preferences.h"
 #include "runnable.h"
-#include "sphere_renderer.h"
 #include "unicode_text_stream_reader.h"
 #include "sound_stream_decoder.h"
 #include "soundsystem.h"

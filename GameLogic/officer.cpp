@@ -212,7 +212,7 @@ void Officer::RenderSpirit(const Vector3& _pos)
   glColor4ub(100, 250, 100, glowAlpha);
 
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/glow.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\glow.bmp"));
   glBegin(GL_QUADS);
   glTexCoord2i(0, 0);
   glVertex3dv((pos - g_app->m_camera->GetUp() * size).GetData());
@@ -306,18 +306,18 @@ void Officer::RenderFlag(double _predictionTime)
   char filename[256];
 
   if (m_orders == OrderNone)
-    sprintf(filename, "icons/banner_none.bmp");
+    sprintf(filename, "icons\\banner_none.bmp");
   else if (m_orders == OrderGoto)
-    sprintf(filename, "icons/banner_none.bmp");
+    sprintf(filename, "icons\\banner_none.bmp");
   else if (m_orders == OrderPrepareGoto)
-    sprintf(filename, "icons/banner_none.bmp");
+    sprintf(filename, "icons\\banner_none.bmp");
   else if (m_orders == OrderFollow && m_absorb)
-    sprintf(filename, "icons/banner_absorb.bmp");
+    sprintf(filename, "icons\\banner_absorb.bmp");
   else if (m_orders == OrderFollow && m_formation)
-    sprintf(filename, "icons/banner_formation.bmp");
+    sprintf(filename, "icons\\banner_formation.bmp");
   else
     if (m_orders == OrderFollow)
-      sprintf(filename, "icons/banner_follow.bmp");
+      sprintf(filename, "icons\\banner_follow.bmp");
 
   m_flag.SetTexture(g_app->m_resource->GetTexture(filename));
   //m_flag.SetPosition( flagPos );
@@ -335,7 +335,7 @@ void Officer::RenderFlag(double _predictionTime)
             if( IsFormationToggle( team->m_currentMousePos ) )
             {
                 m_flag.SetTarget( g_zeroVector );
-                sprintf( filename, "icons/banner_formation.bmp" );
+                sprintf( filename, "icons\\banner_formation.bmp" );
             }
             else
             {
@@ -1852,7 +1852,6 @@ char* Officer::LogState(char* _message)
 
 }
 
-// ============================================================================
 
 OfficerOrders::OfficerOrders()
   : WorldObject(),
@@ -1939,7 +1938,7 @@ void OfficerOrders::Render(double _time)
     glColor4f(1.0, 0.3, 1.0, alpha);
 
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/starburst.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\starburst.bmp"));
   glDisable(GL_DEPTH_TEST);
 
   glBegin(GL_QUADS);
@@ -1957,7 +1956,6 @@ void OfficerOrders::Render(double _time)
   glDisable(GL_TEXTURE_2D);
 }
 
-// ============================================================================
 
 MultiwiniaOfficerOrders::MultiwiniaOfficerOrders()
   : WorldObject(),
@@ -2079,7 +2077,7 @@ void MultiwiniaOfficerOrders::Render(double _time)
     glColor4f(1.0, 0.3, 1.0, alpha);
 
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/starburst.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\starburst.bmp"));
   //glDisable       ( GL_DEPTH_TEST );
 
   glBegin(GL_QUADS);
@@ -2147,7 +2145,6 @@ void MultiwiniaOfficerOrders::FollowRoute()
   }
 }
 
-// ============================================================================
 
 OfficerOrderTrail::OfficerOrderTrail()
   : WorldObject(),
@@ -2199,7 +2196,7 @@ void OfficerOrderTrail::Render(double _time)
   glColor4ubv(colour.GetData());
 
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/widearrow.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\widearrow.bmp"));
 
   glEnable(GL_BLEND);
   glDisable(GL_CULL_FACE);

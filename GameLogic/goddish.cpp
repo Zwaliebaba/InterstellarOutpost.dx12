@@ -81,7 +81,7 @@ void GodDish::RenderAlphas( double _predictionTime )
     glEnable        ( GL_BLEND );
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/cloudyglow.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\cloudyglow.bmp" ) );
     glDisable       ( GL_DEPTH_TEST );
 
     double timeIndex = g_gameTime * 2;
@@ -124,7 +124,7 @@ void GodDish::RenderAlphas( double _predictionTime )
     //
     // Central starbursts
 
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/starburst.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\starburst.bmp" ) );
 
     int numStars = 10;
     if( buildingDetail == 2 ) numStars = 5;

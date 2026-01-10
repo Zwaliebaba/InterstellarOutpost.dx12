@@ -649,7 +649,7 @@ void Tree::RenderAlphas(double _predictionTime)
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTextureWithAlpha("textures/tree.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTextureWithAlpha("textures\\tree.bmp"));
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glDisable(GL_CULL_FACE);
@@ -774,7 +774,7 @@ void Tree::RenderAlphas(double _predictionTime)
 
   if (m_onFire > 0.0)
   {
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/starburst.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\starburst.bmp"));
     glDisable(GL_DEPTH_TEST);
 
     double alpha = 0.5 * actualHeight / m_height;

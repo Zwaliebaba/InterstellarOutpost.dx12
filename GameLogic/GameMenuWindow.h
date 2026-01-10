@@ -1,10 +1,10 @@
 #ifndef __GAMEMENUWINDOW__
 #define __GAMEMENUWINDOW__
-// ============================================================================
 // Game Menu Window
 
 #include "game_menu.h"
 #include "app.h"
+#include "networkvalue.h"
 #include "server.h"
 
 class GameServerButton;
@@ -141,20 +141,12 @@ class GameMenuWindow : public DarwiniaWindow
       PageGameConnecting = 7,
       PageResearch = 8,
       PageMapSelect = 9,
-      PageHelpMenu = 10,
-      PageHelp = 11,
       PageAdvancedOptions = 12,
       PageXBLASignIn = 14,
-      PageDemoSinglePlayer = 15,
-      PageBuyMeNow = 16,
-      PageLeaderBoardSelect = 17,
-      PageLeaderBoard = 18,
-      PageAuthKeyEntry = 23,
       PagePlayerOptions = 24,
       PageSearchFilters = 25,
       PageUpdateAvailable = 31,
       PageCredits = 32,
-      PageTutorials = 33,
       PageError = 34,
       PageAchievements = 35,
       PageEnterPassword = 36,
@@ -197,17 +189,9 @@ class GameMenuWindow : public DarwiniaWindow
     void Update() override;
     void Render(bool _hasFocus) override;
 
-#ifdef TESTBED_ENABLED
-    void UpdateTestBed(); void ReadTestBedConfig(); void AdvanceTestBedGame();
-#endif
-
     static void PreloadTextures();
 
     void SetupNewPage(int _page);
-
-    void PasteFromClipboard();
-    bool CheckNewAuthKeyStatus();
-    bool ShowAuthBox();
 
     void CreateErrorDialogue(UnicodeString _error, int _backPage = PageMain);
 
@@ -228,8 +212,6 @@ class GameMenuWindow : public DarwiniaWindow
     void UpdateJoinGamePage();
     void UpdateAchievementsPage();
     void UpdateGameConnectingPage();
-    //void UpdateLeaderboardPage();
-    void UpdatePageSinglePlayer();
     void UpdateMultiplayerPage();
     void UpdateQuickMatchGamePage();
     void UpdateAdvancedOptionsPage();
@@ -247,20 +229,12 @@ class GameMenuWindow : public DarwiniaWindow
     void SetupGameConnectingPage();
     void SetupResearchPage();
     void SetupMapSelectPage();
-    void SetupHelpMenuPage();
-    void SetupHelpPage();
     void SetupAdvancedOptionsPage();
-    void SetupSPDemoPage();
-    void SetupBuyMePage();
-    void SetupLeaderboardPage();
-    void SetupLeaderBoardSelectPage();
     void SetupQuickMatchGamePage();
-    void SetupAuthKeyPage();
     void SetupPlayerOptionsPage();
     void SetupFiltersPage();
     void SetupUpdatePage();
     void SetupCreditsPage();
-    void SetupTutorialPage();
     void SetupErrorPage();
     void SetupPageEnterPassword();
 

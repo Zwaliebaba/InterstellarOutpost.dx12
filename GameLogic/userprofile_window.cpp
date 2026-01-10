@@ -202,7 +202,6 @@ void UserProfileWindow::Create()
 
 }
 
-// ============================================================================
 
 char NewUserProfileWindow::s_profileName[256] = "NewUser";
 

@@ -135,7 +135,7 @@ void ControlStation::RenderPorts()
 {    
     glDisable       ( GL_CULL_FACE );
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/starburst.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\starburst.bmp" ) );
     glDepthMask     ( false );
     glEnable        ( GL_BLEND );
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );

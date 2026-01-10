@@ -126,7 +126,7 @@ void PowerBuilding::RenderAlphas ( double _predictionTime )
         glEnable    ( GL_BLEND );
         glDepthMask ( false );
         glEnable        ( GL_TEXTURE_2D );
-        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laser.bmp" ) );
+        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\laser.bmp" ) );
         glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
         glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 
@@ -163,7 +163,7 @@ void PowerBuilding::RenderAlphas ( double _predictionTime )
         // Render any surges
 
         glEnable        ( GL_TEXTURE_2D );
-        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/starburst.bmp" ) );
+        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\starburst.bmp" ) );
 
         double surgeSize = 20.0;
         Vector3 camUp = g_app->m_camera->GetUp() * surgeSize;
@@ -773,7 +773,7 @@ void SolarPanel::RenderPorts()
 {
     glDisable       ( GL_CULL_FACE );
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/starburst.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\starburst.bmp" ) );
     glDepthMask     ( false );
     glEnable        ( GL_BLEND );
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
@@ -853,7 +853,7 @@ void SolarPanel::RenderAlphas( double _predictionTime )
 
         glEnable        ( GL_BLEND );
         glEnable        ( GL_TEXTURE_2D );
-        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/glow.bmp" ) );
+        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\glow.bmp" ) );
         glDepthMask     ( false );
         glDisable       ( GL_CULL_FACE );
 

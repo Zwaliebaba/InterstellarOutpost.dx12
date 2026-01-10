@@ -117,7 +117,7 @@ void DustBall::Render( double _predictionTime )
     double size = m_size;
 
     glColor4f(0.6, 0.46, 0.12, 0.2 );
-    Render3DSprite( predictedPos, size, size, g_app->m_resource->GetTexture( "textures/cloudyglow.bmp" ) );
+    Render3DSprite( predictedPos, size, size, g_app->m_resource->GetTexture( "textures\\cloudyglow.bmp" ) );
     /*Vector3 pos = s_vortexPos;
     pos.y = 0.0;
     for( int i = 0; i < 10; ++i )

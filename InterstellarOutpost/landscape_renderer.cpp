@@ -558,7 +558,7 @@ void LandscapeRenderer::RenderOverlaySlow()
     if( !g_app->m_negativeRenderer )    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     else								glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
 
-	int outlineTextureId  = g_app->m_resource->GetTexture("textures/triangleOutline.bmp", true, false);
+	int outlineTextureId  = g_app->m_resource->GetTexture("textures\\triangleOutline.bmp", true, false);
     glBindTexture	(GL_TEXTURE_2D, outlineTextureId);
 	glTexParameteri	(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     glTexParameteri	(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );

@@ -337,7 +337,7 @@ void Incubator::RenderAlphas( double _predictionTime )
     // Render incoming and outgoing effects
 
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laser.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\laser.bmp" ) );
 
     Matrix34 mat( m_front, g_upVector, m_pos );
     Vector3 entrances[3];

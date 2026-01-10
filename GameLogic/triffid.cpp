@@ -452,7 +452,6 @@ void Triffid::ListSoundEvents(LList<char*>* _list)
   _list->PutData("Burn");
 }
 
-// ============================================================================
 
 TriffidEgg::TriffidEgg()
   : Entity(),

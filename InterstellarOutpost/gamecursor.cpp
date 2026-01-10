@@ -50,39 +50,39 @@ GameCursor::GameCursor()
 	m_validPlacementOpportunity(false),
 	m_moveableEntitySelected(false)
 {
-    m_cursorStandard = new MouseCursor( "icons/mouse_game.bmp" );
+    m_cursorStandard = new MouseCursor( "icons\\mouse_game.bmp" );
 	m_cursorStandard->SetHotspot(0.055f, 0.070f);
     m_cursorStandard->SetSize(35.0f);
 
-    m_cursorPlacement = new MouseCursor( "icons/mouse_placement.bmp" );
+    m_cursorPlacement = new MouseCursor( "icons\\mouse_placement.bmp" );
 	m_cursorPlacement->SetHotspot(0.5f, 0.5f);
 	m_cursorPlacement->SetSize(40.0f);
 
-    m_cursorDisabled = new MouseCursor( "icons/mouse_disabled.bmp" );
+    m_cursorDisabled = new MouseCursor( "icons\\mouse_disabled.bmp" );
 	m_cursorDisabled->SetHotspot(0.5f, 0.5f);
 	m_cursorDisabled->SetSize(60.0f);
     m_cursorDisabled->SetColour(RGBAColour(255,0,0,255) );
 
-    m_cursorMoveHere = new MouseCursor( "icons/mouse_movehere.bmp" );
+    m_cursorMoveHere = new MouseCursor( "icons\\mouse_movehere.bmp" );
     m_cursorMoveHere->SetHotspot( 0.5f, 0.5f);
     m_cursorMoveHere->SetSize(30.0f);
     m_cursorMoveHere->SetAnimation( true );
     m_cursorMoveHere->SetColour(RGBAColour(255,255,150,255) );
 
-    m_cursorHighlight = new MouseCursor( "icons/mouse_highlight.bmp" );
+    m_cursorHighlight = new MouseCursor( "icons\\mouse_highlight.bmp" );
     m_cursorHighlight->SetHotspot( 0.5f, 0.5f );
     m_cursorHighlight->SetAnimation( true );
 
-    m_cursorTurretTarget = new MouseCursor( "icons/mouse_turrettarget.bmp" );
+    m_cursorTurretTarget = new MouseCursor( "icons\\mouse_turrettarget.bmp" );
     m_cursorTurretTarget->SetHotspot( 0.5f, 0.5f );
     m_cursorTurretTarget->SetColour(RGBAColour(255,255,255,255) );
     m_cursorTurretTarget->m_additive = false;
     m_cursorTurretTarget->SetShadowed(false);
 
-    m_cursorSelection = new MouseCursor( "icons/mouse_selection.bmp" );
+    m_cursorSelection = new MouseCursor( "icons\\mouse_selection.bmp" );
     m_cursorSelection->SetHotspot( 0.5f, 0.5f );
 
-    m_cursorEnter = new MouseCursor( "icons/mouse_enter.bmp" );
+    m_cursorEnter = new MouseCursor( "icons\\mouse_enter.bmp" );
     m_cursorEnter->SetHotspot( 0.5f, 1.0f );
     m_cursorEnter->SetAnimation( true );
     m_cursorEnter->SetColour(RGBAColour(255,255,255,255) );
@@ -93,7 +93,7 @@ GameCursor::GameCursor()
     //
     // Load selection arrow graphic
     
-	sprintf( m_selectionArrowFilename, "icons/selectionarrow.bmp" );
+	sprintf( m_selectionArrowFilename, "icons\\selectionarrow.bmp" );
 
     BinaryReader *binReader = g_app->m_resource->GetBinaryReader( m_selectionArrowFilename );
 	ASSERT_TEXT(binReader, "Failed to open mouse cursor resource %s", m_selectionArrowFilename ); 
@@ -452,7 +452,7 @@ void GameCursor::RenderSelectedUnitIcon( Entity *entity )
     switch( entity->m_type )
     {
         case Entity::TypeOfficer:
-            RenderSelectedIcon( "icons/icon_officer.bmp" );
+            RenderSelectedIcon( "icons\\icon_officer.bmp" );
             break;
     }
 }
@@ -485,7 +485,7 @@ void GameCursor::RenderSelectedTaskIcon ( Task *task )
 {
 	if( g_app->m_multiwinia->GameOver() ) return;
     char bmpFilename[256];
-    sprintf( bmpFilename, "icons/icon_%s.bmp", Task::GetTaskName(task->m_type) );
+    sprintf( bmpFilename, "icons\\icon_%s.bmp", Task::GetTaskName(task->m_type) );
 
     if( task->m_state != Task::StateStarted ||
         fmodf( GetHighResTime(), 0.4f ) < 0.25f )
@@ -519,7 +519,7 @@ void GameCursor::RenderSelectedTaskIcon ( Task *task )
             glColor4f( 1.0f, 0.0f, 0.0f, 1.0f );
             glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
             glDepthMask(false);
-            RenderSprite( "icons/mouse_disabled.bmp", 1.2f );
+            RenderSprite( "icons\\mouse_disabled.bmp", 1.2f );
             glBlendFunc( GL_SRC_ALPHA, GL_ONE );
         }
 
@@ -751,7 +751,7 @@ void GameCursor::RenderTryingToEnterEffect()
 void GameCursor::RenderSelectedDGsIcon( int count )
 {    
 	if( g_app->m_multiwinia->GameOver() ) return;
-    RenderSelectedIcon( "icons/icon_darwinian.bmp" );
+    RenderSelectedIcon( "icons\\icon_darwinian.bmp" );
 
     float centreX, centreY;
     CalculateCentreOfSelectionIcon( centreX, centreY );
@@ -776,7 +776,7 @@ void GameCursor::RenderSelectedDGsIcon( int count )
 	{
 		glColor4f( 1.0f, 0.0f, 0.0f, 1.0f );
         glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-        RenderSprite( "icons/mouse_disabled.bmp", 1.2f );
+        RenderSprite( "icons\\mouse_disabled.bmp", 1.2f );
         glBlendFunc( GL_SRC_ALPHA, GL_ONE );
 	}
 }
@@ -1238,7 +1238,7 @@ void GameCursor::RenderFormation( Vector3 const &pos, Vector3 const &front )
 
     glDisable       ( GL_CULL_FACE );
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/particle.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\particle.bmp" ) );
     glEnable        ( GL_BLEND );
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
@@ -2059,7 +2059,7 @@ void GameCursor::RenderOffscreenArrow( Vector3 &fromPos, Vector3 &toPos, float a
 
     glDisable       ( GL_CULL_FACE );
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/particle.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\particle.bmp" ) );
     glEnable        ( GL_BLEND );
 
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );

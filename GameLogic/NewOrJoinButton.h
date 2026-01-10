@@ -3,24 +3,17 @@
 
 class NewOrJoinButton : public GameMenuButton
 {
-public:
-	NewOrJoinButton( char *_iconName )
-    :   GameMenuButton( _iconName )
+  public:
+    NewOrJoinButton(const char* _iconName)
+      : GameMenuButton(_iconName) {}
+
+    void MouseUp() override
     {
-    }
+      GameMenuButton::MouseUp();
 
-    void MouseUp()
-    {
-#if defined(MULTIPLAYER_DISABLED)
-        if( m_inactive ) return;
-#endif
+      static_cast<GameMenuWindow*>(m_parent)->m_newPage = GameMenuWindow::PageNewOrJoin;
 
-        GameMenuButton::MouseUp();
-
-        if( m_inactive ) ((GameMenuWindow *) m_parent)->m_newPage = GameMenuWindow::PageBuyMeNow;
-        else ((GameMenuWindow *) m_parent)->m_newPage = GameMenuWindow::PageNewOrJoin;
-
-		LockController();
+      LockController();
     }
 };
 

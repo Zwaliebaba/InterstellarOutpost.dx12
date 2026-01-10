@@ -39,10 +39,6 @@ double Log2(double x);
 // fractional distance along the route. Used in the camera MoveToTarget routine.
 double RampUpAndDown(double _startTime, double _duration, double _timeNow);
 
-// nearestPowerOfTwo used for backwards compat. with older g-cards that don't
-// support non-power-of-two textures.
-bool RequirePowerOfTwoTextures();
-bool RequireSquareTextures();
 unsigned nearestPowerOfTwo( unsigned _x );
 
 

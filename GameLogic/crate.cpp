@@ -887,7 +887,7 @@ void Crate::RenderAlphasOnGround(double _predictionTime)
 void Crate::RenderBubble(double _predictionTime)
 {
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/bubble.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\bubble.bmp"));
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glEnable(GL_BLEND);
@@ -1008,7 +1008,7 @@ void Crate::RenderGlow(double _predictionTime)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   glEnable(GL_TEXTURE_2D);
   glDisable(GL_DEPTH_TEST);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/starburst.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\starburst.bmp"));
   glBegin(GL_QUADS);
 
   int buildingDetail = g_prefsManager->GetInt("RenderBuildingDetail", 1);
@@ -1055,7 +1055,7 @@ void Crate::RenderGlow(double _predictionTime)
   glEnable(GL_DEPTH_TEST);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/cloudyglow.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\cloudyglow.bmp"));
 
   int maxBlobs = 20;
   if (buildingDetail == 2)
@@ -1137,7 +1137,7 @@ void Crate::RenderGroundMarker(double _predictionTime)
   char filename[256];
   char shadow[256];
 
-  sprintf(filename, "icons/target.bmp");
+  sprintf(filename, "icons\\target.bmp");
   sprintf(shadow, "shadow_%s", filename);
 
   if (!g_app->m_resource->DoesTextureExist(shadow))
@@ -1552,7 +1552,7 @@ WorldObjectId Crate::RunAirStrike(const Vector3& _pos, int _teamId, bool _specia
     }
   }
   g_app->m_location->SetCurrentMessage(msg, _teamId);
-  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons/icon_airstrike.bmp");
+  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons\\icon_airstrike.bmp");
 
   TriggerSoundEvent(CrateRewardAirstrike, _pos, _teamId);
 
@@ -1602,7 +1602,7 @@ void Crate::RunNuke(const Vector3& _pos, int _teamId)
   }
 
   g_app->m_location->SetCurrentMessage(msg, _teamId);
-  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons/icon_nuke.bmp");
+  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons\\icon_nuke.bmp");
 
   TriggerSoundEvent(CrateRewardNuke, _pos, _teamId);
 #endif
@@ -1631,7 +1631,7 @@ void Crate::RunSubversion(const Vector3& _pos, int _teamId, int _taskId)
   msg.ReplaceStringFlag('T', team->GetTeamName());
   //sprintf( msg, "%s %s", team->GetTeamName(), LANGUAGEPHRASE("crate_message_run_subversion") );
   g_app->m_location->SetCurrentMessage(msg, _teamId);
-  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons/icon_subversion.bmp");
+  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons\\icon_subversion.bmp");
 
   TriggerSoundEvent(CrateRewardSubversion, _pos, _teamId);
 #endif
@@ -1659,7 +1659,7 @@ void Crate::RunBooster(const Vector3& _pos, int _teamId, int _taskId)
   msg.ReplaceStringFlag('T', team->GetTeamName());
   //sprintf( msg, "%s %s", team->GetTeamName(), LANGUAGEPHRASE("crate_message_run_personalshield") );
   g_app->m_location->SetCurrentMessage(msg, _teamId);
-  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons/icon_personalshield.bmp");
+  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons\\icon_personalshield.bmp");
 
   TriggerSoundEvent(CrateRewardBooster, _pos, _teamId);
 }
@@ -1687,7 +1687,7 @@ void Crate::RunHotFeet(const Vector3& _pos, int _teamId, int _taskId)
   msg.ReplaceStringFlag('T', team->GetTeamName());
   //sprintf( msg, "%s %s", team->GetTeamName(), LANGUAGEPHRASE("crate_message_run_hotfeet") );
   g_app->m_location->SetCurrentMessage(msg, _teamId);
-  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons/icon_hotfeet.bmp");
+  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons\\icon_hotfeet.bmp");
 
   TriggerSoundEvent(CrateRewardHotFeet, _pos, _teamId);
 #endif
@@ -1711,7 +1711,7 @@ WorldObjectId Crate::RunGunTurret(const Vector3& _pos, int _teamId, int _turretT
 
   //if( _teamId != g_app->m_globalWorld->m_myTeamId )
   {
-    g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons/icon_gunturret.bmp");
+    g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons\\icon_gunturret.bmp");
   }
 
   Team* team = g_app->m_location->m_teams[_teamId];
@@ -1744,7 +1744,7 @@ void Crate::RunInfection(const Vector3& _pos, int _teamId)
     infection->m_id.GenerateUniqueId();
   }
 
-  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons/icon_infection.bmp");
+  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons\\icon_infection.bmp");
   g_app->m_location->SetCurrentMessage(LANGUAGEPHRASE("crate_message_auto_infection"), _teamId);
 
   TriggerSoundEvent(CrateRewardSpam, _pos, _teamId);
@@ -1763,7 +1763,7 @@ void Crate::RunMagicalForest(const Vector3& _pos, int _teamId)
 
   g_app->m_location->SetCurrentMessage(msg, _teamId);
 
-  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons/icon_magicalforest.bmp");
+  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons\\icon_magicalforest.bmp");
 
   TriggerSoundEvent(CrateRewardForest, _pos, _teamId);
 }
@@ -1775,7 +1775,7 @@ void Crate::RunDarkForest(const Vector3& _pos, int _teamId)
 
   //if( _teamId != g_app->m_globalWorld->m_myTeamId )
   {
-    g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons/icon_darkforest.bmp");
+    g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons\\icon_darkforest.bmp");
   }
 
   Team* team = g_app->m_location->m_teams[_teamId];
@@ -1835,7 +1835,7 @@ void Crate::RunAntNest(const Vector3& _pos, int _teamId)
 
   //if( _teamId != g_app->m_globalWorld->m_myTeamId )
   {
-    g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons/icon_antnest.bmp");
+    g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons\\icon_antnest.bmp");
   }
 
   Team* team = g_app->m_location->m_teams[_teamId];
@@ -1874,7 +1874,7 @@ void Crate::RunPlague(const Vector3& _pos, int _teamId)
       static_cast<Darwinian*>(entity)->Infect();
   }
 
-  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons/icon_plague.bmp");
+  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons\\icon_plague.bmp");
   g_app->m_location->SetCurrentMessage(LANGUAGEPHRASE("crate_message_auto_plague"), _teamId);
 
   TriggerSoundEvent(CrateRewardPlague, _pos, _teamId);
@@ -1918,7 +1918,7 @@ void Crate::RunEggs(const Vector3& _pos, int _teamId)
 
   //if( _teamId != g_app->m_globalWorld->m_myTeamId )
   {
-    g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons/icon_egg.bmp");
+    g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons\\icon_egg.bmp");
   }
 
   Team* team = g_app->m_location->m_teams[_teamId];
@@ -1970,7 +1970,7 @@ void Crate::RunMeteorShower(const Vector3& _pos, int _teamId)
 
   //if( _teamId != g_app->m_globalWorld->m_myTeamId )
   {
-    g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons/icon_meteorshower.bmp");
+    g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons\\icon_meteorshower.bmp");
   }
 
   Team* team = g_app->m_location->m_teams[_teamId];
@@ -2009,7 +2009,7 @@ void Crate::RunDarwinians(const Vector3& _pos, int _teamId)
   }
   g_app->m_location->SetCurrentMessage(msg, _teamId);
 
-  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons/icon_darwinian.bmp");
+  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons\\icon_darwinian.bmp");
 
   TriggerSoundEvent(CrateRewardDarwinians, _pos, _teamId);
 }
@@ -2025,7 +2025,7 @@ void Crate::RunRandomiser(const Vector3& _pos, int _teamId)
   GetNameTranslated(CrateRewardRandomiser, currentMessage);
   g_app->m_location->SetCurrentMessage(currentMessage, _teamId);
 
-  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons/icon_randomizer.bmp");
+  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons\\icon_randomizer.bmp");
 
   TriggerSoundEvent(CrateRewardRandomiser, _pos, _teamId);
 #endif
@@ -2189,7 +2189,7 @@ void Crate::RunRage(const Vector3& _pos, int _teamId, int _taskId)
   //sprintf( msg, "%s %s", team->GetTeamName(), LANGUAGEPHRASE("crate_message_rage") );
 
   g_app->m_location->SetCurrentMessage(msg, _teamId);
-  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons/icon_rage.bmp");
+  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons\\icon_rage.bmp");
 
   TriggerSoundEvent(CrateRewardRage, g_zeroVector, 255);
 }
@@ -2257,7 +2257,7 @@ void Crate::RunTriffids(const Vector3& _pos, int _teamId)
   msg = temp;
 
   g_app->m_location->SetCurrentMessage(msg);
-  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons/icon_triffid.bmp");
+  g_app->m_markerSystem->RegisterMarker_Fixed(_teamId, _pos, "icons\\icon_triffid.bmp");
 
   TriggerSoundEvent(CrateRewardTriffids, _pos, 255);
 #endif

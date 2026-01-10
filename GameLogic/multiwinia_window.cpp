@@ -337,7 +337,6 @@ void MultiwiniaWindow::Update()
 }
 
 
-// ============================================================================
 
 NewMapWindow::NewMapWindow()
 :   GameOptionsWindow("new_map"),

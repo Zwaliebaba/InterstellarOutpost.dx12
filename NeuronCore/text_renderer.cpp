@@ -157,7 +157,7 @@ void TextRenderer::BuildUnicodeArray()
   for (int i = 0; i < numFiles; i++)
   {
     const char* currentfilename = unicodefiles[i].c_str();
-    sprintf(bmpfilename, "textures/unicode/%s", currentfilename);
+    sprintf(bmpfilename, "textures\\unicode/%s", currentfilename);
 
     int textureId = g_app->m_resource->GetTexture(bmpfilename);
 

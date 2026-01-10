@@ -17,7 +17,6 @@
 #include "clienttoserver.h"
 #include "app.h"
 #include "gamecursor.h"
-#include "gesture.h"
 #include "global_world.h"
 #include "location.h"
 #include "renderer.h"
@@ -46,8 +45,6 @@
 #include "armour.h"
 #include "gunturret.h"
 
-// ============================================================================
-
 TaskManagerInterfaceMultiwinia::TaskManagerInterfaceMultiwinia()
   : m_screenW(800),
     m_screenH(600),
@@ -67,39 +64,7 @@ TaskManagerInterfaceMultiwinia::TaskManagerInterfaceMultiwinia()
   SetVisible(false);
 
   //
-  // Pre-load all the graphics we intend to use for these screens
-  // If we don't do this the interface screens are slow and sluggish first visit
-
-  for (int i = 0; i < GlobalResearch::NumResearchItems; ++i)
-  {
-    char iconFilename[256];
-    sprintf(iconFilename, "icons/icon_%s.bmp", GlobalResearch::GetTypeName(i));
-    if (g_app->m_resource->DoesTextureExist(iconFilename))
-      unsigned int texId = g_app->m_resource->GetTexture(iconFilename, true, false);
-
-    char gestureFilename[256];
-    sprintf(gestureFilename, "icons/gesture_%s.bmp", GlobalResearch::GetTypeName(i));
-    if (g_app->m_resource->DoesTextureExist(gestureFilename))
-      unsigned int texId = g_app->m_resource->GetTexture(gestureFilename, true, false);
-  }
-
-  g_app->m_resource->GetTexture("textures/interface_grey.bmp", true, false);
-  g_app->m_resource->GetTexture("textures/interface_red.bmp", true, false);
-  g_app->m_resource->GetTexture("icons/gestureguide.bmp", true, false);
-  g_app->m_resource->GetTexture("icons/icon_shadow.bmp", true, false);
-
-  //
   // Create keyboard shortcuts
-
-  //m_keyboardShortcuts.PutData( new KeyboardShortcut("NewTask", GlobalResearch::TypeSquad,     ControlIconsTaskManagerNewSquad) );
-  //m_keyboardShortcuts.PutData( new KeyboardShortcut("NewTask", GlobalResearch::TypeEngineer,  ControlIconsTaskManagerNewEngineer) );
-  //m_keyboardShortcuts.PutData( new KeyboardShortcut("NewTask", GlobalResearch::TypeOfficer,   ControlIconsTaskManagerNewOfficer) );
-  //m_keyboardShortcuts.PutData( new KeyboardShortcut("NewTask", GlobalResearch::TypeArmour,    ControlIconsTaskManagerNewArmour) );
-
-  //m_keyboardShortcuts.PutData( new KeyboardShortcut("SelectWeapon", GlobalResearch::TypeGrenade, ControlIconsTaskManagerSelectGrenade) );
-  //m_keyboardShortcuts.PutData( new KeyboardShortcut("SelectWeapon", GlobalResearch::TypeRocket, ControlIconsTaskManagerSelectRocket) );
-  //m_keyboardShortcuts.PutData( new KeyboardShortcut("SelectWeapon", GlobalResearch::TypeAirStrike, ControlIconsTaskManagerSelectAirStrike) );
-  //m_keyboardShortcuts.PutData( new KeyboardShortcut("SelectWeapon", GlobalResearch::TypeController, ControlIconsTaskManagerSelectController) );
 
   m_keyboardShortcuts.PutData(new KeyboardShortcut("SelectTask", 0, ControlTaskManagerSelectTask1));
   m_keyboardShortcuts.PutData(new KeyboardShortcut("SelectTask", 1, ControlTaskManagerSelectTask2));
@@ -638,10 +603,6 @@ void TaskManagerInterfaceMultiwinia::AdvanceScreenZones()
           ScreenZone* zone = m_screenZones[i];
           if (stricmp(zone->m_name, "SelectTask") == 0 && zone->m_data == taskIndex)
           {
-            if (g_inputManager->getInputMode() != INPUT_MODE_GAMEPAD)
-            {
-              //m_currentScreenZone = i;
-            }
             found = true;
             highlightOnly = true;
           }
@@ -649,8 +610,6 @@ void TaskManagerInterfaceMultiwinia::AdvanceScreenZones()
       }
     }
   }
-
-  //if( !found ) m_currentScreenZone = -1;
 
   //
   // Are we highlighting a task?
@@ -718,9 +677,6 @@ void TaskManagerInterfaceMultiwinia::RunScreenZone(const char* _name, int _data)
     if (task && task->m_state == Task::StateStarted && task->m_type != GlobalResearch::TypeOfficer)
     {
       SetCurrentMessage(MessageFailure, -1, 2.5f);
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-      g_app->m_sepulveda->Say("task_manager_targetfirst");
-#endif
       return;
     }
 
@@ -734,9 +690,6 @@ void TaskManagerInterfaceMultiwinia::RunScreenZone(const char* _name, int _data)
     else
     {
       SetCurrentMessage(MessageFailure, -1, 2.5f);
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-      g_app->m_sepulveda->Say("research_notyetavailable");
-#endif
     }
   }
 
@@ -752,8 +705,6 @@ void TaskManagerInterfaceMultiwinia::RunScreenZone(const char* _name, int _data)
       if (nextTask->m_startTimer <= 0.0f)
       {
         g_app->m_clientToServer->RequestSelectProgram(g_app->m_globalWorld->m_myTeamId, nextTask->m_id);
-        //g_app->m_location->GetMyTeam()->m_taskManager->m_currentTaskId = nextTask->m_id;  
-        //g_app->m_location->GetMyTeam()->m_taskManager->SelectTask( g_app->m_location->GetMyTeam()->m_taskManager->m_currentTaskId );    
 
         g_app->m_soundSystem->TriggerOtherEvent(NULL, "SelectTask", SoundSourceBlueprint::TypeInterface);
         if (g_inputManager->getInputMode() == INPUT_MODE_GAMEPAD)
@@ -790,9 +741,6 @@ void TaskManagerInterfaceMultiwinia::RunScreenZone(const char* _name, int _data)
     else
     {
       SetCurrentMessage(MessageFailure, -1, 2.5f);
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-      g_app->m_sepulveda->Say("research_notyetavailable");
-#endif
     }
   }
 
@@ -820,9 +768,6 @@ void TaskManagerInterfaceMultiwinia::RunScreenZone(const char* _name, int _data)
       gec = g_app->m_location->m_levelFile->m_secondaryObjectives[objectiveId];
     DEBUG_ASSERT(gec);
 
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-    g_app->m_sepulveda->ShutUp();
-#endif
     if (gec->m_cutScene)
       g_app->m_script->RunScript(gec->m_cutScene);
     else
@@ -842,30 +787,6 @@ bool TaskManagerInterfaceMultiwinia::ScreenZoneHighlighted(ScreenZone* _zone)
 
 void TaskManagerInterfaceMultiwinia::RenderScreenZones()
 {
-  /*
-      for( int i = 0; i < m_screenZones.Size(); ++i )
-      {
-          ScreenZone *zone = m_screenZones[i];
-          
-          float hX = zone->m_x;
-          float hY = zone->m_y;
-          float hW = zone->m_w;
-          float hH = zone->m_h;
-  
-          hX -= m_screenY * m_screenW;
-  
-          glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
-  
-          glBegin( GL_LINE_LOOP );
-              glVertex2f( hX, hY );
-              glVertex2f( hX+hW, hY );
-              glVertex2f( hX+hW, hY+hH );
-              glVertex2f( hX, hY+hH );
-          glEnd();           
-      }
-  
-  */
-
   if (m_screenZones.ValidIndex(m_currentScreenZone))
   {
     ScreenZone* zone = m_screenZones[m_currentScreenZone];
@@ -885,7 +806,7 @@ void TaskManagerInterfaceMultiwinia::RenderScreenZoneHighlight(float x, float y,
   if (g_app->Multiplayer())
   {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/mouse_highlight.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\mouse_highlight.bmp"));
     glEnable(GL_TEXTURE_2D);
 
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -918,7 +839,7 @@ void TaskManagerInterfaceMultiwinia::RenderScreenZoneHighlight(float x, float y,
     glEnd();
 
     glColor4f(1.0f, 1.0f, 0.3f, 1.0f);
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/mouse_selection.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\mouse_selection.bmp"));
     glEnable(GL_TEXTURE_2D);
 
     glBegin(GL_QUADS);
@@ -1009,16 +930,6 @@ void TaskManagerInterfaceMultiwinia::RenderTooltip()
     }
   }
 
-  //    else
-  //    {
-  //        //
-  //        // How do I escape the task manager
-  //
-  //        char *toolTip = LANGUAGEPHRASE("newcontrols_hidetaskmanager");
-  //        glColor4ub( 255, 255, 150, 50 );
-  //        g_gameFont.DrawText2D( 20, m_screenH - 12, 12, toolTip );
-  //    }
-
   g_gameFont.SetRenderShadow(false);
 
 }
@@ -1051,8 +962,6 @@ void TaskManagerInterfaceMultiwinia::RenderMessages()
 
     //
     // Lookup task name
-
-    //char *taskName = NULL;
 
     UnicodeString taskName;
 
@@ -1156,14 +1065,7 @@ void TaskManagerInterfaceMultiwinia::RenderTargetAreas()
     for (int i = 0; i < targetAreas->Size(); ++i)
     {
       TaskTargetArea* tta = targetAreas->GetPointer(i);
-
-      if (tta->m_stationary)
-      {
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-        //g_app->m_sepulveda->HighlightPosition( tta->m_centre, tta->m_radius, "TaskTargetAreas" );
-#endif
-      }
-
+      
       float angle = g_gameTime * 3.0f;
       Vector3 dif(tta->m_radius * sin(angle), 0.0f, tta->m_radius * cos(angle));
 
@@ -1178,52 +1080,6 @@ void TaskManagerInterfaceMultiwinia::RenderTargetAreas()
 
     delete targetAreas;
   }
-  else
-  {
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-    g_app->m_sepulveda->ClearHighlights("TaskTargetAreas");
-#endif
-  }
-
-}
-
-static void RenderIcon(const char* _foreground, const char* _background, int _x, int _y, float _iconSize, unsigned _alpha)
-{
-  // Render the shadow
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture(_background));
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
-  glDepthMask(false);
-  glColor4ub(_alpha, _alpha, _alpha, 0.0f);
-
-  glBegin(GL_QUADS);
-  glTexCoord2i(0, 1);
-  glVertex2f(_x, _y);
-  glTexCoord2i(1, 1);
-  glVertex2f(_x + _iconSize, _y);
-  glTexCoord2i(1, 0);
-  glVertex2f(_x + _iconSize, _y + _iconSize);
-  glTexCoord2i(0, 0);
-  glVertex2f(_x, _y + _iconSize);
-  glEnd();
-
-  // Render the icon
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture(_foreground));
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-  glColor4ub(255, 255, 255, _alpha);
-
-  glBegin(GL_QUADS);
-  glTexCoord2i(0, 1);
-  glVertex2f(_x, _y);
-  glTexCoord2i(1, 1);
-  glVertex2f(_x + _iconSize, _y);
-  glTexCoord2i(1, 0);
-  glVertex2f(_x + _iconSize, _y + _iconSize);
-  glTexCoord2i(0, 0);
-  glVertex2f(_x, _y + _iconSize);
-  glEnd();
 }
 
 void TaskManagerInterfaceMultiwinia::RenderRecentRunTask()
@@ -1253,7 +1109,7 @@ void TaskManagerInterfaceMultiwinia::RenderRecentRunTask()
         {
           m_showingRecentTask = true;
           char bmpFilename[256];
-          sprintf(bmpFilename, "icons/icon_%s.bmp", Task::GetTaskName(task->m_type));
+          sprintf(bmpFilename, "icons\\icon_%s.bmp", Task::GetTaskName(task->m_type));
           unsigned int texId = g_app->m_resource->GetTexture(bmpFilename);
 
           bool minimising = ts->m_timer < 0.0f;
@@ -1430,7 +1286,7 @@ void TaskManagerInterfaceMultiwinia::RenderRecentRunTask()
           // Shadow icon
 
           glEnable(GL_TEXTURE_2D);
-          glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/icon_shadow.bmp"));
+          glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\icon_shadow.bmp"));
           glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
           glDepthMask(false);
           glColor4f(shadowAlpha, shadowAlpha, shadowAlpha, 0.0f);
@@ -1449,7 +1305,7 @@ void TaskManagerInterfaceMultiwinia::RenderRecentRunTask()
           //
           // Colour fill
 
-          glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/marker_colour.bmp"));
+          glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\marker_colour.bmp"));
           glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
           RGBAColour colour = team->m_colour;
@@ -1475,7 +1331,7 @@ void TaskManagerInterfaceMultiwinia::RenderRecentRunTask()
           if (!minimising && ts->m_source == 0)
           {
             glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/icon_crate.bmp"));
+            glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\icon_crate.bmp"));
             glBlendFunc(GL_SRC_ALPHA, GL_ONE);
             glDepthMask(false);
             glColor4f(1.0f, 1.0f, 1.0f, 0.15f);
@@ -1643,9 +1499,9 @@ void TaskManagerInterfaceMultiwinia::RenderRunningTasks()
     Vector2 iconCentre(iconX - iconSize * 1.2f, iconY + iconSize / 2.0f - tabSize / 2.0f);
 
     if (g_inputManager->getInputMode() == INPUT_MODE_KEYBOARD)
-      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/button_tab.bmp"));
+      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\button_tab.bmp"));
     else
-      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/button_lb.bmp"));
+      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\button_lb.bmp"));
 
     glBegin(GL_QUADS);
     glTexCoord2i(0, 1);
@@ -1676,7 +1532,7 @@ void TaskManagerInterfaceMultiwinia::RenderRunningTasks()
   // Render shadows for available task slots
 
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTextureWithAlpha("icons/marker_shadow.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTextureWithAlpha("icons\\marker_shadow.bmp"));
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDepthMask(false);
   glColor4f(0.0f, 0.0f, 0.0f, iconAlpha * 0.9f);
@@ -1715,7 +1571,7 @@ void TaskManagerInterfaceMultiwinia::RenderRunningTasks()
   //
   // Render colour circles
 
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTextureWithAlpha("icons/marker_colour.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTextureWithAlpha("icons\\marker_colour.bmp"));
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
   for (int i = 0; i < numTasks; ++i)
@@ -1807,7 +1663,7 @@ void TaskManagerInterfaceMultiwinia::RenderRunningTasks()
   //    if( i != specialTaskId ) 
   //    {
   //        glEnable        ( GL_TEXTURE_2D );
-  //        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons/icon_crate.bmp" ) );
+  //        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons\\icon_crate.bmp" ) );
   //        glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
   //        glDepthMask     ( false );
   //        glColor4f       ( 1.0f, 1.0f, 1.0f, 0.1f );           
@@ -1851,24 +1707,24 @@ void TaskManagerInterfaceMultiwinia::RenderRunningTasks()
   {
     Task* task = NULL;
     char bmpFilename[256];
-    strcpy(bmpFilename, "icons/icon_notask.bmp");
+    strcpy(bmpFilename, "icons\\icon_notask.bmp");
 
     if (i != specialTaskId)
     {
       task = g_app->m_location->GetMyTeam()->m_taskManager->m_tasks[i];
       if (task)
-        sprintf(bmpFilename, "icons/icon_%s.bmp", Task::GetTaskName(task->m_type));
+        sprintf(bmpFilename, "icons\\icon_%s.bmp", Task::GetTaskName(task->m_type));
     }
     else
     {
       switch (specialTaskType)
       {
       case Entity::TypeDarwinian:
-        sprintf(bmpFilename, "icons/icon_darwinian.bmp");
+        sprintf(bmpFilename, "icons\\icon_darwinian.bmp");
         break;
 
       case Entity::TypeOfficer:
-        sprintf(bmpFilename, "icons/icon_officer.bmp");
+        sprintf(bmpFilename, "icons\\icon_officer.bmp");
         break;
       }
     }
@@ -1972,11 +1828,11 @@ void TaskManagerInterfaceMultiwinia::RenderRunningTasks()
 
       if (specialEntity)
         taskWorldPos = specialEntity->m_pos;
-      else
-        if (specialTaskType == Entity::TypeDarwinian)
-          taskWorldPos = myTeam->m_selectedDarwinianCentre;
+      else if (specialTaskType == Entity::TypeDarwinian)
+        taskWorldPos = myTeam->m_selectedDarwinianCentre;
 
-      if (taskWorldPos != g_zeroVector) { RenderCompass(iconCentre.x, iconCentre.y, taskWorldPos, true, compassSize); }
+      if (taskWorldPos != g_zeroVector)
+        RenderCompass(iconCentre.x, iconCentre.y, taskWorldPos, true, compassSize);
     }
 
     if (task)
@@ -1999,7 +1855,7 @@ void TaskManagerInterfaceMultiwinia::RenderRunningTasks()
         float deleteSize = iconSize * 0.4f;
 
         glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/icon_shadow.bmp"));
+        glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\icon_shadow.bmp"));
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
         glDepthMask(false);
         glColor4f(0.9f, 0.9f, 0.9f, 0.0f);
@@ -2015,7 +1871,7 @@ void TaskManagerInterfaceMultiwinia::RenderRunningTasks()
         glVertex2f(deleteX - deleteSize / 2.0f, deleteY + deleteSize / 2.0f);
         glEnd();
 
-        glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/icon_delete.bmp"));
+        glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\icon_delete.bmp"));
         glBlendFunc(GL_SRC_ALPHA, GL_ONE);
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -2192,12 +2048,12 @@ void TaskManagerInterfaceMultiwinia::RenderExtraTaskInfo(Task* task, Vector2 ico
 
         if (currentState == Armour::StateLoading)
         {
-          glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/arrows_load.bmp"));
+          glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\arrows_load.bmp"));
           draw = true;
         }
         else if (currentState == Armour::StateUnloading)
         {
-          glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/arrows_unload.bmp"));
+          glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\arrows_unload.bmp"));
           draw = true;
         }
 
@@ -2249,7 +2105,7 @@ void TaskManagerInterfaceMultiwinia::RenderExtraTaskInfo(Task* task, Vector2 ico
           if (moving)
           {
             glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/arrows_moving.bmp"));
+            glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\arrows_moving.bmp"));
             glDepthMask(false);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
             glColor4f(alpha, alpha, alpha, 0.0f);
@@ -2353,7 +2209,7 @@ void TaskManagerInterfaceMultiwinia::RenderCompass(float _screenX, float _screen
 
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTextureWithAlpha("icons/compass_shadow.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTextureWithAlpha("icons\\compass_shadow.bmp"));
 
   glBegin(GL_QUADS);
   glTexCoord2i(0, 1);
@@ -2366,7 +2222,7 @@ void TaskManagerInterfaceMultiwinia::RenderCompass(float _screenX, float _screen
   glVertex2dv((screenPos - compassRight * _size - compassVector * _size).GetData());
   glEnd();
 
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/compass.bmp", true, false));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\compass.bmp", true, false));
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   if (_selected)
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

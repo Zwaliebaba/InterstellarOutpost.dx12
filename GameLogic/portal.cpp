@@ -270,7 +270,7 @@ void Portal::RenderExplosionBuildup(double _predictionTime)
     glEnable        ( GL_BLEND );
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/cloudyglow.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\cloudyglow.bmp" ) );
     glDisable       ( GL_DEPTH_TEST );
 
     double timeIndex = g_gameTime * 2;
@@ -315,7 +315,7 @@ void Portal::RenderExplosionBuildup(double _predictionTime)
     //
     // Central starbursts
 
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/starburst.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\starburst.bmp" ) );
 
     int numStars = 10;
     if( buildingDetail == 2 ) numStars = 5;
@@ -382,7 +382,7 @@ void Portal::RenderBeam( Vector3 _from, Vector3 _to )
     Vector3 lineTheirPos = camToTheirPos ^ ( ourPos - theirPos );
     lineTheirPos.SetLength( 10.0 );
 
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/beam.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\beam.bmp" ) );
         
     for( int i = 0; i < 10; ++i )
     {
@@ -401,7 +401,7 @@ void Portal::RenderBeam( Vector3 _from, Vector3 _to )
         glEnd();
     }
 
-    glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/starburst.bmp" ) );
+    glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\starburst.bmp" ) );
 
     glColor4f( 0.1, 0.2, 0.8, 0.05);        
 

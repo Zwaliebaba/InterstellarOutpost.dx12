@@ -42,9 +42,9 @@ public:
             g_gameFont.DrawText2D( realX, realY+=gap, m_fontSize, LANGUAGEPHRASE("multiwinia_difficulty") );
             char imageName[512];
             
-            if( strcmp( maps[levelId]->m_difficulty, "basic" ) == 0 )         sprintf( imageName, "icons/menu_basic.bmp" );            
-            else if( strcmp( maps[levelId]->m_difficulty, "intermediate" ) == 0 )   sprintf( imageName, "icons/menu_intermediate.bmp" );                            
-            else if( strcmp( maps[levelId]->m_difficulty, "advanced" ) == 0 ) sprintf( imageName, "icons/menu_advanced.bmp" );
+            if( strcmp( maps[levelId]->m_difficulty, "basic" ) == 0 )         sprintf( imageName, "icons\\menu_basic.bmp" );            
+            else if( strcmp( maps[levelId]->m_difficulty, "intermediate" ) == 0 )   sprintf( imageName, "icons\\menu_intermediate.bmp" );                            
+            else if( strcmp( maps[levelId]->m_difficulty, "advanced" ) == 0 ) sprintf( imageName, "icons\\menu_advanced.bmp" );
             
 
             if( g_app->m_resource->DoesTextureExist( imageName ) )
@@ -78,7 +78,7 @@ public:
         {
             //g_gameFont.DrawText2D( realX + 400.0f, realY + 10.0f, m_fontSize, "%d Player", numPlayers );
             char imageName[512];
-            sprintf( imageName, "icons/menu_%dplayer.bmp", maps[levelId]->m_numPlayers );
+            sprintf( imageName, "icons\\menu_%dplayer.bmp", maps[levelId]->m_numPlayers );
             g_gameFont.DrawText2D( realX, realY+=gap, m_fontSize, LANGUAGEPHRASE("multiwinia_players") );
 
             if( g_app->m_resource->DoesTextureExist( imageName ) )

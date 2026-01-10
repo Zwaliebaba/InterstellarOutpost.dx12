@@ -2,11 +2,11 @@ MenuEscape                        = key esc down
 
 MenuLeft                          = XInput dpadleft repeat
 MenuRight                         = XInput dpadright repeat
-MenuLeft                          ~ icons/button_dpad_lr.bmp
+MenuLeft                          ~ icons\\button_dpad_lr.bmp
 MenuUp                            = XInput dpadup repeat
 MenuDown                          = XInput dpaddown repeat
 MenuActivate                      = XInput a down
-MenuActivate                      ~ icons/button_a.bmp
+MenuActivate                      ~ icons\\button_a.bmp
 MenuEscape                        = XInput start down
 MenuClose                         = XInput back down
 MenuClose                         = XInput b down
@@ -55,14 +55,14 @@ CameraDeZoom                      = key c pressed
 CameraZoom                        = mouse middle pressed
 
 CameraMove                        = XInput leftthumbstick position
-CameraMove                        ~ icons/button_la.bmp
+CameraMove                        ~ icons\\button_la.bmp
 CameraUp                          = XInput righttrigger position
-CameraUp                          ~ icons/button_la.bmp
+CameraUp                          ~ icons\\button_la.bmp
 CameraDown                        = XInput lefttrigger position
-CameraDown                        ~ icons/button_ra.bmp
+CameraDown                        ~ icons\\button_ra.bmp
 CameraZoom                        = XInput rightthumbstick pressed
 CameraRotate                      = XInput lefttrigger position
-CameraRotate                      ~ icons/button_lt_ra.bmp
+CameraRotate                      ~ icons\\button_lt_ra.bmp
 CameraRotateLeft                  = XInput lefttrigger position
 CameraRotateRight                 = XInput righttrigger position
 CameraFreeMovement				  = XInput rightthumbstick pressed
@@ -70,7 +70,7 @@ CameraFreeMovement				  = XInput rightthumbstick pressed
 TargetMove                        = mouse axes move
 TargetMoveSecondary               = XInput rightthumbstick position
 
-TargetMove                        ~ icons/button_ra.bmp
+TargetMove                        ~ icons\\button_ra.bmp
 TargetMoveZ                       = mouse wheel move
 CameraSpeedup                     = key shift pressed
 CameraSpeedup                     = XInput leftthumbstick pressed
@@ -99,23 +99,23 @@ OrderSpecialMove				  = XInput x down
 
 UnitSelect                        = mouse left down
 UnitSelect						  = XInput a down
-UnitSelect                        ~ icons/button_a.bmp
+UnitSelect                        ~ icons\\button_a.bmp
 UnitDeselect                      = key space down
 UnitDeselect                      = XInput b down
-UnitDeselect                      ~ icons/button_b.bmp
+UnitDeselect                      ~ icons\\button_b.bmp
 UnitDeselect					  = SpaceNav rightbutton down
 UnitCycleLeft                     = XInput leftbumper down
-UnitCycleLeft                     ~ icons/button_lb.bmp
+UnitCycleLeft                     ~ icons\\button_lb.bmp
 UnitCycleRight                    = XInput rightbumper down
 UnitCycleRight					  = SpaceNav leftbutton down
-UnitCycleRight                    ~ icons/button_rb.bmp
+UnitCycleRight                    ~ icons\\button_rb.bmp
 
 
 UnitCycleLeft                     = key openbrace down
 UnitCycleRight                    = key closebrace down
 UnitCycleRight				      = key tab down
 UnitSetTarget                     = XInput x pressed
-UnitSetTarget                     ~ icons/button_x.bmp
+UnitSetTarget                     ~ icons\\button_x.bmp
 UnitEndSetTarget                  = XInput x up
 
 # RTS-like
@@ -136,17 +136,17 @@ UnitPrimaryFireTarget             = XInput righttriggerb pressed
 UnitSecondaryFireTarget           = mouse left down && mouse right pressed
 UnitSecondaryFireTarget           = XInput lefttrigger down
 UnitMove                          = XInput leftthumbstick position
-UnitMove                          ~ icons/button_la.bmp
+UnitMove                          ~ icons\\button_la.bmp
 UnitMoveDirectionChange           = XInput leftthumbstick move
 UnitTargetDirected                = XInput rightthumbstick position
-UnitPrimaryFireDirected           ~ icons/button_ra.bmp
+UnitPrimaryFireDirected           ~ icons\\button_ra.bmp
 
 # Grenade fire just simply activate right trigger
 #UnitStartSecondaryFireDirected    = XInput righttrigger position
-UnitStartSecondaryFireDirected    ~ icons/button_rt.bmp
+UnitStartSecondaryFireDirected    ~ icons\\button_rt.bmp
 #UnitSecondaryFireDirected         = XInput righttrigger down
-UnitSecondaryFireDirected         ~ icons/button_lt.bmp
-UnitSecondaryAim                  ~ icons/button_rt_ra.bmp
+UnitSecondaryFireDirected         ~ icons\\button_lt.bmp
+UnitSecondaryAim                  ~ icons\\button_rt_ra.bmp
 
 UnitCreate                        = mouse left down
 UnitCreate                        = XInput a down
@@ -186,13 +186,13 @@ IconsTaskManagerHide              = key tab up
 IconsTaskManagerEndTask           = key c down
 IconsChatLog                      = key l pressed
 IconsTaskManagerEndTask           =  XInput y down
-IconsTaskManagerEndTask           ~ icons/button_y.bmp
+IconsTaskManagerEndTask           ~ icons\\button_y.bmp
 IconsTaskManagerDisplayDown       = XInput back down
 IconsTaskManagerDisplayPressed    = XInput back pressed
 IconsTaskManagerDisplayUp         = XInput back up
 IconsTaskManagerHide              = XInput back down
 IconsTaskManagerHide              = XInput b down
-IconsTaskManagerDisplay           ~ icons/button_x.bmp
+IconsTaskManagerDisplay           ~ icons\\button_x.bmp
 
 #IconsTaskManagerQuickUnit        = XInput x down
 #IconsTaskManagerQuickUnitCreate  = XInput a down

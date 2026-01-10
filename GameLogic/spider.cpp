@@ -1,48 +1,20 @@
 #include "pch.h"
-
-#include <float.h>
-
-#include "debug_render.h"
-#include "math_utils.h"
-#include "persisting_debug_render.h"
 #include "profiler.h"
 #include "resource.h"
 #include "shape.h"
-#include "vector2.h"
-#include "text_renderer.h"
 #include "random_number.h"
-
 #include "entity_leg.h"
 #include "spider.h"
-
 #include "soundsystem.h"
-
 #include "app.h"
 #include "deform.h"
 #include "entity_grid.h"
 #include "explosion.h"
 #include "location.h"
 #include "main.h"
-#include "particle_system.h"
 #include "renderer.h"
 #include "camera.h"
-
-//#define FOOT_MOVE_THRESHOLD	        5.0	// Lower means feet are lifted when less distant from their ideal pos, and thus smaller steps are taken
-//#define FOOT_EMERGENCY_THRESHOLD	12.0
-//#define FOOT_DAMAGE_RADIUS			20.0	// Size of region damaged by foot falls
-//#define FOOT_DAMAGE_STRENGTH		10.0
-//
-//#define HOVER_HEIGHT				3.0
-//
-//#define TURN_RATE					0.18
-//#define NORMAL_SPEED				300.0
-//#define ATTACK_SPEED				90.0
-//
-//#define MAX_PATH_HEIGHT				100.0
-//
-//#define ATTACK_SEARCH_MAX_RADIUS	250.0
-//#define ATTACK_SEARCH_MIN_RADIUS	100.0
-//#define ATTACK_PREAMBLE				5.0	// Minimum time between choosing a target and starting to charge (most of this time will normally be spent turning)
+#include "spirit.h"
 
 #define FOOT_MOVE_THRESHOLD	        5.0	// Lower means feet are lifted when less distant from their ideal pos, and thus smaller steps are taken
 

@@ -211,8 +211,8 @@ class LevelSelectButton : public LevelSelectButtonBase
       //    {
       //        //g_gameFont.DrawText2D( realX + 400.0f, realY + 10.0f, m_fontSize, "%d Player", numPlayers );
       //        char imageName[512];
-      //        sprintf( imageName, "icons/menu_coop.bmp" );
-      //        if( mapData->m_forceCoop ) sprintf( imageName, "icons/menu_forcecoop.bmp" );
+      //        sprintf( imageName, "icons\\menu_coop.bmp" );
+      //        if( mapData->m_forceCoop ) sprintf( imageName, "icons\\menu_forcecoop.bmp" );
 
       //        if( g_app->m_resource->DoesTextureExist( imageName ) )
       //        {        

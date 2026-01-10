@@ -113,7 +113,7 @@ void Lightning::Render( double _predictionTime )
     {
         _predictionTime -= SERVER_ADVANCE_PERIOD;
         
-        glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/lightning.bmp" ) );
+        glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\lightning.bmp" ) );
         glEnable(GL_TEXTURE_2D);
 	    glDisable(GL_CULL_FACE);
 	    glTexParameteri	(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
@@ -145,7 +145,7 @@ void Lightning::Render( double _predictionTime )
     }
     else
     {        
-        glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/glow.bmp" ) );
+        glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\glow.bmp" ) );
         glEnable(GL_TEXTURE_2D);
 	    glDisable(GL_CULL_FACE);
 	    glTexParameteri	(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );

@@ -1,24 +1,8 @@
 #include "pch.h"
 #include "random_number.h"
-
-#ifdef WIN32
-#include <windows.h>
-#else
-#include <sys/time.h>
-#include <unistd.h>
-#include <string.h>
-#endif
-
-#include <stdio.h>
-#include <stdarg.h>
-#include <time.h>
-#include <stdlib.h>
-#include <assert.h>
-
 #include "eclipse.h"
 #include "llist.h"
 
-// ============================================================================
 
 static LList<EclWindow*> windows;
 
@@ -54,7 +38,6 @@ static char popupWindow[SIZE_ECLWINDOW_NAME] = "None"; // Current popup window
 static char maximisedWindow[SIZE_ECLWINDOW_NAME] = "None"; // Which window is maximised
 static char currentButton[SIZE_ECLBUTTON_NAME] = "None"; // Current highlighted button
 
-// ============================================================================
 
 DirtyRect::DirtyRect()
   : m_x(0),
@@ -84,14 +67,12 @@ void EclUpdateMouse(int _mouseX, int _mouseY, bool _lmb, bool _rmb)
   mouseX = _mouseX;
   mouseY = _mouseY;
 
-  EclWindow* currentHighlightedWindow = EclGetWindow(mouseX, mouseY);
-  if (currentHighlightedWindow)
+  if (EclWindow* currentHighlightedWindow = EclGetWindow(mouseX, mouseY))
     EclDirtyWindow(currentHighlightedWindow);
 
   if (!_lmb && !lmb && !_rmb && !rmb) // No buttons changed, mouse move only
   {
-    EclWindow* currentWindow = EclGetWindow(windowFocus);
-    if (currentWindow)
+    if (EclWindow* currentWindow = EclGetWindow(windowFocus))
     {
       EclButton* button = currentWindow->GetButton(mouseX - currentWindow->m_x, mouseY - currentWindow->m_y);
       if (button)
@@ -500,7 +481,7 @@ bool EclIsTextEditing()
   return (currentWindow && strcmp(currentWindow->m_currentTextEdit, "None") != 0);
 }
 
-int EclGetWindowIndex(char* name)
+int EclGetWindowIndex(const char* name)
 {
   for (int i = 0; i < windows.Size(); ++i)
   {
@@ -512,7 +493,7 @@ int EclGetWindowIndex(char* name)
   return -1;
 }
 
-EclWindow* EclGetWindow(char* name)
+EclWindow* EclGetWindow(const char* name)
 {
 
   int index = EclGetWindowIndex(name);

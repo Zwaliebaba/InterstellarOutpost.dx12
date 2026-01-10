@@ -132,7 +132,7 @@ void BlueprintBuilding::RenderAlphas( double _predictionTime )
 
         glDisable( GL_CULL_FACE );
         glEnable( GL_TEXTURE_2D );
-        glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laser.bmp" ) );
+        glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\laser.bmp" ) );
 
         glEnable( GL_BLEND );
         glBlendFunc( GL_SRC_ALPHA, GL_ONE );
@@ -194,7 +194,6 @@ void BlueprintBuilding::SetBuildingLink( int _buildingId )
 }
 
 
-// ============================================================================
 
 
 BlueprintStore::BlueprintStore()
@@ -465,7 +464,7 @@ void BlueprintStore::RenderAlphas( double _predictionTime )
     //
     // Render lines for over effect
 
-    glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/interface_grey.bmp" ) );
+    glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\interface_grey.bmp" ) );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE );
@@ -510,7 +509,6 @@ void BlueprintStore::RenderAlphas( double _predictionTime )
 }
 
 
-// ============================================================================
 
 
 BlueprintConsole::BlueprintConsole()
@@ -646,7 +644,7 @@ void BlueprintConsole::RenderPorts()
 
         glDisable       ( GL_CULL_FACE );
         glEnable        ( GL_TEXTURE_2D );
-        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/starburst.bmp" ) );
+        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\starburst.bmp" ) );
         glDepthMask     ( false );
         glEnable        ( GL_BLEND );
         glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
@@ -666,7 +664,6 @@ void BlueprintConsole::RenderPorts()
 }
 
 
-// ============================================================================
 
 
 BlueprintRelay::BlueprintRelay()

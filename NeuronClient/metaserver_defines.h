@@ -101,7 +101,6 @@
 #define     NET_METASERVER_HASPASSWORD          "dI"
 #define     NET_METASERVER_CUSTOMMAPNAME        "dJ"
 
-#define     NET_METASERVER_DEMORESTRICTED       "demo"
 #define     NET_METASERVER_LANGAME              "lan"
 
 #define     NET_METASERVER_PLAYERNAME           "pn"

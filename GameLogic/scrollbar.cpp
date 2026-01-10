@@ -234,7 +234,7 @@ void ScrollChangeButton::Render(int realX, int realY, bool highlighted, bool cli
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   glDepthMask(false);
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/selectionarrow.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\selectionarrow.bmp"));
 
   int dir = 0;
   if (m_amount > 0)

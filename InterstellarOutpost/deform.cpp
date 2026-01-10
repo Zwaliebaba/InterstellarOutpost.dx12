@@ -39,9 +39,9 @@ struct DeformParams
 DeformParams deformParams[DT_LAST] = // indexed by DeformType
 {
 	// new fast punch
-	{"textures/deform36c.bmp",1},
+	{"textures\\deform36c.bmp",1},
 	// tearing
-	{"textures/deform3.bmp",1},
+	{"textures\\deform3.bmp",1},
 };
 
 DeformEffect* DeformEffect::Create()
@@ -294,7 +294,7 @@ void DeformEffect::Stop()
 	qsort(sorted,numSouls,sizeof(SoulDistance),CompareSoulDistance);
 	//   render them sorted
 	glColor3f((GetTickCount()%1000)/1000.0,0,0);
-	RenderSpritesBegin(m_deformDiamondShader,g_app->m_resource->GetTexture("textures/deform1c.bmp", false, false),NULL);
+	RenderSpritesBegin(m_deformDiamondShader,g_app->m_resource->GetTexture("textures\\deform1c.bmp", false, false),NULL);
 	for(unsigned i=0;i<numSouls;i++)
 	{
 		RenderSprite(m_deformDiamondShader,sorted[i].m_spirit->m_pos,0.32,0.12,1.3);

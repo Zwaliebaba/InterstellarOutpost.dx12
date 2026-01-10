@@ -152,12 +152,12 @@ class Entity : public WorldObject
 
     char* LogState(char* _message = nullptr) override;
 
-    virtual void SetShape(char* _shapeName, bool _colourAll = false);
+    virtual void SetShape(const char* _shapeName, bool _colourAll = false);
     // If you want your shape to be coloured by team, SetShape must be called; It should only be called from the Begin() function, not the class constructor
 
     static void ConvertShapeColoursToTeam(Shape* _shape, int _teamId, bool _convertAll = false);
     static void ConvertFragmentColours(ShapeFragment* _frag, RGBAColour _col, bool _convertAll = false);
-    void SetupTeamShape(char* _name, bool _convertAll = false);
+    void SetupTeamShape(const char* _name, bool _convertAll = false);
 
     static bool EntityIsBlocked(int _entityId);
 };

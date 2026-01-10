@@ -20,7 +20,6 @@
 #include "GameServerButton.h"
 #include "DarwiniaModeButton.h"
 #include "NewOrJoinButton.h"
-#include "MultiwiniaEditorButton.h"
 #include "QuitButton.h"
 #include "PrologueButton.h"
 #include "CampaignButton.h"
@@ -42,40 +41,23 @@
 #include "MapListTitlesButton.h"
 #include "AnyLevelSelectButton.h"
 #include "LevelSelectButton.h"
-#include "HelpImageButton.h"
-#include "PrevHelpButton.h"
-#include "NextHelpButton.h"
 #include "OptionDetailsButton.h"
-#include "MultiwiniaVersusCpuButton.h"
-#include "ImageButton.h"
-#include "UnlockFullGameButton.h"
-#include "AuthInputField.h"
-#include "PasteKeyButton.h"
-#include "EnterAuthKeyButton.h"
 #include "FancyColourButton.h"
 #include "ApplyNameButton.h"
-#include "PlayDemoAuthkeyButton.h"
-#include "AuthStatusButton.h"
 #include "AchievementButton.h"
 #include "KickPlayerButton.h"
 #include "ConnectButton.h"
+#include "CSpectatorButton.h"
+#include "motdButton.h"
+#include "update_page_buttons.h"
+#include "mainmenus.h"
+#include "metaserver.h"
 
 // Undefine small macro defined in Windows headers
 #undef small
 
-#include "CSpectatorButton.h"
-
-#include "motdButton.h"
-#include "update_page_buttons.h"
-
-#include "mainmenus.h"
-#include "metaserver.h"
-
 //#define	 FAKE_SERVERS
 #define NUM_FAKE_SERVER 100
-
-//extern void RemoveDelistedServers( LList<Directory *> *_serverList );
-//extern const char *GameTypeToShortCaption( int _gameType );
 
 extern const char* s_pageNames[GameMenuWindow::NumPages];
 extern int g_lastProcessedSequenceId;
@@ -133,31 +115,6 @@ class GameMenuChatButton : public DarwiniaButton
       float x = realX;
       float y = realY + m_h;
 
-      //g_editorFont.BeginText2D();
-
-      /*if( !ChatInputWindow::IsChatVisible() )
-      {
-          bool renderMessage = true;
-          for( int i = 0; i < NUM_TEAMS; ++i )
-          {
-              if( g_app->m_multiwinia->m_teams[i].m_teamType == TeamTypeRemotePlayer )
-              {
-                  renderMessage = true;
-              }
-          }
-
-          if( renderMessage )
-          {
-              UnicodeString pressEnter = LANGUAGEPHRASE("multiwinia_lobbypresstotalk");
-              glColor4f(1.0f, 1.0f, 1.0f, 0.0f);
-              g_editorFont.SetRenderOutline( true );
-              g_editorFont.DrawText2D( x + fontSize, y - fontSize * 0.8f, fontSize, pressEnter );
-              glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
-              g_editorFont.SetRenderOutline( false );
-              g_editorFont.DrawText2D( x + fontSize, y - fontSize * 0.8f, fontSize, pressEnter );
-          }
-      }*/
-
       glColor4f(0.0f, 0.0f, 0.0f, 1.0f * (200.0f / 255.0f));
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -182,7 +139,6 @@ class GameMenuChatButton : public DarwiniaButton
 
       if (parent->m_chatMessages.Size() == 0)
       {
-        //g_editorFont.EndText2D();
         return;
       }
 
@@ -270,7 +226,6 @@ class GameMenuChatButton : public DarwiniaButton
               col.a = alpha;
               glColor4ubv(col.GetData());
               g_editorFont.SetRenderOutline(false);
-              //                g_editorFont.DrawText2D( x, y, fontSize, *wrapped->GetData(j) );
               g_editorFont.DrawText2D(x, y, fontSize, *wrapped->GetData(j));
               y -= fontSize * 1.1f;
 
@@ -280,20 +235,11 @@ class GameMenuChatButton : public DarwiniaButton
                 break;
               }
             }
-            //y -= (fontSize * 1.1f) * wrapped->Size();
             boxHeight += (fontSize * 1.2f) * wrapped->Size();
           }
           wrapped->EmptyAndDelete();
           delete wrapped;
         }
-
-        /*if( alphaTime > 60.0f )
-        {
-            ChatMessage *m = parent->m_chatMessages[i];
-            parent->m_chatMessages.RemoveData(i);
-            delete m;
-            --i;
-        }*/
 
         if (maxed)
         {
@@ -373,18 +319,6 @@ GameMenuWindow::GameMenuWindow()
   SetMovable(false);
   m_closeable = false;
 
-#ifndef MULTIWINIA_DEMOONLY
-  Authentication_GetKey(m_authKey);
-  int authResult = Authentication_SimpleKeyCheck(m_authKey, METASERVER_GAMETYPE_MULTIWINIA);
-  if (authResult != AuthenticationAccepted)
-  {
-    if (strcmp(m_authKey, "authkey not found") == 0)
-      strcpy(m_authKey, "");
-
-    m_newPage = PageAuthKeyEntry;
-  }
-#endif // MULTIWINIA_DEMOONLY
-
   UnicodeString name;
   UnicodeString prefsName = g_prefsManager->GetUnicodeString("PlayerName", "multiwina_playername_default");
   bool defaultName = prefsName == UnicodeString("multiwina_playername_default");
@@ -454,10 +388,6 @@ void GameMenuWindow::Update()
     m_reloadPage = false;
   }
 
-#ifdef TESTBED_ENABLED
-  UpdateTestBed();
-#endif
-
   switch (m_currentPage)
   {
   case PageMain:
@@ -478,10 +408,6 @@ void GameMenuWindow::Update()
     UpdateQuickMatchGamePage();
     break;
 
-  /*case PageLeaderBoard:
-    UpdateLeaderboardPage();
-    break;*/
-
   case PageGameConnecting:
     UpdateGameOptions(false);
     UpdateGameConnectingPage();
@@ -495,17 +421,8 @@ void GameMenuWindow::Update()
     UpdateGameOptions(true);
     break;
 
-  case PageDemoSinglePlayer:
-    UpdatePageSinglePlayer();
-    break;
-
   case PageAdvancedOptions:
     UpdateAdvancedOptionsPage();
-    break;
-
-  case PageTutorials:
-    UpdateGameOptions(false);
-    UpdateMainPage();
     break;
 
   case PageWaitForGameToStart:
@@ -516,618 +433,9 @@ void GameMenuWindow::Update()
     m_setupNewPage = true;
 }
 
-#ifdef TESTBED_ENABLED
-
-typedef struct _tagGameEntry
-{
-  int m_iGameNumber;
-  int m_iMapNumber;
-  int m_iMapCRC;
-
-} GAME_ENTRY, *PGAME_ENTRY;std::vector<GAME_ENTRY> g_vGameEntries;bool bMapSelected = false;typedef enum TESTBED_PROGRESSION
-{
-  TESTBED_LINEAR,
-  TESTBED_RANDOM,
-  TESTBED_SEQUENCE,
-};TESTBED_PROGRESSION g_eTestBedProgression;typedef struct _tagGameSequence
-{
-  int m_iIndex;
-  int m_iRandSeed;
-
-} GAME_SEQUENCE, *PGAME_SEQUENCE;std::vector<GAME_SEQUENCE> g_vGameSequence;int g_iGameSequenceIndex;char m_cTestBedName[256];bool
-m_bFirstTime = true;GAME_SEQUENCE g_CurrentGameSequence;int g_iSelectedRandSeed;static void BuildGameEntries()
-{
-  g_vGameEntries.clear();
-  for (int i = 0; i < g_app->m_gameMenu->m_maps->Size(); i++)
-  {
-    // The != 6 is all about coping with the fact that the game finds 7 game modes instead of just 6
-    // Since the buttons for the 7th game do not exist the testbed will fail so don't let them on this list
-    if (g_app->m_gameMenu->m_maps->ValidIndex(i) && i != 6)
-    {
-      DArray<MapData*>& maps = g_app->m_gameMenu->m_maps[i];
-
-      for (int x = 0; x < maps.Size(); x++)
-      {
-        if (maps.ValidIndex(x))
-        {
-          GAME_ENTRY ge;
-          ge.m_iGameNumber = i;
-          ge.m_iMapNumber = x;
-          ge.m_iMapCRC = maps.GetData(i)->m_mapId;
-          g_vGameEntries.push_back(ge);
-        }
-      }
-    }
-  }
-}int FindGameEntry(int _gameMode, int _mapNumber)
-{
-  int numEntries = g_vGameEntries.size();
-
-  for (int i = 0; i < numEntries; i++)
-  {
-    GAME_ENTRY& ge = g_vGameEntries[i];
-
-    if (ge.m_iGameNumber == _gameMode && ge.m_iMapNumber == _mapNumber) { return i; }
-  }
-  return -1;
-}void GameMenuWindow::UpdateTestBed()
-{
-  if (!g_app) { return; }
-
-  if (g_app->m_server)
-  {
-    if (g_iSelectedRandSeed != 0)
-    {
-      g_app->m_server->m_iRandSeed = g_iSelectedRandSeed;
-      g_app->m_server->m_bRandSeedOverride = true;
-    }
-    else { g_app->m_server->m_bRandSeedOverride = false; }
-  }
-
-  static int s_testBedSeqId = 0;
-  if (g_app->GetTestBedMode() == TESTBED_ON)
-  {
-    if (g_app->m_clientToServer) { g_app->m_clientToServer->ReliableSetTeamName(g_app->GetTestBedServerName()); }
-
-    if (g_app->GetTestBedType() == TESTBED_SERVER)
-    {
-      switch (g_app->GetTestBedState())
-      {
-      case TESTBED_BUILD_GAME_ENTRIES:
-        // I am going to build a massive table of games and maps so that different testbed modes
-        // can be supported.
-
-        srand(time(NULL));
-
-        // Reset the main testbed variables
-        g_iSelectedRandSeed = 0;
-        g_eTestBedProgression = TESTBED_LINEAR;
-        g_app->SetTestBedGameIndex(0);
-        m_bFirstTime = true;
-        g_app->m_iTerminationSequenceID = 0;
-
-        if (g_app->m_server) { g_app->m_server->m_bRandSeedOverride = false; }
-
-        BuildGameEntries();
-
-        // Load in the testbed config
-        ReadTestBedConfig();
-
-        AdvanceTestBedGame();
-
-        g_app->SetTestBedState(TESTBED_MAINMENU);
-        break;
-
-      case TESTBED_SEQUENCEID_DELAY:
-      {
-        if (g_lastProcessedSequenceId > g_app->m_iDesiredSequenceID) { g_app->SetTestBedState(g_app->m_eNextState); }
-      }
-      break;
-
-      case TESTBED_GAME_OVER_DELAY:
-      {
-        if (g_app->m_fTestBedLastTime <= 0.0f) { g_app->m_fTestBedLastTime = GetHighResTime(); }
-        else
-        {
-          g_app->m_fTestBedDelay += GetHighResTime() - g_app->m_fTestBedLastTime;
-          g_app->m_fTestBedLastTime = GetHighResTime();
-
-          if (g_app->m_fTestBedDelay > 10.0f)
-          {
-            AdvanceTestBedGame();
-            g_app->m_multiwinia->RemoveTeams(g_app->m_clientToServer->m_clientId);
-            g_app->m_spectator = false;
-
-            //g_app->ShutdownCurrentGame();
-            g_app->SetTestBedState(TESTBED_MAINMENU);
-          }
-        }
-      }
-      break;
-
-      case TESTBED_MAINMENU:
-      {
-        // Reset the delay
-        g_app->m_fTestBedDelay = 0.0f;
-        g_app->m_fTestBedLastTime = 0.0f;
-        g_app->m_iClientCount = 0;
-
-        if (m_currentPage == PageMain)
-        {
-          NewOrJoinButton* pButton = (NewOrJoinButton*)GetButton("multiwinia_menu_multiplayergame");
-
-          if (pButton)
-          {
-            pButton->MouseUp();
-            g_app->SetTestBedState(TESTBED_HOST_GAME);
-          }
-        }
-      }
-      break;
-
-      case TESTBED_HOST_GAME:
-      {
-        if (m_currentPage == PageNewOrJoin)
-        {
-          ((NewServerButton*)GetButton("multiwinia_menu_hostgame"))->MouseUp();
-          g_app->SetTestBedState(TESTBED_WAIT_FOR_CLIENT_ID);
-        }
-      }
-
-      break;
-
-      case TESTBED_WAIT_FOR_CLIENT_ID:
-      {
-        if (g_app->m_globalWorld->m_myTeamId != 255)
-        {
-          g_app->SetTestBedState(TESTBED_SELECT_GAME);
-
-          g_app->m_clientToServer->ReliableSetTeamName(g_app->GetTestBedServerName());
-        }
-      }
-
-      break;
-
-      case TESTBED_SELECT_GAME:
-      {
-        if (m_currentPage == PageGameSelect)
-        {
-          GameTypeButton* pButton = 0;
-
-          GAME_ENTRY ge = g_vGameEntries[g_app->GetTestBedGameIndex()];
-
-          int iGameMode = ge.m_iGameNumber;
-          int iMap = ge.m_iMapNumber;
-
-          g_app->m_iLastGame = iGameMode;
-          g_app->m_iLastMap = iMap;
-
-          switch (iGameMode)
-          {
-          case 0:
-            pButton = (GameTypeButton*)GetButton("multiwinia_gametype_domination");
-            strcpy(g_app->m_cGameMode, "Domination");
-            break;
-          case 1:
-            pButton = (GameTypeButton*)GetButton("multiwinia_gametype_kingofthehill");
-            strcpy(g_app->m_cGameMode, "King Of The Hill");
-            break;
-          case 2:
-            pButton = (GameTypeButton*)GetButton("multiwinia_gametype_capturethestatue");
-            strcpy(g_app->m_cGameMode, "Capture the Statue");
-            break;
-          case 3:
-            pButton = (GameTypeButton*)GetButton("multiwinia_gametype_assault");
-            strcpy(g_app->m_cGameMode, "Assault");
-            break;
-          case 4:
-            pButton = (GameTypeButton*)GetButton("multiwinia_gametype_rocketriot");
-            strcpy(g_app->m_cGameMode, "Rocket Riot");
-            break;
-          case 5:
-            pButton = (GameTypeButton*)GetButton("multiwinia_gametype_blitzkrieg");
-            strcpy(g_app->m_cGameMode, "Blitzkrieg");
-            break;
-          }
-
-          if (pButton)
-          {
-            pButton->MouseUp();
-            g_app->SetTestBedState(TESTBED_SELECT_MAP);
-            bMapSelected = false;
-
-            g_app->m_clientToServer->ReliableSetTeamName(g_app->GetTestBedServerName());
-          }
-        }
-      }
-      break;
-
-      case TESTBED_SELECT_MAP:
-      {
-        if (m_currentPage == PageMapSelect && !bMapSelected)
-        {
-          GAME_ENTRY ge = g_vGameEntries[g_app->GetTestBedGameIndex()];
-
-          int iGameMode = ge.m_iGameNumber;
-          int iMap = ge.m_iMapNumber;
-
-          DArray<MapData*>& maps = g_app->m_gameMenu->m_maps[iGameMode];
-
-          if (maps.Size() != 0)
-          {
-            char* buttonName = maps[iMap]->m_levelName;
-            if (!buttonName)
-              buttonName = maps[iMap]->m_fileName;
-
-            LevelSelectButton* pButton = (LevelSelectButton*)GetButton(buttonName);
-
-            if (pButton)
-            {
-              strcpy(g_app->m_cGameMap, LANGUAGEPHRASE(GetMapNameId(maps[iMap]->m_fileName)));
-
-              pButton->MouseUp();
-              g_app->SetTestBedState(TESTBED_WAIT_FOR_MAP);
-              bMapSelected = true;
-            }
-          }
-        }
-      }
-      break;
-
-      case TESTBED_WAIT_FOR_MAP:
-      {
-        if (m_localSelectedLevel == m_requestedMapId)
-        {
-          if (0 <= m_gameType && m_gameType < MAX_GAME_TYPES && g_app->m_gameMenu->m_maps[m_gameType].ValidIndex(m_requestedMapId))
-          {
-            g_app->SetTestBedState(TESTBED_SETGAMEOPTIONSDELAY);
-            s_testBedSeqId = g_lastProcessedSequenceId;
-          }
-        }
-      }
-      break;
-
-      case TESTBED_SETGAMEOPTIONSDELAY:
-        if (g_lastProcessedSequenceId > s_testBedSeqId + 5) { g_app->SetTestBedState(TESTBED_SETGAMEOPTIONS); }
-        break;
-
-      case TESTBED_SETGAMEOPTIONS:
-      {
-        //int timeLimitOption = g_app->m_multiwinia->GetGameOption( "TimeLimit" );
-        //if( timeLimitOption != -1 )
-        //{
-        //	m_params[timeLimitOption] = 1;
-        //}
-
-        // Can add more like Sudden Death here
-
-        // Become a spectator
-        if (g_app->m_globalWorld->m_myTeamId != 255)
-        {
-          // JAK TEST
-          g_app->m_clientToServer->RequestToRegisterAsSpectator(g_app->m_globalWorld->m_myTeamId);
-        }
-
-        g_app->SetSequenceIDDelay(g_lastProcessedSequenceId + 10, TESTBED_WAIT_FOR_CLIENTS);
-      }
-      break;
-
-      case TESTBED_WAIT_FOR_CLIENTS:
-      {
-        if (m_currentPage == PageGameSetup)
-        {
-          if (g_app->m_server->m_clients.NumUsed() > 1) { g_app->SetSequenceIDDelay(g_lastProcessedSequenceId + 10, TESTBED_PLAY); }
-        }
-      }
-      break;
-
-      case TESTBED_PLAY:
-      {
-        // See GameMenuWindow::UpdateMultiplayer() for testbed ready code
-        if (m_currentPage != PageGameSetup)
-        {
-          g_app->IncrementGameCount();
-          g_app->SetTestBedState(TESTBED_IDLE);
-        }
-      }
-      break;
-
-      case TESTBED_IDLE:
-
-        break;
-      }
-    }
-    else
-    {
-      // We are in client mode
-      switch (g_app->GetTestBedState())
-      {
-      case TESTBED_BUILD_GAME_ENTRIES:
-
-        g_iSelectedRandSeed = 0;
-        g_eTestBedProgression = TESTBED_LINEAR;
-        g_app->SetTestBedGameIndex(0);
-        g_app->m_iTerminationSequenceID = 0;
-
-        if (g_app->m_server) { g_app->m_server->m_bRandSeedOverride = false; }
-
-        BuildGameEntries();
-
-        // Load in the testbed config
-        ReadTestBedConfig();
-
-        g_app->SetTestBedState(TESTBED_MAINMENU);
-        break;
-
-      case TESTBED_SEQUENCEID_DELAY:
-      {
-        if (g_lastProcessedSequenceId > g_app->m_iDesiredSequenceID) { g_app->SetTestBedState(g_app->m_eNextState); }
-      }
-      break;
-
-      case TESTBED_GAME_OVER_DELAY:
-      {
-        if (g_app->m_fTestBedLastTime <= 0.0f) { g_app->m_fTestBedLastTime = GetHighResTime(); }
-        else
-        {
-          g_app->m_fTestBedDelay += GetHighResTime() - g_app->m_fTestBedLastTime;
-          g_app->m_fTestBedLastTime = GetHighResTime();
-
-          if (g_app->m_fTestBedDelay > 40.0f)
-          {
-            g_app->m_multiwinia->RemoveTeams(g_app->m_clientToServer->m_clientId);
-            g_app->m_spectator = false;
-
-            //g_app->ShutdownCurrentGame();
-            g_app->SetTestBedState(TESTBED_MAINMENU);
-          }
-        }
-      }
-      break;
-
-      case TESTBED_MAINMENU:
-      {
-        g_app->m_fTestBedDelay = 0.0f;
-        g_app->m_fTestBedLastTime = 0.0f;
-
-        if (m_currentPage == PageMain)
-        {
-          NewOrJoinButton* pButton = (NewOrJoinButton*)GetButton("multiwinia_menu_multiplayergame");
-
-          if (pButton)
-          {
-            pButton->MouseUp();
-            g_app->SetTestBedState(TESTBED_JOIN_GAME);
-          }
-        }
-      }
-      break;
-
-      case TESTBED_JOIN_GAME:
-      {
-        if (m_currentPage == PageNewOrJoin)
-        {
-          ((NewServerButton*)GetButton("multiwinia_menu_joingame"))->MouseUp();
-          g_app->SetTestBedState(TESTBED_PICK_SERVER);
-        }
-      }
-      break;
-
-      case TESTBED_PICK_SERVER:
-      {
-        if (m_currentPage == PageJoinGame)
-        {
-          g_app->m_fTestBedDelay += GetHighResTime() - g_app->m_fTestBedLastTime;
-          g_app->m_fTestBedLastTime = GetHighResTime();
-
-          if (g_app->m_fTestBedDelay > 3.0f)
-          {
-            g_app->m_fTestBedDelay = 0.0f;
-            g_app->m_fTestBedLastTime = 0.0f;
-            g_app->m_fTestBedLastTime = GetHighResTime();
-
-            if (m_serverButtons.Size() != 0)
-            {
-              // Pick a server
-              for (int i = 0; i < m_serverButtons.Size(); i++)
-              {
-                if (m_serverButtons.ValidIndex(i))
-                {
-                  GameServerButton* pButton = m_serverButtons[i];
-
-                  if (pButton)
-                  {
-                    if (pButton->m_hostName == g_app->GetTestBedServerName())
-                    {
-                      if (strcmp(pButton->m_mapName.GetCharArray(), "Unknown Map") != 0)
-                      {
-                        strcpy(g_app->m_cGameMode, pButton->m_gameType.GetCharArray());
-                        strcpy(g_app->m_cGameMap, pButton->m_mapName.GetCharArray());
-
-                        DebugTrace("Client attaching to %s game mode and %s map\n", pButton->m_gameType.GetCharArray(),
-                                   pButton->m_mapName.GetCharArray());
-
-                        pButton->MouseUp();
-                        g_app->IncrementGameCount();
-                        //CDebug::Dump();
-
-                        //g_app->m_clientToServer->RequestToRegisterAsSpectator(g_app->m_globalWorld->m_myTeamId);
-                        g_app->SetTestBedState(TESTBED_MAKE_CLIENT_SPECTATOR);
-                        break;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            else
-            {
-              g_app->m_fTestBedDelay = 0.0f;
-              g_app->m_fTestBedLastTime = 0.0f;
-              g_app->m_fTestBedLastTime = GetHighResTime();
-            }
-          }
-        }
-      }
-      break;
-
-      case TESTBED_MAKE_CLIENT_SPECTATOR:
-        if (m_gameType != -1 && m_requestedMapId != -1)
-        {
-          int gameIndex = FindGameEntry(m_gameType, m_requestedMapId);
-          if (gameIndex != -1)
-          {
-            g_app->m_iGameIndex = gameIndex;
-            g_app->SetTestBedState(TESTBED_IDLE);
-          }
-        }
-        break;
-
-      case TESTBED_IDLE:
-      {
-        int a = 0;
-        a++;
-      }
-
-      break;
-      }
-    }
-  }
-
-}void GameMenuWindow::AdvanceTestBedGame()
-{
-  switch (g_eTestBedProgression)
-  {
-  case TESTBED_LINEAR:
-    if (g_app->GetTestBedGameIndex() < static_cast<int>(g_vGameEntries.size()))
-    {
-      int iIndex = g_app->GetTestBedGameIndex();
-      iIndex++;
-      g_app->SetTestBedGameIndex(iIndex);
-    }
-    break;
-
-  case TESTBED_RANDOM:
-    g_app->SetTestBedGameIndex(rand() % (int)g_vGameEntries.size());
-    break;
-
-  case TESTBED_SEQUENCE:
-    g_CurrentGameSequence.m_iIndex = 0;
-    g_CurrentGameSequence.m_iRandSeed = 0;
-
-    if (m_bFirstTime)
-    {
-      g_iGameSequenceIndex = 0;
-
-      g_CurrentGameSequence = g_vGameSequence[g_iGameSequenceIndex];
-      g_iGameSequenceIndex++;
-
-      if (g_iGameSequenceIndex == static_cast<int>(g_vGameSequence.size())) { g_iGameSequenceIndex = 0; }
-
-      m_bFirstTime = false;
-    }
-    else
-    {
-      if (g_iGameSequenceIndex<static_cast<int>(g_vGameSequence.size()))
-      {
-        g_CurrentGameSequence = g_vGameSequence[g_iGameSequenceIndex];
-        g_iGameSequenceIndex++;
-
-        if (g_iGameSequenceIndex == static_cast<int>(g_vGameSequence.size())) { g_iGameSequenceIndex = 0; }
-      }
-      else
-      {
-        g_iGameSequenceIndex = 0;
-
-        g_CurrentGameSequence = g_vGameSequence[g_iGameSequenceIndex];
-        g_iGameSequenceIndex++;
-
-        if (g_iGameSequenceIndex == static_cast<int>(g_vGameSequence.size())) { g_iGameSequenceIndex = 0; }
-      }
-    }
-
-    g_iSelectedRandSeed = g_CurrentGameSequence.m_iRandSeed;
-    g_app->SetTestBedGameIndex(g_CurrentGameSequence.m_iIndex);
-    break;
-  }
-}void GameMenuWindow::ReadTestBedConfig()
-{
-  TextFileReader reader("testbedconfig.txt");
-
-  if (!reader.IsOpen())
-    return;
-
-  g_vGameSequence.clear();
-
-  while (reader.ReadLine())
-  {
-    const char* command = reader.GetNextToken();
-    if (!command)
-      continue;
-
-    if (strcmp(command, "SetProgression") == 0)
-    {
-      const char* parameter = reader.GetNextToken();
-      if (!parameter)
-        continue;
-
-      if (strcmp(parameter, "LINEAR") == 0)
-        g_eTestBedProgression = TESTBED_LINEAR;
-      else if (strcmp(parameter, "RANDOM") == 0)
-        g_eTestBedProgression = TESTBED_RANDOM;
-      else if (strcmp(parameter, "SEQUENCE") == 0)
-        g_eTestBedProgression = TESTBED_SEQUENCE;
-    }
-    else if (strcmp(command, "SetRandSeed") == 0)
-    {
-      const char* parameter = reader.GetNextToken();
-      if (!parameter)
-        continue;
-
-      sscanf(parameter, "%d", &g_iSelectedRandSeed);
-    }
-    else if (strcmp(command, "SetTestBedName") == 0)
-    {
-      const char* parameter = reader.GetNextToken();
-      if (!parameter)
-        continue;
-
-      sscanf(parameter, "%s", &m_cTestBedName);
-      g_app->m_testbedServerName = m_cTestBedName;
-    }
-    else if (strcmp(command, "AddSequenceItem") == 0)
-    {
-      GAME_SEQUENCE gs;
-
-      const char* parameter = reader.GetNextToken();
-      if (!parameter)
-        continue;
-      sscanf(parameter, "%d", &gs.m_iIndex);
-
-      parameter = reader.GetNextToken();
-      if (!parameter)
-        continue;
-      sscanf(parameter, "%d", &gs.m_iRandSeed);
-
-      g_vGameSequence.push_back(gs);
-    }
-    else if (strcmp(command, "SequenceIDToTerminateOn") == 0)
-    {
-      const char* parameter = reader.GetNextToken();
-      if (!parameter)
-        continue;
-      sscanf(parameter, "%d", &g_app->m_iTerminationSequenceID);
-    }
-  }
-}
-
-#endif
-
 void GameMenuWindow::CreateErrorDialogue(UnicodeString _error, int _backPage)
 {
   m_errorMessage = _error;
-  //m_showingErrorDialogue = true;
-  //m_lockMenu = true;
   m_newPage = PageError;
   m_errorBackPage = _backPage;
   g_app->m_atLobby = false;
@@ -1137,8 +445,6 @@ void GameMenuWindow::CreateErrorDialogue(UnicodeString _error, int _backPage)
 
 void GameMenuWindow::NewChatMessage(UnicodeString _msg, int _fromTeamId)
 {
-  //    if( _fromTeamId < 0 || _fromTeamId > 3 ) return;
-
   auto message = new ChatMessage;
   message->m_msg = _msg;
   message->m_clientId = _fromTeamId;
@@ -1157,13 +463,6 @@ void GameMenuWindow::NewChatMessage(UnicodeString _msg, int _fromTeamId)
 
   if (_msg != UnicodeString("PLAYERJOIN"))
     g_app->m_soundSystem->TriggerOtherEvent(nullptr, "ChatMessage", SoundSourceBlueprint::TypeMultiwiniaInterface);
-}
-
-void GameMenuWindow::UpdatePageSinglePlayer()
-{
-  // This is the single player menu
-  if (m_quickStart)
-    UpdateGameOptions(false);
 }
 
 void GameMenuWindow::UpdateMultiplayerPage()
@@ -1418,7 +717,7 @@ void GameMenuWindow::ApplyBasicServerListSort()
 
     if (!IsProtocolMatch(server))
       newList->PutDataAtEnd(server);
-    else if (IsServerFull(server) || server->HasData(NET_METASERVER_DEMORESTRICTED))
+    else if (IsServerFull(server))
       newList->PutDataAtIndex(server, numGoodServers);
     else
     {
@@ -2262,7 +1561,7 @@ void GameMenuWindow::Render(bool _hasFocus)
     // Use the bitmap to render the title at higher quality
 
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/mwtitle.bmp", false));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\mwtitle.bmp", false));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
@@ -2314,7 +1613,7 @@ void GameMenuWindow::Render(bool _hasFocus)
 
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/mwlogo.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\mwlogo.bmp"));
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -2397,7 +1696,7 @@ void GameMenuWindow::Render(bool _hasFocus)
     break;
 
   case PageGameConnecting:
-#ifdef TARGET_DEBUG
+#ifdef _DEBUG
     RenderNetworkStatus();
 #endif
     DrawFillBox(leftX, leftY, leftW, leftH);
@@ -2406,10 +1705,7 @@ void GameMenuWindow::Render(bool _hasFocus)
 
   case PageGameSelect:
   case PageMapSelect:
-  case PageLeaderBoardSelect:
   case PageAdvancedOptions:
-  case PageDemoSinglePlayer:
-  case PageBuyMeNow:
     DrawFillBox(leftX, leftY, leftW, leftH);
     DrawFillBox(rightX, rightY, rightW, rightH);
     break;
@@ -2418,16 +1714,10 @@ void GameMenuWindow::Render(bool _hasFocus)
   {
     DrawFillBox(leftX, leftY, leftW, leftH);
 
-    bool showAuth = ShowAuthBox();
-
     float motdH = rightH;
-    if (showAuth)
-      motdH *= 0.75f;
 
     if (m_motdFound)
       DrawFillBox(rightX, rightY, rightW, motdH);
-    if (showAuth)
-      DrawFillBox(rightX, rightY + rightH * 0.8f, rightW, rightH * 0.2f);
     break;
   }
 
@@ -2454,51 +1744,6 @@ void GameMenuWindow::Render(bool _hasFocus)
 
   if (m_showingErrorDialogue)
     RenderErrorDialogue();
-}
-
-bool GameMenuWindow::ShowAuthBox()
-{
-#ifdef MULTIWINIA_DEMOONLY
-  return false;
-#endif
-
-  //if( !g_app->IsFullVersion() ) return false;
-  // Called from both GameMenuWindow::Render() for the border
-  // and AuthStatusButton::Render() to determine whether the 
-  // auth status should be rendered or not.
-
-  char authKey[256];
-  Authentication_GetKey(authKey);
-  bool isDemoKey = Authentication_IsDemoKey(authKey);
-
-  int authResult = Authentication_GetStatus(authKey);
-
-  //
-  // Also show the auth box if our auth status has changed
-  // in the last couple of seconds
-
-  static int s_lastAuth = -1;
-  static bool s_lastDemo = false;
-  static double s_lastTime = 0.0;
-
-  if (authResult != s_lastAuth || isDemoKey != s_lastDemo)
-  {
-    s_lastAuth = authResult;
-    s_lastDemo = isDemoKey;
-    s_lastTime = GetHighResTime();
-  }
-
-  if (GetHighResTime() < s_lastTime + 2.0f)
-    return true;
-
-  //
-  // Always show demo status
-  // And bad status
-
-  if (authResult != AuthenticationAccepted || isDemoKey)
-    return true;
-
-  return false;
 }
 
 void GameMenuWindow::RenderErrorDialogue()
@@ -2578,32 +1823,11 @@ void GameMenuWindow::SetupNewPage(int _page)
   case PageMapSelect:
     SetupMapSelectPage();
     break;
-  case PageHelpMenu:
-    SetupHelpMenuPage();
-    break;
-  case PageHelp:
-    SetupHelpPage();
-    break;
   case PageAdvancedOptions:
     SetupAdvancedOptionsPage();
     break;
-  case PageDemoSinglePlayer:
-    SetupSPDemoPage();
-    break;
-  case PageBuyMeNow:
-    SetupBuyMePage();
-    break;
-  case PageLeaderBoardSelect:
-    SetupLeaderBoardSelectPage();
-    break;
-  case PageLeaderBoard:
-    SetupLeaderboardPage();
-    break;
   case PageQuickMatchGame:
     SetupQuickMatchGamePage();
-    break;
-  case PageAuthKeyEntry:
-    SetupAuthKeyPage();
     break;
   case PagePlayerOptions:
     SetupPlayerOptionsPage();
@@ -2616,9 +1840,6 @@ void GameMenuWindow::SetupNewPage(int _page)
     break;
   case PageCredits:
     SetupCreditsPage();
-    break;
-  case PageTutorials:
-    SetupTutorialPage();
     break;
   case PageError:
     SetupErrorPage();
@@ -2642,7 +1863,7 @@ void GameMenuWindow::SetupMainPage()
 {
   SetTitle(LANGUAGEPHRASE("multiwinia_mainmenu_title"));
 
-#if defined(LAN_PLAY_ENABLED) || defined(WAN_PLAY_ENABLED)
+#if defined(LAN_PLAY_ENABLED)
   m_singlePlayer = false;
 #else
   //m_singlePlayer = true;
@@ -2701,16 +1922,6 @@ void GameMenuWindow::SetupMainPage()
   RegisterButton(button);
   m_buttonOrder.PutData(button);
 
-#ifdef TESTBED_ENABLED
-  StartTestbedButton* startTestServer = new StartTestbedButton(TESTBED_SERVER); startTestServer->
-    SetShortProperties("start_testbed_server", buttonX, yPos += buttonH + gap, buttonW, buttonH, LANGUAGEPHRASE("start_testbed_server"));
-  startTestServer->m_fontSize = fontSize; RegisterButton(startTestServer); m_buttonOrder.PutData(startTestServer); StartTestbedButton*
-    startTestClient = new StartTestbedButton(TESTBED_CLIENT); startTestClient->SetShortProperties(
-    "start_testbed_server", buttonX, yPos += buttonH + gap, buttonW, buttonH,
-    LANGUAGEPHRASE("start_testbed_client")); startTestClient->m_fontSize = fontSize; RegisterButton(startTestClient); m_buttonOrder.
-    PutData(startTestClient);
-#endif
-
   Directory* latestVersion = MetaServer_RequestData(NET_METASERVER_DATA_LATESTVERSION);
   if (latestVersion)
   {
@@ -2745,14 +1956,6 @@ void GameMenuWindow::SetupMainPage()
                            UnicodeString());
   motd->m_fontSize = fontSmall;
   RegisterButton(motd);
-
-  auto authStatus = new AuthStatusButton();
-  authStatus->SetShortProperties("multiwinia_authStatus", rightX + rightW * 0.05f, rightY + rightH * 0.8f + rightH * 0.05f, rightW * 0.9f,
-                                 (rightH * 0.2f) * 0.9f, UnicodeString());
-  authStatus->m_fontSize = fontSize;
-  RegisterButton(authStatus);
-
-  //g_app->m_gameMode = App::GameModeNone;
 }
 
 void GameMenuWindow::SetupDarwiniaPage()
@@ -2771,14 +1974,14 @@ void GameMenuWindow::SetupDarwiniaPage()
   float y = leftY + buttonH;
   float fontSize = fontMed;
 
-  //    PrologueButton *pb = new PrologueButton( "icons/menu_prologue.bmp" );
+  //    PrologueButton *pb = new PrologueButton( "icons\\menu_prologue.bmp" );
   auto pb = new PrologueButton("Prologue");
   pb->SetShortProperties("prologue", x, y, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_prologue"));
   pb->m_fontSize = fontSize;
   RegisterButton(pb);
   m_buttonOrder.PutData(pb);
 
-  //    CampaignButton *cb = new CampaignButton( "icons/menu_campaign.bmp" );
+  //    CampaignButton *cb = new CampaignButton( "icons\\menu_campaign.bmp" );
   auto cb = new CampaignButton("Campaign");
   cb->SetShortProperties("campaign", x, y += gap + buttonH, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_campaign"));
   RegisterButton(cb);
@@ -3181,7 +2384,7 @@ void GameMenuWindow::SetupNewOrJoinPage()
   yPos += buttonH * 1.3f;
 
   m_xblaSessionType = -1;
-#if defined(LAN_PLAY_ENABLED) || defined(WAN_PLAY_ENABLED)
+#if defined(LAN_PLAY_ENABLED)
   m_singlePlayer = false;
 #else
   m_singlePlayer = true;
@@ -3565,15 +2768,6 @@ void GameMenuWindow::SetupMultiplayerPage(int _gameType)
 
     char authKey[256];
     Authentication_GetKey(authKey);
-    bool demoKey = Authentication_IsDemoKey(authKey);
-
-    if (demoKey)
-    {
-      aomb->m_disabled = true;
-      aomb->m_inactive = true;
-      menu->m_disabled = true;
-      menu->m_inactive = true;
-    }
 #endif
   }
   else
@@ -3593,11 +2787,6 @@ void GameMenuWindow::SetupMultiplayerPage(int _gameType)
   auto imageButton = new GameTypeImageButton();
   imageButton->SetShortProperties("gametype", gameTypeX, gameTypeY, gameTypeW, gameTypeH, UnicodeString("gametype"));
   RegisterButton(imageButton);
-
-  /*MapDetailsButton *mdb = new MapDetailsButton();
-  mdb->SetShortProperties( "MapDetails", gameTypeX, gameTypeY, buttonW*0.5f, buttonH*0.5f, UnicodeString("MapDetails") );
-  mdb->m_fontSize = fontSmall * 0.75f;
-  RegisterButton( mdb );*/
 
   //
   // Back button
@@ -3875,81 +3064,6 @@ void GameMenuWindow::SetupMapSelectPage()
 
 }
 
-void GameMenuWindow::SetupHelpMenuPage()
-{
-  //SetTitle( LANGUAGEPHRASE( "multiwinia_menu_help" ) );
-
-  int w = g_app->m_renderer->ScreenW();
-  int h = g_app->m_renderer->ScreenH();
-
-  //
-  // Status buttons on the right
-
-  float leftX, leftY, leftW, leftH;
-  float fontLarge, fontMed, fontSmall;
-  float buttonW, buttonH, gap;
-  GetPosition_LeftBox(leftX, leftY, leftW, leftH);
-  GetFontSizes(fontLarge, fontMed, fontSmall);
-  GetButtonSizes(buttonW, buttonH, gap);
-
-  float xPos = leftX + (leftW - buttonW) / 2.0f;
-  float yPos = leftY + buttonH;
-  float fontSize = fontMed;
-
-  /* for( int i = 1; i < NumHelpPages; ++i )
-   {
-       char name[512];
-       sprintf( name, "multiwinia_helppage_%d", i );
-       HelpSelectButton *hsb = new HelpSelectButton();
-       hsb->SetShortProperties( name, xPos, yPos+=buttonH+gap, buttonW, buttonH, LANGUAGEPHRASE(name) );
-       hsb->m_helpType = i;
-       hsb->m_fontSize = fontSize;
-       RegisterButton( hsb );
-       m_buttonOrder.PutData( hsb );
-   }*/
-
-  auto back = new BackPageButton(m_currentPage);
-  back->SetShortProperties("multiwinia_menu_back", xPos, yPos += buttonH + gap, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_back"));
-  RegisterButton(back);
-  back->m_fontSize = fontSize;
-  m_buttonOrder.PutData(back);
-
-}
-
-void GameMenuWindow::SetupHelpPage()
-{
-  int w = g_app->m_renderer->ScreenW();
-  int h = g_app->m_renderer->ScreenH();
-
-  int imageW = 600;
-  int imageH = 400;
-
-  int xPos = (w / 2.0f) - (imageW / 2.0f);
-  int yPos = (h / 2.0f) - (imageH / 2.0f);
-
-  float buttonH = h * 0.05f;
-  float buttonW = w * 0.1f;
-  float fontSize = buttonH * 0.8f;
-  float gap = buttonH * 0.5f;
-
-  auto hib = new HelpImageButton();
-  hib->SetShortProperties("helpimage", xPos, yPos, imageW, imageH, UnicodeString("helpimage"));
-  RegisterButton(hib);
-
-  auto phb = new PrevHelpButton();
-  phb->SetShortProperties("multiwinia_menu_back", xPos, yPos + imageH + fontSize, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_back"));
-  phb->m_fontSize = fontSize;
-  RegisterButton(phb);
-  m_buttonOrder.PutData(phb);
-
-  auto nhb = new NextHelpButton();
-  nhb->SetShortProperties("dialog_next", xPos + imageW - buttonW, yPos += imageH + fontSize, buttonW, buttonH,
-                          LANGUAGEPHRASE("dialog_next"));
-  nhb->m_fontSize = fontSize;
-  RegisterButton(nhb);
-  m_buttonOrder.PutData(nhb);
-}
-
 void GameMenuWindow::SetupAdvancedOptionsPage()
 {
   int w = g_app->m_renderer->ScreenW();
@@ -4088,360 +3202,6 @@ void GameMenuWindow::SetupAdvancedOptionsPage()
   details->SetShortProperties("option_details", xPos, yPos, buttonW, buttonH, UnicodeString());
   details->m_fontSize = fontSmall;
   RegisterButton(details);
-}
-
-void GameMenuWindow::SetupLeaderBoardSelectPage() {}
-
-void GameMenuWindow::SetupLeaderboardPage() {}
-
-void GameMenuWindow::SetupSPDemoPage()
-{
-  float leftX, leftY, leftW, leftH;
-  float fontLarge, fontMed, fontSmall;
-  float buttonW, buttonH, gap;
-  float rightX, rightY, rightW, rightH;
-  GetPosition_LeftBox(leftX, leftY, leftW, leftH);
-  GetFontSizes(fontLarge, fontMed, fontSmall);
-  GetButtonSizes(buttonW, buttonH, gap);
-  GetPosition_RightBox(rightX, rightY, rightW, rightH);
-
-  float xPos = leftX + (leftW - buttonW) / 2.0f;
-  float yPos = leftY;
-  float fontSize = fontMed;
-
-  //
-  // Title
-
-  yPos += buttonH * 0.5f;
-  auto title = new GameMenuTitleButton();
-  title->SetShortProperties("title", leftX + 10, leftY + 10, leftW - 20, buttonH * 1.5f, LANGUAGEPHRASE("multiwinia_singleplayer_title"));
-  title->m_fontSize = fontMed;
-  RegisterButton(title);
-  yPos += buttonH * 1.3f;
-
-  auto vcpu = new MultiwiniaVersusCpuButton();
-  vcpu->SetShortProperties("versus", xPos, yPos += (buttonH + gap), buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_versuscpu"));
-  vcpu->m_fontSize = fontSize;
-  RegisterButton(vcpu);
-  m_buttonOrder.PutData(vcpu);
-  yPos += buttonH + gap;
-
-#ifdef INCLUDEGAMEMODE_PROLOGUE
-  PrologueButton* pb = new PrologueButton("Prologue"); pb->SetShortProperties("prologue", xPos, yPos += (buttonH + gap), buttonW, buttonH,
-                                                                              LANGUAGEPHRASE("multiwinia_menu_prologue")); pb->m_fontSize =
-    fontSize;
-  //pb->m_centered = true;
-  RegisterButton(pb); m_buttonOrder.PutData(pb);
-#endif
-
-#ifdef INCLUDEGAMEMODE_CAMPAIGN
-  //    CampaignButton *cb = new CampaignButton( "icons/menu_campaign.bmp" );
-  CampaignButton* cb = new CampaignButton("Campaign"); cb->SetShortProperties("campaign", xPos, yPos += (buttonH + gap), buttonW, buttonH,
-                                                                              LANGUAGEPHRASE("multiwinia_menu_campaign")); cb->m_fontSize =
-    fontSize;
-  //cb->m_centered = true;
-  cb->m_inactive = true; RegisterButton(cb); if (!IS_DEMO) { m_buttonOrder.PutData(cb); }
-#endif
-
-  yPos = leftY + leftH - buttonH * 2;
-
-  auto back = new FinishMultiwiniaButton(PageMain);
-  back->SetShortProperties("multiwinia_menu_back", xPos, yPos, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_back"));
-  back->m_fontSize = fontSize;
-  //back->m_centered = true;
-  RegisterButton(back);
-  m_buttonOrder.PutData(back);
-
-  //m_clickGameType = -1;
-
-  xPos = rightX + rightW * 0.1f;
-  yPos = rightY + rightW * 0.1f;
-  int thumbnailW = rightW * 0.8f;
-  int thumbnailH = thumbnailW * 2 / 3.0f;
-
-  auto imageButton = new GameTypeImageButton();
-  imageButton->SetShortProperties("gametype", xPos, yPos, thumbnailW, thumbnailH, UnicodeString("gametype"));
-  RegisterButton(imageButton);
-
-  auto info = new GameTypeInfoButton();
-  info->SetShortProperties("gametypeinfo", xPos, yPos + thumbnailH + fontSmall, thumbnailW, (rightH * 0.85f) - thumbnailH, UnicodeString());
-  info->m_fontSize = fontSmall * 1.2f;
-  RegisterButton(info);
-}
-
-void GameMenuWindow::SetupBuyMePage()
-{
-  int w = g_app->m_renderer->ScreenW();
-  int h = g_app->m_renderer->ScreenH();
-
-  float leftX, leftY, leftW, leftH;
-  float rightX, rightY, rightW, rightH;
-  float fontLarge, fontMed, fontSmall;
-  float buttonW, buttonH, gap;
-  GetPosition_LeftBox(leftX, leftY, leftW, leftH);
-  GetPosition_RightBox(rightX, rightY, rightW, rightH);
-  GetFontSizes(fontLarge, fontMed, fontSmall);
-  GetButtonSizes(buttonW, buttonH, gap);
-
-  float buttonX = leftX + (leftW - buttonW) / 2.0f;
-  float yPos = leftY + buttonH;
-  float fontSize = fontMed;
-
-  //SetTitle( LANGUAGEPHRASE("multiwinia_menu_buyfullgame") );
-
-  //
-  // Title
-
-  yPos += buttonH * 0.5f;
-  auto title = new GameMenuTitleButton();
-  title->SetShortProperties("title", leftX + 10, leftY + 10, leftW - 20, buttonH * 1.5f, LANGUAGEPHRASE("launchpad_buyme_1"));
-  title->m_fontSize = fontMed;
-  RegisterButton(title);
-  yPos += buttonH * 0.5f;
-
-  yPos += buttonH * 1;
-
-  auto pricebutton = new TextButton("multiwinia_buy_prices");
-  pricebutton->SetShortProperties("info", buttonX, yPos, buttonW, buttonH, UnicodeString());
-  pricebutton->m_fontSize = fontSmall * 1.3f;
-  pricebutton->m_shadow = true;
-  pricebutton->m_centered = true;
-  RegisterButton(pricebutton);
-
-  yPos += buttonH * 2;
-
-  float imageH = (40.0f / 300.0f) * buttonW * 0.6f;
-
-  auto price = new ImageButton("textures/prices.bmp");
-  price->SetShortProperties("image", buttonX + buttonW * 0.2f, yPos + buttonH, buttonW * 0.6f, imageH, UnicodeString());
-  price->m_border = false;
-  RegisterButton(price);
-
-  yPos += buttonH * 2.5f;
-  auto unlock = new UnlockFullGameButton();
-  unlock->SetShortProperties("launchpad_button_buynow", buttonX + buttonW * 0.2f, yPos, buttonW * 0.6f, buttonH * 2,
-                             LANGUAGEPHRASE("launchpad_button_buynow"));
-  unlock->m_centered = true;
-  strcpy(unlock->m_url, g_app->GetBuyNowURL());
-
-  RegisterButton(unlock);
-  unlock->m_fontSize = fontMed * 1.2f;
-  m_buttonOrder.PutData(unlock);
-
-  yPos = leftY + leftH - buttonH * 3;
-
-  auto back = new BackPageButton(m_currentPage);
-  back->SetShortProperties("multiwinia_menu_back", buttonX, yPos += buttonH, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_back"));
-  RegisterButton(back);
-  back->m_fontSize = fontSize;
-  m_buttonOrder.PutData(back);
-
-  buttonX = rightX + rightW * 0.1f;
-  yPos = rightY + rightH * 0.1f;
-
-  imageH = (149.0f / 394.0f) * rightW * 0.8f;
-
-  auto button = new ImageButton("textures/multiwinia.bmp");
-  button->SetShortProperties("image", buttonX, yPos, rightW * 0.8f, imageH, UnicodeString());
-  RegisterButton(button);
-
-  auto infobutton = new TextButton("multiwinia_buynow");
-  infobutton->SetShortProperties("info", buttonX, yPos += imageH + fontSmall, rightW, rightH, UnicodeString());
-  infobutton->m_fontSize = fontSmall;
-  infobutton->m_shadow = true;
-  RegisterButton(infobutton);
-
-  yPos -= buttonH * 3;
-}
-
-bool GameMenuWindow::CheckNewAuthKeyStatus()
-{
-  // This function only does a basic check, and requests the metaserver
-  // to check the key (so that we get the its true status back at a later stage)
-
-  char authKey[256];
-  Authentication_GetKey(authKey);
-  int authStatus = Authentication_SimpleKeyCheck(authKey, METASERVER_GAMETYPE_MULTIWINIA);
-
-  if (authStatus == AuthenticationAccepted)
-  {
-    if (!Authentication_IsDemoKey(authKey))
-    {
-      // Trigger a check of the auth key
-      Authentication_RequestStatus(authKey, METASERVER_GAMETYPE_MULTIWINIA);
-    }
-
-    return true;
-  }
-
-  return false;
-}
-
-void GameMenuWindow::PasteFromClipboard()
-{
-  bool gotClipboardText = false;
-  char textClipboard[AUTHENTICATION_KEYLEN + 1];
-  *textClipboard = '\0';
-
-  // Read key into clipboard
-#ifdef TARGET_MSVC
-  bool opened = OpenClipboard(nullptr);
-  if (opened)
-  {
-    bool textAvailable = IsClipboardFormatAvailable(CF_TEXT);
-    if (textAvailable)
-    {
-      HANDLE clipTextHandle = GetClipboardData(CF_TEXT);
-      if (clipTextHandle)
-      {
-        auto text = static_cast<char*>(GlobalLock(clipTextHandle));
-        if (clipTextHandle)
-        {
-          strncpy(textClipboard, text, AUTHENTICATION_KEYLEN - 1);
-          textClipboard[AUTHENTICATION_KEYLEN - 1] = '\0';
-          gotClipboardText = true;
-
-          GlobalUnlock(text);
-        }
-      }
-    }
-    CloseClipboard();
-  }
-#elif TARGET_OS_MACOSX
-  PasteboardRef clipboard = NULL; ItemCount numItems = 0; CFDataRef clipboardData = NULL; CFStringRef clipboardString;
-  PasteboardCreate(kPasteboardClipboard, &clipboard); if (clipboard)
-  {
-    PasteboardGetItemCount(clipboard, &numItems);
-
-    // Use the first item, if it exists. Multiple items are only for drag-and-drop, AFAIK
-    if (numItems > 0)
-    {
-      PasteboardItemID firstItem;
-      PasteboardGetItemIdentifier(clipboard, 1, &firstItem);
-      PasteboardCopyItemFlavorData(clipboard, firstItem, CFSTR("public.utf16-plain-text"), &clipboardData);
-      if (clipboardData)
-      {
-        clipboardString = CFStringCreateWithBytes(NULL, CFDataGetBytePtr(clipboardData), CFDataGetLength(clipboardData),
-                                                  kCFStringEncodingUnicode, false);
-
-        // Convert to Latin 1 encoding, and copy as much as will fit
-        memset(textClipboard, 0, sizeof(textClipboard));
-        CFStringGetBytes(clipboardString, CFRangeMake(0, CFStringGetLength(clipboardString)), kCFStringEncodingWindowsLatin1, 0, false,
-                         (UInt8*)textClipboard, AUTHENTICATION_KEYLEN - 1, NULL);
-        gotClipboardText = true;
-
-        CFRelease(clipboardString);
-        CFRelease(clipboardData);
-      }
-    }
-  } CFRelease(clipboard);
-#endif // platform specific
-
-  // Cross-platform code, once we've gotten the clipboard contents into textClipboard
-  //
-  if (gotClipboardText && strlen(textClipboard) > 0)
-  {
-    strncpy(m_authKey, textClipboard, AUTHENTICATION_KEYLEN);
-    m_authKey[sizeof(m_authKey) - 1] = '\0';
-
-    strupr(m_authKey);
-
-    char path[512];
-    strcpy(path, g_app->GetProfileDirectory());
-    char fullFileName[512];
-    sprintf(fullFileName, "%sauthkey.dev", path);
-
-    Authentication_SetKey(m_authKey);
-    Authentication_SaveKey(m_authKey, fullFileName);
-
-    CheckNewAuthKeyStatus();
-  }
-}
-
-void GameMenuWindow::SetupAuthKeyPage()
-{
-  int w = g_app->m_renderer->ScreenW();
-  int h = g_app->m_renderer->ScreenH();
-
-  float leftX, leftY, leftW, leftH;
-  float fontLarge, fontMed, fontSmall;
-  float buttonW, buttonH, gap;
-  GetPosition_LeftBox(leftX, leftY, leftW, leftH);
-  GetFontSizes(fontLarge, fontMed, fontSmall);
-  GetButtonSizes(buttonW, buttonH, gap);
-
-  float buttonX = leftX + (leftW - buttonW) / 2.0f;
-  float yPos = leftY;
-  float fontSize = fontMed;
-
-  yPos += buttonH * 0.5f;
-  auto title = new GameMenuTitleButton();
-  title->SetShortProperties("title", leftX + 10, leftY + 10, leftW - 20, buttonH * 1.5f, LANGUAGEPHRASE("multiwinia_enterauthkey"));
-  title->m_fontSize = fontMed;
-  RegisterButton(title);
-  yPos += buttonH * 1.3f;
-
-  auto auth = new AuthInputField();
-  auth->SetShortProperties("auth_input", buttonX, yPos += buttonH + gap, buttonW, buttonH / 2.0f, UnicodeString());
-  auth->RegisterString(m_authKey, AUTHENTICATION_KEYLEN + 1);
-  auth->m_fontSize = buttonW / (AUTHENTICATION_KEYLEN - 1);
-
-  RegisterButton(auth);
-
-  BeginTextEdit("auth_input");
-
-#if defined(TARGET_PC_HARDWARECOMPAT) || defined(TARGET_BETATEST_GROUP) || defined(TARGET_ASSAULT_STRESSTEST)
-  yPos = leftY + leftH - buttonH * 4;
-#else
-  yPos = leftY + leftH - buttonH * 5;
-#endif
-
-  // Only show the paste button on platforms with a paste implementation
-#if defined(TARGET_MSVC) || defined(TARGET_OS_MACOSX)
-  auto paste = new PasteKeyButton();
-  paste->SetProperties("paste", buttonX, yPos, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_paste"),
-                       LANGUAGEPHRASE("multiwinia_menu_paste_tooltip"));
-  RegisterButton(paste);
-  paste->m_fontSize = fontMed;
-  m_buttonOrder.PutData(paste);
-#endif
-
-#if defined(TARGET_PC_HARDWARECOMPAT) || defined(TARGET_BETATEST_GROUP) || defined(TARGET_ASSAULT_STRESSTEST)
-  float buttonWBottom = (buttonW - gap) / 2.0f;
-#else
-  float buttonWBottom = buttonW;
-
-  yPos = leftY + leftH - buttonH * 3;
-
-  auto playDemo = new PlayDemoAuthkeyButton();
-  playDemo->SetShortProperties("multiwinia_menu_play_demo", buttonX, yPos, buttonWBottom, buttonH,
-                               LANGUAGEPHRASE("multiwinia_menu_play_demo"));
-  RegisterButton(playDemo);
-  playDemo->m_fontSize = fontMed;
-  m_buttonOrder.PutData(playDemo);
-#endif
-
-  yPos = leftY + leftH - buttonH * 2;
-
-  auto done = new EnterAuthkeyButton();
-
-  done->SetShortProperties("multiwinia_menu_done", buttonX, yPos, buttonWBottom, buttonH, LANGUAGEPHRASE("multiwinia_menu_done"));
-  RegisterButton(done);
-  done->m_fontSize = fontMed;
-  m_buttonOrder.PutData(done);
-
-#if defined(TARGET_PC_HARDWARECOMPAT) || defined(TARGET_BETATEST_GROUP) || defined(TARGET_ASSAULT_STRESSTEST)
-  QuitAuthkeyButton* quit = new QuitAuthkeyButton(); quit->SetShortProperties("multiwinia_menu_quit_auth_key",
-                                                                              buttonX + buttonWBottom + gap, yPos, buttonWBottom, buttonH,
-                                                                              LANGUAGEPHRASE("multiwinia_menu_quit")); RegisterButton(quit);
-  quit->m_fontSize = fontMed; m_buttonOrder.PutData(quit);
-#endif
-
-  /*BackPageButton *back = new BackPageButton( GameMenuWindow::PageMain );
-  back->SetShortProperties( "multiwinia_menu_back", buttonX, yPos+=buttonH+gap, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_back") );
-  RegisterButton( back );
-  back->m_fontSize = fontMed;
-  m_buttonOrder.PutData( back );*/
 }
 
 void GameMenuWindow::SetupPlayerOptionsPage()
@@ -4654,25 +3414,13 @@ void GameMenuWindow::SetupUpdatePage()
   RegisterButton(title);
   yPos += buttonH * 1.3f;
 
-#ifdef TARGET_OS_MACOSX
-  RunSparkleButton* updater = new RunSparkleButton(); updater->SetShortProperties("multiwinia_menu_autopatch", buttonX,
-                                                                                  yPos += buttonH + gap, buttonW, buttonH,
-                                                                                  LANGUAGEPHRASE("multiwinia_menu_autopatch"));
-#else
   auto updater = new RunAutoPatcherButton();
   // FIXME: localize
   updater->SetShortProperties("multiwinia_menu_autopatch", buttonX, yPos += buttonH + gap, buttonW, buttonH, "Update");
-#endif
+
   updater->m_fontSize = fontSize;
   RegisterButton(updater);
   m_buttonOrder.PutData(updater);
-
-  auto website = new VisitWebsiteButton();
-  website->SetShortProperties("dialog_visitwebsite", buttonX, yPos += buttonH + gap, buttonW, buttonH,
-                              LANGUAGEPHRASE("dialog_visitwebsite"));
-  website->m_fontSize = fontSize;
-  RegisterButton(website);
-  m_buttonOrder.PutData(website);
 
   yPos = leftY + leftH - (buttonH * 2);
 
@@ -4761,70 +3509,6 @@ void GameMenuWindow::SetupCreditsPage()
   yPos = leftY + leftH - (buttonH * 2);
 
   auto back = new BackPageButton(m_currentPage);
-  back->SetShortProperties("multiwinia_menu_back", buttonX, yPos, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_back"));
-  RegisterButton(back);
-  back->m_fontSize = fontMed;
-  m_buttonOrder.PutData(back);
-}
-
-void GameMenuWindow::SetupTutorialPage()
-{
-  int w = g_app->m_renderer->ScreenW();
-  int h = g_app->m_renderer->ScreenH();
-
-  float leftX, leftY, leftW, leftH;
-  float fontLarge, fontMed, fontSmall;
-  float buttonW, buttonH, gap;
-  GetPosition_LeftBox(leftX, leftY, leftW, leftH);
-  GetFontSizes(fontLarge, fontMed, fontSmall);
-  GetButtonSizes(buttonW, buttonH, gap);
-
-  float buttonX = leftX + (leftW - buttonW) / 2.0f;
-  float yPos = leftY;
-  float fontSize = fontMed;
-
-  yPos += buttonH * 0.5f;
-  auto title = new GameMenuTitleButton();
-  title->SetShortProperties("title", leftX + 10, leftY + 10, leftW - 20, buttonH * 1.5f, LANGUAGEPHRASE("multiwinia_menu_tutorial_short"));
-  title->m_fontSize = fontMed;
-  RegisterButton(title);
-  yPos += buttonH * 1.3f;
-
-#ifdef INCLUDE_TUTORIAL
-  auto qsb = new TutorialButton();
-  qsb->SetShortProperties("multiwinia_menu_tutorial1", buttonX, yPos += buttonH + gap, buttonW, buttonH,
-                          LANGUAGEPHRASE("multiwinia_menu_tutorial1"));
-  qsb->m_fontSize = fontSize;
-  qsb->m_tutorialType = App::MultiwiniaTutorial1;
-#if defined(TARGET_PC_HARDWARECOMPAT)
-  qsb->m_inactive = true;
-#endif
-  RegisterButton(qsb);
-  m_buttonOrder.PutData(qsb);
-
-  if (g_app->GetMapID(Multiwinia::GameTypeKingOfTheHill, MAPID_MP_KOTH_2P_1) == -1 || !g_app->IsMapPermitted(
-    Multiwinia::GameTypeKingOfTheHill, MAPID_MP_KOTH_2P_1))
-    qsb->m_inactive = true;
-
-  qsb = new TutorialButton();
-  qsb->SetShortProperties("multiwinia_menu_tutorial2", buttonX, yPos += buttonH + gap, buttonW, buttonH,
-                          LANGUAGEPHRASE("multiwinia_menu_tutorial2"));
-  qsb->m_fontSize = fontSize;
-  qsb->m_tutorialType = App::MultiwiniaTutorial2;
-#if defined(TARGET_PC_HARDWARECOMPAT)
-  qsb->m_inactive = true;
-#endif
-  RegisterButton(qsb);
-  m_buttonOrder.PutData(qsb);
-
-  if (g_app->GetMapID(Multiwinia::GameTypeKingOfTheHill, MAPID_MP_KOTH_3P_1) == -1 || !g_app->IsMapPermitted(
-    Multiwinia::GameTypeKingOfTheHill, MAPID_MP_KOTH_3P_1))
-    qsb->m_inactive = true;
-#endif
-
-  yPos = leftY + leftH - (buttonH * 2);
-
-  auto back = new BackPageButton(PageMain);
   back->SetShortProperties("multiwinia_menu_back", buttonX, yPos, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_back"));
   RegisterButton(back);
   back->m_fontSize = fontMed;

@@ -155,7 +155,7 @@ void ShamanInterface::RenderBackground()
 	int size = 550;
 
 	glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons/shaman_shadow.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons\\shaman_shadow.bmp" ) );
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR );
     glDepthMask     ( false );
     glColor4f       ( m_alpha, m_alpha, m_alpha, 0.0 );         
@@ -167,7 +167,7 @@ void ShamanInterface::RenderBackground()
     glEnd();
 
 	char bmpFilename[256];
-    sprintf( bmpFilename, "textures/shaman_background.bmp" );
+    sprintf( bmpFilename, "textures\\shaman_background.bmp" );
     unsigned int texId = g_app->m_resource->GetTexture( bmpFilename );
 
     glEnable        ( GL_TEXTURE_2D );
@@ -205,7 +205,7 @@ void ShamanInterface::RenderEggs()
 	Vector2 iconCentre = Vector2( x, y );
 
 	glEnable        ( GL_TEXTURE_2D );
-	glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons/shaman_shadow.bmp" ) );
+	glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons\\shaman_shadow.bmp" ) );
 	glBlendFunc     ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR );
 	glDepthMask     ( false );
 	glColor4f       ( m_alpha, m_alpha, m_alpha, 0.0 );         
@@ -221,7 +221,7 @@ void ShamanInterface::RenderEggs()
 	{
         glColor4f( 0.5, 0.5, 0.5, 1.0 );
 		char bmpFilename[256];
-		sprintf( bmpFilename, "icons/%s", GetIconFileName( entityId ) );    
+		sprintf( bmpFilename, "icons\\%s", GetIconFileName( entityId ) );    
 		unsigned int texId = g_app->m_resource->GetTexture( bmpFilename );       
 
 		glEnable        ( GL_TEXTURE_2D );
@@ -266,7 +266,7 @@ void ShamanInterface::RenderSelectionIcon()
 
 
     char bmpFilename[256];
-    sprintf( bmpFilename, "icons/mouse_selection.bmp" );
+    sprintf( bmpFilename, "icons\\mouse_selection.bmp" );
     unsigned int texId = g_app->m_resource->GetTexture( bmpFilename );       
 
     glEnable        ( GL_TEXTURE_2D );
@@ -454,7 +454,7 @@ void ShamanIcon::Render(float _alpha)
 //    Vector2 iconCentre = Vector2(m_screenPos.x, m_screenPos.y);
 
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons/shaman_shadow.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons\\shaman_shadow.bmp" ) );
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR );
     glDepthMask     ( false );
     glColor4f       ( _alpha, _alpha, _alpha, 0.0 );         
@@ -467,7 +467,7 @@ void ShamanIcon::Render(float _alpha)
 
 
     char bmpFilename[256];
-    sprintf( bmpFilename, "icons/%s", m_iconFilename );    
+    sprintf( bmpFilename, "icons\\%s", m_iconFilename );    
     unsigned int texId = g_app->m_resource->GetTexture( bmpFilename );       
 
     glEnable        ( GL_TEXTURE_2D );

@@ -4,7 +4,6 @@
 #include "building.h"
 
 
-// ============================================================================
 
 class SpawnBuildingSpirit
 {
@@ -64,7 +63,6 @@ public:
     void Write  ( TextWriter *_out );						
 };
 
-// ============================================================================
 
 class SpawnLink : public SpawnBuilding
 {
@@ -73,7 +71,6 @@ public:
 };
 
 
-// ============================================================================
 
 class MasterSpawnPoint : public SpawnBuilding
 {
@@ -96,7 +93,6 @@ public:
 };
 
 
-// ============================================================================
 
 
 class SpawnPoint : public SpawnBuilding
@@ -140,7 +136,6 @@ public:
 };
 
 
-// ============================================================================
 
 class SpawnPopulationLock : public Building
 {

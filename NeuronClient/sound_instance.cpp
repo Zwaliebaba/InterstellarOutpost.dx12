@@ -21,7 +21,6 @@
 #include "multiwinia.h"
 
 
-// ============================================================================
 // class DspHandle
 
 DspHandle::DspHandle()
@@ -80,7 +79,6 @@ void DspHandle::Advance()
 
 
 
-// ============================================================================
 // class SoundInstanceId
 
 int SoundInstanceId::m_nextUniqueId = 0;
@@ -121,7 +119,6 @@ SoundInstanceId const &SoundInstanceId::operator = (SoundInstanceId const &w)
 }
 
 
-// ============================================================================
 // class SoundInstance
 
 SoundInstance::SoundInstance()

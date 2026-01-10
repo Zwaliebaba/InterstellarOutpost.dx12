@@ -495,7 +495,7 @@ void MultiwiniaZone::RenderZoneEdge(double startAngle, double totalAngle, RGBACo
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/laser-long.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\laser-long.bmp"));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
@@ -738,18 +738,18 @@ void MultiwiniaZone::RenderBlitzkrieg()
   switch (m_blitzkriegUpOrDown)
   {
   case -1:
-    filename = "icons/flag_down.bmp";
+    filename = "icons\\flag_down.bmp";
     break;
   case 0:
-    filename = "icons/flag.bmp";
+    filename = "icons\\flag.bmp";
     break;
   case 1:
-    filename = "icons/flag_up.bmp";
+    filename = "icons\\flag_up.bmp";
     break;
   }
 
   if (IsBlitzkriegZoneLocked())
-    filename = "icons/flag_locked.bmp";
+    filename = "icons\\flag_locked.bmp";
 
   m_blitzkriegFlag->SetPosition(flagPos);
   m_blitzkriegFlag->SetOrientation(front, up);

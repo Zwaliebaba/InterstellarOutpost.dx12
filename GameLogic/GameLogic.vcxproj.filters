@@ -44,9 +44,6 @@
     <ClCompile Include="input_field.cpp">
       <Filter>Interface</Filter>
     </ClCompile>
-    <ClCompile Include="leaderboards_window.cpp">
-      <Filter>Interface</Filter>
-    </ClCompile>
     <ClCompile Include="mainmenus.cpp">
       <Filter>Interface</Filter>
     </ClCompile>
@@ -362,15 +359,6 @@
     <ClInclude Include="ApplyNameButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
-    <ClInclude Include="AuthInputField.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="AuthPageButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="AuthStatusButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
     <ClInclude Include="BuyNowInfoButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
@@ -396,9 +384,6 @@
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="DarwiniaPlusSPButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="EnterAuthKeyButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="ErrorDialog.h">
@@ -440,9 +425,6 @@
     <ClInclude Include="HelpImageButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
-    <ClInclude Include="HelpModeButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
     <ClInclude Include="HelpSelectButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
@@ -482,9 +464,6 @@
     <ClInclude Include="motdButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
-    <ClInclude Include="MultiwiniaEditorButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
     <ClInclude Include="MultiwiniaModeButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
@@ -506,9 +485,6 @@
     <ClInclude Include="PasteKeyButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
-    <ClInclude Include="PlayDemoAuthkeyButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
     <ClInclude Include="PlayGameButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
@@ -524,9 +500,6 @@
     <ClInclude Include="QuickStartButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
-    <ClInclude Include="QuitAuthKeyButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
     <ClInclude Include="QuitButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
@@ -534,9 +507,6 @@
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="ResearchModeButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="RollingDemoButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="ScrollingTextButton.h">
@@ -585,9 +555,6 @@
       <Filter>Interface</Filter>
     </ClInclude>
     <ClInclude Include="input_field.h">
-      <Filter>Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="leaderboards_window.h">
       <Filter>Interface</Filter>
     </ClInclude>
     <ClInclude Include="mainmenus.h">

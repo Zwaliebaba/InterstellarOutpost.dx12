@@ -964,7 +964,7 @@ void Water::Render()
     START_PROFILE("Render Water");
 
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/triangleOutline.bmp", true, false));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\triangleOutline.bmp", true, false));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

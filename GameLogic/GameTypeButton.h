@@ -41,17 +41,17 @@ class GameTypeButton : public GameMenuButton
         if (strstr(difficulty, "advanced"))
         {
           glColor4f(1.0f, 0.2f, 0.2f, 1.0f);
-          sprintf(imageName, "icons/menu_advanced.bmp");
+          sprintf(imageName, "icons\\menu_advanced.bmp");
         }
         else if (strstr(difficulty, "intermediate"))
         {
           glColor4f(1.0f, 1.0f, 0.2f, 1.0f);
-          sprintf(imageName, "icons/menu_intermediate.bmp");
+          sprintf(imageName, "icons\\menu_intermediate.bmp");
         }
         else
         {
           glColor4f(0.6f, 1.0f, 0.4f, 1.0f);
-          sprintf(imageName, "icons/menu_basic.bmp");
+          sprintf(imageName, "icons\\menu_basic.bmp");
         }
 
         g_titleFont.SetRenderOutline(false);

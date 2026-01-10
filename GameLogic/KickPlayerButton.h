@@ -60,9 +60,9 @@ public:
             glEnd();
         }
 
-        if( g_app->m_resource->DoesTextureExist( "icons/mouse_disabled.bmp" ) )
+        if( g_app->m_resource->DoesTextureExist( "icons\\mouse_disabled.bmp" ) )
         {        
-            int texId = g_app->m_resource->GetTexture( "icons/mouse_disabled.bmp" );
+            int texId = g_app->m_resource->GetTexture( "icons\\mouse_disabled.bmp" );
 
             glEnable        (GL_TEXTURE_2D);
 	        glEnable        (GL_BLEND);

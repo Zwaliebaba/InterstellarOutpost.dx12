@@ -433,7 +433,7 @@ void ParticleSystem::Render()
 
     glEnable        ( GL_BLEND );
 	glEnable	    ( GL_TEXTURE_2D );
-	glBindTexture   (GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/particle.bmp"));
+	glBindTexture   (GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\particle.bmp"));
 	glTexParameteri	(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );    
     glDepthMask     ( false );
 

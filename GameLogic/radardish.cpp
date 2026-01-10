@@ -457,7 +457,7 @@ void RadarDish::RenderSignal(double _predictionTime, double _radius, double _alp
   glEnable(GL_TEXTURE_2D);
 
   gglActiveTextureARB(GL_TEXTURE0_ARB);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/laserfence.bmp", true, true));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\laserfence.bmp", true, true));
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -467,7 +467,7 @@ void RadarDish::RenderSignal(double _predictionTime, double _radius, double _alp
   glEnable(GL_TEXTURE_2D);
 
   gglActiveTextureARB(GL_TEXTURE1_ARB);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/radarsignal.bmp", true, true));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\radarsignal.bmp", true, true));
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

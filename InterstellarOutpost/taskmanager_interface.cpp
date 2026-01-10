@@ -32,7 +32,6 @@
 #include "trunkport.h"
 #include "engineer.h"
 
-// ============================================================================
 
 ScreenZone::ScreenZone(char* _name, char* _tooltip, float _x, float _y, float _w, float _h, int _data)
   : m_x(_x),
@@ -49,7 +48,6 @@ ScreenZone::ScreenZone(char* _name, char* _tooltip, float _x, float _y, float _w
   strcpy(m_toolTip, _tooltip);
 }
 
-// ============================================================================
 
 KeyboardShortcut::KeyboardShortcut(std::string _name, int _data, ControlType _controltype)
   : ControlEventFunctor(_controltype),
@@ -60,7 +58,6 @@ const char* KeyboardShortcut::name() { return m_name.c_str(); }
 
 int KeyboardShortcut::data() { return m_data; }
 
-// ============================================================================
 
 TaskManagerInterface::TaskManagerInterface()
   : m_visible(false),

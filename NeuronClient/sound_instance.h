@@ -11,7 +11,6 @@ class DspEffect;
 class CachedSampleHandle;
 
 
-// ============================================================================
 // class DspHandle
 
 #define MAX_PARAMS  13
@@ -33,7 +32,6 @@ public:
 };
 
 
-// ============================================================================
 // class SoundInstanceId
 
 class SoundInstanceId
@@ -56,7 +54,6 @@ public:
 };
 
 
-// ============================================================================
 // class SoundInstance
 
 class SoundInstance

@@ -11,9 +11,6 @@
     <ClInclude Include="clienttoserver.h">
       <Filter>Network</Filter>
     </ClInclude>
-    <ClInclude Include="demo_limitations.h">
-      <Filter>Network</Filter>
-    </ClInclude>
     <ClInclude Include="ftp_manager.h">
       <Filter>Network</Filter>
     </ClInclude>
@@ -208,9 +205,6 @@
       <Filter>Network</Filter>
     </ClCompile>
     <ClCompile Include="clienttoserver.cpp">
-      <Filter>Network</Filter>
-    </ClCompile>
-    <ClCompile Include="demo_limitations.cpp">
       <Filter>Network</Filter>
     </ClCompile>
     <ClCompile Include="ftp_manager.cpp">

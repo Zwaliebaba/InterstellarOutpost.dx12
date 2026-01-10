@@ -158,7 +158,7 @@ void ThrowableWeapon::Render(double _predictionTime)
     double size = 1000.0 / sqrt(distToThrowable);
     glColor4ub(m_colour.r, m_colour.g, m_colour.b, 200);
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/starburst.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\starburst.bmp"));
     glDisable(GL_CULL_FACE);
     glBegin(GL_QUADS);
     glTexCoord2i(0, 0);
@@ -172,7 +172,7 @@ void ThrowableWeapon::Render(double _predictionTime)
     glEnd();
     size *= 0.4;
     glColor4f(1.0, 1.0, 1.0, 0.7);
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/starburst.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\starburst.bmp"));
     glBegin(GL_QUADS);
     glTexCoord2i(0, 1);
     glVertex3dv((predictedPos - g_app->m_camera->GetUp() * size).GetData());
@@ -786,7 +786,7 @@ void Laser::Render(double predictionTime)
   if (m_mindControl)
   {
     glEnd();
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/subversion.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\subversion.bmp"));
     glBegin(GL_QUADS);
     rightAngle *= 2.0;
   }
@@ -824,7 +824,7 @@ void Laser::Render(double predictionTime)
   if (m_mindControl)
   {
     glEnd();
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/laser.bmp", false));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\laser.bmp", false));
     glBegin(GL_QUADS);
   }
 }
@@ -988,7 +988,7 @@ void Shockwave::Render(double predictionTime)
 
     glColor4f(1.0, 0.5, 0.2, alpha);
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/starburst.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\starburst.bmp"));
     glDisable(GL_CULL_FACE);
 
     glBegin(GL_QUADS);
@@ -1013,7 +1013,7 @@ void Shockwave::Render(double predictionTime)
     alpha = 1.0 - (m_size - predictedLife) / 1.0;
 
     glColor4f(1.0, 0.5, 0.2, alpha);
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/glow.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\glow.bmp"));
     glBegin(GL_QUADS);
 
     for (int i = 0; i < 5; ++i)
@@ -1087,7 +1087,7 @@ void MuzzleFlash::Render(double _predictionTime)
   rightAngle *= m_size * 0.5;
 
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/muzzleflash.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\muzzleflash.bmp"));
   glDepthMask(false);
 
   if (m_size < 50)
@@ -1628,7 +1628,6 @@ bool Fireball::Damaged(int _darwinianId)
   return false;
 }
 
-// =================================================================
 
 PulseWave* PulseWave::s_pulseWave = nullptr;
 
@@ -1728,7 +1727,7 @@ void PulseWave::Render(double _predictionTime)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/laser-long.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\laser-long.bmp"));
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
@@ -1845,7 +1844,7 @@ void LandMine::Render(double _predictionTime)
   Vector3 lightPos = m_pos;
   lightPos += m_up * 10.0;
   glEnable        ( GL_TEXTURE_2D );
-  glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/starburst.bmp" ) );
+  glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\starburst.bmp" ) );
   glTexParameteri	( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
   glTexParameteri	( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
   glDisable       ( GL_CULL_FACE );

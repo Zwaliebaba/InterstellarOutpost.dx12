@@ -11,7 +11,6 @@ class Route;
 class GlobalEventCondition;
 
 
-// ============================================================================
 // class ScreenZone
 
 class ScreenZone
@@ -34,7 +33,6 @@ public:
 };
 
 
-// ============================================================================
 // class KeyboardShortcut
 
 class KeyboardShortcut : public ControlEventFunctor {
@@ -51,7 +49,6 @@ public:
 };
 
 
-// ============================================================================
 // class TaskManager
 // Please don't use me directly - use one of the derived classes
 

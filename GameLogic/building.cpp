@@ -353,7 +353,7 @@ void Building::RenderLights()
           glColor3ubv(g_app->m_location->m_teams[m_id.GetTeamId()]->m_colour.GetData());
 
         glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/starburst.bmp"));
+        glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\starburst.bmp"));
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glDisable(GL_CULL_FACE);
@@ -478,7 +478,7 @@ void Building::RenderPorts()
 
     glDisable(GL_CULL_FACE);
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/starburst.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\starburst.bmp"));
     glDepthMask(false);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);

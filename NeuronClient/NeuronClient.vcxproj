@@ -99,7 +99,6 @@
     <ClInclude Include="control_bindings.h" />
     <ClInclude Include="control_types.h" />
     <ClInclude Include="d3dx12.h" />
-    <ClInclude Include="demo_limitations.h" />
     <ClInclude Include="DirectXHelper.h" />
     <ClInclude Include="eclbutton.h" />
     <ClInclude Include="eclipse.h" />
@@ -167,7 +166,6 @@
     <ClCompile Include="clienttoserver.cpp" />
     <ClCompile Include="control_bindings.cpp" />
     <ClCompile Include="control_types.cpp" />
-    <ClCompile Include="demo_limitations.cpp" />
     <ClCompile Include="eclbutton.cpp" />
     <ClCompile Include="eclipse.cpp" />
     <ClCompile Include="eclwindow.cpp" />

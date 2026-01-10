@@ -134,7 +134,7 @@ void Team::Initialise()
       }
     }
 
-    reader = g_app->m_resource->GetBinaryReader("textures/glow.bmp");
+    reader = g_app->m_resource->GetBinaryReader("textures\\glow.bmp");
     BitmapRGBA glow(reader, "bmp");
     delete reader;
     big.Blit(0, 0, 128, 128, &glow, 32, 0, 128, 128, true);

@@ -1824,9 +1824,9 @@ void Armour::Render( double _predictionTime )
     char filename[256];
     switch( m_state )
     {
-        case StateIdle :        sprintf( filename, "icons/banner_none.bmp" );              break;
-        case StateUnloading :   sprintf( filename, "icons/banner_unload.bmp" );            break;
-        case StateLoading :     sprintf( filename, "icons/banner_follow.bmp" );            break;
+        case StateIdle :        sprintf( filename, "icons\\banner_none.bmp" );              break;
+        case StateUnloading :   sprintf( filename, "icons\\banner_unload.bmp" );            break;
+        case StateLoading :     sprintf( filename, "icons\\banner_follow.bmp" );            break;
     }
 
     m_flag.SetTexture( g_app->m_resource->GetTexture( filename ) );
@@ -1860,11 +1860,11 @@ void Armour::Render( double _predictionTime )
 
             if( m_conversionOrder == StateUnloading )
             {
-                m_deployFlag.Render( m_id.GetTeamId(), "icons/banner_unload.bmp" );
+                m_deployFlag.Render( m_id.GetTeamId(), "icons\\banner_unload.bmp" );
             }
             else
             {
-                m_deployFlag.Render( m_id.GetTeamId(), "icons/banner_follow.bmp" );
+                m_deployFlag.Render( m_id.GetTeamId(), "icons\\banner_follow.bmp" );
             }
         }
     }*/

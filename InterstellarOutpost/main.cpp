@@ -621,9 +621,9 @@ void ReadInputPreferences()
   }
 }
 
-void Initialise(const char* _cmdLine)
+void Initialise()
 {
-  DebugTrace("%s %s built %s\n", APP_NAME, APP_VERSION, __DATE__);
+  DebugTrace("{} {} built {}\n", APP_NAME, APP_VERSION, __DATE__);
 
   //
   // Initialise all our basic objects
@@ -885,7 +885,7 @@ void MainMenuLoop()
 
     g_app->m_renderer->Render();
     g_app->m_userInput->Advance();
-    //g_app->m_camera->Advance();  
+
     if (g_app->m_soundSystem->IsInitialized())
       g_app->m_soundSystem->Advance();
     HandleCommonConditions();
@@ -919,19 +919,9 @@ void MainMenuLoop()
   g_app->m_requireSoundsLoaded = true;
 }
 
-void RunTheGame(const char* _cmdLine)
+void RunTheGame()
 {
-  Initialise(_cmdLine);
-
-#ifdef TEST_HARNESS_ENABLED
-  if (g_prefsManager->GetInt("TestHarness") == 1)
-  {
-    g_app->m_testHarness = new TestHarness();
-    TestHarnessLoop();
-    Finalise();
-    exit(0);
-  }
-#endif // TEST_HARNESS_ENABLED
+  Initialise();
 
   // 
   // Do whatever mode was requested
@@ -957,4 +947,4 @@ void RunTheGame(const char* _cmdLine)
 }
 
 // Main Function
-void AppMain(const char* _cmdLine) { RunTheGame(_cmdLine); }
+void AppMain(const char* _cmdLine) { RunTheGame(); }

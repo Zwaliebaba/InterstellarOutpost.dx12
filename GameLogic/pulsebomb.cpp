@@ -214,7 +214,7 @@ void PulseBomb::RenderAlphas( double _predictionTime )
     glEnable        ( GL_BLEND );
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/glow.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\glow.bmp" ) );
     
     double timeIndex = g_gameTime + m_id.GetUniqueId() * 10.0;
 
@@ -279,7 +279,7 @@ void PulseBomb::RenderCountdown( double _predictionTime )
         //
         // Render lines for over effect
 
-        glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/interface_grey.bmp" ) );
+        glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\interface_grey.bmp" ) );
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
         glEnable( GL_TEXTURE_2D );

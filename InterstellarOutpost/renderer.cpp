@@ -7,7 +7,6 @@
 #include "math_utils.h"
 #include "mouse_cursor.h"
 #include "ogl_extensions.h"
-#include "persisting_debug_render.h"
 #include "preferences.h"
 #include "profiler.h"
 #include "resource.h"
@@ -193,7 +192,7 @@ void Renderer::RenderFlatTexture()
 {
   glColor3ubv(g_colourWhite.GetData());
   glEnable(GL_TEXTURE_2D);
-  int textureId = g_app->m_resource->GetTexture("textures/privatedemo.bmp", true, true);
+  int textureId = g_app->m_resource->GetTexture("textures\\privatedemo.bmp", true, true);
   if (textureId == -1)
     return;
   glBindTexture(GL_TEXTURE_2D, textureId);
@@ -260,7 +259,7 @@ void Renderer::RenderLogo()
   glColor4ub(255, 255, 255, 255);
   glEnable(GL_TEXTURE_2D);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-  int textureId = g_app->m_resource->GetTexture("textures/privatedemo.bmp", true, false);
+  int textureId = g_app->m_resource->GetTexture("textures\\privatedemo.bmp", true, false);
   if (textureId == -1)
     return;
   glBindTexture(GL_TEXTURE_2D, textureId);
@@ -578,7 +577,7 @@ void Renderer::RenderFrame(bool withFlip)
 
   if (m_renderDarwinLogo >= 0.0f)
   {
-    int textureId = g_app->m_resource->GetTexture("icons/darwin_research_associates.bmp");
+    int textureId = g_app->m_resource->GetTexture("icons\\darwin_research_associates.bmp");
 
     glBindTexture(GL_TEXTURE_2D, textureId);
     glEnable(GL_TEXTURE_2D);
@@ -1568,18 +1567,9 @@ void Renderer::StartMenuTransition()
 void Renderer::InitialiseMenuTransition(float _delay, int direction)
 {
 
-  if (RequirePowerOfTwoTextures())
-  {
-    m_texCoordW = min(1.0f, static_cast<float>(m_screenW) / static_cast<float>(nearestPowerOfTwo(m_screenW)));
-    m_texCoordH = min(1.0f, static_cast<float>(m_screenH) / static_cast<float>(nearestPowerOfTwo(m_screenH)));
-  }
-  else
-  {
-    m_texCoordW = 1.0f;
-    m_texCoordH = 1.0f;
-  }
+  m_texCoordW = 1.0f;
+  m_texCoordH = 1.0f;
 
-  //m_menuTransitionState = MenuTransitionBeginning;
   m_menuTransitionDuration = _delay;
   m_menuTransitionDirection = direction;
   CaptureFrameBuffer();
@@ -1751,8 +1741,6 @@ void Renderer::CaptureFrameBuffer()
 {
   // Also, we need to test this (by rendering it somehow?)
 
-  double timeNow = GetHighResTime();
-
   if (m_lastFrameBufferTexture == -1)
   {
     GLuint texId;
@@ -1766,23 +1754,11 @@ void Renderer::CaptureFrameBuffer()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-    if (RequirePowerOfTwoTextures())
-    {
-      glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, nearestPowerOfTwo(m_screenW), nearestPowerOfTwo(m_screenH), 0);
-    }
-    else
-      glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, m_screenW, m_screenH, 0);
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, m_screenW, m_screenH, 0);
   }
   else
   {
     glBindTexture(GL_TEXTURE_2D, m_lastFrameBufferTexture);
-
-    if (RequirePowerOfTwoTextures())
-    {
-      glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, nearestPowerOfTwo(m_screenW), nearestPowerOfTwo(m_screenH), 0);
-    }
-    else
-      glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, m_screenW, m_screenH, 0);
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, m_screenW, m_screenH, 0);
   }
 }

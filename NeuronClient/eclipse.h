@@ -14,7 +14,6 @@
 #include "eclwindow.h"
 #include "eclbutton.h"
 
-// ============================================================================
 // High level management
 
 void EclInitialise ( int screenW, int screenH );
@@ -27,7 +26,6 @@ void EclUpdate ();
 void EclShutdown ();
 
 
-// ============================================================================
 // Window management
 
 
@@ -40,8 +38,8 @@ void EclBringWindowToFront      ( char *name );
 void EclSetWindowPosition       ( char *name, int x, int y );
 void EclSetWindowSize           ( char *name, int w, int h );
 
-int EclGetWindowIndex           ( char *name );                                             // -1 = failure
-EclWindow *EclGetWindow         ( char *name );
+int EclGetWindowIndex           (const char *name );                                             // -1 = failure
+EclWindow *EclGetWindow         (const char *name );
 EclWindow *EclGetWindow         ( int x, int y );                                           
 
 bool EclMouseInWindow           ( EclWindow *window );
@@ -62,7 +60,6 @@ void EclSetCurrentFocus              (const char *name );
 char *EclGenerateUniqueWindowName( char *name );                                // In static mem (don't delete!)
 LList <EclWindow *> *EclGetWindows ();
 
-// ============================================================================
 // Dirty rectangles
 
 class DirtyRect
@@ -92,7 +89,6 @@ void EclResetDirtyRectangles    ();
 LList<DirtyRect *> *EclGetDirtyRects ();
 
 
-// ============================================================================
 // Other
 
 int EclGetAccurateTime          ();

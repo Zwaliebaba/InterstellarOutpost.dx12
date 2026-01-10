@@ -46,7 +46,6 @@
 #include "researchitem.h"
 #include "spawnpoint.h"
 
-// ============================================================================
 
 TaskManagerInterfaceIcons::TaskManagerInterfaceIcons()
   : m_screenId(ScreenTaskManager),
@@ -83,23 +82,23 @@ TaskManagerInterfaceIcons::TaskManagerInterfaceIcons()
   for (int i = 0; i < GlobalResearch::NumResearchItems; ++i)
   {
     char iconFilename[256];
-    sprintf(iconFilename, "icons/icon_%s.bmp", GlobalResearch::GetTypeName(i));
+    sprintf(iconFilename, "icons\\icon_%s.bmp", GlobalResearch::GetTypeName(i));
     if (g_app->m_resource->DoesTextureExist(iconFilename))
     {
       // unsigned int texId = g_app->m_resource->GetTexture( iconFilename, true, false );
     }
     char gestureFilename[256];
-    sprintf(gestureFilename, "icons/gesture_%s.bmp", GlobalResearch::GetTypeName(i));
+    sprintf(gestureFilename, "icons\\gesture_%s.bmp", GlobalResearch::GetTypeName(i));
     if (g_app->m_resource->DoesTextureExist(gestureFilename))
     {
       // unsigned int texId = g_app->m_resource->GetTexture( gestureFilename, true, false );
     }
   }
 
-  g_app->m_resource->GetTexture("textures/interface_grey.bmp", true, false);
-  g_app->m_resource->GetTexture("textures/interface_red.bmp", true, false);
-  g_app->m_resource->GetTexture("icons/gestureguide.bmp", true, false);
-  g_app->m_resource->GetTexture("icons/icon_shadow.bmp", true, false);
+  g_app->m_resource->GetTexture("textures\\interface_grey.bmp", true, false);
+  g_app->m_resource->GetTexture("textures\\interface_red.bmp", true, false);
+  g_app->m_resource->GetTexture("icons\\gestureguide.bmp", true, false);
+  g_app->m_resource->GetTexture("icons\\icon_shadow.bmp", true, false);
 
   //
   // Create keyboard shortcuts
@@ -625,7 +624,7 @@ void TaskManagerInterfaceIcons::Render()
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/interface_divider.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\interface_divider.bmp"));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -856,7 +855,7 @@ void TaskManagerInterfaceIcons::RenderProgressBar()
 
   glEnable(GL_TEXTURE_2D);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/tick.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\tick.bmp"));
 
   for (int i = 0; i < m_progressBarList.Size(); i++)
   {
@@ -888,7 +887,7 @@ void TaskManagerInterfaceIcons::RenderProgressBar()
       Vector2 pos = m_objectiveParticles[i].pos;
       float size = m_objectiveParticles[i].size;
 
-      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/starburst.bmp"));
+      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\starburst.bmp"));
       glColor4f(0.75f, 0.5f, 0.5f, m_objectiveParticles[i].alpha);
       glBegin(GL_QUADS);
       glTexCoord2f(0.0f, 0.0f);
@@ -1409,7 +1408,7 @@ void TaskManagerInterfaceIcons::RenderScreenZones()
     glEnd();
 
     glColor4f(1.0f, 1.0f, 0.3f, 1.0f);
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/mouse_selection.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\mouse_selection.bmp"));
     glEnable(GL_TEXTURE_2D);
 
     glBegin(GL_QUADS);
@@ -1734,8 +1733,8 @@ void TaskManagerInterfaceIcons::RenderTaskManager()
 
     if (render360Controls)
     {
-      RenderIcon("icons/button_lb.bmp", "icons/button_lb_shadow.bmp", 0, 10, 40, alpha);
-      RenderIcon("icons/button_rb.bmp", "icons/button_rb_shadow.bmp", m_screenW - 60, 10, 40, alpha);
+      RenderIcon("icons\\button_lb.bmp", "icons\\button_lb_shadow.bmp", 0, 10, 40, alpha);
+      RenderIcon("icons\\button_rb.bmp", "icons\\button_rb_shadow.bmp", m_screenW - 60, 10, 40, alpha);
     }
     else
     {
@@ -1812,7 +1811,7 @@ void TaskManagerInterfaceIcons::RenderCreateTaskMenu()
   // Background box
 
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/interface_red.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\interface_red.bmp"));
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -1872,7 +1871,7 @@ void TaskManagerInterfaceIcons::RenderCreateTaskMenu()
       // Render the shadow
 
       glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/icon_shadow.bmp"));
+      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\icon_shadow.bmp"));
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
       glDepthMask(false);
       glColor4f(0.5f, 0.5f, 0.5f, 0.0f);
@@ -1900,7 +1899,7 @@ void TaskManagerInterfaceIcons::RenderCreateTaskMenu()
       // Render the task symbol
 
       char iconFilename[256];
-      sprintf(iconFilename, "icons/icon_%s.bmp", GlobalResearch::GetTypeName(taskType));
+      sprintf(iconFilename, "icons\\icon_%s.bmp", GlobalResearch::GetTypeName(taskType));
       unsigned int texId = g_app->m_resource->GetTexture(iconFilename);
       if (texId != -1)
       {
@@ -1942,7 +1941,7 @@ void TaskManagerInterfaceIcons::RenderTitleBar()
 
   glColor4f(0.5f, 0.5f, 1.0f, 0.7f);
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/interface_grey.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\interface_grey.bmp"));
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
@@ -2020,7 +2019,7 @@ void TaskManagerInterfaceIcons::RenderRunningTasks()
   // Render shadows for available task slots
 
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/icon_shadow.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\icon_shadow.bmp"));
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
   glDepthMask(false);
   glColor4f(iconAlpha, iconAlpha, iconAlpha, 0.0f);
@@ -2059,7 +2058,7 @@ void TaskManagerInterfaceIcons::RenderRunningTasks()
   {
     Task* task = g_app->m_location->GetMyTeam()->m_taskManager->m_tasks[i];
     char bmpFilename[256];
-    sprintf(bmpFilename, "icons/icon_%s.bmp", Task::GetTaskName(task->m_type));
+    sprintf(bmpFilename, "icons\\icon_%s.bmp", Task::GetTaskName(task->m_type));
     unsigned int texId = g_app->m_resource->GetTexture(bmpFilename);
 
     //
@@ -2201,12 +2200,12 @@ void TaskManagerInterfaceIcons::RenderRunningTasks()
           for (int i = 0; i < availableWeapons.Size(); ++i)
           {
             int weaponType = availableWeapons[i];
-            sprintf(bmpFilename, "icons/icon_%s.bmp", Task::GetTaskName(weaponType));
+            sprintf(bmpFilename, "icons\\icon_%s.bmp", Task::GetTaskName(weaponType));
             texId = g_app->m_resource->GetTexture(bmpFilename);
 
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
             glColor4f(0.9f, 0.9f, 0.9f, 0.0f);
-            glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/icon_shadow.bmp"));
+            glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\icon_shadow.bmp"));
             glBegin(GL_QUADS);
             glTexCoord2i(0, 1);
             glVertex2f(weaponX - weaponSize / 2, weaponY - weaponSize / 2);
@@ -2263,7 +2262,7 @@ void TaskManagerInterfaceIcons::RenderRunningTasks()
       float deleteSize = iconSize * 0.4f;
 
       glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/icon_shadow.bmp"));
+      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\icon_shadow.bmp"));
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
       glDepthMask(false);
       glColor4f(0.9f, 0.9f, 0.9f, 0.0f);
@@ -2279,7 +2278,7 @@ void TaskManagerInterfaceIcons::RenderRunningTasks()
       glVertex2f(deleteX - deleteSize / 2.0f, deleteY + deleteSize / 2.0f);
       glEnd();
 
-      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/icon_delete.bmp"));
+      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\icon_delete.bmp"));
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
       glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -2367,7 +2366,7 @@ void TaskManagerInterfaceIcons::RenderCompass(float _screenX, float _screenY, co
   compassRight.x = compassRight.y;
   compassRight.y = temp * -1.0f;
 
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/compass.bmp", true, false));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\compass.bmp", true, false));
   glEnable(GL_TEXTURE_2D);
 
   g_app->m_renderer->SetupMatricesFor2D();
@@ -2519,7 +2518,7 @@ void TaskManagerInterfaceIcons::RenderObjectives()
     // Background box
 
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/interface_red.bmp"));
+    glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\interface_red.bmp"));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -2627,7 +2626,7 @@ void TaskManagerInterfaceIcons::RenderObjectives()
   g_gameFont.SetRenderShadow(false);
 
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/interface_red.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\interface_red.bmp"));
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -2737,7 +2736,7 @@ void TaskManagerInterfaceIcons::RenderObjectives()
     unsigned alpha = (fmodf(g_gameTime, 2.0f) < 1.0f ? 155 : 255);
 
     if (render360Controls)
-      RenderIcon("icons/button_lb.bmp", "icons/button_lb_shadow.bmp", m_screenW - 60, 10, 40, alpha);
+      RenderIcon("icons\\button_lb.bmp", "icons\\button_lb_shadow.bmp", m_screenW - 60, 10, 40, alpha);
     else
     {
       glColor4ub(199, 214, 220, alpha);
@@ -2818,7 +2817,7 @@ void TaskManagerInterfaceIcons::RenderResearch()
   // Background box
 
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/interface_red.bmp"));
+  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\interface_red.bmp"));
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -2894,7 +2893,7 @@ void TaskManagerInterfaceIcons::RenderResearch()
       // Render the shadow
 
       glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons/icon_shadow.bmp"));
+      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\icon_shadow.bmp"));
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
       glDepthMask(false);
       glColor4f(0.5f, 0.5f, 0.5f, 0.0f);
@@ -2918,7 +2917,7 @@ void TaskManagerInterfaceIcons::RenderResearch()
       // Render the task symbol
 
       char iconFilename[256];
-      sprintf(iconFilename, "icons/icon_%s.bmp", GlobalResearch::GetTypeName(i));
+      sprintf(iconFilename, "icons\\icon_%s.bmp", GlobalResearch::GetTypeName(i));
       unsigned int texId = g_app->m_resource->GetTexture(iconFilename);
       if (texId != -1)
       {
@@ -2964,7 +2963,7 @@ void TaskManagerInterfaceIcons::RenderResearch()
       float boxH = iconSize * 0.4f;
       float boxScale = 0.85f;
 
-      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/interface_grey.bmp"));
+      glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\interface_grey.bmp"));
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -3091,7 +3090,7 @@ void TaskManagerInterfaceIcons::RenderResearch()
     unsigned alpha = (fmodf(g_gameTime, 2.0f) < 1.0f ? 155 : 255);
 
     if (render360Controls)
-      RenderIcon("icons/button_rb.bmp", "icons/button_rb_shadow.bmp", m_screenW - 60, m_screenH - 70, 40, alpha);
+      RenderIcon("icons\\button_rb.bmp", "icons\\button_rb_shadow.bmp", m_screenW - 60, m_screenH - 70, 40, alpha);
     else
     {
       glColor4ub(199, 214, 220, alpha);

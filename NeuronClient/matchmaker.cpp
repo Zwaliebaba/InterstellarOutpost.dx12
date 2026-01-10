@@ -9,7 +9,6 @@
 #include "metaserver.h"
 #include "metaserver_defines.h"
 
-// ============================================================================
 // Static data for MatchMaker
 
 static char* s_matchMakerIp = nullptr;
@@ -39,7 +38,6 @@ struct MatchMakerListener
 static DArray<MatchMakerListener*> s_listeners;
 static NetMutex s_listenersMutex;
 
-// ============================================================================
 
 void MatchMaker_LocateService(const char* _matchMakerIp, int _port)
 {
@@ -94,84 +92,6 @@ static MatchMakerListener* GetListener(NetSocketListener* _listener, const NetLo
 
 static NetCallBackRetType RequestIdentityThread(void* ignored)
 {
-#ifdef WAN_PLAY_ENABLED
-  auto listener = static_cast<NetSocketListener*>(ignored);
-  MatchMakerListener* _listener = GetListener(listener, NetLockMutex(s_listenersMutex));
-  ASSERT(_listener);
-
-  DebugTrace("RequestIdentityThread for listener {:x} started\n", (size_t)_listener);
-
-  //
-  // Generate a uniqueID for this request
-  // So we can tell the replies apart
-
-  s_uniqueRequestMutex.Lock();
-  int uniqueId = s_uniqueRequestid;
-  ++s_uniqueRequestid;
-  s_uniqueRequestMutex.Unlock();
-
-  _listener->m_uniqueId = uniqueId;
-
-  //
-  // Build our request and convert to a byte stream
-  // (only need to do this once and keep re-sending)
-
-  Directory request;
-  request.SetName(NET_MATCHMAKER_MESSAGE);
-  request.CreateData(NET_METASERVER_COMMAND, NET_MATCHMAKER_REQUEST_IDENTITY);
-  request.CreateData(NET_MATCHMAKER_UNIQUEID, uniqueId);
-
-  //
-  // Open a connection to the MatchMaker service
-  // Start sending requests for our ID every few seconds
-  // to ensure the connection stays open in the NAT 
-
-  NetSocketSession socket(*listener, s_matchMakerIp, s_matchMakerPort);
-
-  while (true)
-  {
-    //
-    // Stop if We've been asked to 
-
-    if (_listener->m_shutDown)
-      break;
-
-    //
-    // Update the request with the latest auth data
-
-    Directory* clientProps = MetaServer_GetClientProperties();
-    request.CreateData(NET_METASERVER_GAMENAME, clientProps->GetDataString(NET_METASERVER_GAMENAME));
-    request.CreateData(NET_METASERVER_GAMEVERSION, clientProps->GetDataString(NET_METASERVER_GAMEVERSION));
-    request.CreateData(NET_METASERVER_AUTHKEY, clientProps->GetDataString(NET_METASERVER_AUTHKEY));
-    delete clientProps;
-
-    int requestSize = 0;
-    char* requestByteStream = request.Write(requestSize);
-
-    //
-    // Send the request
-
-    int numBytesWritten = 0;
-    NetRetCode result = socket.WriteData(requestByteStream, requestSize, &numBytesWritten);
-    delete [] requestByteStream;
-
-    if (result != NetOk || numBytesWritten != requestSize)
-    {
-      DebugTrace("MatchMaker encountered error sending data\n");
-      break;
-    }
-
-    NetSleep(PERIOD_MATCHMAKER_REQUESTID);
-  }
-
-  //
-  // Shut down the request
-
-  DebugTrace("Deleting MatchMakerListener {:x}\n", (size_t)_listener);
-  delete _listener;
-
-#endif
-
   return 0;
 }
 
@@ -257,26 +177,6 @@ bool MatchMaker_GetIdentity(NetSocketListener* _listener, char* _ip, int* _port)
 
 void MatchMaker_RequestConnection(NetSocketListener* _listener, const char* _targetIp, int _targetPort, Directory* _myDetails)
 {
-#ifdef WAN_PLAY_ENABLED
-  DebugTrace("Requesting connection to %s:%d via matchmaker\n", _targetIp, _targetPort);
-
-  Directory request(*_myDetails);
-  request.SetName(NET_MATCHMAKER_MESSAGE);
-  request.CreateData(NET_METASERVER_COMMAND, NET_MATCHMAKER_REQUEST_CONNECT);
-  request.CreateData(NET_MATCHMAKER_TARGETIP, _targetIp);
-  request.CreateData(NET_MATCHMAKER_TARGETPORT, _targetPort);
-
-  ASSERT(s_matchMakerIp);
-
-  if (!_listener)
-  {
-    DebugTrace("NULL listener requesting connection to %s:%d\n", _targetIp, _targetPort);
-    return;
-  }
-
-  NetSocketSession socket(*_listener, s_matchMakerIp, s_matchMakerPort);
-  MetaServer_SendDirectory(&request, &socket);
-#endif
 }
 
 bool MatchMaker_ReceiveMessage(NetSocketListener* _listener, Directory* _message)

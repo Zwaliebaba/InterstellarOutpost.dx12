@@ -12,20 +12,14 @@
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="clouds.cpp" />
     <ClCompile Include="deform.cpp" />
-    <ClCompile Include="demoendsequence.cpp" />
-    <ClCompile Include="effect_processor.cpp" />
     <ClCompile Include="entity_grid.cpp" />
     <ClCompile Include="entity_grid_cache.cpp" />
     <ClCompile Include="explosion.cpp" />
     <ClCompile Include="game_menu.cpp" />
     <ClCompile Include="gamecursor.cpp" />
     <ClCompile Include="gametimer.cpp" />
-    <ClCompile Include="gesture.cpp" />
-    <ClCompile Include="gesture_demo.cpp" />
-    <ClCompile Include="gesture_demo_win32.cpp" />
     <ClCompile Include="global_internet.cpp" />
     <ClCompile Include="global_world.cpp" />
-    <ClCompile Include="keygen.cpp" />
     <ClCompile Include="landscape.cpp" />
     <ClCompile Include="landscape_renderer.cpp" />
     <ClCompile Include="level_file.cpp" />
@@ -42,7 +36,6 @@
     <ClCompile Include="rocket_status_panel.cpp" />
     <ClCompile Include="routing_system.cpp" />
     <ClCompile Include="script.cpp" />
-    <ClCompile Include="sepulveda.cpp" />
     <ClCompile Include="sepulveda_strings.cpp" />
     <ClCompile Include="shaman_interface.cpp" />
     <ClCompile Include="startsequence.cpp" />
@@ -69,20 +62,15 @@
     <ClInclude Include="camera.h" />
     <ClInclude Include="clouds.h" />
     <ClInclude Include="deform.h" />
-    <ClInclude Include="demoendsequence.h" />
-    <ClInclude Include="effect_processor.h" />
     <ClInclude Include="entity_grid.h" />
     <ClInclude Include="entity_grid_cache.h" />
     <ClInclude Include="explosion.h" />
     <ClInclude Include="game_menu.h" />
     <ClInclude Include="gamecursor.h" />
     <ClInclude Include="gametimer.h" />
-    <ClInclude Include="gesture.h" />
-    <ClInclude Include="gesture_demo.h" />
     <ClInclude Include="global_internet.h" />
     <ClInclude Include="global_world.h" />
     <ClInclude Include="globals.h" />
-    <ClInclude Include="keygen.h" />
     <ClInclude Include="landscape.h" />
     <ClInclude Include="landscape_renderer.h" />
     <ClInclude Include="level_file.h" />
@@ -100,7 +88,6 @@
     <ClInclude Include="rocket_status_panel.h" />
     <ClInclude Include="routing_system.h" />
     <ClInclude Include="script.h" />
-    <ClInclude Include="sepulveda.h" />
     <ClInclude Include="shaman_interface.h" />
     <ClInclude Include="startsequence.h" />
     <ClInclude Include="taskmanager.h" />
@@ -663,8 +650,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
-    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natstepfilter" />
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natstepfilter">
+      <Filter>Project Files</Filter>
+    </Natvis>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis">
+      <Filter>Project Files</Filter>
+    </Natvis>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Assets\default_preferences.txt">
@@ -674,12 +665,6 @@
       <Filter>Assets</Filter>
     </Text>
     <Text Include="Assets\game.txt">
-      <Filter>Assets</Filter>
-    </Text>
-    <Text Include="Assets\game_demo.txt">
-      <Filter>Assets</Filter>
-    </Text>
-    <Text Include="Assets\game_demo2.txt">
       <Filter>Assets</Filter>
     </Text>
     <Text Include="Assets\game_unlockall.txt">

@@ -63,7 +63,6 @@
     <ClInclude Include="opengl_directx_internals.h" />
     <ClInclude Include="opengl_directx_matrix_stack.h" />
     <ClInclude Include="opengl_trace.h" />
-    <ClInclude Include="persisting_debug_render.h" />
     <ClInclude Include="plane.h" />
     <ClInclude Include="preference_names.h" />
     <ClInclude Include="preferences.h" />
@@ -219,7 +218,6 @@
     <ClCompile Include="opengl_directx_matrix_stack.cpp" />
     <ClCompile Include="opengl_directx_stubs.cpp" />
     <ClCompile Include="opengl_trace.cpp" />
-    <ClCompile Include="persisting_debug_render.cpp" />
     <ClCompile Include="plane.cpp" />
     <ClCompile Include="preferences.cpp" />
     <ClCompile Include="render_utils.cpp" />

@@ -99,7 +99,7 @@ void RocketStatusPanel::Render()
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laser.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\laser.bmp" ) );
     glTexParameterf ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
     glTexParameterf ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     glTexParameterf ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
@@ -126,7 +126,7 @@ void RocketStatusPanel::Render()
     //
     // Fuel level
 
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/laser-long.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\laser-long.bmp" ) );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     int fuelAlpha = 200;
 
@@ -163,7 +163,7 @@ void RocketStatusPanel::Render()
 
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons/rocketstatuspanel.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons\\rocketstatuspanel.bmp" ) );
     
     glBegin( GL_QUADS );
         glTexCoord2i(0,1);      glVertex2f( m_x, m_y );
@@ -183,7 +183,7 @@ void RocketStatusPanel::Render()
 
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons/rocketcracked.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons\\rocketcracked.bmp" ) );
 
     glBegin( GL_QUADS );
     glTexCoord2i(0,1);      glVertex2f( m_x, m_y );
@@ -262,7 +262,7 @@ void RocketStatusPanel::Render()
         glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
 
         glEnable( GL_TEXTURE_2D );
-        glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures/muzzleflash.bmp" ) );
+        glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\muzzleflash.bmp" ) );
 
         if( fmodf( GetHighResTime()*30, 1.0f ) < 0.5f ) glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
         else                                             glColor4f( 1.0f, 1.0f, 1.0f, 0.2f );

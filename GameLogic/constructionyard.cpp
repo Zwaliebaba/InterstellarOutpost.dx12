@@ -195,7 +195,7 @@ void ConstructionYard::RenderAlphas( double _predictionTime )
     glEnable        ( GL_BLEND );
     glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
     glEnable        ( GL_TEXTURE_2D );
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/cloudyglow.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\cloudyglow.bmp" ) );
     
     double timeIndex = g_gameTime * 2;
 
@@ -256,7 +256,7 @@ void ConstructionYard::RenderAlphas( double _predictionTime )
     //
     // Central starbursts
 
-    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/starburst.bmp" ) );
+    glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\starburst.bmp" ) );
 
     int numStars = 10;
     if( buildingDetail == 2 ) numStars = 5;
@@ -288,7 +288,7 @@ void ConstructionYard::RenderAlphas( double _predictionTime )
 
     if( m_timer > 0.0 )
     {
-        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/starburst.bmp" ) );
+        glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\starburst.bmp" ) );
 
         for( int r = 0; r < 2; ++r )
         {
@@ -367,7 +367,6 @@ void ConstructionYard::AddPowerSurge()
 }
 
 
-// ============================================================================
 
 
 DisplayScreen::DisplayScreen()
@@ -415,7 +414,7 @@ void DisplayScreen::RenderAlphas( double _predictionTime )
     double size = 70.0;
     glColor4f( 0.4, 0.3, 0.4, 0.0 );
     glEnable( GL_TEXTURE_2D );
-    glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/glow.bmp" ) );
+    glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\glow.bmp" ) );
 
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR );
 

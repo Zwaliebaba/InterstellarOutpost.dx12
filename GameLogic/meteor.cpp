@@ -156,7 +156,7 @@ void Meteor::Render( double _predictionTime )
     glDisable       ( GL_CULL_FACE );
     glDepthMask     ( false );
 
-    glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/starburst.bmp" ) );
+    glBindTexture( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\starburst.bmp" ) );
     glDisable( GL_DEPTH_TEST );
 
     float alpha = 0.35f;

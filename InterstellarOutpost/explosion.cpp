@@ -330,7 +330,7 @@ void ExplosionManager::Render()
 		CHECK_OPENGL_STATE();
 
 		glEnable        (GL_TEXTURE_2D );
-		glBindTexture   (GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures/shapewireframe.bmp" ) );
+		glBindTexture   (GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\shapewireframe.bmp" ) );
 		glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexEnvf       (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);

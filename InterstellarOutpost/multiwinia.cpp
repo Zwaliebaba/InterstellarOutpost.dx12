@@ -1139,7 +1139,7 @@ void Multiwinia::AdvanceRetribution()
         entity->m_front.Normalise();
         entity->m_onGround = false;
     }
-    g_app->m_markerSystem->RegisterMarker_Fixed( t, pos, "icons/icon_darwinian.bmp", false );
+    g_app->m_markerSystem->RegisterMarker_Fixed( t, pos, "icons\\icon_darwinian.bmp", false );
     g_app->m_location->SetCurrentMessage( LANGUAGEPHRASE("multiwinia_retribution"), t );
 
     */
