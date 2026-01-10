@@ -130,8 +130,6 @@ class Server
     static int ConvertIPToInt(const char* _ip);
     static char* ConvertIntToIP(int _ip);
 
-    void Advertise();
-
     unsigned int GetRandom() { return m_random; }
 
     void KickClient(int _clientId);

@@ -137,7 +137,6 @@
     <ClInclude Include="GameMenuOptionsButton.h" />
     <ClInclude Include="GameMenuWindow.h" />
     <ClInclude Include="GamerTagButton.h" />
-    <ClInclude Include="GameServerButton.h" />
     <ClInclude Include="GameTypeAnyButton.h" />
     <ClInclude Include="GameTypeButton.h" />
     <ClInclude Include="GameTypeImageButton.h" />

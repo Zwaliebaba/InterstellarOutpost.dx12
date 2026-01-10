@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "unicode_text_stream_reader.h"
 #include "clienttoserver.h"
-#include "authentication.h"
 #include "hi_res_time.h"
 #include "language_table.h"
 #include "mouse_cursor.h"

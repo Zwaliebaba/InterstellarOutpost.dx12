@@ -8,7 +8,6 @@
     <ClCompile Include="animatedpanel_renderer.cpp" />
     <ClCompile Include="app.cpp" />
     <ClCompile Include="attract.cpp" />
-    <ClCompile Include="benchmark.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="clouds.cpp" />
     <ClCompile Include="deform.cpp" />
@@ -58,7 +57,6 @@
     <ClInclude Include="animatedpanel_renderer.h" />
     <ClInclude Include="app.h" />
     <ClInclude Include="attract.h" />
-    <ClInclude Include="benchmark.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="clouds.h" />
     <ClInclude Include="deform.h" />

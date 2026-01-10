@@ -2,14 +2,12 @@
 #include "network_defines.h"
 #include "app.h"
 #include "renderer.h"
-#include "authentication.h"
 #include "preferences.h"
 #include "resource.h"
 #include "clienttoserver.h"
 #include "servertoclient.h"
 #include "server.h"
 #include "soundsystem.h"
-#include "metaserver_defines.h"
 #include "unicode_text_stream_reader.h"
 #include "MapData.h"
 #include "game_menu.h"
@@ -17,7 +15,6 @@
 #include "helpandoptions_windows.h"
 #include "chatinput_window.h"
 #include "GameMenuWindow.h"
-#include "GameServerButton.h"
 #include "DarwiniaModeButton.h"
 #include "NewOrJoinButton.h"
 #include "QuitButton.h"
@@ -51,7 +48,6 @@
 #include "motdButton.h"
 #include "update_page_buttons.h"
 #include "mainmenus.h"
-#include "metaserver.h"
 
 // Undefine small macro defined in Windows headers
 #undef small
@@ -715,15 +711,8 @@ void GameMenuWindow::ApplyBasicServerListSort()
   {
     Directory* server = m_serverList->GetData(i);
 
-    if (!IsProtocolMatch(server))
-      newList->PutDataAtEnd(server);
-    else if (IsServerFull(server))
-      newList->PutDataAtIndex(server, numGoodServers);
-    else
-    {
-      newList->PutDataAtStart(server);
-      ++numGoodServers;
-    }
+    newList->PutDataAtStart(server);
+    ++numGoodServers;
   }
 
   //
@@ -747,8 +736,6 @@ void GameMenuWindow::ApplyBetterSlowerServerListSort()
 
     int score = 0;
 
-    if (IsServerFull(server))
-      score = 1;
     if (!IsProtocolMatch(server))
       score = 10;
 
@@ -807,94 +794,24 @@ void GameMenuWindow::ApplyFilterPasswords()
 
 void GameMenuWindow::ApplyFilterGameType()
 {
-  for (int i = 0; i < m_serverList->Size(); ++i)
-  {
-    Directory* d = m_serverList->GetData(i);
-
-    if (d->GetDataChar(NET_METASERVER_GAMEMODE) != static_cast<unsigned char>(m_gameTypeFilter))
-    {
-      delete d;
-      m_serverList->RemoveData(i);
-      i--;
-    }
-  }
 }
 
 void GameMenuWindow::ApplyFilterFullGames()
 {
-  for (int i = 0; i < m_serverList->Size(); ++i)
-  {
-    Directory* d = m_serverList->GetData(i);
-
-    int max_teams = d->GetDataChar(NET_METASERVER_MAXTEAMS);
-    int num_teams = d->GetDataChar(NET_METASERVER_NUMTEAMS);
-
-    if (num_teams >= max_teams)
-    {
-      delete d;
-      m_serverList->RemoveData(i);
-      i--;
-    }
-  }
 }
 
 void GameMenuWindow::ApplyFilterInvalidGameTypes()
 {
-#if defined(HIDE_INVALID_GAMETYPES)
-  for (int i = 0; i < m_serverList->Size(); ++i)
-  {
-    Directory* d = m_serverList->GetData(i);
-
-    if (!g_app->IsGameModePermitted(d->GetDataChar(NET_METASERVER_GAMEMODE)))
-    {
-      delete d;
-      m_serverList->RemoveData(i);
-      i--;
-      continue;
-    }
-  }
-#endif
 }
 
 void GameMenuWindow::ApplyFilterMissingMaps()
 {
-  for (int i = 0; i < m_serverList->Size(); ++i)
-  {
-    Directory* d = m_serverList->GetData(i);
-
-    int gameMode = d->GetDataChar(NET_METASERVER_GAMEMODE);
-    int mapCRC = d->GetDataInt(NET_METASERVER_MAPCRC);
-    int mapIndex = g_app->m_gameMenu->GetMapIndex(gameMode, mapCRC);
-    if (mapIndex == -1)
-    {
-      delete d;
-      m_serverList->RemoveData(i);
-      i--;
-    }
-  }
 }
 
 bool IsProtocolMatch(Directory* d)
 {
-  bool protocolMatch = false;
-  if (d->HasData(NET_METASERVER_PROTOCOLMATCH, DIRECTORY_TYPE_INT))
-    protocolMatch = d->GetDataInt(NET_METASERVER_PROTOCOLMATCH) != 0;
-
-  if (!protocolMatch)
-  {
-    if (d->HasData(NET_METASERVER_GAMEVERSION, DIRECTORY_TYPE_STRING))
-      protocolMatch = (strcmp(d->GetDataString(NET_METASERVER_GAMEVERSION), APP_VERSION) == 0);
-  }
-
+  bool protocolMatch = true;
   return protocolMatch;
-}
-
-bool GameMenuWindow::IsServerFull(Directory* server)
-{
-  int maxPlayers = server->GetDataChar(NET_METASERVER_MAXTEAMS);
-  int numPlayers = server->GetDataChar(NET_METASERVER_NUMTEAMS);
-
-  return numPlayers == maxPlayers;
 }
 
 void GameMenuWindow::ApplyFilterProtocolMatch()
@@ -914,86 +831,10 @@ void GameMenuWindow::ApplyFilterProtocolMatch()
 
 void GameMenuWindow::ApplyFilterShowDemos()
 {
-  for (int i = 0; i < m_serverList->Size(); ++i)
-  {
-    Directory* d = m_serverList->GetData(i);
-
-    if (d->GetDataBool(NET_METASERVER_DEMOSERVER))
-    {
-      delete d;
-      m_serverList->RemoveData(i);
-      i--;
-    }
-  }
-}
-
-struct ServerKey
-{
-  ServerKey(Directory* _server);
-
-  unsigned long long m_serverStartTime;
-  int m_serverRandomNumber;
-
-  bool operator <(const ServerKey& _other) const;
-};
-
-ServerKey::ServerKey(Directory* _server)
-  : m_serverStartTime(_server->GetDataULLong(NET_METASERVER_STARTTIME)),
-    m_serverRandomNumber(_server->GetDataInt(NET_METASERVER_RANDOM)) {}
-
-inline bool ServerKey::operator <(const ServerKey& _other) const
-{
-  return m_serverStartTime < _other.m_serverStartTime || (m_serverStartTime == _other.m_serverStartTime && m_serverRandomNumber < _other.
-    m_serverRandomNumber);
-}
-
-void RemoveDuplicateWANServers(LList<Directory*>* _lanServerList, LList<Directory*>* _wanServerList)
-{
-  using ServerKeySet = std::set<ServerKey>;
-  ServerKeySet lanServer;
-
-  int serverListSize = _lanServerList->Size();
-  for (int i = 0; i < serverListSize; i++)
-  {
-    Directory* server = _lanServerList->GetData(i);
-    lanServer.insert(server);
-  }
-
-  serverListSize = _wanServerList->Size();
-  for (int i = 0; i < serverListSize; i++)
-  {
-    Directory* server = _wanServerList->GetData(i);
-
-    if (lanServer.contains(server))
-    {
-      _wanServerList->RemoveData(i);
-      delete server;
-      i--;
-      serverListSize--;
-    }
-  }
 }
 
 void GameMenuWindow::UpdateServerList()
 {
-  if (m_serverList)
-  {
-    m_serverList->EmptyAndDelete();
-    delete m_serverList;
-    m_serverList = nullptr;
-  }
-
-  // Get the LAN servers first, and remove any duplicate WAN entries 
-  m_serverList = MetaServer_GetServerList(false, false, true);
-  LList<Directory*>* wanServers = MetaServer_GetServerList(false, true, false);
-  RemoveDuplicateWANServers(m_serverList, wanServers);
-  Append(*m_serverList, *wanServers);
-  delete wanServers;
-
-  RemoveDelistedServers(m_serverList);
-
-  ApplyServerFilters();
-  ApplyBasicServerListSort();
 }
 
 void GameMenuWindow::JoinServer(int _serverNumber)
@@ -1007,8 +848,8 @@ void GameMenuWindow::JoinServer(int _serverNumber)
     delete m_joinServer;
   m_joinServer = new Directory(*server);
 
-  char* serverIp = server->GetDataString(NET_METASERVER_IP);
-  int serverPort = server->HasData(NET_METASERVER_PORT) ? server->GetDataInt(NET_METASERVER_PORT) : -1;
+  const char* serverIp = "10.0.0.127"; // server->GetDataString(NET_METASERVER_IP);
+  int serverPort = 3001;               // server->HasData(NET_METASERVER_PORT) ? server->GetDataInt(NET_METASERVER_PORT) : -1;
 
   if (serverPort == -1)
     return;
@@ -1031,8 +872,8 @@ void GameMenuWindow::JoinServerAsSpectator(int _serverNumber)
     delete m_joinServer;
   m_joinServer = new Directory(*server);
 
-  char* serverIp = server->GetDataString(NET_METASERVER_IP);
-  int serverPort = server->GetDataInt(NET_METASERVER_PORT);
+  const char* serverIp = "10.0.0.127"; // server->GetDataString(NET_METASERVER_IP);
+  int serverPort = 3001; // server->HasData(NET_METASERVER_PORT) ? server->GetDataInt(NET_METASERVER_PORT) : -1;
 
   g_app->StartNetwork(false, serverIp, serverPort);
   m_newPage = PageGameConnecting;
@@ -1064,23 +905,11 @@ void GameMenuWindow::UpdateQuickMatchGamePage()
       {
         Directory* d = m_serverList->GetData(i);
 
-        if (!IsProtocolMatch(d) || IsServerFull(d))
-          continue;
-
         JoinServer(i);
         break;
       }
     }
   }
-
-  double updateInterval = 10.0;
-  static double lastTimeRequestedWAN = now - updateInterval - 1;
-  if (now > lastTimeRequestedWAN + updateInterval)
-  {
-    lastTimeRequestedWAN = now;
-    MetaServer_RequestServerListWAN(METASERVER_GAMETYPE_MULTIWINIA);
-  }
-
 }
 
 void GameMenuWindow::UpdateMapSelectPage()
@@ -1138,13 +967,10 @@ void GameMenuWindow::UpdateAchievementsPage()
 void GameMenuWindow::UpdateJoinGamePage()
 {
   static double lastTimeUpdatedList = 0.0f;
-  static int oldScrollValue = 0;
 
   double now = GetHighResTime();
   bool updateNow = (now > lastTimeUpdatedList + 2.0f);
   bool receivedList = true;
-
-  receivedList = MetaServer_HasReceivedListWAN();
 
   if (m_serverList && m_serverList->Size() == 0 && now > lastTimeUpdatedList + 1.0f && receivedList)
     updateNow = true;
@@ -1179,165 +1005,29 @@ void GameMenuWindow::UpdateJoinGamePage()
 
       int numItems = sscanf(serverLine, "%s %d %s", serverHost, &serverPort, serverName);
 
-      /*if( numItems > 0 && numItems < 3 )
-        sprintf( serverName, "%s:%d", serverHost, serverPort );*/
-
       int gameMode = i % (Multiwinia::NumGameTypes - 1);
       auto d = new Directory;
-      d->CreateData(NET_METASERVER_SERVERNAME, serverName);
-      d->CreateData(NET_METASERVER_NUMTEAMS, static_cast<unsigned char>(0));
-      d->CreateData(NET_METASERVER_MAXTEAMS, static_cast<unsigned char>(4));
-      d->CreateData(NET_METASERVER_GAMEINPROGRESS, static_cast<unsigned char>(0));
-      d->CreateData(NET_METASERVER_GAMEMODE, static_cast<unsigned char>(gameMode));
+      //d->CreateData(NET_METASERVER_SERVERNAME, serverName);
+      //d->CreateData(NET_METASERVER_NUMTEAMS, static_cast<unsigned char>(0));
+      //d->CreateData(NET_METASERVER_MAXTEAMS, static_cast<unsigned char>(4));
+      //d->CreateData(NET_METASERVER_GAMEINPROGRESS, static_cast<unsigned char>(0));
+      //d->CreateData(NET_METASERVER_GAMEMODE, static_cast<unsigned char>(gameMode));
 
-      d->CreateData(NET_METASERVER_IP, serverHost);
-      d->CreateData(NET_METASERVER_PORT, serverPort);
-      d->CreateData(NET_METASERVER_LOCALIP, serverHost);
-      d->CreateData(NET_METASERVER_LOCALPORT, serverPort);
+      //d->CreateData(NET_METASERVER_IP, serverHost);
+      //d->CreateData(NET_METASERVER_PORT, serverPort);
+      //d->CreateData(NET_METASERVER_LOCALIP, serverHost);
+      //d->CreateData(NET_METASERVER_LOCALPORT, serverPort);
 
       m_serverList->PutDataAtStart(d);
     }
 
-    int numGames = min(m_serverList->Size(), SERVERS_ON_SCREEN); // List only the first six games
-
-    int a = 0;
-    a++;
-
-    // Make enough buttons
-    while (m_serverButtons.Size() < numGames)
-    {
-      int buttonNum = m_serverButtons.Size();
-      auto button = new GameServerButton(buttonNum);
-
-      char cName[128];
-      static int buttonNumber = 0;
-      buttonNumber++;
-      sprintf(cName, "%s%d", button->m_name, buttonNumber);
-
-      button->SetShortProperties(cName, m_serverX, m_serverY + m_serverGap * buttonNum, m_serverW, m_serverH, UnicodeString());
-      button->m_fontSize = m_serverFontSize;
-
-      RegisterButton(button);
-      m_buttonOrder.PutDataAtIndex(button, m_buttonOrder.Size() - 1);
-      m_serverButtons.PutData(button);
-    }
-
-    // Remove extra buttons
-    while (m_serverButtons.Size() > numGames)
-    {
-      int buttonNum = m_serverButtons.Size() - 1;
-      GameServerButton* button = m_serverButtons.GetData(buttonNum);
-      RemoveButton(button->m_name);
-      m_serverButtons.RemoveDataAtEnd();
-      m_buttonOrder.RemoveData(m_serverButtonOrderStartIndex + buttonNum);
-    }
-
-    // Set button properties 
-    for (int i = 0; i < numGames; i++)
-    {
-      Directory* server = m_serverList->GetData(i);
-      GameServerButton* button = m_serverButtons.GetData(i);
-
-      // DebugTrace( "Processing server result %d\n", i );
-
-      int gameMode = server->GetDataChar(NET_METASERVER_GAMEMODE);
-      int mapCrc = server->GetDataInt(NET_METASERVER_MAPCRC);
-      const char* mapName = g_app->m_gameMenu->GetMapName(gameMode, mapCrc);
-
-      if (!mapName)
-        mapName = "Unknown Map";
-
-      char gameModeName[512];
-      GameTypeToShortCaption(gameMode, gameModeName);
-
-      button->m_hostName = UnicodeString(server->GetDataString(NET_METASERVER_SERVERNAME));
-      button->m_gameType = LANGUAGEPHRASE(gameModeName);
-      button->m_mapName = LANGUAGEPHRASE(mapName);
-      button->m_maxPlayers = server->GetDataChar(NET_METASERVER_MAXTEAMS);
-      button->m_numPlayers = server->GetDataChar(NET_METASERVER_NUMTEAMS);
-    }
-
     if (m_scrollBar)
       m_scrollBar->SetNumRows(m_serverList->Size());
-
-    // Set the position of the back button
-    //EclButton *back = GetButton( "Back" );
-    //if( back ) 
-    //	back->m_y = m_serverY + numGames * m_serverGap;		
   }
-
-  //
-  // Request the server listing every updateInterval (10.0) seconds
-
-  double updateInterval = 10.0;
-  static double lastTimeRequestedWAN = 0.0f;
-
-  if (now > lastTimeRequestedWAN + updateInterval)
-  {
-    lastTimeRequestedWAN = now;
-    MetaServer_RequestServerListWAN(METASERVER_GAMETYPE_MULTIWINIA);
-    s_gotListFromMetaserver = false;
-  }
-
 }
 
 void GameMenuWindow::RenderNetworkStatus()
 {
-  //
-  // Render the connected parties if we are a server
-
-  Server* server = g_app->m_server;
-#ifdef TARGET_DEBUG
-  int screenW = g_app->m_renderer->ScreenW(); int screenH = g_app->m_renderer->ScreenH(); int fontSize = 15; int h = fontSize + 3; int x =
-    10; int y = 10; if (server)
-  {
-    int numClients = server->m_clients.Size();
-
-    glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
-    g_gameFont.DrawText2D(x, y += h, fontSize, "IP:Port [Sent/Known/CaughtUp]");
-
-    for (int i = 0; i < numClients; i++)
-    {
-      if (server->m_clients.ValidIndex(i))
-      {
-        ServerToClient* sToC = server->m_clients[i];
-
-        char fromStr[64] = "";
-        sprintf(fromStr, "%s:%d", sToC->m_ip, sToC->m_port);
-        g_gameFont.DrawText2D(x, y += h, fontSize, "%s [%d/%d/%d]", fromStr, sToC->m_lastSentSequenceId, sToC->m_lastKnownSequenceId,
-                              sToC->m_caughtUp);
-      }
-    }
-
-    y += 2 * h;
-  } if (g_app->m_clientToServer)
-  {
-    // Render connection status
-    glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
-
-    switch (g_app->m_clientToServer->m_connectionState)
-    {
-    case ClientToServer::StateDisconnected:
-      g_gameFont.DrawText2D(x, y += h, fontSize, "Disconnected");
-      break;
-
-    case ClientToServer::StateConnecting:
-      g_gameFont.DrawText2D(x, y += h, fontSize, "Connecting (%d)", g_app->m_clientToServer->m_connectionAttempts);
-      break;
-
-    case ClientToServer::StateHandshaking:
-      g_gameFont.DrawText2D(x, y += h, fontSize, "Handshaking (%d/%d)", g_lastProcessedSequenceId,
-                            g_app->m_clientToServer->m_lastValidSequenceIdFromServer);
-      break;
-
-    case ClientToServer::StateConnected:
-      g_gameFont.DrawText2D(x, y += h, fontSize, "Connected");
-      break;
-    }
-
-    y += 2 * h;
-  }
-#endif
 }
 
 void GameMenuWindow::RenderBigDarwinian()
@@ -1481,10 +1171,6 @@ void RenderRequestingEffect()
   GetFontSizes(large, med, small);
 
   UnicodeString caption = LANGUAGEPHRASE("multiwinia_error_requestinglist");
-  bool receivedList = true;
-  receivedList = MetaServer_HasReceivedListWAN();
-  if (receivedList && s_gotListFromMetaserver)
-    caption = LANGUAGEPHRASE("multiwinia_error_noserversfound");
 
   glColor4f(1.0f, 1.0f, 1.0f, 0.0f);
   g_editorFont.SetRenderOutline(true);
@@ -1887,25 +1573,6 @@ void GameMenuWindow::SetupMainPage()
   RegisterButton(button);
   m_buttonOrder.PutData(button);
 
-  Directory* latestVersion = MetaServer_RequestData(NET_METASERVER_DATA_LATESTVERSION);
-  if (latestVersion)
-  {
-    if (latestVersion->HasData(NET_METASERVER_DATA_LATESTVERSION))
-    {
-      char* latestVersionString = latestVersion->GetDataString(NET_METASERVER_DATA_LATESTVERSION);
-      if (strcmp(latestVersionString, APP_VERSION) != 0)
-      {
-        auto updates = new UpdatePageButton();
-        updates->SetShortProperties("multiwinia_update", buttonX, yPos += buttonH + gap, buttonW, buttonH,
-                                    LANGUAGEPHRASE("multiwinia_update_available"));
-        updates->m_fontSize = fontSize;
-        RegisterButton(updates);
-        m_buttonOrder.PutData(updates);
-      }
-    }
-    delete latestVersion;
-  }
-
   yPos = leftY + leftH - buttonH * 2;
 
   // Quit
@@ -1939,14 +1606,12 @@ void GameMenuWindow::SetupDarwiniaPage()
   float y = leftY + buttonH;
   float fontSize = fontMed;
 
-  //    PrologueButton *pb = new PrologueButton( "icons\\menu_prologue.bmp" );
   auto pb = new PrologueButton("Prologue");
   pb->SetShortProperties("prologue", x, y, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_prologue"));
   pb->m_fontSize = fontSize;
   RegisterButton(pb);
   m_buttonOrder.PutData(pb);
 
-  //    CampaignButton *cb = new CampaignButton( "icons\\menu_campaign.bmp" );
   auto cb = new CampaignButton("Campaign");
   cb->SetShortProperties("campaign", x, y += gap + buttonH, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_campaign"));
   RegisterButton(cb);
@@ -2071,8 +1736,6 @@ void GameMenuWindow::SetupAchievementsPage()
 
 void GameMenuWindow::SetupJoinGamePage()
 {
-  MetaServer_RequestServerListWAN(METASERVER_GAMETYPE_MULTIWINIA);
-
   m_highlightedGameType = -1;
   m_highlightedLevel = -1;
 
@@ -2280,7 +1943,6 @@ void GameMenuWindow::ShutdownAchievementsPage() { m_achievementButtons.Empty(); 
 
 void GameMenuWindow::ShutdownJoinGamePage()
 {
-  m_serverButtons.Empty();
 }
 
 void GameMenuWindow::UpdateMainPage()
@@ -2290,23 +1952,6 @@ void GameMenuWindow::UpdateMainPage()
   {
     if (!g_app->m_server)
       g_app->StartMultiPlayerServer();
-  }
-
-  static bool updateFound = false;
-  if (!updateFound)
-  {
-    Directory* latestVersion = MetaServer_RequestData(NET_METASERVER_DATA_LATESTVERSION);
-    if (latestVersion)
-    {
-      updateFound = true;
-      if (latestVersion->HasData(NET_METASERVER_DATA_LATESTVERSION))
-      {
-        char* latestVersionString = latestVersion->GetDataString(NET_METASERVER_DATA_LATESTVERSION);
-        if (strcmp(latestVersionString, APP_VERSION) != 0)
-          SetupNewPage(PageMain);
-      }
-      delete latestVersion;
-    }
   }
 }
 
@@ -2719,9 +2364,6 @@ void GameMenuWindow::SetupMultiplayerPage(int _gameType)
     menu->m_noBackground = true;
     menu->m_cycleMode = true;
     m_buttonOrder.PutData(menu);
-
-    char authKey[256];
-    Authentication_GetKey(authKey);
 #endif
   }
   else

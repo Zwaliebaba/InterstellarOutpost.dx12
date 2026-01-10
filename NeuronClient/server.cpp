@@ -21,11 +21,7 @@
 #include "clienttoserver.h"
 #include "network_defines.h"
 #include "ftp_manager.h"
-#include "metaserver_defines.h"
-#include "game_menu.h"
 #include "soundsystem.h"
-#include "MapData.h"
-#include "authentication.h"
 
 // ****************************************************************************
 // Class ServerTeam
@@ -237,9 +233,6 @@ int Server::RegisterNewClient(Directory* _client, int _clientId)
 
   auto sToC = new ServerToClient(ip, port, m_listener);
 
-  strcpy(sToC->m_authKey, _client->GetDataString(NET_METASERVER_AUTHKEY));
-  sToC->m_authKeyId = _client->GetDataInt(NET_METASERVER_AUTHKEYID);
-
   if (_clientId == -1)
   {
     sToC->m_clientId = m_nextClientId;
@@ -254,11 +247,6 @@ int Server::RegisterNewClient(Directory* _client, int _clientId)
   m_clients.PutData(sToC);
 
   //
-  // Try to authenticate this person
-
-  Authentication_RequestStatus(sToC->m_authKey, METASERVER_GAMETYPE_MULTIWINIA, sToC->m_authKeyId, ip);
-
-  //
   // Tell all clients about it
   auto data = new Directory;
   data->SetName(NET_DARWINIA_MESSAGE);
@@ -266,8 +254,8 @@ int Server::RegisterNewClient(Directory* _client, int _clientId)
   data->CreateData(NET_DARWINIA_CLIENTID, sToC->m_clientId);
 
   // Tell about the start time and random number 
-  data->CreateData(NET_METASERVER_STARTTIME, static_cast<unsigned long long>(m_startTimeActual));
-  data->CreateData(NET_METASERVER_RANDOM, static_cast<int>(m_random));
+  data->CreateData(NET_SERVER_STARTTIME, static_cast<unsigned long long>(m_startTimeActual));
+  data->CreateData(NET_SERVER_RANDOM, static_cast<int>(m_random));
 
   auto letter = new ServerToClientLetter();
   letter->m_data = data;
@@ -928,14 +916,6 @@ void Server::Advance()
   AdvanceSender();
   END_PROFILE("SEND");
 
-  //
-  // Advertise our existence
-
-  START_PROFILE("Advertise");
-  if (!m_noAdvertise)
-    Advertise();
-  END_PROFILE("Advertise");
-
   END_PROFILE("Advance Server");
 }
 
@@ -963,46 +943,6 @@ void Server::AuthenticateClients()
 {
   for (int i = 0; i < m_clients.Size(); ++i)
   {
-    if (m_clients.ValidIndex(i))
-    {
-      ServerToClient* s2c = m_clients[i];
-
-      // Do a basic check
-      if (s2c->m_basicAuthCheck == 0)
-        AuthenticateClient(s2c->m_clientId);
-
-      // BYRON TODO - re-enabled this check. I had to remove it because it was stopping me from testing
-      // Do a key check via the metaserver
-      int keyResult = Authentication_GetStatus(s2c->m_authKey);
-      if (keyResult < 0)
-        s2c->m_basicAuthCheck = -3;
-
-      // If its bad kick them now
-      if (s2c->m_basicAuthCheck < 0)
-      {
-#if AUTHENTICATION_LEVEL == 1
-        int kickReason = (s2c->m_basicAuthCheck == -1
-          ? Disconnect_InvalidKey
-          : s2c->m_basicAuthCheck == -2
-          ? Disconnect_DuplicateKey
-          : s2c->m_basicAuthCheck == -3
-          ? Disconnect_KeyAuthFailed
-          : s2c->m_basicAuthCheck == -4
-          ? Disconnect_BadPassword
-          : s2c->m_basicAuthCheck == -5
-          ? Disconnect_ServerFull
-          : s2c->m_basicAuthCheck == -6
-          ? Disconnect_DemoFull
-          : Disconnect_InvalidKey);
-
-        if (g_app->m_clientToServer->GetServerPort() != -1)
-        {
-          // dont do this in single player
-          RemoveClient(s2c->m_clientId, kickReason);
-        }
-#endif
-      }
-    }
   }
 }
 
@@ -1011,45 +951,15 @@ void Server::AuthenticateClient(int _clientId)
   ServerToClient* client = GetClient(_clientId);
   ASSERT(client);
 
-  int numTeams = m_teams.NumUsed();
-  int maxTeams = g_app->GetMaxNumberofPlayers();
-
-  if (maxTeams != 0 && numTeams != 0)
-  {
-    if (numTeams >= maxTeams)
-    {
-      DebugTrace("Teams are already full, client %d cannot join\n", client->m_clientId);
-      client->m_basicAuthCheck = -5;
-      return;
-    }
-  }
-
   if (m_serverPassword.Length() > 0)
   {
     if (client->m_password != m_serverPassword)
     {
-      client->m_basicAuthCheck = -4;
+      //@ client->m_basicAuthCheck = -4;
       DebugTrace("Client has failed the password auth check\n");
       return;
     }
   }
-
-  // Defcon also checked:
-  //
-  // Are there too many teams already?
-  //
-  // Are there too many DEMO teams?
-  // Or is this an unusual game mode?
-  // Only affects this client if they are themselves a demo
-  //
-  // If we are running a MOD and the client does not support MODs
-  // (ie < v1.2) we must disconnect them now.
-  //
-  // Check for a server password
-  //
-  // Everything looks good
-
-  client->m_basicAuthCheck = 1;
 }
 
 void Server::UpdateClients()
@@ -1397,107 +1307,6 @@ bool Server::RemoveDisconnectedClient(const char* _ip, int _port)
   }
 
   return NULL;
-}
-
-void Server::Advertise()
-{
-  if (strcmp(g_app->m_requestedMap, "null") == 0 || strlen(g_app->m_requestedMap) == 0)
-  {
-    // no map, dont advertise
-    return;
-  }
-
-  // WAN / LAN advertisement is a game property.
-  bool advertiseOnWan = true, advertiseOnLan = true;
-
-  int maxTeams = 4; // maxTeams is a game property.
-  int currentTeams = m_teams.NumUsed();
-
-  //
-  // Update our information
-
-  if (advertiseOnWan || advertiseOnLan)
-  {
-    // Multiwinia is a game property
-
-    const char* defaultServerName = g_prefsManager->GetString("PlayerName", "NewServer"); //getenv("USERNAME");
-    if (!defaultServerName)
-      defaultServerName = "Multiwinia";
-
-    const char* serverName = g_prefsManager->GetString("ServerName", defaultServerName);
-
-    Directory serverProperties;
-
-    //
-    // Basic variables
-
-    serverProperties.CreateData(NET_METASERVER_SERVERNAME, serverName);
-
-    serverProperties.CreateData(NET_METASERVER_GAMENAME, APP_NAME);
-    serverProperties.CreateData(NET_METASERVER_GAMEVERSION, APP_VERSION);
-
-    serverProperties.CreateData(NET_METASERVER_STARTTIME, static_cast<unsigned long long>(m_startTimeActual));
-    serverProperties.CreateData(NET_METASERVER_RANDOM, static_cast<int>(m_random));
-
-    char localIp[256];
-    GetLocalHostIP(localIp, 256);
-    int localPort = GetLocalPort();
-
-    serverProperties.CreateData(NET_METASERVER_LOCALIP, localIp);
-    serverProperties.CreateData(NET_METASERVER_LOCALPORT, localPort);
-
-    //
-    // Game properties
-
-    int gameType = g_app->m_multiwinia->m_gameType;
-    int maxTeams = 1;
-    int mapCRC = 0;
-
-    MapData* mapData = nullptr;
-
-    // Determine how many players can join this game
-    if (0 <= gameType && gameType < MAX_GAME_TYPES && g_app->m_requestedMap)
-    {
-      DArray<MapData*>& maps = g_app->m_gameMenu->m_maps[gameType];
-
-      for (int i = 0; i < maps.Size(); i++)
-      {
-        if (maps.ValidIndex(i))
-        {
-          MapData* m = maps[i];
-          if (stricmp(g_app->m_requestedMap, m->m_fileName) == 0)
-          {
-            mapData = m;
-            maxTeams = m->m_numPlayers;
-            mapCRC = m->m_mapId;
-            break;
-          }
-        }
-      }
-    }
-
-    int currentHumanTeams = m_clients.NumUsed();
-
-    serverProperties.CreateData(NET_METASERVER_NUMTEAMS, static_cast<unsigned char>(currentTeams));
-    serverProperties.CreateData(NET_METASERVER_MAXTEAMS, static_cast<unsigned char>(maxTeams));
-    serverProperties.CreateData(NET_METASERVER_NUMHUMANTEAMS, static_cast<unsigned char>(currentHumanTeams));
-    serverProperties.CreateData(NET_METASERVER_NUMSPECTATORS, static_cast<unsigned char>(0));
-    serverProperties.CreateData(NET_METASERVER_MAXSPECTATORS, static_cast<unsigned char>(0));
-    serverProperties.CreateData(NET_METASERVER_GAMEINPROGRESS, static_cast<unsigned char>(g_app->m_multiwinia->GameRunning()));
-    serverProperties.CreateData(NET_METASERVER_GAMEMODE, static_cast<unsigned char>(gameType));
-
-    if (m_serverPassword.Length() > 0)
-      serverProperties.CreateData(NET_METASERVER_HASPASSWORD, static_cast<unsigned char>(1));
-
-    serverProperties.CreateData(NET_METASERVER_MAPCRC, mapCRC);
-
-    char authKey[256];
-    Authentication_GetKey(authKey);
-    serverProperties.CreateData(NET_METASERVER_AUTHKEY, authKey);
-
-    // LAN advertisements
-    serverProperties.CreateData(NET_METASERVER_PORT, localPort);
-  }
 }
 
 int Server::GetLocalPort()

@@ -92,7 +92,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="authentication.h" />
     <ClInclude Include="bandwidth.h" />
     <ClInclude Include="bytestream.h" />
     <ClInclude Include="clienttoserver.h" />
@@ -129,9 +128,6 @@
     <ClInclude Include="keydefs.h" />
     <ClInclude Include="keynames.h" />
     <ClInclude Include="listener.h" />
-    <ClInclude Include="metaserver.h" />
-    <ClInclude Include="metaserver_defines.h" />
-    <ClInclude Include="metaserver_defines_old.h" />
     <ClInclude Include="movement2d.h" />
     <ClInclude Include="networkvalue.h" />
     <ClInclude Include="network_defines.h" />
@@ -160,7 +156,6 @@
     <ClInclude Include="win32_eventproc.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="authentication.cpp" />
     <ClCompile Include="bandwidth.cpp" />
     <ClCompile Include="clienttoserver.cpp" />
     <ClCompile Include="control_bindings.cpp" />
@@ -192,7 +187,6 @@
     <ClCompile Include="input_types.cpp" />
     <ClCompile Include="keynames.cpp" />
     <ClCompile Include="listener.cpp" />
-    <ClCompile Include="metaserver.cpp" />
     <ClCompile Include="movement2d.cpp" />
     <ClCompile Include="networkvalue.cpp" />
     <ClCompile Include="network_quality.cpp" />

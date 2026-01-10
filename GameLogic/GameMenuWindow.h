@@ -7,7 +7,6 @@
 #include "networkvalue.h"
 #include "server.h"
 
-class GameServerButton;
 class GameMenuInputField;
 class AchievementButton;
 struct ChatMessage;
@@ -72,7 +71,6 @@ class GameMenuWindow : public DarwiniaWindow
 
     // Some parameters for the server browser
     LList<Directory*>* m_serverList;
-    LList<GameServerButton*> m_serverButtons;
     LList<AchievementButton*> m_achievementButtons;
     float m_serverX;
     float m_serverY;
@@ -204,7 +202,6 @@ class GameMenuWindow : public DarwiniaWindow
     friend class PlayGameButton;
     friend class QuickStartButton;
     friend class MapSelectModeButton;
-    friend class GameServerButton;
     friend class ServerConnectButton;
 
     void UpdateMainPage();
@@ -264,8 +261,6 @@ class GameMenuWindow : public DarwiniaWindow
     void ApplyFilterPasswords();
     void ApplyBasicServerListSort();
     void ApplyBetterSlowerServerListSort();
-
-    bool IsServerFull(Directory* server);
 
     void PreloadThumbnails();
 

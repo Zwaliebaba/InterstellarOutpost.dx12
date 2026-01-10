@@ -116,7 +116,6 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
     </None>
     <ClInclude Include="attract.h" />
-    <ClInclude Include="benchmark.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="clouds.h" />
     <ClInclude Include="deform.h" />
@@ -167,7 +166,6 @@
     <ClCompile Include="animatedpanel_renderer.cpp" />
     <ClCompile Include="app.cpp" />
     <ClCompile Include="attract.cpp" />
-    <ClCompile Include="benchmark.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="clouds.cpp" />
     <ClCompile Include="deform.cpp" />

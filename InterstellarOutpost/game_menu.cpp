@@ -14,13 +14,11 @@
 #include "filesys_utils.h"
 #include "preferences.h"
 #include "resource.h"
-#include "metaserver_defines.h"
 #include "filecrc.h"
 #include "math_utils.h"
 #include "soundsystem.h"
 #include "window_manager.h"
 #include "win32_eventhandler.h"
-#include "authentication.h"
 #include "drop_down_menu.h"
 #include "input_field.h"
 #include "mainmenus.h"
@@ -42,12 +40,9 @@
 #include "achievement_tracker.h"
 #include "clouds.h"
 #include "level_file.h"
-#include "mapfile.h"
 #include "ImageButton.h"
 #include "MapData.h"
 #include "GameMenuWindow.h"
-#include "metaserver_defines.h"
-#include "metaserver.h"
 
 const char* s_pageNames[GameMenuWindow::NumPages] = {"Main", "Darwinia", "GameSelect", "NewOrJoin", "JoinGame", "QuickMatchGame",
                                                      "GameSetup", "GameConnecting", "Research", "MapSelect", "HelpMenu", "Help",
@@ -123,14 +118,6 @@ void RemoveDelistedServers(LList<Directory*>* _serverList)
   for (int i = 0; i < serverListSize; i++)
   {
     Directory* server = _serverList->GetData(i);
-
-    if (server->HasData(NET_METASERVER_DELISTED))
-    {
-      _serverList->RemoveData(i);
-      delete server;
-      i--;
-      serverListSize--;
-    }
   }
 }
 

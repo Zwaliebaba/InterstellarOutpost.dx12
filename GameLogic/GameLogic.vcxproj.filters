@@ -407,9 +407,6 @@
     <ClInclude Include="GamerTagButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
-    <ClInclude Include="GameServerButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
     <ClInclude Include="GameTypeAnyButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>

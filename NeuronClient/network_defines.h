@@ -132,6 +132,11 @@
 #define     NET_DARWINIA_CLIENTGOODBYE					"ec"
 #define     NET_DARWINIA_CLIENTID						"ed"
 
+#define NET_SERVER_STARTTIME               "st"
+#define NET_SERVER_RANDOM                  "sr"
+#define NET_SERVER_LOCALIP "slp"
+#define NET_SERVER_LOCALPORT "slp"
+
 #define     NET_DARWINIA_TEAMASSIGN						"ef"
 #define     NET_DARWINIA_NETSYNCERROR					"eg"
 #define     NET_DARWINIA_NETSYNCFIXED					"eh"

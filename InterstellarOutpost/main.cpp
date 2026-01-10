@@ -67,7 +67,6 @@
 #include "iframe.h"
 #include "ftp_manager.h"
 #include "gunturret.h"
-#include "metaserver.h"
 #include "darwinian.h"
 #include "achievement_tracker.h"
 
@@ -679,13 +678,6 @@ void Finalise()
 
   if (g_app->m_clientToServer)
     g_app->m_clientToServer->ClientLeave();
-
-  MetaServer_Disconnect();
-
-#if TARGET_OS_MACOSX
-  g_loadingScreen->m_workQueue->Empty(); g_loadingScreen->m_workQueue->Wait(); g_app->m_soundSystem->m_PreloadQueue->Empty(); g_app->
-    m_soundSystem->m_PreloadQueue->Wait();
-#endif
 
   if (g_app->m_soundSystem->IsInitialized() && g_soundLibrary2d)
   {

@@ -35,7 +35,6 @@
 #include "iframe.h"
 #include "ftp_manager.h"
 #include "work_queue.h"
-#include "metaserver_defines.h"
 #include "GameMenuWindow.h"
 #include "achievement_tracker.h"
 #include "eclipse.h"
@@ -343,7 +342,6 @@ void ClientToServer::Advance()
   {
     auto letter = new Directory();
     letter->CreateData(NET_DARWINIA_COMMAND, NET_DARWINIA_CLIENT_JOIN);
-    letter->CreateData(NET_METASERVER_GAMEVERSION, APP_VERSION);
     letter->CreateData(NET_DARWINIA_SYSTEMTYPE, APP_SYSTEM);
 
     if (m_password.Length() > 0)
@@ -1766,8 +1764,8 @@ bool ClientToServer::ProcessServerLetters(Directory* letter)
         g_app->m_clientToServer->RequestTeam(TeamTypeLocalPlayer, -1);
       }
 
-      m_serverStartTime = letter->GetDataULLong(NET_METASERVER_STARTTIME);
-      m_serverRandomNumber = letter->GetDataInt(NET_METASERVER_RANDOM);
+      m_serverStartTime = letter->GetDataULLong(NET_SERVER_STARTTIME);
+      m_serverRandomNumber = letter->GetDataInt(NET_SERVER_RANDOM);
 
       // We could trigger an upsell here if the server is a full 
     }

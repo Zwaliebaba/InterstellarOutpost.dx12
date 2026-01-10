@@ -83,18 +83,6 @@
     <ClInclude Include="soundsystem.h">
       <Filter>Audio</Filter>
     </ClInclude>
-    <ClInclude Include="authentication.h">
-      <Filter>MetaServer</Filter>
-    </ClInclude>
-    <ClInclude Include="metaserver.h">
-      <Filter>MetaServer</Filter>
-    </ClInclude>
-    <ClInclude Include="metaserver_defines.h">
-      <Filter>MetaServer</Filter>
-    </ClInclude>
-    <ClInclude Include="metaserver_defines_old.h">
-      <Filter>MetaServer</Filter>
-    </ClInclude>
     <ClInclude Include="control_bindings.h">
       <Filter>Input</Filter>
     </ClInclude>
@@ -267,12 +255,6 @@
     <ClCompile Include="soundsystem.cpp">
       <Filter>Audio</Filter>
     </ClCompile>
-    <ClCompile Include="authentication.cpp">
-      <Filter>MetaServer</Filter>
-    </ClCompile>
-    <ClCompile Include="metaserver.cpp">
-      <Filter>MetaServer</Filter>
-    </ClCompile>
     <ClCompile Include="control_bindings.cpp">
       <Filter>Input</Filter>
     </ClCompile>
@@ -367,9 +349,6 @@
     </Filter>
     <Filter Include="Audio">
       <UniqueIdentifier>{c937d598-654f-4f82-8b05-d2a3e51e035a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="MetaServer">
-      <UniqueIdentifier>{25b68eb4-65fd-4e11-a9d9-30328b6db6bb}</UniqueIdentifier>
     </Filter>
     <Filter Include="Input">
       <UniqueIdentifier>{58c17668-2bc2-4a0c-84bf-4c225986bcad}</UniqueIdentifier>
