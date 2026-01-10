@@ -26,10 +26,7 @@
 #include "level_file.h"
 #include "obstruction_grid.h"
 #include "multiwinia.h"
-#include "multiwiniahelp.h"
-
 #include "soundsystem.h"
-
 #include "darwinian.h"
 #include "officer.h"
 #include "teleport.h"
@@ -1160,9 +1157,6 @@ bool Darwinian::AdvanceCombat()
     if (m_subversionTaskId != -1)
       hasGrenade = false;
     if (m_futurewinian)
-      hasGrenade = false;
-    if (g_app->m_multiwiniaTutorial && g_app->m_multiwiniaTutorialType == App::MultiwiniaTutorial2 && !g_app->m_multiwiniaHelp->
-      m_tutorial2AICanSpawn)
       hasGrenade = false;
 
     if (hasGrenade)

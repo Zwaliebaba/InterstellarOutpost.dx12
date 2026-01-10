@@ -1,4 +1,3 @@
-
 #ifndef _included_centipede_h
 #define _included_centipede_h
 
@@ -11,59 +10,53 @@
 #define CENTIPEDE_NUMSPIRITSTOREGROW_MP 4
 #define CENTIPEDE_MAXSIZE               20
 
-class Shape;
-
-
-
 class Centipede : public Entity
 {
-protected:
-    double           m_size;
-    WorldObjectId   m_next;                         // Guy infront of me
-    WorldObjectId   m_prev;                         // Guy behind me
-    
-    Vector3         m_targetPos;
-    WorldObjectId   m_targetEntity;
+  protected:
+    double m_size;
+    WorldObjectId m_next; // Guy infront of me
+    WorldObjectId m_prev; // Guy behind me
 
-    LList<Vector3>  m_positionHistory;
-    bool            m_linked;
-    double           m_panic;
-    int             m_numSpiritsEaten;
-    double           m_lastAdvance;
-    
-    static Shape    *s_shapeBody[NUM_TEAMS];
-    static Shape    *s_shapeHead[NUM_TEAMS];
+    Vector3 m_targetPos;
+    WorldObjectId m_targetEntity;
 
-protected:    
-    bool        SearchForRandomPosition();
-    bool        SearchForTargetEnemy();
-    bool        SearchForSpirits();
-    bool        SearchForRetreatPosition();
+    LList<Vector3> m_positionHistory;
+    bool m_linked;
+    double m_panic;
+    int m_numSpiritsEaten;
+    double m_lastAdvance;
 
-    bool        AdvanceToTargetPosition();        
-    void        RecordHistoryPosition();          
-    bool        GetTrailPosition( Vector3 &_pos, Vector3 &_vel, int _numSteps );
-           
-    void        Panic( double _time );      
-    void        EatSpirits();
+    static Shape* s_shapeBody[NUM_TEAMS];
+    static Shape* s_shapeHead[NUM_TEAMS];
 
-public:
+    bool SearchForRandomPosition();
+    bool SearchForTargetEnemy();
+    bool SearchForSpirits();
+    bool SearchForRetreatPosition();
+
+    bool AdvanceToTargetPosition();
+    void RecordHistoryPosition();
+    bool GetTrailPosition(Vector3& _pos, Vector3& _vel, int _numSteps);
+
+    void Panic(double _time);
+    void EatSpirits();
+
+  public:
     Centipede();
 
-    void Begin              ();
-    bool Advance            ( Unit *_unit );
-    bool ChangeHealth       ( int _amount, int _damageType = DamageTypeUnresistable );
-    void Render             ( double _predictionTime );
-	bool RenderPixelEffect  ( double _predictionTime );
+    void Begin() override;
+    bool Advance(Unit* _unit) override;
+    bool ChangeHealth(int _amount, int _damageType = DamageTypeUnresistable) override;
+    void Render(double _predictionTime) override;
+    bool RenderPixelEffect(double _predictionTime) override;
 
-    bool IsInView           ();
+    bool IsInView() override;
 
-    void Attack             ( Vector3 const &_pos );
+    void Attack(const Vector3& _pos) override;
 
-    int GetSize            (); 
+    int GetSize();
 
-    void ListSoundEvents    ( LList<char *> *_list );
+    void ListSoundEvents(LList<char*>* _list) override;
 };
-
 
 #endif

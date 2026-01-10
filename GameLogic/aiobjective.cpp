@@ -1,21 +1,17 @@
 #include "pch.h"
-
 #include "debug_render.h"
 #include "preferences.h"
 #include "text_file_writer.h"
 #include "text_stream_readers.h"
 #include "random_number.h"
-
 #include "app.h"
 #include "entity_grid.h"
 #include "level_file.h"
 #include "location.h"
-#include "location_editor.h"
 #include "main.h"
 #include "team.h"
 #include "obstruction_grid.h"
 #include "multiwinia.h"
-
 #include "aiobjective.h"
 #include "building.h"
 #include "ai.h"

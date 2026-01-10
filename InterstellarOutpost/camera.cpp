@@ -1,55 +1,35 @@
 #include "pch.h"
-
-#include <math.h>
-#include <string.h>
-#include <float.h>
-
+#include "camera.h"
+#include "app.h"
+#include "clienttoserver.h"
+#include "debug_render.h"
+#include "eclipse.h"
+#include "entity_grid.h"
+#include "global_world.h"
 #include "hi_res_time.h"
 #include "input.h"
-#include "movement2d.h"
-#include "targetcursor.h"
-#include "window_manager.h"
-#include "math_utils.h"
-#include "matrix33.h"
-#include "debug_render.h"
-#include "random_number.h"
-#include "profiler.h"
-
-#include "preferences.h"
-#include "prefs_other_window.h"
-
-#include "eclipse.h"
-
-#include "clienttoserver.h"
-
-#include "app.h"
-#include "camera.h"
-#include "global_world.h"
+#include "insertion_squad.h"
 #include "level_file.h"
 #include "location.h"
 #include "main.h"
+#include "math_utils.h"
+#include "matrix33.h"
+#include "movement2d.h"
+#include "preferences.h"
+#include "prefs_other_window.h"
+#include "profiler.h"
+#include "radardish.h"
+#include "random_number.h"
 #include "renderer.h"
+#include "shaman_interface.h"
+#include "targetcursor.h"
 #include "taskmanager.h"
 #include "taskmanager_interface.h"
 #include "team.h"
+#include "teleport.h"
 #include "unit.h"
 #include "user_input.h"
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-#include "helpsystem.h"
-#endif
-#include "script.h"
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-#include "sepulveda.h"
-#endif
-#include "gamecursor.h"
-#include "control_help.h"
-#include "shaman_interface.h"
-#include "multiwiniahelp.h"
-
-#include "teleport.h"
-#include "insertion_squad.h"
-#include "radardish.h"
-#include "entity_grid.h"
+#include "window_manager.h"
 
 #define MIN_GROUND_CLEARANCE	10.0f	// Minimum height relative to land
 #define MIN_HEIGHT				10.0f	// Height above sea level (which is y=0)
@@ -64,8 +44,6 @@ std::vector<WorldObjectId> Camera::s_neighbours;
 
 void Camera::AdvanceDebugMode()
 {
-  //if( strcmp( EclGetCurrentFocus(), "none" ) != 0 && !g_app->m_editing ) return;
-
   if (g_app->m_editing)
     m_targetFov = 60.0f;
 
@@ -626,8 +604,6 @@ void Camera::AdvanceFreeMovementMode()
       {
         m_targetPos -= accelRight * advanceTime * details.x * 10.0f;
         m_targetPos -= accelForward * advanceTime * details.y * 10.0f;
-
-        g_app->m_controlHelpSystem->RecordCondUsed(ControlHelpSystem::CondMoveCameraOrUnit);
       }
     }
 
@@ -642,23 +618,9 @@ void Camera::AdvanceFreeMovementMode()
       double timeNow = GetHighResTime();
       if (s_forwardHeldDown < 0.0f)
         s_forwardHeldDown = timeNow;
-      if (timeNow > s_forwardHeldDown + 4.0f)
-        g_app->m_multiwiniaHelp->ShowShiftSpeedupHelp();
     }
     else
       s_forwardHeldDown = -1.0f;
-
-    if (keyForward || keyBackward || keyLeft || keyRight)
-    {
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-      g_app->m_helpSystem->PlayerDoneAction(HelpSystem::CameraMovement);
-#endif
-    }
-
-    //		if (m_pos.x < m_minX)	m_targetPos.x -= (m_pos.x - m_minX);
-    //		if (m_pos.x > m_maxX)	m_targetPos.x -= (m_pos.x - m_maxX);
-    //		if (m_pos.z < m_minX)	m_targetPos.z -= (m_pos.z - m_minZ);
-    //		if (m_pos.z > m_maxX)	m_targetPos.z -= (m_pos.z - m_maxZ);
 
     // Stop camera getting too close to cliffs
     {
@@ -1184,16 +1146,12 @@ bool Camera::AdvanceManualCameraHeight(Vector3& cameraTarget)
     if (g_inputManager->controlEvent(ControlCameraUp) && !FiddlingWithOfficer() && !AimingBuilding())
     {
       m_heightMultiplier += heightScale;
-      g_app->m_controlHelpSystem->RecordCondUsed(ControlHelpSystem::CondCameraUp);
-      g_app->m_controlHelpSystem->RecordCondUsed(ControlHelpSystem::CondCameraDown);
     }
 
     if (g_inputManager->controlEvent(ControlCameraDown) && !AimingBuilding())
     {
       m_heightMultiplier -= heightScale;
       camDown = true;
-      g_app->m_controlHelpSystem->RecordCondUsed(ControlHelpSystem::CondCameraUp);
-      g_app->m_controlHelpSystem->RecordCondUsed(ControlHelpSystem::CondCameraDown);
     }
 
     m_heightMultiplier = min(2.0f, m_heightMultiplier);
@@ -2134,14 +2092,6 @@ void Camera::AdvanceComponentMouseWheelHeight()
       delta += g_advanceTime * 7.0f;
     if (keyDown)
       delta -= g_advanceTime * 7.0f;
-    if (keyUp || keyDown)
-    {
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-      g_app->m_helpSystem->PlayerDoneAction(HelpSystem::CameraHeight);
-#endif
-      g_app->m_controlHelpSystem->RecordCondUsed(ControlHelpSystem::CondCameraUp);
-      g_app->m_controlHelpSystem->RecordCondUsed(ControlHelpSystem::CondCameraDown);
-    }
   }
 
   if (g_app->m_location)
@@ -2180,9 +2130,8 @@ void Camera::AdvanceComponentMouseWheelHeight()
     m_height += delta * (m_height * 0.1f + 5.0f);
     if (m_height < 0.0f)
       m_height = 0.1f;
-    else
-      if (m_height > 1000.0f)
-        m_height = 1000.0f;
+    else if (m_height > 1000.0f)
+      m_height = 1000.0f;
   }
 
 }

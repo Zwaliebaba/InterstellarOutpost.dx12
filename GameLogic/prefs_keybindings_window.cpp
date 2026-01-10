@@ -1,25 +1,15 @@
 #include "pch.h"
-
-#include <string>
-#include <memory>
-
 #include "preferences.h"
 #include "text_renderer.h"
 #include "language_table.h"
 #include "text_stream_readers.h"
-#ifdef TARGET_MSVC
-#include "win32_eventhandler.h"
-#endif
 #include "control_types.h"
 #include "file_paths.h"
-
 #include "prefs_keybindings_window.h"
 #include "drop_down_menu.h"
-
 #include "app.h"
 #include "main.h"
 #include "renderer.h"
-#include "taskmanager_interface_gestures.h"
 #include "taskmanager_interface_icons.h"
 
 using namespace std;

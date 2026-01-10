@@ -177,8 +177,6 @@ using namespace Neuron;
 
 #ifdef TARGET_PC_FULLGAME
 #define     DARWINIA_GAMETYPE "multiwinia"
-#define     DUMP_DEBUG_LOG
-//#define     LOCATION_EDITOR
 #define     LAN_PLAY_ENABLED
 #define     WAN_PLAY_ENABLED			
 #define		NETWORK_STATS_ENABLED
@@ -188,10 +186,9 @@ using namespace Neuron;
 #define     INCLUDEGAMEMODE_ROCKET
 #define     INCLUDEGAMEMODE_ASSAULT
 #define     INCLUDEGAMEMODE_BLITZ
-//#define	    INCLUDEGAMEMODE_TANKBATTLE
+#define	    INCLUDEGAMEMODE_TANKBATTLE
 #define     INCLUDE_CRATES_BASIC
 #define     INCLUDE_CRATES_ADVANCED
-#define     INCLUDE_TUTORIAL
 #define		AUTHENTICATION_LEVEL	1
 
 //#define     CHRISTMAS_DEMO

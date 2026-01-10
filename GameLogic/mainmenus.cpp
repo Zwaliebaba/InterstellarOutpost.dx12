@@ -13,7 +13,6 @@
 #include "prefs_keybindings_window.h"
 #include "prefs_other_window.h"
 #include "userprofile_window.h"
-#include "demoend_window.h"
 #include "multiwinia_window.h"
 #include "helpandoptions_windows.h"
 #include "leaderboards_window.h"

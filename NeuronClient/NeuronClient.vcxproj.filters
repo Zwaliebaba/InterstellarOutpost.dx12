@@ -137,9 +137,6 @@
     <ClInclude Include="inputdriver_invert.h">
       <Filter>Input</Filter>
     </ClInclude>
-    <ClInclude Include="inputdriver_pipe.h">
-      <Filter>Input</Filter>
-    </ClInclude>
     <ClInclude Include="inputdriver_prefs.h">
       <Filter>Input</Filter>
     </ClInclude>
@@ -153,9 +150,6 @@
       <Filter>Input</Filter>
     </ClInclude>
     <ClInclude Include="inputfilter.h">
-      <Filter>Input</Filter>
-    </ClInclude>
-    <ClInclude Include="inputfilter_direction.h">
       <Filter>Input</Filter>
     </ClInclude>
     <ClInclude Include="inputfilter_withdelta.h">
@@ -327,9 +321,6 @@
     <ClCompile Include="inputdriver_invert.cpp">
       <Filter>Input</Filter>
     </ClCompile>
-    <ClCompile Include="inputdriver_pipe.cpp">
-      <Filter>Input</Filter>
-    </ClCompile>
     <ClCompile Include="inputdriver_prefs.cpp">
       <Filter>Input</Filter>
     </ClCompile>
@@ -343,9 +334,6 @@
       <Filter>Input</Filter>
     </ClCompile>
     <ClCompile Include="inputfilter.cpp">
-      <Filter>Input</Filter>
-    </ClCompile>
-    <ClCompile Include="inputfilter_direction.cpp">
       <Filter>Input</Filter>
     </ClCompile>
     <ClCompile Include="inputfilter_withdelta.cpp">

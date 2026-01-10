@@ -11,19 +11,15 @@
 #include "soundsystem.h"
 #include "metaserver_defines.h"
 #include "unicode_text_stream_reader.h"
-#include "multiwiniahelp.h"
 #include "MapData.h"
 #include "game_menu.h"
 #include "location.h"
 #include "helpandoptions_windows.h"
 #include "chatinput_window.h"
-#include "mapcrc.h"
 #include "GameMenuWindow.h"
 #include "GameServerButton.h"
 #include "DarwiniaModeButton.h"
 #include "NewOrJoinButton.h"
-#include "TutorialButton.h"
-#include "BuyNowModeButton.h"
 #include "MultiwiniaEditorButton.h"
 #include "QuitButton.h"
 #include "PrologueButton.h"
@@ -58,7 +54,6 @@
 #include "EnterAuthKeyButton.h"
 #include "FancyColourButton.h"
 #include "ApplyNameButton.h"
-#include "credits_button.h"
 #include "PlayDemoAuthkeyButton.h"
 #include "AuthStatusButton.h"
 #include "AchievementButton.h"
@@ -336,10 +331,6 @@ GameMenuWindow::GameMenuWindow()
     m_xblaOfferSplitscreen(false),
     m_quickStart(false),
     m_singlePlayer(false),
-    m_startingTutorial(false),
-    //m_clickGameType(-1),
-    //m_leaderboardScrollOffset(0),
-    m_demoUpgradeCheck(false),
     m_clickedCampaign(false),
     m_clickedPrologue(false),
     m_showingDeviceSelector(false),
@@ -448,9 +439,6 @@ void GameMenuWindow::Update()
 
   if (m_currentPage != m_newPage)
   {
-    //if( m_clickGameType == m_gameType ||
-    //    g_app->m_clientToServer->m_connectionState == ClientToServer::StateDisconnected )
-    //{
     ShutdownPage(m_currentPage);
     SetupNewPage(m_newPage);
 
@@ -465,15 +453,6 @@ void GameMenuWindow::Update()
     SetupNewPage(m_currentPage);
     m_reloadPage = false;
   }
-
-  if (m_demoUpgradeCheck != IS_DEMO)
-  {
-    m_demoUpgradeCheck = IS_DEMO;
-    if (m_currentPage == PageDemoSinglePlayer)
-      m_newPage = PageDarwinia;
-  }
-
-  //if( !GetButton( g_target->X(), g_target->Y() ) && g_inputManager->getInputMode() == INPUT_MODE_KEYBOARD )m_highlightedLevel = -1;
 
 #ifdef TESTBED_ENABLED
   UpdateTestBed();
@@ -1185,9 +1164,6 @@ void GameMenuWindow::UpdatePageSinglePlayer()
   // This is the single player menu
   if (m_quickStart)
     UpdateGameOptions(false);
-
-  if (g_app->m_multiwiniaTutorial)
-    UpdateMainPage();
 }
 
 void GameMenuWindow::UpdateMultiplayerPage()
@@ -1251,34 +1227,29 @@ void GameMenuWindow::UpdateMultiplayerPage()
       notReady = !(g_app->GetTestBedState() == TESTBED_PLAY);
 #endif
 
-    if (IS_DEMO && DemoRestrictedMap())
-      notReady = true;
-
     if (!notReady)
     {
       if (0 <= m_gameType && m_gameType < MAX_GAME_TYPES && g_app->m_gameMenu->m_maps[m_gameType].ValidIndex(m_requestedMapId))
       {
         MapData* mapData = g_app->m_gameMenu->m_maps[m_gameType][m_requestedMapId];
         mapData->CalculeMapId();
-        if (g_app->IsMapPermitted(m_gameType, mapData->m_mapId))
+
+        g_app->m_soundSystem->WaitIsInitialized();
+
+        // fill up any empty player slots with AI teams before starting the game
+        for (int i = 0; i < NUM_TEAMS; ++i)
         {
-          g_app->m_soundSystem->WaitIsInitialized();
-
-          // fill up any empty player slots with AI teams before starting the game
-          for (int i = 0; i < NUM_TEAMS; ++i)
-          {
-            if (i < g_app->m_gameMenu->m_maps[m_gameType][m_requestedMapId]->m_numPlayers && g_app->m_multiwinia->m_teams[i].m_teamType ==
-              TeamTypeUnused)
-              g_app->m_clientToServer->RequestTeam(TeamTypeCPU, -1);
-          }
-
-          UpdateGameOptions(true);
-          g_app->m_clientToServer->RequestStartGame();
-
-          // Transition to a new page while we wait for the game to start
-          // instead of going through this again and again 
-          m_newPage = PageWaitForGameToStart;
+          if (i < g_app->m_gameMenu->m_maps[m_gameType][m_requestedMapId]->m_numPlayers && g_app->m_multiwinia->m_teams[i].m_teamType ==
+            TeamTypeUnused)
+            g_app->m_clientToServer->RequestTeam(TeamTypeCPU, -1);
         }
+
+        UpdateGameOptions(true);
+        g_app->m_clientToServer->RequestStartGame();
+
+        // Transition to a new page while we wait for the game to start
+        // instead of going through this again and again 
+        m_newPage = PageWaitForGameToStart;
       }
       else
       {
@@ -1334,23 +1305,6 @@ void GameMenuWindow::UpdateGameConnectingPage()
   }
 }
 
-bool GameMenuWindow::DemoRestrictedMap() const { return DemoRestrictedMap(m_gameType, m_requestedMapId); }
-
-bool GameMenuWindow::DemoRestrictedMap(int _mapId) const { return DemoRestrictedMap(m_gameType, _mapId); }
-
-bool GameMenuWindow::DemoRestrictedMap(int _gameType, int _mapId) const
-{
-  if (_gameType < 0 || _gameType >= MAX_GAME_TYPES || _mapId < 0)
-    return true;
-
-  DArray<MapData*>& maps = g_app->m_gameMenu->m_maps[_gameType];
-
-  if (!maps.ValidIndex(_mapId))
-    return true;
-
-  return !g_app->IsMapAvailableInDemo(_gameType, maps[_mapId]->m_mapId);
-}
-
 void GameMenuWindow::SetTeamNameAndColour()
 {
   ClientToServer* cToS = g_app->m_clientToServer;
@@ -1369,7 +1323,7 @@ void GameMenuWindow::SetTeamNameAndColour()
         m_currentRequestedColour = g_app->m_multiwinia->GetNextAvailableColour();
     }
 
-    if (m_currentPage == PageGameSetup || m_currentPage == PagePlayerOptions || m_startingTutorial)
+    if (m_currentPage == PageGameSetup || m_currentPage == PagePlayerOptions)
     {
       if (m_currentRequestedColour != -1 || m_coopMode || m_gameType == Multiwinia::GameTypeAssault)
         cToS->ReliableSetTeamColour(m_currentRequestedColour);
@@ -1409,14 +1363,6 @@ void GameMenuWindow::UpdateGameOptions(bool _checkUserInterface)
 
   if (m_quickStart)
   {
-    if (g_app->m_server && g_app->m_multiwiniaTutorial && !m_startingTutorial)
-    {
-      if (g_app->m_multiwiniaTutorialType == App::MultiwiniaTutorial1)
-        SetupTutorial();
-      else if (g_app->m_multiwiniaTutorialType == App::MultiwiniaTutorial2)
-        SetupTutorial2();
-    }
-
     if (teamId != 255 || g_app->m_spectator)
     {
       g_app->m_soundSystem->WaitIsInitialized();
@@ -2730,22 +2676,6 @@ void GameMenuWindow::SetupMainPage()
   RegisterButton(title);
   yPos += buttonH * 1.3f;
 
-  // Single player game
-  bool tutButton = true;
-#if defined(INCLUDE_TUTORIAL)
-  if (!g_app->IsFullVersion())
-  {
-    auto tpb = new TutorialPageButton();
-    tpb->SetShortProperties("multiwinia_menu_tutorial_short", buttonX, yPos += buttonH + gap, buttonW, buttonH,
-                            LANGUAGEPHRASE("multiwinia_menu_tutorial_short"));
-    tpb->m_fontSize = fontSize;
-    RegisterButton(tpb);
-    m_buttonOrder.PutData(tpb);
-
-    tutButton = false;
-  }
-#endif
-
   GameMenuButton* button = new DarwiniaModeButton("multiwinia_menu_singleplayergame");
   button->SetShortProperties("multiwinia_menu_singleplayergame", buttonX, yPos += buttonH + gap, buttonW, buttonH,
                              LANGUAGEPHRASE("multiwinia_menu_singleplayergame"));
@@ -2759,22 +2689,8 @@ void GameMenuWindow::SetupMainPage()
   button->SetShortProperties("multiwinia_menu_multiplayergame", buttonX, yPos += buttonH + gap, buttonW, buttonH,
                              LANGUAGEPHRASE("multiwinia_menu_multiplayergame"));
   button->m_fontSize = fontSize;
-  if (!g_app->MultiplayerPermitted())
-    button->m_inactive = true;
   RegisterButton(button);
   m_buttonOrder.PutData(button);
-
-#ifdef INCLUDE_TUTORIAL
-  if (tutButton)
-  {
-    auto tpb = new TutorialPageButton();
-    tpb->SetShortProperties("multiwinia_menu_tutorial_short", buttonX, yPos += buttonH + gap, buttonW, buttonH,
-                            LANGUAGEPHRASE("multiwinia_menu_tutorial_short"));
-    tpb->m_fontSize = fontSize;
-    RegisterButton(tpb);
-    m_buttonOrder.PutData(tpb);
-  }
-#endif
 
   // Help and options
 
@@ -2795,13 +2711,6 @@ void GameMenuWindow::SetupMainPage()
     PutData(startTestClient);
 #endif
 
-#ifdef LOCATION_EDITOR
-  MultiwiniaEditorButton* editor = new MultiwiniaEditorButton(); editor->SetShortProperties(
-    "editor", buttonX, yPos += buttonH + gap, buttonW, buttonH,
-    LANGUAGEPHRASE("taskmanager_mapeditor")); editor->m_fontSize = fontSize; if (!g_app->IsFullVersion()) { editor->m_inactive = true; }
-  RegisterButton(editor); m_buttonOrder.PutData(editor);
-#endif
-
   Directory* latestVersion = MetaServer_RequestData(NET_METASERVER_DATA_LATESTVERSION);
   if (latestVersion)
   {
@@ -2819,24 +2728,6 @@ void GameMenuWindow::SetupMainPage()
       }
     }
     delete latestVersion;
-  }
-
-  auto credits = new CreditsButton();
-  credits->SetShortProperties("credits_button", buttonX, yPos += buttonH + gap, buttonW, buttonH, LANGUAGEPHRASE("dialog_credits"));
-  credits->m_fontSize = fontSize;
-  RegisterButton(credits);
-  m_buttonOrder.PutData(credits);
-
-  // Buy now 
-
-  if (IS_DEMO)
-  {
-    button = new BuyNowModeButton();
-    button->SetShortProperties("multiwinia_menu_buyfullgame", buttonX, yPos += buttonH + gap, buttonW, buttonH,
-                               LANGUAGEPHRASE("multiwinia_menu_buyfullgame"));
-    button->m_fontSize = fontSize;
-    RegisterButton(button);
-    m_buttonOrder.PutData(button);
   }
 
   yPos = leftY + leftH - buttonH * 2;
@@ -3235,51 +3126,6 @@ void GameMenuWindow::ShutdownJoinGamePage()
 
 void GameMenuWindow::ShutdownGameConnectingPage() { g_app->m_clientToServer->StopIdentifying(); }
 
-void GameMenuWindow::SetupTutorial()
-{
-#ifdef INCLUDE_TUTORIAL
-  DebugTrace("Setting up Tutorial\n");
-  m_gameType = Multiwinia::GameTypeKingOfTheHill;
-  g_app->m_multiwinia->m_gameType = Multiwinia::GameTypeKingOfTheHill;
-  m_aiMode = Multiwinia::AITypeEasy;
-  m_requestedMapId = g_app->GetMapID(Multiwinia::GameTypeKingOfTheHill, MAPID_MP_KOTH_2P_1);
-  m_currentRequestedColour = 0;
-
-  MultiwiniaGameBlueprint* blueprint = Multiwinia::s_gameBlueprints[Multiwinia::GameTypeKingOfTheHill];
-  for (int i = 0; i < blueprint->m_params.Size(); ++i)
-  {
-    MultiwiniaGameParameter* param = blueprint->m_params[i];
-    m_params[i] = param->m_default;
-  }
-  m_startingTutorial = true;
-  g_app->m_renderer->StartFadeOut();
-#endif
-}
-
-void GameMenuWindow::SetupTutorial2()
-{
-#ifdef INCLUDE_TUTORIAL
-  DebugTrace("Setting up Tutorial 2\n");
-  m_gameType = Multiwinia::GameTypeKingOfTheHill;
-  g_app->m_multiwinia->m_gameType = Multiwinia::GameTypeKingOfTheHill;
-  m_aiMode = Multiwinia::AITypeEasy;
-  m_requestedMapId = g_app->GetMapID(Multiwinia::GameTypeKingOfTheHill, MAPID_MP_KOTH_3P_1);
-  m_currentRequestedColour = 0;
-
-  MultiwiniaGameBlueprint* blueprint = Multiwinia::s_gameBlueprints[Multiwinia::GameTypeKingOfTheHill];
-  for (int i = 0; i < blueprint->m_params.Size(); ++i)
-  {
-    MultiwiniaGameParameter* param = blueprint->m_params[i];
-    m_params[i] = param->m_default;
-  }
-
-  for (int i = 0; i < 3; ++i)
-    g_app->m_multiwinia->m_teams[i].m_colourId = i;
-  m_startingTutorial = true;
-  g_app->m_renderer->StartFadeOut();
-#endif
-}
-
 void GameMenuWindow::UpdateMainPage()
 {
   // Player selected single player mode from the menu
@@ -3347,8 +3193,6 @@ void GameMenuWindow::SetupNewOrJoinPage()
   button->SetShortProperties("multiwinia_menu_hostgame", buttonX, yPos += buttonH + gap, buttonW, buttonH,
                              LANGUAGEPHRASE("multiwinia_menu_hostgame"));
   button->m_fontSize = fontSize;
-  if (!g_app->HostGamePermitted())
-    button->m_disabled = true;
   RegisterButton(button);
   m_buttonOrder.PutData(button);
 
@@ -3460,50 +3304,7 @@ void GameMenuWindow::SetupGameSelectPage()
       m_buttonOrder.PutData(button);
       RegisterButton(button);
     }
-
-    if (!g_app->IsGameModePermitted(i))
-      button->m_inactive = true;
-
-    /*if( IS_DEMO )
-    {
-        if( g_app->m_gameMenu->m_numDemoMaps[i] == 0 )
-        {
-            button->m_inactive = true;
-        }
-        else
-        {
-            m_buttonOrder.PutData( button );
-        }
-    }
-    else
-    {
-        m_buttonOrder.PutData( button );
-    }
-    RegisterButton( button );*/
   }
-
-  //if( m_singlePlayer )
-  //{
-  //    yPos += buttonH;
-
-  //    PrologueButton *pb = new PrologueButton( "multiwinia_menu_prologue" );
-  //    pb->SetShortProperties("prologue", xPos, yPos+=(buttonH+gap), buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_prologue") );
-  //    pb->m_fontSize = fontSize;
-  //    pb->m_useEditorFont = true;
-  //    RegisterButton( pb );
-  //    m_buttonOrder.PutData( pb );
-
-  ////    CampaignButton *cb = new CampaignButton( "icons/menu_campaign.bmp" );
-  //    CampaignButton *cb = new CampaignButton( "multiwinia_menu_campaign" );
-  //    cb->SetShortProperties( "campaign", xPos, yPos+=(buttonH+gap), buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_campaign") );
-  //    cb->m_fontSize = fontSize;
-  //    cb->m_useEditorFont = true;
-  //    cb->m_inactive = true;
-  //    RegisterButton( cb );
-  //    //m_buttonOrder.PutData( cb);
-  //}
-
-  yPos += buttonH + gap;
 
   int page = PageNewOrJoin;
   if (m_singlePlayer)
@@ -3520,22 +3321,10 @@ void GameMenuWindow::SetupGameSelectPage()
   //
   // Status buttons on the right
 
-  //m_clickGameType = -1;
-
   xPos = rightX + rightW * 0.1f;
   yPos = rightY + rightW * 0.1f;
   int thumbnailW = rightW * 0.8f;
   int thumbnailH = thumbnailW * 2 / 3.0f;
-
-  //
-  // Title
-
-  /*yPos += buttonH * 0.5f;
-  GameMenuTitleButton *titleR = new GameMenuTitleButton();
-  titleR->SetShortProperties( "title", xPos, yPos, thumbnailW, buttonH*1.3f, "GAME" );
-  titleR->m_fontSize = fontMed;
-  RegisterButton( titleR );
-  yPos += buttonH * 2;*/
 
   auto imageButton = new GameTypeImageButton();
   imageButton->SetShortProperties("gametype", xPos, yPos, thumbnailW, thumbnailH, UnicodeString("gametype"));
@@ -4065,7 +3854,7 @@ void GameMenuWindow::SetupMapSelectPage()
     lsb->SetProperties(name, xPos, yPos += levelSButtonG, newButtonW, levelSButtonH, LANGUAGEPHRASE(name));
     lsb->m_levelIndex = i;
     lsb->m_fontSize = fontSmall;
-    lsb->m_inactive = !g_app->IsMapPermitted(gameType, maps[i]->m_mapId);
+    lsb->m_inactive = false;
 
     RegisterButton(lsb);
     m_buttonOrder.PutData(lsb);
@@ -4257,7 +4046,7 @@ void GameMenuWindow::SetupAdvancedOptionsPage()
     m_buttonOrder.PutData(crates);
 #endif
 
-    if (g_app->m_gameMenu->m_maps[m_gameType][m_requestedMapId]->m_coop && !IS_DEMO)
+    if (g_app->m_gameMenu->m_maps[m_gameType][m_requestedMapId]->m_coop)
     {
       auto menu = new GameMenuCheckBox();
       menu->SetShortProperties("multiwinia_menu_coop", xPos, yPos += buttonH + gap, buttonW, buttonH,
@@ -5040,9 +4829,6 @@ void GameMenuWindow::SetupTutorialPage()
   RegisterButton(back);
   back->m_fontSize = fontMed;
   m_buttonOrder.PutData(back);
-
-  if (g_app->m_multiwiniaHelp)
-    g_app->m_multiwiniaHelp->m_currentTutorialHelp = -1;
 }
 
 void GameMenuWindow::SetupErrorPage()

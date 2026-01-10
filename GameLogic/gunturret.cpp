@@ -1,7 +1,4 @@
 #include "pch.h"
-
-#include <math.h>
-
 #include "resource.h"
 #include "shape.h"
 #include "math_utils.h"
@@ -9,16 +6,13 @@
 #include "debug_render.h"
 #include "random_number.h"
 #include "input.h"
-#include "input_types.h"
 #include "language_table.h"
 #include "text_file_writer.h"
 #include "text_stream_readers.h"
-
 #include "globals.h"
 #include "app.h"
 #include "location.h"
 #include "team.h"
-#include "unit.h"
 #include "entity_grid.h"
 #include "camera.h"
 #include "user_input.h"
@@ -27,19 +21,14 @@
 #include "level_file.h"
 #include "explosion.h"
 #include "multiwinia.h"
-#include "location_editor.h"
 #include "particle_system.h"
 #include "obstruction_grid.h"
-#include "renderer.h"
-#include "gamecursor.h"
-
 #include "gunturret.h"
 #include "darwinian.h"
 #include "ai.h"
 #include "entity.h"
-
 #include "soundsystem.h"
-
+#include "weapons.h"
 
 void ConvertColours ( ShapeFragment *_frag, RGBAColour _col )
 {

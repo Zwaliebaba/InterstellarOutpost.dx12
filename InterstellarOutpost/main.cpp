@@ -26,81 +26,48 @@
 #include "inputdriver_invert.h"
 #include "inputdriver_idle.h"
 #include "inputdriver_value.h"
-
 #include "prefs_other_window.h"
 #include "controllerunplugged_window.h"
-
 #include "sound_library_2d.h"
 #include "sound_library_3d_software.h"
 #include "sample_cache.h"
-
-#ifdef HAVE_DSOUND
-#include "sound_library_3d_dsound.h"
-#endif
-
 #include "app.h"
 #include "camera.h"
-#include "location_editor.h"
 #include "explosion.h"
 #include "global_world.h"
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-#include "helpsystem.h"
-#endif
 #include "landscape.h"
 #include "location.h"
 #include "location_input.h"
 #include "main.h"
-#include "particle_system.h"
 #include "renderer.h"
 #include "script.h"
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-#include "sepulveda.h"
-#endif
 #include "soundsystem.h"
 #include "sample_cache.h"
-#include "taskmanager.h"
 #include "taskmanager_interface.h"
-#include "taskmanager_interface_icons.h"
-#include "taskmanager_interface_gestures.h"
-#include "taskmanager_interface_multiwinia.h"
 #include "team.h"
 #include "user_input.h"
-#include "testharness.h"
-#include "startsequence.h"
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-#include "tutorial.h"
-#endif
-#include "gamecursor.h"
-#include "unit.h"
 #include "attract.h"
-#include "control_help.h"
 #include "water.h"
 #include "game_menu.h"
 #include "shaman_interface.h"
 #include "markersystem.h"
-#include "multiwiniahelp.h"
 #ifdef BENCHMARK_AND_FTP
 #include "benchmark.h"
 #endif
 #include "loading_screen.h"
 #include "level_file.h"
 #include "entity_grid.h"
-
-#include "globalworldeditor_window.h"
 #include "mainmenus.h"
 #include "updateavailable_window.h"
 #include "debugmenu.h"
-
 #include "clienttoserver.h"
 #include "server.h"
 #include "servertoclientletter.h"
 #include "network_defines.h"
 #include "iframe.h"
 #include "ftp_manager.h"
-
 #include "gunturret.h"
 #include "metaserver.h"
-
 #include "darwinian.h"
 #include "achievement_tracker.h"
 
@@ -112,18 +79,11 @@ static void Finalise();
 //  Global Variables
 // ******************
 
-//double g_startTime = DBL_MAX;
 double g_gameTime = 0.0;
 double g_advanceTime;
-//double g_lastServerAdvance;
-//double g_predictionTime;
 int g_lastProcessedSequenceId = -1;
 int g_sliceNum; // Most recently advanced slice
 bool g_RenderingFirstTimeBL = false;
-#ifdef TARGET_OS_VISTA
-char g_saveFile[128]; // The profile name extracted from the save file that was used to launch darwinia
-bool g_mediaCenter = false;
-#endif
 
 bool requestBootloader = false;
 
@@ -141,9 +101,7 @@ void UpdateAdvanceTime()
     int demoFrameRate = g_prefsManager->GetInt("DemoFrameRate", 25);
     g_advanceTime = 1.0 / static_cast<double>(demoFrameRate);
     IncrementFakeTime(1.0 / static_cast<double>(demoFrameRate));
-    //g_gameTime += g_advanceTime;
     g_gameTime = GetHighResTime();
-    //g_predictionTime = g_gameTime - g_lastServerAdvance - 0.07;
   }
   else
   {
@@ -154,30 +112,9 @@ void UpdateAdvanceTime()
       if (g_advanceTime > 0.25)
         g_advanceTime = 0.25;
       g_gameTime = realTime;
-
-      //double prevPredictionTime = g_predictionTime;
-      //g_predictionTime = double(realTime - g_lastServerAdvance) - 0.07;
     }
-    else
-    {
-      //g_predictionTime = 0.0;
-    }
-
-    //DebugTrace( "Change = %6.3f\n", g_predictionTime - prevPredictionTime );
   }
 }
-
-//double GetNetworkTime()
-//{
-//    static double s_gameTime = 0.0f;
-//
-//    if( !g_app->GamePaused() )
-//    {
-//        s_gameTime = g_lastProcessedSequenceId * 0.1f;
-//    }
-//       
-//    return s_gameTime;   
-//}
 
 bool WindowsOnScreen() { return EclGetWindows()->Size() > 0; }
 
@@ -198,63 +135,13 @@ void RemoveAllWindows()
   }
 }
 
-#ifdef TARGET_MSVC
-void PrintAvailableMemory()
-{
-  const DWORD MB = 1024 * 1024;
-  MEMORYSTATUS stat;
-
-  // Get the memory status.
-  GlobalMemoryStatus(&stat);
-
-  unsigned totalMemory, unusedMemory;
-  g_cachedSampleManager.GetMemoryUsage(totalMemory, unusedMemory);
-
-  DebugTrace("Available Memory: %4u MB Physical, %4u MB Virtual. Sample Cache = %d MB (%d%% in use)\n", stat.dwAvailPhys / MB,
-             stat.dwAvailVirtual / MB, totalMemory / MB, totalMemory == 0 ? 0 : (totalMemory - unusedMemory) * 100 / totalMemory);
-}
-#endif
-
-void AdvanceAvailableMemoryCheck()
-{
-#ifdef TARGET_MSVC
-  static double nextMemoryCheckTime = 0; if (GetHighResTime() > nextMemoryCheckTime)
-  {
-    PrintAvailableMemory();
-    nextMemoryCheckTime = GetHighResTime() + 60;
-  }
-#endif
-}
-
 bool HandleCommonConditions()
 {
   g_app->HandleDelayedJobs();
 
   bool curWindowHasFocus = g_eventHandler->WindowHasFocus();
 
-  static bool controllerPlugged = true;
-#ifdef TARGET_MSVC
-  if (controllerPlugged && g_inputManager->controlEvent(ControlControllerUnplugged))
-  {
-    ControllerUnpluggedWindow* dialog = new ControllerUnpluggedWindow();
-    EclRegisterWindow(dialog);
-    controllerPlugged = false;
-  }
-#endif
-
-  if (!controllerPlugged && g_inputManager->controlEvent(ControlControllerPlugged))
-  {
-    EclRemoveWindow("controller_unplugged");
-    controllerPlugged = true;
-  }
-
-  // Pretend we're not focused
-  if (!controllerPlugged && g_inputManager->getInputMode() == INPUT_MODE_GAMEPAD)
-    curWindowHasFocus = false;
-
   g_app->m_lostFocusPause = !curWindowHasFocus;
-
-  AdvanceAvailableMemoryCheck();
 
   if (g_inputManager->controlEvent(ControlGameDebugQuit))
     g_app->m_requestQuit = true;
@@ -263,14 +150,7 @@ bool HandleCommonConditions()
 
   if (g_app->m_requestQuit)
   {
-    //g_app->SaveProfile( true, false );
-    //g_app->SaveProfile( true, g_app->m_location != NULL );
     Finalise();
-
-#ifdef TRACK_MEMORY_LEAKS
-    AppPrintMemoryLeaks("leaks.txt");
-#endif
-
     exit(0);
   }
 
@@ -376,7 +256,6 @@ void LocationGameLoop()
     {
       if (g_app->m_renderer->IsFadeComplete())
       {
-        g_app->m_controlHelpSystem->Shutdown();
         break;
       }
     }
@@ -475,9 +354,6 @@ void LocationGameLoop()
 
       g_app->m_userInput->Advance();
 
-      // Check Task Manager
-      SwitchTaskManagerForX360Controller();
-
       // The following are candidates for running in parallel
       // using something like OpenMP
       g_app->m_location->m_water->Advance();
@@ -489,33 +365,17 @@ void LocationGameLoop()
         g_app->m_camera->Advance();
 
       g_app->m_locationInput->Advance();
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-      g_app->m_helpSystem->Advance();
-#endif
       //g_app->m_taskManager->Advance();
       g_app->m_taskManagerInterface->Advance();
       g_app->m_script->Advance();
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-      g_app->m_sepulveda->Advance();
-#endif
       g_explosionManager.Advance();
+
       if (soundSystemIsInitialized)
         g_app->m_soundSystem->Advance();
-      g_app->m_controlHelpSystem->Advance();
       g_app->m_shamanInterface->Advance();
       g_app->m_markerSystem->Advance();
-      g_app->m_multiwiniaHelp->Advance();
 #ifdef BENCHMARK_AND_FTP
       g_app->m_benchMark->Advance();
-#endif
-
-#ifdef ATTRACTMODE_ENABLED
-      if (g_app->m_attractMode->m_running) { g_app->m_attractMode->Advance(); }
-#endif // ATTRACTMODE_ENABLED
-
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-      if (g_app->m_tutorial)
-        g_app->m_tutorial->Advance();
 #endif
 
       // DELETEME: for debug purposes only
@@ -688,50 +548,6 @@ void GlobalWorldGameLoop()
   }
 
   g_app->m_soundSystem->StopAllSounds(WorldObjectId(), "Ambience EnterGlobalWorld");
-}
-
-// *** GlobalWorldEditorLoop
-void GlobalWorldEditorLoop()
-{
-  g_app->m_camera->SetDebugMode(Camera::DebugModeAlways);
-
-  GlobalWorldEditorWindow* gweWindow = new GlobalWorldEditorWindow();
-  EclRegisterWindow(gweWindow);
-
-  while (g_app->m_requestedLocationId == -1 && !g_app->m_requestToggleEditing)
-  {
-    g_inputManager->PollForEvents();
-
-    if constexpr (true)
-    {
-      g_app->m_editing = false;
-      return;
-    }
-
-    if (HandleCommonConditions())
-      continue;
-
-    //
-    // Get the time
-    UpdateAdvanceTime();
-    double timeNow = GetHighResTime();
-
-    g_app->m_globalWorld->Advance();
-    g_app->m_userInput->Advance();
-    g_app->m_camera->Advance();
-    if (g_app->m_soundSystem->IsInitialized())
-      g_app->m_soundSystem->Advance();
-    if (g_profiler)
-      g_profiler->Advance();
-
-    g_app->m_renderer->Render();
-  }
-
-  if (g_app->m_requestToggleEditing)
-  {
-    g_app->m_editing = false;
-    g_app->m_requestToggleEditing = false;
-  }
 }
 
 void TestHarnessLoop()
@@ -1058,19 +874,15 @@ void EnterGlobalWorld()
   g_app->m_camera->RequestMode(Camera::ModeSphereWorld);
   g_app->m_camera->SetHeight(50.0);
 
-  if (g_app->m_editing)
-    GlobalWorldEditorLoop();
-  else
-    GlobalWorldGameLoop();
+  GlobalWorldGameLoop();
 }
 
 void MainMenuLoop()
 {
   while (g_app->m_atMainMenu && !g_app->m_requestToggleEditing)
   {
-    CHECK_OPENGL_STATE();
     UpdateAdvanceTime();
-    CHECK_OPENGL_STATE();
+
     g_app->m_renderer->Render();
     g_app->m_userInput->Advance();
     //g_app->m_camera->Advance();  
@@ -1105,7 +917,6 @@ void MainMenuLoop()
   g_app->m_soundSystem->StopAllSounds(WorldObjectId(), "MultiwiniaInterface LobbyAmbience");
   g_app->m_gameMenu->DestroyMenu();
   g_app->m_requireSoundsLoaded = true;
-  CHECK_OPENGL_STATE();
 }
 
 void RunTheGame(const char* _cmdLine)

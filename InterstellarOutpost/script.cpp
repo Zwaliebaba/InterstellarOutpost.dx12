@@ -455,9 +455,6 @@ void Script::RunCommand_ActivateTrunkPort(int _buildingId, bool _fullActivation)
 // Script::Advance gets called
 void Script::RunScript(char* _filename)
 {
-  if (!g_app->IsFullVersion() && strnicmp(_filename, "launchpad_purpose", 17) == 0)
-    return;
-
   if (strstr(_filename, ".txt"))
   {
 #ifdef SCRIPT_TEST_ENABLED
@@ -465,7 +462,7 @@ void Script::RunScript(char* _filename)
 #endif
 
     // Run a script, speficied by filename
-    char fullFilename[256] = "scripts/";
+    char fullFilename[256] = "scripts\\";
     strcat(fullFilename, _filename);
     m_in = g_app->m_resource->GetTextReader(fullFilename);
     DEBUG_ASSERT(m_in);

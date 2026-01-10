@@ -14,9 +14,6 @@
     <ClCompile Include="MapData.cpp">
       <Filter>GameMenu</Filter>
     </ClCompile>
-    <ClCompile Include="buynow_window.cpp">
-      <Filter>Interface</Filter>
-    </ClCompile>
     <ClCompile Include="chatinput_window.cpp">
       <Filter>Interface</Filter>
     </ClCompile>
@@ -35,16 +32,10 @@
     <ClCompile Include="debugmenu.cpp">
       <Filter>Interface</Filter>
     </ClCompile>
-    <ClCompile Include="demoend_window.cpp">
-      <Filter>Interface</Filter>
-    </ClCompile>
     <ClCompile Include="drop_down_menu.cpp">
       <Filter>Interface</Filter>
     </ClCompile>
     <ClCompile Include="filedialog.cpp">
-      <Filter>Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="gesture_window.cpp">
       <Filter>Interface</Filter>
     </ClCompile>
     <ClCompile Include="helpandoptions_windows.cpp">
@@ -54,9 +45,6 @@
       <Filter>Interface</Filter>
     </ClCompile>
     <ClCompile Include="leaderboards_window.cpp">
-      <Filter>Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="lights_window.cpp">
       <Filter>Interface</Filter>
     </ClCompile>
     <ClCompile Include="mainmenus.cpp">
@@ -103,36 +91,6 @@
     </ClCompile>
     <ClCompile Include="userprofile_window.cpp">
       <Filter>Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="buildings_window.cpp">
-      <Filter>Interface\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="camera_anim_window.cpp">
-      <Filter>Interface\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="camera_mount_window.cpp">
-      <Filter>Interface\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="editor_window.cpp">
-      <Filter>Interface\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="globalworldeditor_window.cpp">
-      <Filter>Interface\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="instant_unit_window.cpp">
-      <Filter>Interface\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="invalidcrates_window.cpp">
-      <Filter>Interface\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="landscape_window.cpp">
-      <Filter>Interface\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="multiwiniaoptions_window.cpp">
-      <Filter>Interface\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="tree_window.cpp">
-      <Filter>Interface\Editor</Filter>
     </ClCompile>
     <ClCompile Include="ai.cpp">
       <Filter>WorldObjects</Filter>
@@ -590,9 +548,6 @@
     <ClInclude Include="TestBedButtons.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
-    <ClInclude Include="TutorialButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
     <ClInclude Include="UnlockFullGameButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
@@ -601,9 +556,6 @@
     </ClInclude>
     <ClInclude Include="WaitingButton.h">
       <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="buynow_window.h">
-      <Filter>Interface</Filter>
     </ClInclude>
     <ClInclude Include="chatinput_window.h">
       <Filter>Interface</Filter>
@@ -623,16 +575,10 @@
     <ClInclude Include="debugmenu.h">
       <Filter>Interface</Filter>
     </ClInclude>
-    <ClInclude Include="demoend_window.h">
-      <Filter>Interface</Filter>
-    </ClInclude>
     <ClInclude Include="drop_down_menu.h">
       <Filter>Interface</Filter>
     </ClInclude>
     <ClInclude Include="filedialog.h">
-      <Filter>Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="gesture_window.h">
       <Filter>Interface</Filter>
     </ClInclude>
     <ClInclude Include="helpandoptions_windows.h">
@@ -642,9 +588,6 @@
       <Filter>Interface</Filter>
     </ClInclude>
     <ClInclude Include="leaderboards_window.h">
-      <Filter>Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="lights_window.h">
       <Filter>Interface</Filter>
     </ClInclude>
     <ClInclude Include="mainmenus.h">
@@ -691,36 +634,6 @@
     </ClInclude>
     <ClInclude Include="userprofile_window.h">
       <Filter>Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="buildings_window.h">
-      <Filter>Interface\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="camera_anim_window.h">
-      <Filter>Interface\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="camera_mount_window.h">
-      <Filter>Interface\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="editor_window.h">
-      <Filter>Interface\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="globalworldeditor_window.h">
-      <Filter>Interface\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="instant_unit_window.h">
-      <Filter>Interface\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="invalidcrates_window.h">
-      <Filter>Interface\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="landscape_window.h">
-      <Filter>Interface\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="multiwiniaoptions_window.h">
-      <Filter>Interface\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="tree_window.h">
-      <Filter>Interface\Editor</Filter>
     </ClInclude>
     <ClInclude Include="ai.h">
       <Filter>WorldObjects</Filter>
@@ -990,9 +903,6 @@
     </Filter>
     <Filter Include="Interface">
       <UniqueIdentifier>{90922285-67fb-493d-9438-4922e2d4c78d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Interface\Editor">
-      <UniqueIdentifier>{a28163de-a0fd-4ecf-8756-fb079f8fc791}</UniqueIdentifier>
     </Filter>
     <Filter Include="WorldObjects">
       <UniqueIdentifier>{b9eb26df-11cd-4b5f-8729-3e8a4c179b1a}</UniqueIdentifier>

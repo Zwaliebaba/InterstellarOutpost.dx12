@@ -5,13 +5,9 @@
 #include "drop_down_menu.h"
 #include "input_field.h"
 #include "checkbox.h"
-
-#include "multiwinia.h"
 #include "networkvalue.h"
-
 #include "language_table.h"
 
-#define IS_DEMO !g_app->IsFullVersion()
 #define SERVERS_ON_SCREEN 13
 #define MAX_GAME_TYPES 7
 

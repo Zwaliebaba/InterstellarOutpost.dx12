@@ -1,86 +1,81 @@
-
 #ifndef _included_tank_h
 #define _included_tank_h
 
 #include "entity.h"
 
-class ShapeMarker;
-class Shape;
-
 #define TANK_NUMFLOATERS    3
 #define TANK_CAPACITY       40
 #define TANK_UNLOADPERIOD   0.1
 
-
 class Tank : public Entity
 {
-protected:    
-    Shape           *m_shapeTurret;
-    ShapeMarker     *m_markerTurret;
-    ShapeMarker     *m_markerEntrance;
-    ShapeMarker     *m_markerBarrelEnd;
-    
-    Vector3         m_up;
-    Vector3         m_turretFront;
-    Vector3         m_wayPoint;
-    Vector3         m_attackTarget;   
-    Vector3         m_missileTarget;
-    
-    double           m_speed;
-    double           m_attackTimer;
+  protected:
+    Shape* m_shapeTurret;
+    ShapeMarker* m_markerTurret;
+    ShapeMarker* m_markerEntrance;
+    ShapeMarker* m_markerBarrelEnd;
 
-    bool            m_missileFired;
-   
+    Vector3 m_up;
+    Vector3 m_turretFront;
+    Vector3 m_wayPoint;
+    Vector3 m_attackTarget;
+    Vector3 m_missileTarget;
+
+    double m_speed;
+    double m_attackTimer;
+
+    bool m_missileFired;
+
     enum
     {
-        StateCombat,
-        StateUnloading,
-        StateLoading,
+      StateCombat,
+      StateUnloading,
+      StateLoading,
     };
-    int             m_state;
-    int             m_numPassengers;
-    double           m_previousUnloadTimer;
 
-    double           m_mineTimer;
+    int m_state;
+    int m_numPassengers;
+    double m_previousUnloadTimer;
 
-public:
+    double m_mineTimer;
+
+  public:
     Tank();
-    ~Tank();
+    ~Tank() override;
 
-    void Begin              ();
-    bool Advance            ( Unit *_unit );
-    void Render             ( double _predictionTime );
-    bool RenderPixelEffect  ( double _predictionTime );
+    void Begin() override;
+    bool Advance(Unit* _unit) override;
+    void Render(double _predictionTime) override;
+    bool RenderPixelEffect(double _predictionTime) override;
 
-    bool ChangeHealth       ( int _amount, int _damageType = DamageTypeUnresistable );
+    bool ChangeHealth(int _amount, int _damageType = DamageTypeUnresistable) override;
 
-    void SetWayPoint        ( Vector3 const &_wayPoint );
-    void SetAttackTarget    ( Vector3 const &_attackTarget );
+    void SetWayPoint(const Vector3& _wayPoint);
+    void SetAttackTarget(const Vector3& _attackTarget);
 
-    void DropMine           ();
+    void DropMine();
 
-    void SetMissileTarget   ( Vector3 const &_startRay, Vector3 const &_rayDir );
-    void SetMissileTarget    ( Vector3 const &_target );
+    void SetMissileTarget(const Vector3& _startRay, const Vector3& _rayDir);
+    void SetMissileTarget(const Vector3& _target);
     Vector3 GetMissileTarget();
-    void LaunchMissile      ();
+    void LaunchMissile();
 
-    void PrimaryFire        ();
+    void PrimaryFire();
 
-    bool IsLoading          ();
-    bool IsUnloading        ();
-    void AddPassenger       ();
-    void RemovePassenger    ();    
+    bool IsLoading();
+    bool IsUnloading();
+    void AddPassenger();
+    void RemovePassenger();
 
-    void GetEntrance( Vector3 &_exitPos, Vector3 &_exitDir ); 
+    void GetEntrance(Vector3& _exitPos, Vector3& _exitDir);
 
-    bool IsSelectable();
+    bool IsSelectable() override;
 
-    void RunAI( AI *_ai );
-    void RunTankBattleAI( AI *_ai );
-    void RunStandardAI( AI *_ai );
+    void RunAI(AI* _ai) override;
+    void RunTankBattleAI(AI* _ai);
+    void RunStandardAI(AI* _ai);
 
-	inline double GetAttackTimer() { return m_mineTimer; }
+    double GetAttackTimer() { return m_mineTimer; }
 };
-
 
 #endif

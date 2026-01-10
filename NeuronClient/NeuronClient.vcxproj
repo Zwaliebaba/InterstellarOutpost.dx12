@@ -116,7 +116,6 @@
     <ClInclude Include="inputdriver_conjoin.h" />
     <ClInclude Include="inputdriver_idle.h" />
     <ClInclude Include="inputdriver_invert.h" />
-    <ClInclude Include="inputdriver_pipe.h" />
     <ClInclude Include="inputdriver_prefs.h" />
     <ClInclude Include="inputdriver_simple.h" />
     <ClInclude Include="inputdriver_value.h" />
@@ -124,7 +123,6 @@
     <ClInclude Include="inputfilter.h" />
     <ClInclude Include="inputfiltermanager.h" />
     <ClInclude Include="inputfilterspec.h" />
-    <ClInclude Include="inputfilter_direction.h" />
     <ClInclude Include="inputfilter_withdelta.h" />
     <ClInclude Include="inputspec.h" />
     <ClInclude Include="inputspeclist.h" />
@@ -185,7 +183,6 @@
     <ClCompile Include="inputdriver_conjoin.cpp" />
     <ClCompile Include="inputdriver_idle.cpp" />
     <ClCompile Include="inputdriver_invert.cpp" />
-    <ClCompile Include="inputdriver_pipe.cpp" />
     <ClCompile Include="inputdriver_prefs.cpp" />
     <ClCompile Include="inputdriver_simple.cpp" />
     <ClCompile Include="inputdriver_value.cpp" />
@@ -193,7 +190,6 @@
     <ClCompile Include="inputfilter.cpp" />
     <ClCompile Include="inputfiltermanager.cpp" />
     <ClCompile Include="inputfilterspec.cpp" />
-    <ClCompile Include="inputfilter_direction.cpp" />
     <ClCompile Include="inputfilter_withdelta.cpp" />
     <ClCompile Include="inputspec.cpp" />
     <ClCompile Include="input_types.cpp" />

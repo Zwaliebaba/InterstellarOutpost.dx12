@@ -15,7 +15,6 @@
 #include "landscape_renderer.h"
 #include "location.h"
 #include "renderer.h"
-#include "taskmanager_interface_gestures.h"
 #include "water.h"
 #include "water_reflection.h"
 #include "input.h"
@@ -335,7 +334,6 @@ void ReleaseD3DResources()
     g_app->m_location->m_water->ReleaseD3DResources();
   if (g_app && g_app->m_location && g_app->m_location->m_landscape.m_renderer)
     g_app->m_location->m_landscape.m_renderer->ReleaseD3DResources();
-  TaskManagerInterfaceGestures::ReleaseD3dResources();
 }
 
 bool Direct3DInit(HWND _hWnd, bool _windowed, int _width, int _height, int _colourDepth, int _zDepth, bool _waitVRT)

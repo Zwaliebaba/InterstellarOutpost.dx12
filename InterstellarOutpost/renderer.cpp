@@ -4,9 +4,6 @@
 #include "bitmap.h"
 #include "hi_res_time.h"
 #include "eventhandler.h"
-#ifdef TARGET_MSVC
-#include "win32_eventhandler.h"
-#endif
 #include "math_utils.h"
 #include "mouse_cursor.h"
 #include "ogl_extensions.h"
@@ -20,50 +17,36 @@
 #include "user_info.h"
 #include "resource.h"
 #include "debug_render.h"
+#include "deform.h"
+#include "water_reflection.h"
 #include "app.h"
 #include "camera.h"
-#include "deform.h"
 #include "explosion.h"
 #include "global_world.h"
 #include "landscape_renderer.h"
 #include "location.h"
-#include "location_editor.h"
 #include "main.h"
 #include "particle_system.h"
 #include "renderer.h"
-#include "taskmanager.h"
 #include "taskmanager_interface.h"
 #include "team.h"
 #include "unit.h"
 #include "user_input.h"
-#include "water.h"
-#include "water_reflection.h"
 #include "gamecursor.h"
 #include "startsequence.h"
-#include "control_help.h"
 #include "game_menu.h"
 #include "multiwinia.h"
 #include "shaman_interface.h"
 #include "markersystem.h"
-#include "multiwiniahelp.h"
-
 #include "soundsystem.h"
-
 #include "eclipse.h"
-
 #include "clienttoserver.h"
-
 #include "message_dialog.h"
-
 #include "insertion_squad.h"
 #include "virii.h"
 #include "engineer.h"
 
-#ifdef USE_DIRECT3D
 #define USE_PIXEL_EFFECT_GRID_OPTIMISATION	1
-#else
-#define USE_PIXEL_EFFECT_GRID_OPTIMISATION	1
-#endif
 
 enum
 {
@@ -478,7 +461,6 @@ void Renderer::RenderFrame(bool withFlip)
         {
           PreRenderPixelEffect();
 
-#ifdef USE_DIRECT3D
           if (g_prefsManager->GetInt("RenderWaterEffect", 1) && g_waterReflectionEffect)
           {
             g_waterReflectionEffect->PreRenderWaterReflection();
@@ -487,7 +469,7 @@ void Renderer::RenderFrame(bool withFlip)
             deformStarted = true;
             g_deformEffect->Start();
           }
-#endif // USE_DIRECT3D
+
           START_PROFILE("Render Clear");
           glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
           END_PROFILE("Render Clear");
@@ -519,33 +501,13 @@ void Renderer::RenderFrame(bool withFlip)
       g_app->m_globalWorld->Render();
   }
 
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-  g_app->m_helpSystem->Render();
-#endif
-  //g_app->m_controlHelpSystem->Render();
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-  if (g_app->m_tutorial)
-    g_app->m_tutorial->Render();
-#endif
   g_explosionManager.Render();
   g_app->m_particleSystem->Render();
-#ifdef USE_DIRECT3D
+
   if (g_deformEffect && deformStarted)
     g_deformEffect->Stop();
-#endif
-
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-  if (g_app->m_demoEndSequence)
-  {
-    g_editorFont.BeginText2D();
-    g_app->m_demoEndSequence->Render();
-    SetupMatricesFor3D();
-    glEnable(GL_DEPTH_TEST);
-  }
-#endif
 
   g_app->m_markerSystem->Render();
-  g_app->m_multiwiniaHelp->Render();
   g_app->m_shamanInterface->Render();
   g_app->m_userInput->Render();
   g_app->m_gameCursor->Render();
@@ -554,20 +516,6 @@ void Renderer::RenderFrame(bool withFlip)
     g_app->m_location->RenderChatMessages();
   g_app->m_camera->Render();
   g_app->m_taskManagerInterface->Render();
-
-#ifdef DEBUG_RENDER_ENABLED
-  g_debugRenderer.Render();
-#endif
-
-  //	RenderFlatTexture();
-
-  //if (m_renderingPoster == PosterMakerInactive) 
-  {
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-    g_app->m_sepulveda->Render();
-#endif
-  }
-  g_app->m_controlHelpSystem->Render();
 
   g_editorFont.BeginText2D();
 
@@ -590,58 +538,11 @@ void Renderer::RenderFrame(bool withFlip)
   {
     bool showVersion = true;
 
-#ifdef TARGET_PC_FULLGAME
-    // In the full game don't show the version number in the location
-    if (g_app->m_location)
-      showVersion = false;
-#endif
-
     if (showVersion)
       g_editorFont.DrawText2DRight(m_screenW - 10, m_screenH - 20, DEF_FONT_SIZE, DARWINIA_VERSION_STRING);
   }
 
   g_gameTimer.DebugRender();
-
-  if (m_displayInputMode)
-  {
-    glColor4f(0, 0, 0, 0.6);
-    glBegin(GL_QUADS);
-    glVertex2f(80.0, 1.0f);
-    glVertex2f(230.0, 1.0f);
-    glVertex2f(230.0, 18.0f);
-    glVertex2f(80.0, 18.0f);
-    glEnd();
-
-    std::string inmode;
-    switch (g_inputManager->getInputMode())
-    {
-    case INPUT_MODE_KEYBOARD:
-      inmode = "keyboard";
-      break;
-    case INPUT_MODE_GAMEPAD:
-      inmode = "gamepad";
-      break;
-    default:
-      inmode = "unknown";
-    }
-
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    g_editorFont.DrawText2D(84, 10, DEF_FONT_SIZE, "InputMode: %s", inmode.c_str());
-  }
-
-  if (g_app->m_editing)
-  {
-    g_gameFont.DrawText2DCentre(m_screenW / 2, 10, 17, "= EDITOR ENABLED =");
-    g_gameFont.DrawText2DCentre(m_screenW / 2, 27, 11, "BaseDir : %s", g_app->m_resource->GetBaseDirectory());
-
-    if (g_app->m_locationId != -1)
-    {
-      g_editorFont.DrawText2D(m_screenW - 300, m_screenH - 40, DEF_FONT_SIZE, "Triangles : %d",
-                              g_app->m_location->m_landscape.m_renderer->m_numTriangles);
-      g_editorFont.DrawText2D(m_screenW - 300, m_screenH - 25, DEF_FONT_SIZE, "Mission   : %s", g_app->m_requestedMission);
-      g_editorFont.DrawText2D(m_screenW - 300, m_screenH - 10, DEF_FONT_SIZE, "Map       : %s", g_app->m_requestedMap);
-    }
-  }
 
   //
   // Network stuff
@@ -670,21 +571,6 @@ void Renderer::RenderFrame(bool withFlip)
     glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
     g_gameFont.SetRenderOutline(false);
     g_gameFont.DrawText2DCentre(m_screenW / 2, 170, 30, LANGUAGEPHRASE("multiwinia_error_lostconnection"));
-  }
-
-  //
-  // Personalisation information
-
-  if (!g_app->m_taskManagerInterface->IsVisible() &&
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-    !g_app->m_sepulveda->IsVisible() &&
-#endif
-    m_renderingPoster == PosterMakerInactive && !g_app->m_camera->IsInMode(Camera::ModeSphereWorldIntro) && !g_app->m_camera->IsInMode(
-      Camera::ModeSphereWorldOutro))
-  {
-#ifdef PROMOTIONAL_BUILD
-    RenderLogo();
-#endif
   }
 
   if (g_app->m_startSequence)

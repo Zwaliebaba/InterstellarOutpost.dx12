@@ -3,31 +3,24 @@
 
 #include "building.h"
 
-
-class Shape;
-class ShapeFragment;
-class ShapeMarker;
-
-
 class Powerstation : public Building
 {
-protected:
-    int					m_linkedBuildingId;
+  protected:
+    int m_linkedBuildingId;
 
-public:
-    Powerstation		();
-	
-	void Initialise		(Building *_template);
+  public:
+    Powerstation();
 
-    bool Advance		();
-    void Render			(double predictionTime);
+    void Initialise(Building* _template) override;
 
-    int  GetBuildingLink();                 
-    void SetBuildingLink(int _buildingId);
+    bool Advance() override;
+    void Render(double predictionTime) override;
 
-	void Read( TextReader *_in, bool _dynamic );
-	void Write( TextWriter *out );
+    int GetBuildingLink() override;
+    void SetBuildingLink(int _buildingId) override;
+
+    void Read(TextReader* _in, bool _dynamic) override;
+    void Write(TextWriter* out) override;
 };
-
 
 #endif

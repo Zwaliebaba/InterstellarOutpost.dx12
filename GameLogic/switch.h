@@ -3,55 +3,47 @@
 
 #include "building.h"
 
-
-class Shape;
-class ShapeFragment;
-class ShapeMarker;
-
-
 class FenceSwitch : public Building
 {
-protected:
-    int         m_linkedBuildingId; 
-    int         m_linkedBuildingId2;    // optional second link for fence toggling
+  protected:
+    int m_linkedBuildingId;
+    int m_linkedBuildingId2; // optional second link for fence toggling
 
-    bool        m_switchable;
+    bool m_switchable;
 
-    double       m_timer;                // no fences changes will be made until this timer counts to 0 for the first time
+    double m_timer; // no fences changes will be made until this timer counts to 0 for the first time
 
-    ShapeMarker *m_connectionLocation;
+    ShapeMarker* m_connectionLocation;
 
-public:
-    char        m_script[256];
-    bool		m_locked;
-    int			m_lockable;
-    int         m_switchValue;
+  public:
+    char m_script[256];
+    bool m_locked;
+    int m_lockable;
+    int m_switchValue;
 
-public:
-    FenceSwitch 		();
-	
-	void Initialise		(Building *_template);
-    void SetDetail      ( int _detail );
+    FenceSwitch();
 
-    bool Advance		();
-    void Render			(double predictionTime);
-    void RenderAlphas   (double predictionTime);
-    void RenderLink     ();
-    void RenderLights   ();
-    void RenderConnection( Vector3 _targetPos, bool _active );
+    void Initialise(Building* _template) override;
+    void SetDetail(int _detail) override;
 
-    void Switch         ();
+    bool Advance() override;
+    void Render(double predictionTime) override;
+    void RenderAlphas(double predictionTime) override;
+    void RenderLink() override;
+    void RenderLights() override;
+    void RenderConnection(Vector3 _targetPos, bool _active);
 
-    int  GetBuildingLink();                 
-    void SetBuildingLink(int _buildingId);
+    void Switch();
 
-	void Read( TextReader *_in, bool _dynamic );
-	void Write( TextWriter *out );
+    int GetBuildingLink() override;
+    void SetBuildingLink(int _buildingId) override;
+
+    void Read(TextReader* _in, bool _dynamic) override;
+    void Write(TextWriter* out) override;
 
     Vector3 GetConnectionLocation();
 
-    bool IsInView();
+    bool IsInView() override;
 };
-
 
 #endif

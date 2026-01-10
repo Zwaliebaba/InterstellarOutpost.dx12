@@ -17,8 +17,6 @@
 #include "location.h"
 #include "renderer.h"
 #include "loading_screen.h"
-#include "multiwiniahelp.h"
-#include "animatedpanel_renderer.h"
 
 Resource::Resource()
   : m_nameSeed(1),
@@ -659,22 +657,6 @@ void Resource::RegenerateOpenGlState()
   g_loadingScreen->m_texId = GetTexture("sprites/darwinian.bmp");
 
   Sphere::s_regenerateDisplayList = true;
-
-  if (g_app->m_multiwiniaHelp->m_animatedPanel)
-  {
-    float scale = g_app->m_renderer->ScreenH() / 1300.0f;
-
-    g_app->m_multiwiniaHelp->m_animatedPanel->m_screenX = g_app->m_renderer->ScreenW() / 2.0f - scale * g_app->m_multiwiniaHelp->
-      m_animatedPanel->m_width / 2.0f;
-    g_app->m_multiwiniaHelp->m_animatedPanel->m_screenY = g_app->m_renderer->ScreenH() - g_app->m_multiwiniaHelp->m_animatedPanel->m_height
-      * 1.15f * scale;
-    g_app->m_multiwiniaHelp->m_animatedPanel->m_screenW = g_app->m_multiwiniaHelp->m_animatedPanel->m_width * scale;
-    g_app->m_multiwiniaHelp->m_animatedPanel->m_screenH = g_app->m_multiwiniaHelp->m_animatedPanel->m_height * scale;
-
-    g_app->m_multiwiniaHelp->m_animatedPanel->m_borderSize = 5;
-    g_app->m_multiwiniaHelp->m_animatedPanel->m_titleH = 25;
-    g_app->m_multiwiniaHelp->m_animatedPanel->m_captionH = 15;
-  }
 }
 
 char* Resource::GenerateName()

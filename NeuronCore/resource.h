@@ -6,31 +6,22 @@
 #ifndef _included_resource_h
 #define _included_resource_h
 
-#include <string>
 
-#include "btree.h"
-#include "llist.h"
 #include "fast_darray.h"
 #include "hash_table.h"
 #include "runnable.h"
 #include "net_lib.h"
 
-#ifdef TARGET_OS_MACOSX
-#include "hash_map_darwin.h"
-#else
 #include <hash_map>
+
+#include "shape.h"
 using stdext::hash_map;
-#endif
 
 
-class Shape;
 class BitmapRGBA;
 class TextReader;
 class BinaryReader;
 class SoundStreamDecoder;
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-class GestureDemo;
-#endif
 class Resource;
 class TextFileWriter;
 class Runnable;

@@ -564,8 +564,6 @@ bool Officer::FormationFull()
 {
   if (g_app->IsSinglePlayer())
     return true;
-  if (g_app->m_multiwiniaTutorial && g_app->m_multiwiniaTutorialType == App::MultiwiniaTutorial1)
-    return true;
 
   int numGaps = 0;
   Team* team = g_app->m_location->m_teams[m_id.GetTeamId()];
@@ -1432,8 +1430,6 @@ void Officer::SetOrders(const Vector3& _orders, bool directRoute)
 
 bool Officer::IsFormationToggle(const Vector3& mousePos)
 {
-  if (g_app->m_multiwiniaTutorial && g_app->m_multiwiniaTutorialType == App::MultiwiniaTutorial1)
-    return false;
   if (m_noFormations)
     return false;
 
@@ -1446,9 +1442,6 @@ bool Officer::IsFormationToggle(const Vector3& mousePos)
 
 void Officer::SetFormation(const Vector3& targetPos)
 {
-  // No formation in tutorial!
-  if (g_app->m_multiwiniaTutorial && g_app->m_multiwiniaTutorialType == App::MultiwiniaTutorial1)
-    return;
   //
   // Set the order
 

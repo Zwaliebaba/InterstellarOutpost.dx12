@@ -1,15 +1,11 @@
 #include "pch.h"
-
-
 #include "resource.h"
 #include "filesys_utils.h"
 #include "text_file_writer.h"
 #include "text_stream_readers.h"
-
 #include "achievement_tracker.h"
 #include "location.h"
 #include "level_file.h"
-
 #include "app.h"
 
 #define MAX_LEVEL_ID 49
@@ -22,10 +18,10 @@
 
 
 AchievementTracker::AchievementTracker()
-:   m_numOfficialLevels(0),
-	m_totalKills(-1),
-	m_isMasterPlayer(false),
-	m_hasLoaded(false)
+:   m_isMasterPlayer(false),
+	m_hasLoaded(false),
+	m_numOfficialLevels(0),
+	m_totalKills(-1)
 {
     memset( m_won, 0, sizeof(m_won) );
     memset( m_visited, 0, sizeof(m_visited) );
@@ -81,7 +77,6 @@ void AchievementTracker::AddToTotalKills(int kills)
 
 void AchievementTracker::Save()
 {
-    if( !g_app->IsFullVersion() ) return;
 }
 
 void AchievementTracker::AddVictoryOnLevel(char *_mapName)

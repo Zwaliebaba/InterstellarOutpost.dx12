@@ -473,29 +473,7 @@ void GameMenu::CreateMenu()
   g_app->m_camera->CutToTarget();
   g_app->m_camera->SetDebugMode(0);
 
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-  if (g_app->m_tutorial)
-  {
-    // its possible that the player has loaded the prologue, then returned to the main menu
-    // if so, delete the tutorial
-    delete g_app->m_tutorial;
-    g_app->m_tutorial = NULL;
-  } if (g_app->m_demoEndSequence)
-  {
-    delete g_app->m_demoEndSequence;
-    g_app->m_demoEndSequence = NULL;
-  }
-#endif
-
   g_app->m_gameMode = App::GameModeNone;
-  if (g_app->m_multiwiniaTutorial)
-  {
-    GameMenuWindow* gmw = static_cast<GameMenuWindow*>(EclGetWindow("multiwinia_mainmenu_title"));
-    if (gmw)
-      gmw->m_newPage = GameMenuWindow::PageTutorials;
-  }
-  g_app->m_multiwiniaTutorial = false;
-
   m_menuCreated = true;
 }
 
@@ -573,15 +551,6 @@ bool GameMenu::AddMap(TextReader* _in, const char* _filename)
     md->CalculeMapId();
     if (md->m_mapId == -1)
       md->m_customMap = true;
-
-    if (IS_DEMO)
-    {
-      for (int j = 0; j < MAX_GAME_TYPES; j++)
-      {
-        if (md->m_gameTypes[j] && g_app->IsMapAvailableInDemo(j, md->m_mapId))
-          m_numDemoMaps[j]++;
-      }
-    }
 
     if (storedMd)
     {

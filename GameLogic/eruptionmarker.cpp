@@ -1,13 +1,9 @@
 #include "pch.h"
-
 #include "debug_render.h"
 #include "random_number.h"
-
 #include "particle_system.h"
 #include "app.h"
 #include "main.h"
-#include "location_editor.h"
-
 #include "eruptionmarker.h"
 
 EruptionMarker::EruptionMarker()
