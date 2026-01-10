@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>18.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{c12f6993-c2f2-4c93-a966-737ee0d71674}</ProjectGuid>
+    <RootNamespace>NeuronCore</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)NeuronClient;$(SolutionDir)GameLogic;$(SolutionDir)InterstellarOutpost</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="2d_array.h" />
+    <ClInclude Include="2d_surface_map.h" />
+    <ClInclude Include="3d_sprite.h" />
+    <ClInclude Include="ASyncLoader.h" />
+    <ClInclude Include="auto_vector.h" />
+    <ClInclude Include="binary_stream_readers.h" />
+    <ClInclude Include="bitmap.h" />
+    <ClInclude Include="bounded_array.h" />
+    <ClInclude Include="btree.h" />
+    <ClInclude Include="bytestream.h" />
+    <ClInclude Include="darray.h" />
+    <ClInclude Include="Debug.h" />
+    <ClInclude Include="debug_logging.h" />
+    <ClInclude Include="debug_render.h" />
+    <ClInclude Include="DeviceNotify.h" />
+    <ClInclude Include="directory.h" />
+    <ClInclude Include="Event.h" />
+    <ClInclude Include="EventManager.h" />
+    <ClInclude Include="fast_darray.h" />
+    <ClInclude Include="filecrc.h" />
+    <ClInclude Include="FileSys.h" />
+    <ClInclude Include="filesys_utils.h" />
+    <ClInclude Include="FixedPipeline.h" />
+    <ClInclude Include="float_vector3.h" />
+    <ClInclude Include="hash.h" />
+    <ClInclude Include="HashData.h" />
+    <ClInclude Include="hash_map_darwin.h" />
+    <ClInclude Include="hash_table.h" />
+    <ClInclude Include="hi_res_time.h" />
+    <ClInclude Include="invert_matrix.h" />
+    <ClInclude Include="language_table.h" />
+    <ClInclude Include="llist.h" />
+    <ClInclude Include="map_utils.h" />
+    <ClInclude Include="math_utils.h" />
+    <ClInclude Include="matrix33.h" />
+    <ClInclude Include="matrix34.h" />
+    <ClInclude Include="matrix_cache.h" />
+    <ClInclude Include="mouse_cursor.h" />
+    <ClInclude Include="network_stream.h" />
+    <ClInclude Include="net_lib.h" />
+    <ClInclude Include="net_lib_apple.h" />
+    <ClInclude Include="net_lib_win32.h" />
+    <ClInclude Include="net_mutex.h" />
+    <ClInclude Include="net_socket.h" />
+    <ClInclude Include="net_socket_listener.h" />
+    <ClInclude Include="net_socket_session.h" />
+    <ClInclude Include="net_thread.h" />
+    <ClInclude Include="net_udp_packet.h" />
+    <ClInclude Include="NeuronCore.h" />
+    <ClInclude Include="NeuronHelper.h" />
+    <ClInclude Include="ogl_extensions.h" />
+    <ClInclude Include="opengl_directx.h" />
+    <ClInclude Include="opengl_directx_dlist.h" />
+    <ClInclude Include="opengl_directx_dlist_dev.h" />
+    <ClInclude Include="opengl_directx_inline.h" />
+    <ClInclude Include="opengl_directx_internals.h" />
+    <ClInclude Include="opengl_directx_matrix_stack.h" />
+    <ClInclude Include="opengl_trace.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="persisting_debug_render.h" />
+    <ClInclude Include="plane.h" />
+    <ClInclude Include="preferences.h" />
+    <ClInclude Include="preference_names.h" />
+    <ClInclude Include="presized_array.h" />
+    <ClInclude Include="profiler.h" />
+    <ClInclude Include="random_number.h" />
+    <ClInclude Include="render_utils.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="rgb_colour.h" />
+    <ClInclude Include="runnable.h" />
+    <ClInclude Include="safegl.h" />
+    <ClInclude Include="shader.h" />
+    <ClInclude Include="shape.h" />
+    <ClInclude Include="slice_darray.h" />
+    <ClInclude Include="sorting_hash_table.h" />
+    <ClInclude Include="sphere_renderer.h" />
+    <ClInclude Include="string_utils.h" />
+    <ClInclude Include="system_info.h" />
+    <ClInclude Include="targetcursor.h" />
+    <ClInclude Include="texture.h" />
+    <ClInclude Include="texture_uv.h" />
+    <ClInclude Include="text_file_writer.h" />
+    <ClInclude Include="text_renderer.h" />
+    <ClInclude Include="text_stream_readers.h" />
+    <ClInclude Include="unicode_string.h" />
+    <ClInclude Include="unicode_text_file_writer.h" />
+    <ClInclude Include="unicode_text_stream_reader.h" />
+    <ClInclude Include="unrar\crc.h" />
+    <ClInclude Include="unrar\raros.h" />
+    <ClInclude Include="unrar\sha1.h" />
+    <ClInclude Include="user_info.h" />
+    <ClInclude Include="vector2.h" />
+    <ClInclude Include="vector3.h" />
+    <ClInclude Include="window_manager.h" />
+    <ClInclude Include="window_manager_directx.h" />
+    <ClInclude Include="work_queue.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="3d_sprite.cpp" />
+    <ClCompile Include="binary_stream_readers.cpp" />
+    <ClCompile Include="bitmap.cpp" />
+    <ClCompile Include="debug_fog_logging.cpp" />
+    <ClCompile Include="debug_logging.cpp" />
+    <ClCompile Include="debug_render.cpp" />
+    <ClCompile Include="directory.cpp" />
+    <ClCompile Include="EventManager.cpp" />
+    <ClCompile Include="filecrc.cpp" />
+    <ClCompile Include="FileSys.cpp" />
+    <ClCompile Include="filesys_utils.cpp" />
+    <ClCompile Include="FixedPipeline.cpp" />
+    <ClCompile Include="HashData.cpp" />
+    <ClCompile Include="hi_res_time.cpp" />
+    <ClCompile Include="invert_matrix.cpp" />
+    <ClCompile Include="language_table.cpp" />
+    <ClCompile Include="math_utils.cpp" />
+    <ClCompile Include="matrix33.cpp" />
+    <ClCompile Include="matrix34.cpp" />
+    <ClCompile Include="mouse_cursor.cpp" />
+    <ClCompile Include="network_stream.cpp" />
+    <ClCompile Include="network_stream_inlines.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="net_lib.cpp" />
+    <ClCompile Include="net_mutex_win32.cpp" />
+    <ClCompile Include="net_socket.cpp" />
+    <ClCompile Include="net_socket_listener.cpp" />
+    <ClCompile Include="net_socket_session.cpp" />
+    <ClCompile Include="net_thread_win32.cpp" />
+    <ClCompile Include="net_udp_packet.cpp" />
+    <ClCompile Include="ogl_extensions_directx.cpp" />
+    <ClCompile Include="opengl_directx.cpp" />
+    <ClCompile Include="opengl_directx_dlist.cpp" />
+    <ClCompile Include="opengl_directx_dlist_dev.cpp" />
+    <ClCompile Include="opengl_directx_matrix_stack.cpp" />
+    <ClCompile Include="opengl_directx_stubs.cpp" />
+    <ClCompile Include="opengl_trace.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="persisting_debug_render.cpp" />
+    <ClCompile Include="plane.cpp" />
+    <ClCompile Include="preferences.cpp" />
+    <ClCompile Include="profiler.cpp" />
+    <ClCompile Include="random_number.cpp" />
+    <ClCompile Include="render_utils.cpp" />
+    <ClCompile Include="resource.cpp" />
+    <ClCompile Include="rgb_colour.cpp" />
+    <ClCompile Include="runnable.cpp" />
+    <ClCompile Include="safegl.cpp" />
+    <ClCompile Include="shader.cpp" />
+    <ClCompile Include="shape.cpp" />
+    <ClCompile Include="sphere_renderer.cpp" />
+    <ClCompile Include="string_utils.cpp" />
+    <ClCompile Include="system_info.cpp" />
+    <ClCompile Include="targetcursor.cpp" />
+    <ClCompile Include="texture.cpp" />
+    <ClCompile Include="texture_uv.cpp" />
+    <ClCompile Include="text_file_writer.cpp" />
+    <ClCompile Include="text_renderer.cpp" />
+    <ClCompile Include="text_stream_readers.cpp" />
+    <ClCompile Include="tri_tri.cpp" />
+    <ClCompile Include="unicode_string.cpp" />
+    <ClCompile Include="unicode_text_file_writer.cpp" />
+    <ClCompile Include="unicode_text_stream_reader.cpp" />
+    <ClCompile Include="unrar\crc.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="unrar\sha1.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="user_info.cpp" />
+    <ClCompile Include="vector2.cpp" />
+    <ClCompile Include="vector3.cpp" />
+    <ClCompile Include="window_manager.cpp" />
+    <ClCompile Include="window_manager_directx.cpp" />
+    <ClCompile Include="work_queue.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  </Target>
+</Project>

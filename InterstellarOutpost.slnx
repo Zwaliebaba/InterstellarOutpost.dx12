@@ -1,0 +1,11 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="GameLogic/GameLogic.vcxproj" Id="8745d382-d397-4c95-a7ed-056babe65c86" />
+  <Project Path="InterstellarOutpost/InterstellarOutpost.vcxproj" Id="7b949831-624f-4cb0-81fc-2d4bd51b8cba">
+    <Deploy />
+  </Project>
+  <Project Path="NeuronClient/NeuronClient.vcxproj" Id="964cc713-5bc0-45ea-b245-e0a88d088cb3" />
+  <Project Path="NeuronCore/NeuronCore.vcxproj" Id="c12f6993-c2f2-4c93-a966-737ee0d71674" />
+</Solution>
