@@ -63,9 +63,6 @@ class GameMenu
     DArray<MapData*> m_maps[MAX_GAME_TYPES];
     int m_numDemoMaps[MAX_GAME_TYPES];
 
-    //    GlobalInternet  *m_internet;
-    Clouds* m_clouds;
-
     GameMenu();
     ~GameMenu();
 

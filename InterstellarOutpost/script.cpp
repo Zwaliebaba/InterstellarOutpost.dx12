@@ -15,47 +15,11 @@
 #include "main.h"
 #include "renderer.h"
 #include "script.h"
-#include "testharness.h"
-#include "taskmanager.h"
 #include "taskmanager_interface.h"
 #include "soundsystem.h"
 #include "constructionyard.h"
 #include "goddish.h"
 #include "rocket.h"
-
-//*****************************************************************************
-// Private Functions
-//*****************************************************************************
-
-#ifdef SCRIPT_TEST_ENABLED
-void Script::ReportError(LevelFile const* _levelFile, char* _fmt, ...)
-{
-  char buf[512];
-  va_list ap;
-  va_start(ap, _fmt);
-  vsprintf(buf, _fmt, ap);
-
-  char location[128];
-
-  if (_levelFile)
-  {
-    sprintf(location, " (%s %s line: %d)", _levelFile->m_mapFilename + 12, _levelFile->m_missionFilename + 12, m_in->m_lineNum);
-  }
-  else { sprintf(location, " (no map, no mission, line: %d)", m_in->m_lineNum); }
-
-  strcat(buf, location);
-
-  if (g_app->m_testHarness) { g_app->m_testHarness->PrintError(buf); }
-  else
-  {
-    DEBUG_ASSERT(false); // Error message is in buf
-  }
-}
-#endif // SCRIPT_TEST_ENABLED
-
-//*****************************************************************************
-// Public Functions
-//*****************************************************************************
 
 Script::Script()
   : m_in(NULL),
@@ -105,7 +69,7 @@ void Script::RunCommand_CamAnim(const char* _animName)
     return;
 
   int animId = g_app->m_location->m_levelFile->GetCameraAnimId(_animName);
-  ASSERT_TEXT(animId != -1, "Invalid camera animation requested %s", _animName);
+  ASSERT_TEXT(animId != -1, "Invalid camera animation requested {}", _animName);
   CameraAnimation* camAnim = g_app->m_location->m_levelFile->m_cameraAnimations[animId];
   g_app->m_camera->PlayAnimation(camAnim);
 }

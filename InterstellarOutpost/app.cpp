@@ -342,17 +342,6 @@ void App::StartNetwork(bool _iAmAServer, const char* _serverIp, int _serverPort)
   }
 }
 
-bool App::StartSinglePlayerServer()
-{
-  DebugTrace("Starting single player server.\n");
-  m_multiwinia->m_aiType = Multiwinia::AITypeStandard;
-  g_gameTimer.Reset();
-  NetLockMutex lock(m_networkMutex);
-  g_app->StartNetwork(true, NULL, -1);
-
-  return true;
-}
-
 HRESULT App::StartMultiPlayerServer()
 {
   DebugTrace("Starting multi-player server.\n");

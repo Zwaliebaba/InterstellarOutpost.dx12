@@ -32,8 +32,7 @@ public:
 protected:
 
     void RenderHistory( double _predictionTime );
-    void RenderDeaths();
-    void RenderSub( double _predictionTime );
+  void RenderSub( double _predictionTime );
     void RenderGroundMarker();
 
 public:

@@ -4,13 +4,10 @@
 #include "shape.h"
 #include "math_utils.h"
 #include "debug_render.h"
-#include "text_renderer.h"
 #include "profiler.h"
 #include "random_number.h"
-
 #include "app.h"
 #include "camera.h"
-#include "deform.h"
 #include "entity_grid.h"
 #include "explosion.h"
 #include "globals.h"
@@ -18,12 +15,11 @@
 #include "team.h"
 #include "unit.h"
 #include "main.h"
-#include "particle_system.h"
 #include "renderer.h"
-
 #include "soundsystem.h"
-
 #include "centipede.h"
+
+#include "spirit.h"
 
 Shape *Centipede::s_shapeBody[NUM_TEAMS];
 Shape *Centipede::s_shapeHead[NUM_TEAMS];

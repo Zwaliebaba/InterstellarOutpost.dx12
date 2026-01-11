@@ -70,9 +70,6 @@ public:
     void AddToGlobalWorld();
     void PushFromBuildings();
 
-    void SetShamanMode();     // give this spirit to a shaman for summoning
-    void BreakSpirit();
-
     int             NumNearbyEggs();
     WorldObjectId  *GetNearbyEggs();
 };

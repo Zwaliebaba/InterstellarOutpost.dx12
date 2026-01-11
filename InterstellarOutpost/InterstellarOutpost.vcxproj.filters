@@ -8,8 +8,6 @@
     <ClCompile Include="app.cpp" />
     <ClCompile Include="attract.cpp" />
     <ClCompile Include="camera.cpp" />
-    <ClCompile Include="clouds.cpp" />
-    <ClCompile Include="deform.cpp" />
     <ClCompile Include="entity_grid.cpp" />
     <ClCompile Include="entity_grid_cache.cpp" />
     <ClCompile Include="explosion.cpp" />
@@ -34,7 +32,6 @@
     <ClCompile Include="rocket_status_panel.cpp" />
     <ClCompile Include="routing_system.cpp" />
     <ClCompile Include="script.cpp" />
-    <ClCompile Include="sepulveda_strings.cpp" />
     <ClCompile Include="shaman_interface.cpp" />
     <ClCompile Include="startsequence.cpp" />
     <ClCompile Include="taskmanager.cpp" />
@@ -42,7 +39,6 @@
     <ClCompile Include="taskmanager_interface_icons.cpp" />
     <ClCompile Include="taskmanager_interface_multiwinia.cpp" />
     <ClCompile Include="team.cpp" />
-    <ClCompile Include="testharness.cpp" />
     <ClCompile Include="unit.cpp" />
     <ClCompile Include="user_input.cpp" />
   </ItemGroup>
@@ -54,8 +50,6 @@
     <ClInclude Include="app.h" />
     <ClInclude Include="attract.h" />
     <ClInclude Include="camera.h" />
-    <ClInclude Include="clouds.h" />
-    <ClInclude Include="deform.h" />
     <ClInclude Include="entity_grid.h" />
     <ClInclude Include="entity_grid_cache.h" />
     <ClInclude Include="explosion.h" />
@@ -88,7 +82,6 @@
     <ClInclude Include="taskmanager_interface_icons.h" />
     <ClInclude Include="taskmanager_interface_multiwinia.h" />
     <ClInclude Include="team.h" />
-    <ClInclude Include="testharness.h" />
     <ClInclude Include="unit.h" />
     <ClInclude Include="user_input.h" />
   </ItemGroup>
@@ -596,18 +589,6 @@
     </None>
     <None Include="Assets\Shapes\wheel.shp">
       <Filter>Assets\Shapes</Filter>
-    </None>
-    <None Include="Assets\Shaders\deform.vs">
-      <Filter>Assets\Shaders</Filter>
-    </None>
-    <None Include="Assets\Shaders\deformDiamond.ps">
-      <Filter>Assets\Shaders</Filter>
-    </None>
-    <None Include="Assets\Shaders\deformFullscreen.ps">
-      <Filter>Assets\Shaders</Filter>
-    </None>
-    <None Include="Assets\Shaders\deformSphere.ps">
-      <Filter>Assets\Shaders</Filter>
     </None>
     <None Include="Assets\Shaders\FixedFunc0.vs">
       <Filter>Assets\Shaders</Filter>
@@ -1782,19 +1763,10 @@
     <Image Include="Assets\Textures\unicode\square.d700.d7ff.bmp">
       <Filter>Assets\Textures\unicode</Filter>
     </Image>
-    <Image Include="Assets\Textures\ambrosia_logo.bmp">
-      <Filter>Assets\Textures</Filter>
-    </Image>
     <Image Include="Assets\Textures\beam.bmp">
       <Filter>Assets\Textures</Filter>
     </Image>
     <Image Include="Assets\Textures\bubble.bmp">
-      <Filter>Assets\Textures</Filter>
-    </Image>
-    <Image Include="Assets\Textures\clouds.bmp">
-      <Filter>Assets\Textures</Filter>
-    </Image>
-    <Image Include="Assets\Textures\cloudyglow.bmp">
       <Filter>Assets\Textures</Filter>
     </Image>
     <Image Include="Assets\Textures\darwinian.bmp">
@@ -1870,9 +1842,6 @@
       <Filter>Assets\Textures</Filter>
     </Image>
     <Image Include="Assets\Textures\menuhighlight.bmp">
-      <Filter>Assets\Textures</Filter>
-    </Image>
-    <Image Include="Assets\Textures\msn_oberon_combosplash.bmp">
       <Filter>Assets\Textures</Filter>
     </Image>
     <Image Include="Assets\Textures\multiwinia.bmp">
@@ -2483,6 +2452,9 @@
     </Image>
     <Image Include="Assets\Icons\widearrow.bmp">
       <Filter>Assets\Icons</Filter>
+    </Image>
+    <Image Include="Assets\Textures\cloudyglow.bmp">
+      <Filter>Assets\Textures</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

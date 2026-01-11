@@ -128,7 +128,6 @@
     <ClInclude Include="FiltersPageButton.h" />
     <ClInclude Include="FinishMultiwiniaButton.h" />
     <ClInclude Include="flag.h" />
-    <ClInclude Include="GameMenuOptionsButton.h" />
     <ClInclude Include="GameMenuWindow.h" />
     <ClInclude Include="GamerTagButton.h" />
     <ClInclude Include="GameTypeButton.h" />
@@ -140,8 +139,6 @@
     <ClInclude Include="gunturret.h" />
     <ClInclude Include="harvester.h" />
     <ClInclude Include="helpandoptions_windows.h" />
-    <ClInclude Include="HelpImageButton.h" />
-    <ClInclude Include="HelpSelectButton.h" />
     <ClInclude Include="ImageButton.h" />
     <ClInclude Include="incubator.h" />
     <ClInclude Include="input_field.h" />
@@ -158,7 +155,6 @@
     <ClInclude Include="lightning.h" />
     <ClInclude Include="mainmenus.h" />
     <ClInclude Include="MapData.h" />
-    <ClInclude Include="mapDetailsButton.h" />
     <ClInclude Include="MapImageButton.h" />
     <ClInclude Include="MapInfoButton.h" />
     <ClInclude Include="MapListTitlesButton.h" />
@@ -176,7 +172,6 @@
     <ClInclude Include="nuke.h" />
     <ClInclude Include="officer.h" />
     <ClInclude Include="OptionDetailsButton.h" />
-    <ClInclude Include="PasteKeyButton.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PlayGameButton.h" />
     <ClInclude Include="portal.h" />
@@ -194,7 +189,6 @@
     <ClInclude Include="QuitButton.h" />
     <ClInclude Include="radardish.h" />
     <ClInclude Include="randomiser.h" />
-    <ClInclude Include="reallyquit_window.h" />
     <ClInclude Include="researchitem.h" />
     <ClInclude Include="ResearchModeButton.h" />
     <ClInclude Include="restrictionzone.h" />
@@ -319,7 +313,6 @@
     <ClCompile Include="pulsebomb.cpp" />
     <ClCompile Include="radardish.cpp" />
     <ClCompile Include="randomiser.cpp" />
-    <ClCompile Include="reallyquit_window.cpp" />
     <ClCompile Include="researchitem.cpp" />
     <ClCompile Include="restrictionzone.cpp" />
     <ClCompile Include="rocket.cpp" />

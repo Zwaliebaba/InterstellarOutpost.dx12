@@ -11,13 +11,9 @@ class Building;
 
 class Armour : public Entity
 {
-  double m_lastOrdersSet;
 
   protected:
     ShapeMarker* m_markerEntrance;
-    /*
-        ShapeMarker     *m_markerFlag;
-    */
     Vector3 m_pickupPoint;
     double m_speed;
 
@@ -28,7 +24,6 @@ class Armour : public Entity
     double m_newOrdersTimer;
 
     Flag m_flag;
-    Flag m_deployFlag;
 
     int m_suicideBuildingId;
     int m_currentAIObjective;
@@ -55,7 +50,6 @@ class Armour : public Entity
     bool m_awaitingDeployment;
     Vector3 m_conversionPoint;
     int m_conversionOrder;
-    int m_conversionToggleDirection;
 
     static LList<int> s_armourObjectives;
 

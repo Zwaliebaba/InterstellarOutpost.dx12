@@ -49,7 +49,6 @@ Armour::Armour()
     m_numPassengers(0),
     m_previousUnloadTimer(0.0),
     m_newOrdersTimer(0.0),
-    m_lastOrdersSet(0.0),
     m_suicideBuildingId(-1),
     m_currentAIObjective(-1),
     m_registeredPassengers(0),
@@ -1418,22 +1417,6 @@ void Armour::SetOrders( Vector3 const &_orders )
     {
         SetConversionPoint( _orders );
     }
-    else
-    {
-        //static double lastOrdersSet = 0.0;
-        /*double timeNow = GetNetworkTime();
-
-        if( timeNow > m_lastOrdersSet + 0.3 && !m_awaitingDeployment )
-        {
-            ToggleLoading();
-            m_lastOrdersSet = timeNow;
-        }*/
-
-        // Note by chris
-        // We dont handle this here anymore
-        // Instead we handle right-clicking on the unit in LocationInput::AdvanceTeamControl
-        // Search for comment "This should toggle orders"
-    }
 }
 
 void Armour::SetDirectOrders()
@@ -1814,60 +1797,6 @@ void Armour::Render( double _predictionTime )
     // Render the flag
 
     double timeIndex = g_gameTime + m_id.GetUniqueId() * 10;
-
-    /*    
-    Matrix34 flagMat = m_markerFlag->GetWorldMatrix(bodyMat);
-    m_flag.SetPosition( flagMat.pos );    
-    m_flag.SetOrientation( predictedFront * -1, predictedUp );
-    m_flag.SetSize( 20.0 );
-
-    char filename[256];
-    switch( m_state )
-    {
-        case StateIdle :        sprintf( filename, "icons\\banner_none.bmp" );              break;
-        case StateUnloading :   sprintf( filename, "icons\\banner_unload.bmp" );            break;
-        case StateLoading :     sprintf( filename, "icons\\banner_follow.bmp" );            break;
-    }
-
-    m_flag.SetTexture( g_app->m_resource->GetTexture( filename ) );
-    m_flag.Render( g_app->Multiplayer() ? m_id.GetTeamId() : -1, filename );
-    
-    if( m_numPassengers > 0 )
-    {
-        char caption[16];
-        sprintf( caption, "%d", m_numPassengers );
-        m_flag.RenderText( 2, 2, caption );
-    }
-    */
-
-
-    //
-    // If we are about to deploy, render a flag at the target
-    // Note by Chris : now replaced with Marker system
-
-    /*if( m_id.GetTeamId() == g_app->m_globalWorld->m_myTeamId )
-    {
-        if( m_conversionPoint != g_zeroVector )
-        {
-            Vector3 front( 0, 0, -1 );
-            front.RotateAroundY( g_gameTime * 0.5 );
-            Vector3 up = g_upVector;
-            up.RotateAround( front * sinf(timeIndex*3) * 0.3 );
-            
-            m_deployFlag.SetPosition( m_conversionPoint );
-            m_deployFlag.SetOrientation( front, up );
-            m_deployFlag.SetSize( 30.0 );
-
-            if( m_conversionOrder == StateUnloading )
-            {
-                m_deployFlag.Render( m_id.GetTeamId(), "icons\\banner_unload.bmp" );
-            }
-            else
-            {
-                m_deployFlag.Render( m_id.GetTeamId(), "icons\\banner_follow.bmp" );
-            }
-        }
-    }*/
 }
 
 bool Armour::IsRouteClear(Vector3 const &_pos)

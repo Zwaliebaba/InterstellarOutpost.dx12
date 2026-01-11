@@ -80,9 +80,6 @@ public:
 
 		else
 		{
-			if( gmw->m_singlePlayer )
-				m_caption = LANGUAGEPHRASE("teamtype_2");
-			else
 				m_caption = LANGUAGEPHRASE("multiwinia_open_or_cpu");
 		}
 

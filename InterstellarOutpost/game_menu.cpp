@@ -38,7 +38,6 @@
 #include "multiwinia.h"
 #include "renderer.h"
 #include "achievement_tracker.h"
-#include "clouds.h"
 #include "level_file.h"
 #include "ImageButton.h"
 #include "MapData.h"
@@ -379,37 +378,15 @@ GameMenu::GameMenu()
 {
   memset(m_numDemoMaps, 0, sizeof(int) * MAX_GAME_TYPES);
   CreateMapList();
-  m_clouds = new Clouds();
-  m_clouds->Advance();
 }
 
 GameMenu::~GameMenu()
 {
   m_allMaps.EmptyAndDelete();
-  delete m_clouds;
-  m_clouds = NULL;
 }
 
 void GameMenu::Render()
 {
-#ifdef _DEBUG
-  static float existingFactor = 0.91f;
-  /* if( g_inputManager->controlEvent( ControlCameraLeft ) ) 
-   {
-       existingFactor -= 0.001f;
-       g_editorFont.SetHorizSpacingFactor( existingFactor );
-   }
-   if( g_inputManager->controlEvent( ControlCameraRight ) ) 
-   {
-       existingFactor += 0.001f;
-       g_editorFont.SetHorizSpacingFactor( existingFactor );
-   }
-   if( g_inputManager->controlEvent( ControlCameraUp ) ) 
-   {
-       existingFactor = 0.91;
-       g_editorFont.SetHorizSpacingFactor( existingFactor );
-   }*/
-#endif
   g_app->m_camera->Advance();
 
   g_app->m_camera->m_pos = g_zeroVector;
@@ -419,18 +396,11 @@ void GameMenu::Render()
   Vector3 front(0, 0, 1);
   Vector3 up(0, 1, 0);
 
-  // -1.899f;
-  // -1.079f;
-
   //
   // Render clouds
 
   static float s_amount = -1.899;
   static float s_amount2 = -1.079;
-  /*if( g_inputManager->controlEvent( ControlCameraLeft ) ) s_amount += 0.01f;
-  if( g_inputManager->controlEvent( ControlCameraRight ) ) s_amount -= 0.01f;
-  if( g_inputManager->controlEvent( ControlCameraForwards ) ) s_amount2 += 0.01f;
-  if( g_inputManager->controlEvent( ControlCameraBackwards ) ) s_amount2 -= 0.01f;*/
 
   front.RotateAroundY(s_amount);
   up.RotateAroundY(s_amount);
@@ -440,8 +410,6 @@ void GameMenu::Render()
   Vector3 focusPos = pos + front * 100;
 
   gluLookAt(pos.x, pos.y, pos.z, focusPos.x, focusPos.y, focusPos.z, up.x, up.y, up.z);
-
-  m_clouds->Render(GetHighResTime() * -1.0f);
 }
 
 void GameMenu::CreateMenu()

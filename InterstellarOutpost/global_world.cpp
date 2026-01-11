@@ -1,11 +1,6 @@
 #include "pch.h"
-
-#include <float.h>
-
 #include "unicode_text_stream_reader.h"
-
 #include "debug_render.h"
-
 #include "language_table.h"
 #include "filesys_utils.h"
 #include "text_file_writer.h"
@@ -21,9 +16,7 @@
 #include "text_stream_readers.h"
 #include "vector3.h"
 #include "random_number.h"
-
 #include "eclipse.h"
-
 #include "app.h"
 #include "camera.h"
 #include "global_internet.h"
@@ -34,24 +27,10 @@
 #include "main.h"
 #include "renderer.h"
 #include "script.h"
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-#include "sepulveda.h"
-#endif
-#include "testharness.h"
 #include "user_input.h"
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-#include "helpsystem.h"
-#endif
-#include "startsequence.h"
-#include "taskmanager.h"
 #include "taskmanager_interface.h"
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-#include "tutorial.h"
-#endif
-
 #include "building.h"
 #include "trunkport.h"
-
 #include "window_manager.h"
 #include "preferences.h"
 #include "preference_names.h"

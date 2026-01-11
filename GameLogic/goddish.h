@@ -10,10 +10,8 @@ class GodDish : public Building
 public:
     bool    m_activated;
     double   m_timer;
-    int     m_numSpawned;
-    bool    m_spawnSpam;
-    
-public:
+
+  public:
     GodDish();
 
     void Initialise( Building *_template );

@@ -177,35 +177,6 @@ void PrefsGraphicsWindow::Create()
 
 }
 
-void RenderCPUUsage(LList<char*>* elements, int x, int y)
-{
-  float totalOccup = 0.0;
-  for (int i = 0; i < elements->Size(); ++i)
-  {
-    if (g_profiler)
-    {
-      ProfiledElement* element = g_profiler->m_rootElement->m_children.GetData(elements->GetData(i));
-      if (element && element->m_lastNumCalls > 0)
-      {
-        float occup = element->m_lastTotalTime * 100;
-        totalOccup += occup;
-      }
-    }
-  }
-
-  if (totalOccup > 0.0)
-  {
-    //if( totalOccup > 25 ) glColor4f( 1.0, 0.3, 0.3, 1.0 );
-    g_editorFont.DrawText2DCentre(x, y, 15, "%d%%", static_cast<int>(totalOccup));
-  }
-  else
-  {
-    glColor4f(1.0, 0.3, 0.3, 1.0);
-    g_editorFont.DrawText2DCentre(x, y, 15, "-");
-  }
-  glColor4f(1.0, 1.0, 1.0, 1.0);
-}
-
 void PrefsGraphicsWindow::Render(bool _hasFocus)
 {
   GameOptionsWindow::Render(_hasFocus);

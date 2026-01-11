@@ -2,7 +2,6 @@
 #include "math_utils.h"
 #include "resource.h"
 #include "shape.h"
-#include "debug_render.h"
 #include "entity.h"
 #include "entity_leg.h"
 #include "app.h"

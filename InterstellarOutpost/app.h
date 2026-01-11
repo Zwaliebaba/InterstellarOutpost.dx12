@@ -232,7 +232,6 @@ class App
     void AddDelayedJob(DelayedJob* _dJob);
 
     void StartNetwork(bool _iAmAServer, const char* _serverIp, int _serverPort);
-    bool StartSinglePlayerServer();
     HRESULT StartMultiPlayerServer();
     void ShutdownCurrentGame();
 

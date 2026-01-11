@@ -15,7 +15,6 @@
 #include "darwinian.h"
 #include "flag.h"
 #include "app.h"
-#include "location.h"
 #include "team.h"
 #include "entity_grid.h"
 #include "main.h"
@@ -34,7 +33,6 @@ MultiwiniaZone::MultiwiniaZone()
     m_totalCount(0),
     m_blitzkriegFlag(nullptr),
     m_aiTarget(nullptr),
-    m_numStandardLinks(0),
     m_blitzkriegOwnership(0.0),
     m_blitzkriegCaptureTeam(255),
     m_blitzkriegUpOrDown(0),
@@ -69,7 +67,7 @@ void MultiwiniaZone::Initialise(Building* _template)
   for (int i = 0; i < zone->m_blitzkriegLinks.Size(); ++i)
     m_blitzkriegLinks.PutData(zone->m_blitzkriegLinks[i]);
 
-  m_numStandardLinks = m_blitzkriegLinks.Size();
+  m_blitzkriegLinks.Size();
 
   if (g_app->m_multiwinia->m_gameType == Multiwinia::GameTypeBlitzkreig)
   {

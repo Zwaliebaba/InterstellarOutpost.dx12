@@ -57,8 +57,6 @@ double           _syncsfrand     ( double range = 1.0f );                     //
 unsigned long   DebugSyncRand   (const char *_file, int _line );
 double           DebugSyncFrand  (const char *_file, int _line, double _min, double _max );
 void            DumpSyncRandLog (const char *_filename);
-void 			FlushSyncRandLog ();
-
 
 #ifdef TRACK_SYNC_RAND
     #define         syncrand()      DebugSyncRand(__FILE__,__LINE__)
@@ -76,18 +74,6 @@ void 			FlushSyncRandLog ();
 void            SyncRandLog     ( const char *_message, ... );
 void			SyncRandLogText	( const char *_text );
 
-/*
- * =============================================
- *	Statistics based random number generatores
- */
-
-
-double       RandomNormalNumber  ( double _mean, double _range );	            // result ~ N ( mean, range/3 ), 					
-                                                                            // mean - range < result < mean + range	
-  
-double       RandomApplyVariance ( double _num, double _variance );			// Applies +-percentage Normally distributed variance to num
-                                                                            // variance should be in fractional form eg 1.0, 0.5 etc                
-                                                                            // _num - _variance * _num < result < _num + _variance * _num
 
 
 

@@ -2,45 +2,31 @@
 #include "resource.h"
 #include "shape.h"
 #include "math_utils.h"
-#include "debug_render.h"
-#include "hi_res_time.h"
-#include "text_renderer.h"
 #include "preferences.h"
 #include "profiler.h"
 #include "random_number.h"
-
 #include "input.h"
-#include "input_types.h"
-
 #include "ai.h"
 #include "officer.h"
 #include "teleport.h"
 #include "darwinian.h"
-
 #include "app.h"
 #include "location.h"
 #include "team.h"
 #include "renderer.h"
 #include "main.h"
-#include "taskmanager.h"
 #include "camera.h"
 #include "particle_system.h"
 #include "explosion.h"
 #include "obstruction_grid.h"
 #include "entity_grid.h"
 #include "user_input.h"
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-#include "sepulveda.h"
-#endif
 #include "global_world.h"
-#include "markersystem.h"
-
 #include "soundsystem.h"
 
 Officer::Officer()
   : Entity(),
     m_wayPointTeleportId(-1),
-    m_turnToTarget(false),
     m_shield(0),
     m_demoted(false),
     m_absorb(false),
@@ -315,9 +301,8 @@ void Officer::RenderFlag(double _predictionTime)
     sprintf(filename, "icons\\banner_absorb.bmp");
   else if (m_orders == OrderFollow && m_formation)
     sprintf(filename, "icons\\banner_formation.bmp");
-  else
-    if (m_orders == OrderFollow)
-      sprintf(filename, "icons\\banner_follow.bmp");
+  else if (m_orders == OrderFollow)
+    sprintf(filename, "icons\\banner_follow.bmp");
 
   m_flag.SetTexture(g_app->m_resource->GetTexture(filename));
   //m_flag.SetPosition( flagPos );
@@ -598,8 +583,10 @@ bool Officer::IsInFormation(int _uniqueId)
   for (int i = 0; i < m_formationEntities.Size(); ++i)
   {
     if (m_formationEntities.ValidIndex(i))
+    {
       if (m_formationEntities[i].m_entityUniqueId == _uniqueId)
         return true;
+    }
   }
   return false;
 }
@@ -986,8 +973,7 @@ bool Officer::Advance(Unit* _unit)
     Vector3 actualDir = m_front * (1.0 - amountToTurn) + targetDir * amountToTurn;
     actualDir.Normalise();
     m_front = actualDir;
-    if ((targetDir ^ actualDir).Mag() < 0.1)
-      m_turnToTarget = false;
+    if ((targetDir ^ actualDir).Mag() < 0.1);
   }
 
   //
@@ -1093,7 +1079,6 @@ void Officer::RunAI(AI* _ai)
     pos /= numFound;
     SetWaypoint(m_pos);
     m_targetFront = (pos - m_pos).Normalise();
-    m_turnToTarget = true;
     return;
   }
 
@@ -1135,10 +1120,7 @@ void Officer::RunAI(AI* _ai)
       }
 
       if (targetDir != g_zeroVector)
-      {
         m_targetFront = targetDir;
-        m_turnToTarget = true;
-      }
     }
 
     if (moveOn && FormationFull()) // no sense going anywhere else with a half full formation
@@ -1489,70 +1471,6 @@ void Officer::SetFormation(const Vector3& targetPos)
   g_app->m_soundSystem->TriggerEntityEvent(this, "SetOrderFormation");
 }
 
-int Officer::GetNextMode()
-{
-  int orders = -1;
-  int researchLevel = g_app->m_globalWorld->m_research->CurrentLevel(GlobalResearch::TypeOfficer);
-
-  switch (researchLevel)
-  {
-  case 0:
-  case 1:
-  case 2:
-    DebugTrace("Research mode 2\n");
-    orders = OrderNone;
-    break;
-
-  case 3:
-    DebugTrace("Research mode 3\n");
-    /*if      ( m_orders == OrderNone )                   m_orders = OrderPrepareGoto;
-    else*/
-    if (m_orders == OrderPrepareGoto)
-      orders = OrderFollow;
-    else if (g_app->IsSinglePlayer())
-    {
-      if (m_orders == OrderFollow)
-        orders = OrderNone;
-      else if (m_orders == OrderNone)
-        orders = OrderGoto;
-      else
-        if (m_orders == OrderGoto)
-          orders = OrderFollow;
-    }
-    else
-    {
-      if (m_orders == OrderNone)
-        orders = OrderPrepareGoto;
-      else if (m_orders == OrderFollow && m_formation)
-        orders = OrderNone;
-      else
-        if (m_orders == OrderGoto)
-          orders = OrderNone;
-    }
-    break;
-
-  case 4:
-    DebugTrace("Research mode 4\n");
-    if (m_orders == OrderNone)
-      orders = OrderFollow;
-    else if (m_orders == OrderFollow && !m_absorb)
-    {
-      m_absorb = true;
-      m_absorbTimer = 2.0f;
-    }
-    else if (m_orders == OrderFollow && m_absorb)
-    {
-      m_orders = OrderNone;
-      m_absorb = false;
-    }
-    else
-      if (m_orders == OrderGoto)
-        m_orders = OrderNone;
-    break;
-  }
-  return orders;
-}
-
 void Officer::SetNextMode()
 {
   DebugTrace("Setting next mode\n");
@@ -1592,9 +1510,8 @@ void Officer::SetNextMode()
           m_orderPosition = g_app->m_userInput->GetMousePos3d();
           m_orders = OrderGoto;
         }
-        else
-          if (m_orders == OrderGoto)
-            m_orders = OrderFollow;
+        else if (m_orders == OrderGoto)
+          m_orders = OrderFollow;
       }
       else
       {
@@ -1608,9 +1525,8 @@ void Officer::SetNextMode()
           m_formation = false;
           m_formationEntities.Empty();
         }
-        else
-          if (m_orders == OrderGoto)
-            m_orders = OrderNone;
+        else if (m_orders == OrderGoto)
+          m_orders = OrderNone;
       }
       break;
 
@@ -1628,9 +1544,8 @@ void Officer::SetNextMode()
         m_orders = OrderNone;
         m_absorb = false;
       }
-      else
-        if (m_orders == OrderGoto)
-          m_orders = OrderNone;
+      else if (m_orders == OrderGoto)
+        m_orders = OrderNone;
       break;
     }
 
@@ -1654,60 +1569,6 @@ void Officer::SetNextMode()
 
     m_buildingId = -1;
   }
-}
-
-int Officer::GetPreviousMode()
-{
-  int orders = -1;
-  int researchLevel = g_app->m_globalWorld->m_research->CurrentLevel(GlobalResearch::TypeOfficer);
-
-  switch (researchLevel)
-  {
-  case 0:
-  case 1:
-  case 2:
-    DebugTrace("Research mode 2\n");
-    orders = OrderNone;
-    break;
-
-  case 3:
-    DebugTrace("Research mode 3\n");
-    /*if      ( m_orders == OrderNone )                   m_orders = OrderPrepareGoto;
-    else */
-    if (m_orders == OrderPrepareGoto)
-      orders = OrderFollow;
-    else if (m_orders == OrderGoto)
-      orders = OrderNone;
-    else if (g_app->IsSinglePlayer())
-    {
-      if (m_orders == OrderNone)
-        orders = OrderFollow;
-      else if (m_orders == OrderFollow)
-        orders = OrderGoto;
-    }
-    else
-    {
-      if (m_orders == OrderNone)
-        orders = OrderPrepareGoto;
-      else if (m_orders == OrderFollow && m_formation)
-        orders = OrderNone;
-    }
-    break;
-
-  case 4:
-    DebugTrace("Research mode 4\n");
-    if (m_orders == OrderNone)
-      orders = OrderFollow;
-    else if (m_orders == OrderFollow && !m_absorb)
-      orders = OrderNone;
-    else if (m_orders == OrderFollow && m_absorb)
-      orders = OrderFollow;
-    else
-      if (m_orders == OrderGoto)
-        orders = OrderNone;
-    break;
-  }
-  return orders;
 }
 
 void Officer::CancelOrders()
@@ -1800,9 +1661,8 @@ void Officer::SetPreviousMode()
         m_orders = OrderFollow;
         m_absorb = false;
       }
-      else
-        if (m_orders == OrderGoto)
-          m_orders = OrderNone;
+      else if (m_orders == OrderGoto)
+        m_orders = OrderNone;
       break;
     }
 
@@ -1830,28 +1690,19 @@ void Officer::SetPreviousMode()
 
 bool Officer::IsSelectable() { return true; }
 
-char* Officer::GetOrderType(int _orderType)
-{
-  static char* orders[] = {"None", "PrepareGoto", "Goto", "Follow"};
-
-  return orders[_orderType];
-}
-
 char* Officer::LogState(char* _message)
 {
   static char s_result[1024];
 
   static char buf1[32], buf2[32], buf3[32], buf4[32], buf5[32], buf6[32];
 
-  sprintf(s_result, "%sENT OFFICER Id[%d] state[%d] pos[%5.2f,%5.2f,%5.2f] vel[%5.2f] front[%5.2f] waypoint[%5.2f]", (_message) ? _message : "",
-          m_id.GetUniqueId(), m_state, m_pos.x, m_pos.y, m_pos.z,
-          m_vel.x + m_vel.y + m_vel.z, m_front.x + m_front.y + m_front.z,
-          m_wayPoint.x + m_wayPoint.y + m_wayPoint.z);
+  sprintf(s_result, "%sENT OFFICER Id[%d] state[%d] pos[%5.2f,%5.2f,%5.2f] vel[%5.2f] front[%5.2f] waypoint[%5.2f]",
+          (_message) ? _message : "", m_id.GetUniqueId(), m_state, m_pos.x, m_pos.y, m_pos.z, m_vel.x + m_vel.y + m_vel.z,
+          m_front.x + m_front.y + m_front.z, m_wayPoint.x + m_wayPoint.y + m_wayPoint.z);
 
   return s_result;
 
 }
-
 
 OfficerOrders::OfficerOrders()
   : WorldObject(),
@@ -1955,7 +1806,6 @@ void OfficerOrders::Render(double _time)
   glEnable(GL_DEPTH_TEST);
   glDisable(GL_TEXTURE_2D);
 }
-
 
 MultiwiniaOfficerOrders::MultiwiniaOfficerOrders()
   : WorldObject(),
@@ -2144,7 +1994,6 @@ void MultiwiniaOfficerOrders::FollowRoute()
     m_wayPoint.y = g_app->m_location->m_landscape.m_heightMap->GetValue(m_wayPoint.x, m_wayPoint.z);
   }
 }
-
 
 OfficerOrderTrail::OfficerOrderTrail()
   : WorldObject(),

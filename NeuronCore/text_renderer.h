@@ -34,8 +34,7 @@ class TextRenderer
 protected:
 	UnicodeFontInfo	*m_unicodebmpfiles;
 	int				m_oldTextureIds[256];
-	int				m_oldTextureIdsSize;
-	double			m_projectionMatrix[16];
+  double			m_projectionMatrix[16];
 	double			m_modelviewMatrix[16];
 	char			*m_filename;
 	unsigned int	m_textureID;
@@ -55,8 +54,7 @@ protected:
     float GetTexCoordY  ( wchar_t theChar );
 	int	GetTextureID	( WCHAR theChar );
 	void AddUnicodeBitmapInfo	( int lower, int upper, const char* _name, int id, float linesOfCharacters, int width, int height );
-	BitmapRGBA* GetScaledUp		( BitmapRGBA* _bmp );
-    
+
 public:
 	void Initialise(char const *_filename);
 	void Shutdown();

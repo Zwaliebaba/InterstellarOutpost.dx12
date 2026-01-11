@@ -43,7 +43,6 @@
     <ClInclude Include="3d_sprite.h" />
     <ClInclude Include="auto_vector.h" />
     <ClInclude Include="bitmap.h" />
-    <ClInclude Include="debug_logging.h" />
     <ClInclude Include="debug_render.h" />
     <ClInclude Include="FixedPipeline.h" />
     <ClInclude Include="float_vector3.h" />
@@ -185,8 +184,6 @@
     </ClCompile>
     <ClCompile Include="3d_sprite.cpp" />
     <ClCompile Include="bitmap.cpp" />
-    <ClCompile Include="debug_fog_logging.cpp" />
-    <ClCompile Include="debug_logging.cpp" />
     <ClCompile Include="debug_render.cpp" />
     <ClCompile Include="FixedPipeline.cpp" />
     <ClCompile Include="hi_res_time.cpp" />
@@ -215,7 +212,6 @@
     <ClCompile Include="text_renderer.cpp" />
     <ClCompile Include="texture.cpp" />
     <ClCompile Include="texture_uv.cpp" />
-    <ClCompile Include="tri_tri.cpp" />
     <ClCompile Include="user_info.cpp" />
     <ClCompile Include="vector2.cpp" />
     <ClCompile Include="vector3.cpp" />

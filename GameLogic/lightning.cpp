@@ -1,21 +1,14 @@
 #include "pch.h"
-#include "hi_res_time.h"
-#include "debug_render.h"
-#include "3d_sprite.h"
 #include "resource.h"
 #include "random_number.h"
-
 #include "lightning.h"
-
 #include "main.h"
-#include "globals.h"
 #include "app.h"
 #include "location.h"
 #include "camera.h"
 #include "particle_system.h"
 #include "entity_grid.h"
 #include "obstruction_grid.h"
-
 #include "darwinian.h"
 #include "tree.h"
 

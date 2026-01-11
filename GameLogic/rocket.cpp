@@ -4,7 +4,6 @@
 #include "text_stream_readers.h"
 #include "text_renderer.h"
 #include "shape.h"
-#include "debug_render.h"
 #include "preferences.h"
 #include "language_table.h"
 #include "random_number.h"
@@ -734,7 +733,6 @@ EscapeRocket::EscapeRocket()
     m_booster(nullptr),
     m_shadowTimer(0.0f),
     m_cameraShake(0.0f),
-    m_coloured(false),
     m_attackTimer(0.0f),
     m_attackWarning(false),
     m_refueledWarning(false),
@@ -892,7 +890,6 @@ void EscapeRocket::Initialise(Building* _template)
 
   if (g_app->Multiplayer())
   {
-    m_coloured = true;
     if (m_id.GetTeamId() >= 0 && m_id.GetTeamId() < NUM_TEAMS)
     {
       //Team *team = g_app->m_location->m_teams[m_id.GetTeamId()];
@@ -1491,7 +1488,7 @@ bool EscapeRocket::SafeToLaunch()
 {
   if (g_app->Multiplayer())
     return true;
-  Vector3 testPos = m_pos; // + Vector3(330,0,50);
+  Vector3 testPos = m_pos; 
   double testRadius = 200.0;
 
   int myTeam = 0;
@@ -1507,38 +1504,16 @@ void EscapeRocket::Render(double _predictionTime)
 
   Matrix34 mat(m_front, m_up, predictedPos);
 
-  //m_environment.RenderInit(m_pos); // start reflecting environment
   m_shape->Render(0.0f, mat);
-  //m_environment.RenderDone();
 }
 
 void EscapeRocket::RenderAlphas(double _predictionTime)
 {
   FuelBuilding::RenderAlphas(_predictionTime);
 
-  if (g_app->m_editing)
-  {
-    Building* spawnBuilding = g_app->m_location->GetBuilding(m_spawnBuildingId);
-    if (spawnBuilding)
-      RenderArrow(m_pos, spawnBuilding->m_pos, 1.0f);
-
-    RenderSphere(m_pos, m_radius, RGBAColour(255, 255, 255, 255));
-
-    return;
-  }
-
   Vector3 predictedPos = m_pos + m_vel * _predictionTime;
 
   glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-  //    g_editorFont.DrawText3DCentre( predictedPos+Vector3(0,120,0), 10, "Fuel : %2.2f", m_fuel );
-  //    g_editorFont.DrawText3DCentre( predictedPos+Vector3(0,130,0), 10, "Passengers : %d", m_passengers );
-  //    g_editorFont.DrawText3DCentre( predictedPos+Vector3(0,140,0), 10, "Damage : %2.2f", m_damage );
-  //    g_editorFont.DrawText3DCentre( predictedPos+Vector3(0,150,0), 10, "Timer : %2.2f", m_countdown );
-
-  //    if( m_state == StateCountdown && m_countdown <= 10.0f )
-  //    {
-  //        g_editorFont.DrawText3DCentre( predictedPos+Vector3(0,200,0), 100, "%d", int(m_countdown) );
-  //    }
 
   //
   // Render rocket glow

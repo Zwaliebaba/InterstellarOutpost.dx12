@@ -2,6 +2,7 @@
 #define _included_tentacle_h
 
 #include "entity.h"
+#include "globals.h"
 
 class Tentacle : public Entity
 {

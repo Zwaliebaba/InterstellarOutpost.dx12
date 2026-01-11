@@ -1,22 +1,13 @@
 #include "pch.h"
-
-#include <math.h>
-
 #include "math_utils.h"
 #include "resource.h"
 #include "matrix34.h"
-#include "shape.h"
-
 #include "text_renderer.h"
-#include "debug_render.h"
 #include "language_table.h"
 #include "random_number.h"
-#include "input.h"
 #include "input_types.h"
-
 #include "app.h"
 #include "explosion.h"
-#include "globals.h"
 #include "global_world.h"
 #include "level_file.h"
 #include "location.h"
@@ -52,7 +43,7 @@ Engineer::Engineer()
     m_positionId(-1),
     m_bridgeId(-1)
 {
-    m_idleRotateRate = syncsfrand(0.5);
+    syncsfrand(0.5);
 
     m_shape = g_app->m_resource->GetShape( "engineer.shp" );
 

@@ -119,18 +119,6 @@ void DumpSyncRandLog (const char *_filename)
 	file.close();
 }
 
-void FlushSyncRandLog ()
-{
-    while( s_syncrandlog.ValidIndex ( 0 ) )
-    {
-        char *elemZero = s_syncrandlog[0];
-        s_syncrandlog.RemoveData(0);
-        delete [] elemZero;
-    }
-}
-
-
-
 // ****************************************************************************
 // Mersenne Twister Random Number Routines
 // ****************************************************************************
@@ -285,34 +273,4 @@ double frand(double range)
 double sfrand(double range)
 {
     return (0.5 - (double)AppRandom() / (double)(APP_RAND_MAX)) * range; 
-}
-
-
-
-double RandomNormalNumber ( double mean, double range )	
-{	
-	// result ~ N ( mean, range/3 )
-
-	double s = 0;
-
-	for ( int i = 0; i < 12; ++i )
-    {
-		s += syncfrand(1.0);
-    }
-    
-	s = ( s - 6.0 ) * ( range/3.0 ) + mean;
-    
-	if ( s < mean - range ) s = mean - range;
-	if ( s > mean + range ) s = mean + range;
-
-	return s;
-}
-
-
-double RandomApplyVariance ( double num, double variance )
-{
-	double variancefactor = 1.0 + RandomNormalNumber ( 0.0, variance );
-	num *= variancefactor;								
-
-	return num;
 }

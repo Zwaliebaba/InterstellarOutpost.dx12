@@ -4,13 +4,11 @@
 class GameTypeImageButton : public DarwiniaButton
 {
   public:
-    char m_iconName[256];
-
     void Render(int realX, int realY, bool highlighted, bool clicked) override
     {
       auto parent = static_cast<GameMenuWindow*>(m_parent);
       int gameType = parent->m_gameType;
-      if (gameType == -1 || parent->m_singlePlayer || parent->m_currentPage == GameMenuWindow::PageGameSelect)
+      if (gameType == -1 || parent->m_currentPage == GameMenuWindow::PageGameSelect)
         gameType = parent->m_highlightedGameType;
 
       char filename[256];

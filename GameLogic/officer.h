@@ -43,8 +43,7 @@ public:
     int         m_wayPointTeleportId;           // Id of teleport we wish to walk into
 
     Vector3     m_targetFront;                  // used by the ai in formation mode
-    bool        m_turnToTarget;
-    
+
     int         m_shield;
     bool        m_demoted;
     bool        m_absorb;
@@ -96,13 +95,9 @@ public:
 
     void SetWaypoint    ( Vector3 const &_wayPoint );
     void SetOrders      ( Vector3 const &_orders, bool directRoute=false );
-    //void SetDirectOrders( Vector3 const &_orders ); // orders while in direct control mode - removes Goto command
 
     bool IsFormationToggle( Vector3 const &mousePos );
     void SetFormation   ( Vector3 const &targetPos );
-
-	int GetNextMode		 ();
-	int GetPreviousMode	 ();
 
     void SetNextMode     ();
     void SetPreviousMode ();
@@ -125,8 +120,6 @@ public:
 
     void CancelOrderSounds();
     void ListSoundEvents( LList<char *> *_list );
-
-    static char *GetOrderType( int _orderType );
 
     void    CalculateBoundingSphere( Vector3 &centre, double &radius );
     char            *LogState( char *_message = NULL );

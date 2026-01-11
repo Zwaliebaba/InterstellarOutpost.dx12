@@ -272,7 +272,6 @@ GameMenuWindow::GameMenuWindow()
     m_xblaSelectSessionTypeNextPage(-1),
     m_xblaOfferSplitscreen(false),
     m_quickStart(false),
-    m_singlePlayer(false),
     m_clickedCampaign(false),
     m_clickedPrologue(false),
     m_showingDeviceSelector(false),
@@ -954,8 +953,6 @@ void GameMenuWindow::UpdateAdvancedOptionsPage()
   }
 }
 
-static bool s_gotListFromMetaserver = false;
-
 void GameMenuWindow::UpdateAchievementsPage()
 {
   m_y = 0;
@@ -982,7 +979,6 @@ void GameMenuWindow::UpdateJoinGamePage()
     */
 
     UpdateServerList();
-    s_gotListFromMetaserver = true;
 
     // Add in any manual server addresses
     for (int i = 0; i < 30; i++)
@@ -1512,11 +1508,6 @@ void GameMenuWindow::SetupMainPage()
 {
   SetTitle(LANGUAGEPHRASE("multiwinia_mainmenu_title"));
 
-#if defined(LAN_PLAY_ENABLED)
-  m_singlePlayer = false;
-#else
-  //m_singlePlayer = true;
-#endif
   m_settingUpCustomGame = false;
   m_localSelectedLevel = -1;
 
@@ -1546,16 +1537,9 @@ void GameMenuWindow::SetupMainPage()
   RegisterButton(title);
   yPos += buttonH * 1.3f;
 
-  GameMenuButton* button = new DarwiniaModeButton("multiwinia_menu_singleplayergame");
-  button->SetShortProperties("multiwinia_menu_singleplayergame", buttonX, yPos += buttonH + gap, buttonW, buttonH,
-                             LANGUAGEPHRASE("multiwinia_menu_singleplayergame"));
-  button->m_fontSize = fontSize;
-  RegisterButton(button);
-  m_buttonOrder.PutData(button);
-
   // Multi player game
 
-  button = new NewOrJoinButton("multiwinia_menu_multiplayergame");
+  GameMenuButton* button = new NewOrJoinButton("multiwinia_menu_multiplayergame");
   button->SetShortProperties("multiwinia_menu_multiplayergame", buttonX, yPos += buttonH + gap, buttonW, buttonH,
                              LANGUAGEPHRASE("multiwinia_menu_multiplayergame"));
   button->m_fontSize = fontSize;
@@ -1942,12 +1926,6 @@ void GameMenuWindow::ShutdownJoinGamePage()
 
 void GameMenuWindow::UpdateMainPage()
 {
-  // Player selected single player mode from the menu
-  if (m_singlePlayer)
-  {
-    if (!g_app->m_server)
-      g_app->StartMultiPlayerServer();
-  }
 }
 
 void GameMenuWindow::SetupNewOrJoinPage()
@@ -1978,12 +1956,6 @@ void GameMenuWindow::SetupNewOrJoinPage()
   yPos += buttonH * 1.3f;
 
   m_xblaSessionType = -1;
-#if defined(LAN_PLAY_ENABLED)
-  m_singlePlayer = false;
-#else
-  m_singlePlayer = true;
-#endif
-
   m_settingUpCustomGame = false;
 
   button = new NewServerButton();
@@ -2014,10 +1986,7 @@ void GameMenuWindow::SetupGameSelectPage()
   if (!g_app->m_server)
   {
     HRESULT hr;
-    if (m_singlePlayer)
-      hr = static_cast<HRESULT>(g_app->StartSinglePlayerServer());
-    else
-      hr = g_app->StartMultiPlayerServer();
+    hr = g_app->StartMultiPlayerServer();
   }
 
   int w = g_app->m_renderer->ScreenW();
@@ -2047,37 +2016,8 @@ void GameMenuWindow::SetupGameSelectPage()
   RegisterButton(title);
   yPos += buttonH * 1.3f;
 
-  //
-  // Subtitle
-
-  /*MapListTitlesButton *titles = new MapListTitlesButton();
-  titles->SetShortProperties( "Titles", leftX+10, leftY+10+buttonH*1.6f, leftW-20, buttonH*0.5f, UnicodeString("Titles") );
-  titles->m_fontSize = fontSmall * 0.75;
-  titles->m_screenId = GameMenuWindow::PageGameSelect;
-  RegisterButton( titles );*/
-
-  //
-  // One button for each game mode
-
-  //if( m_singlePlayer )
-  //{
-  //    QuickStartButton *qsb = new QuickStartButton();
-  //    qsb->SetShortProperties( "multiwinia_menu_quickstart", xPos, yPos+=buttonH, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_quickstart") );
-  //    qsb->m_fontSize = fontSize;
-  //    RegisterButton( qsb );
-  //    m_buttonOrder.PutData( qsb );
-  //    yPos+=buttonH;
-  //    //buttonH *= 0.7f;
-  //    //fontSize *= 0.7f;
-  //}
-
   for (int i = 0; i < Multiwinia::s_gameBlueprints.Size(); ++i)
   {
-#if defined(HIDE_INVALID_GAMETYPES)
-    if (!g_app->IsGameModePermitted(i))
-      continue;
-#endif
-
     auto button = new GameTypeButton(Multiwinia::s_gameBlueprints[i]->GetName(), i);
     button->SetShortProperties(Multiwinia::s_gameBlueprints[i]->GetName(), xPos, yPos += buttonH + gap, buttonW, buttonH,
                                LANGUAGEPHRASE(Multiwinia::s_gameBlueprints[i]->GetName()));
@@ -2095,8 +2035,6 @@ void GameMenuWindow::SetupGameSelectPage()
   }
 
   int page = PageNewOrJoin;
-  if (m_singlePlayer)
-    page = PageMain;
   m_localSelectedLevel = -1;
 
   yPos = leftY + leftH - buttonH * 2;
@@ -2277,32 +2215,22 @@ void GameMenuWindow::SetupMultiplayerPage(int _gameType)
 
   float infoH = rightH - thumbnailH - (fontSmall * 0.5f) - 2.0f * (buttonH + gap) - gap;
 
-  DarwiniaButton* info;
   float font = fontSmall;
-  if (m_singlePlayer)
-    info = new MapInfoButton();
-  else
-  {
-    font *= 0.8f;
-    info = new GameMenuChatButton();
-  }
+  font *= 0.8f;
+  DarwiniaButton* info = new GameMenuChatButton();
   info->SetShortProperties("chat_button", thumbnailX, thumbnailY, thumbnailW, infoH, UnicodeString("Chat"));
   info->m_fontSize = font;
   RegisterButton(info);
 
-  if (!m_singlePlayer)
-  {
-    auto chatwindow = new ChatInputField();
-    chatwindow->SetShortProperties("chat_input", rightX + rightW * 0.1f, rightY + (rightH * 0.95f), rightW * 0.8f, fontSmall * 1.2f,
-                                   UnicodeString());
-    chatwindow->RegisterUnicodeString(m_currentChatMessage);
-    RegisterButton(chatwindow);
-  }
+  auto chatwindow = new ChatInputField();
+  chatwindow->SetShortProperties("chat_input", rightX + rightW * 0.1f, rightY + (rightH * 0.95f), rightW * 0.8f, fontSmall * 1.2f,
+                                 UnicodeString());
+  chatwindow->RegisterUnicodeString(m_currentChatMessage);
+  RegisterButton(chatwindow);
 
   if (g_app->m_server)
   {
     if (m_currentPage != PageResearch &&
-      //m_currentPage != PageMapSelect &&
       m_currentPage != PageAdvancedOptions && m_currentPage != PagePlayerOptions)
     {
       for (int i = 0; i < blueprint->m_params.Size(); ++i)
@@ -2313,11 +2241,7 @@ void GameMenuWindow::SetupMultiplayerPage(int _gameType)
     }
   }
 
-  //yPos += buttonH + gap;
-
   UnicodeString caption = LANGUAGEPHRASE("multiwinia_menu_ready");
-  if (m_singlePlayer)
-    caption = LANGUAGEPHRASE("multiwinia_menu_play");
 
   auto play = new PlayGameButton();
   play->SetShortProperties("Play", xPos, yPos, buttonW, buttonH, caption);
@@ -2373,16 +2297,12 @@ void GameMenuWindow::SetupMultiplayerPage(int _gameType)
   //
   // Back button
 
-  BackPageButton* back = nullptr;
-  if (m_singlePlayer)
-    back = new FinishSinglePlayerButton(PageMapSelect);
+  BackPageButton* back;
+  if (g_app->m_server)
+    back = new FinishMultiwiniaButton(PageGameSelect);
   else
-  {
-    if (g_app->m_server)
-      back = new FinishMultiwiniaButton(PageGameSelect);
-    else
-      back = new FinishMultiwiniaButton(PageNewOrJoin);
-  }
+    back = new FinishMultiwiniaButton(PageNewOrJoin);
+
   yPos = leftY + leftH - buttonH * 2;
   back->SetShortProperties("multiwinia_menu_back", xPos, yPos, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_back"));
   RegisterButton(back);
@@ -2412,7 +2332,7 @@ void GameMenuWindow::SetupMultiplayerPage(int _gameType)
     RegisterButton(gtb);
     m_buttonOrder.PutData(gtb);
 
-    if (!m_singlePlayer && i > 0 && g_app->m_server)
+    if (i > 0 && g_app->m_server)
     {
       char kickname[64];
       sprintf(kickname, "kick%d", i);
@@ -2425,33 +2345,6 @@ void GameMenuWindow::SetupMultiplayerPage(int _gameType)
 
     yPos += buttonH * 1.5f;
   }
-
-#ifdef TESTBED
-  // TODO: The following code tests out spectator mode - uncomment it to get that mode back
-
-  GetButtonSizes(buttonW, buttonH, gap); GetPosition_LeftBox(leftX, leftY, leftW, leftH);
-
-  // Add another row of buttons
-  buttonX = leftX + (leftW - buttonW) / 2.0f; buttonX += 280.0f; yPos = leftY + buttonH * 6; fontSize = fontSmall; buttonH *= 0.75f; buttonW
-    *= 0.45f; gameType = _gameType; mapId = m_localSelectedLevel; if (mapId == -1)
-    mapId = m_requestedMapId; ASSERT_TEXT(
-    0 <= gameType && gameType < MAX_GAME_TYPES && g_app->m_gameMenu->m_maps[gameType].ValidIndex(mapId),
-    "Failed to get level due to invalid game type or map id (Game Type = %d, Map ID = %d), map name (may be inaccurate) = '%s'", gameType,
-    mapId, g_app->m_requestedMap); md = g_app->m_gameMenu->m_maps[gameType][mapId]; for (int i = 0; i < md->m_numPlayers; ++i)
-  {
-    CSpectatorButton* pSpectator = new CSpectatorButton();
-    pSpectator->SetShortProperties("tag", buttonX, yPos, buttonW, buttonH, LANGUAGEPHRASE("teamtype_2")); // TeamTypeCPU
-    pSpectator->m_fontSize = fontSize;
-    pSpectator->m_teamId = i;
-    RegisterButton(pSpectator);
-    m_buttonOrder.PutData(pSpectator);
-
-    yPos += buttonH * 1.5f;
-  }
-
-  //m_buttonOrder.PutData( msmb );
-
-#endif
 
   m_buttonOrder.PutData(back);
 
@@ -2521,7 +2414,6 @@ void GameMenuWindow::SetupMapSelectPage()
   DebugTrace("Starting rendering the loading screen - %f\n", GetHighResTime());
   g_loadingScreen->Render();
   DebugTrace("End Caching Thumbnails - %f\n", GetHighResTime());
-  //g_app->m_renderer->StartMenuTransition();
 
   if (m_clickGameType != -1 && m_gameType != m_clickGameType && !m_settingUpCustomGame)
     return;
@@ -2629,9 +2521,7 @@ void GameMenuWindow::SetupMapSelectPage()
   yPos = leftY + leftH - buttonH * 2;
 
   int page = PageGameSelect;
-  if (m_singlePlayer)
-    page = PageGameSelect;
-  else if (m_requestedMapId == -1)
+  if (m_requestedMapId == -1)
     page = PageGameSelect;
   auto back = new BackPageButton(page);
   back->SetShortProperties("multiwinia_menu_back", buttonX, yPos, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_back"));
@@ -2751,7 +2641,7 @@ void GameMenuWindow::SetupAdvancedOptionsPage()
 
   yPos += buttonH + gap;
 
-  if (g_app->m_server && !m_singlePlayer)
+  if (g_app->m_server)
   {
     CreateMenuControl("multiwinia_menu_serverpassword", InputField::TypeUnicodeString, &m_serverPassword, yPos += buttonH + gap, 0.0f,
                       nullptr, xPos, buttonW, fontSize);

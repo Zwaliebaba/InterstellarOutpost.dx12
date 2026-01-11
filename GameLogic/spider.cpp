@@ -7,7 +7,6 @@
 #include "spider.h"
 #include "soundsystem.h"
 #include "app.h"
-#include "deform.h"
 #include "entity_grid.h"
 #include "explosion.h"
 #include "location.h"
@@ -490,14 +489,6 @@ bool Spider::AdvancePouncing()
       entity->m_onGround = false;
     }
   }
-
-#ifdef USE_DIRECT3D
-  if (g_deformEffect)
-  {
-    Vector3 newPos = m_pos;
-    g_deformEffect->AddTearingPath(oldPos, newPos, 0.25);
-  }
-#endif
 
   return false;
 }

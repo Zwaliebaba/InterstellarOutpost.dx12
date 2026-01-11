@@ -116,8 +116,6 @@
     </None>
     <ClInclude Include="attract.h" />
     <ClInclude Include="camera.h" />
-    <ClInclude Include="clouds.h" />
-    <ClInclude Include="deform.h" />
     <ClInclude Include="entity_grid.h" />
     <ClInclude Include="entity_grid_cache.h" />
     <ClInclude Include="explosion.h" />
@@ -151,7 +149,6 @@
     <ClInclude Include="taskmanager_interface_icons.h" />
     <ClInclude Include="taskmanager_interface_multiwinia.h" />
     <ClInclude Include="team.h" />
-    <ClInclude Include="testharness.h" />
     <ClInclude Include="unit.h" />
     <ClInclude Include="user_input.h" />
   </ItemGroup>
@@ -162,8 +159,6 @@
     <ClCompile Include="app.cpp" />
     <ClCompile Include="attract.cpp" />
     <ClCompile Include="camera.cpp" />
-    <ClCompile Include="clouds.cpp" />
-    <ClCompile Include="deform.cpp" />
     <ClCompile Include="entity_grid.cpp" />
     <ClCompile Include="entity_grid_cache.cpp" />
     <ClCompile Include="explosion.cpp" />
@@ -191,7 +186,6 @@
     <ClCompile Include="rocket_status_panel.cpp" />
     <ClCompile Include="routing_system.cpp" />
     <ClCompile Include="script.cpp" />
-    <ClCompile Include="sepulveda_strings.cpp" />
     <ClCompile Include="shaman_interface.cpp" />
     <ClCompile Include="startsequence.cpp" />
     <ClCompile Include="taskmanager.cpp" />
@@ -199,7 +193,6 @@
     <ClCompile Include="taskmanager_interface_icons.cpp" />
     <ClCompile Include="taskmanager_interface_multiwinia.cpp" />
     <ClCompile Include="team.cpp" />
-    <ClCompile Include="testharness.cpp" />
     <ClCompile Include="unit.cpp" />
     <ClCompile Include="user_input.cpp" />
   </ItemGroup>
@@ -233,18 +226,6 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
     </None>
     <None Include="Assets\Animations\rocket.anim">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-    </None>
-    <None Include="Assets\Shaders\deform.vs">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-    </None>
-    <None Include="Assets\Shaders\deformDiamond.ps">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-    </None>
-    <None Include="Assets\Shaders\deformFullscreen.ps">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-    </None>
-    <None Include="Assets\Shaders\deformSphere.ps">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
     </None>
     <None Include="Assets\Shaders\FixedFunc0.vs">
@@ -1068,10 +1049,8 @@
     <Image Include="Assets\Terrain\waves_icecaps.bmp" />
     <Image Include="Assets\Terrain\waves_launchpad.bmp" />
     <Image Include="Assets\Terrain\waves_yellow.bmp" />
-    <Image Include="Assets\Textures\ambrosia_logo.bmp" />
     <Image Include="Assets\Textures\beam.bmp" />
     <Image Include="Assets\Textures\bubble.bmp" />
-    <Image Include="Assets\Textures\clouds.bmp" />
     <Image Include="Assets\Textures\cloudyglow.bmp" />
     <Image Include="Assets\Textures\darwinian.bmp" />
     <Image Include="Assets\Textures\deform1c.bmp" />
@@ -1098,7 +1077,6 @@
     <Image Include="Assets\Textures\laserfence2.bmp" />
     <Image Include="Assets\Textures\lightning.bmp" />
     <Image Include="Assets\Textures\menuhighlight.bmp" />
-    <Image Include="Assets\Textures\msn_oberon_combosplash.bmp" />
     <Image Include="Assets\Textures\multiwinia.bmp" />
     <Image Include="Assets\Textures\muzzleflash.bmp" />
     <Image Include="Assets\Textures\mwtitle.bmp" />

@@ -10,37 +10,32 @@
 
 #include "animatedpanel.h"
 
-
 class AnimatedPanelRenderer : public AnimatedPanel
 {
-public:
+  public:
     double m_animTimer;
-    
-    float m_screenX;                // Please fill these in.                
-    float m_screenY;                
+
+    float m_screenX; // Please fill these in.                
+    float m_screenY;
     float m_screenW;
     float m_screenH;
-    
+
     float m_borderSize;
     float m_titleH;
     float m_captionH;
 
-protected:
-    void Blit ( int texId, 
-                float x, float y, float w, float h, 
-                float angle, float texX, float texY, float texW, float texH );
+  protected:
+    void Blit(int texId, float x, float y, float w, float h, float angle, float texX, float texY, float texW, float texH);
 
-public:
+  public:
     AnimatedPanelRenderer();
 
-    void BeginRender        ();
-    void RenderBackground   ( float alpha );    
-    void RenderObjects      ();    
-    void RenderTitle        ( UnicodeString &title );
-    void RenderCaption      ( UnicodeString &caption );
-    void EndRender          ();
+    void BeginRender();
+    void RenderBackground(float alpha);
+    void RenderObjects();
+    void RenderTitle(UnicodeString& title);
+    void RenderCaption(UnicodeString& caption);
+    void EndRender();
 };
-
-
 
 #endif

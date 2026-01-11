@@ -33,14 +33,12 @@ public:
 	void NastyPollForMessages();
 	void NastySetMousePos(int x, int y);
 	void NastyMoveMouse(int x, int y);
-	bool Captured();
-	void CaptureMouse();
+  void CaptureMouse();
 	void UncaptureMouse();
 	void EnsureMouseCaptured();
 	void EnsureMouseUncaptured();
 	void HideMousePointer();
-	void UnhideMousePointer();
-	void WindowMoved();
+  void WindowMoved();
 	void OpenWebsite( const char *_url );
 };
 

@@ -2,10 +2,8 @@
 #include "preferences.h"
 #include "text_renderer.h"
 #include "window_manager.h"
-#include "resource.h"
 #include "language_table.h"
 #include "targetcursor.h"
-#include "win32_eventhandler.h"
 #include "mainmenus.h"
 #include "prefs_screen_window.h"
 #include "prefs_graphics_window.h"
@@ -16,14 +14,11 @@
 #include "multiwinia_window.h"
 #include "helpandoptions_windows.h"
 #include "app.h"
-#include "renderer.h"
 #include "global_world.h"
 #include "game_menu.h"
 #include "main.h"
 #include "GameMenuWindow.h"
 #include "input.h"
-
-class WebsiteButton;
 
 GameOptionsWindow::GameOptionsWindow(const char* _name)
   : DarwiniaWindow(_name),
@@ -259,15 +254,6 @@ GameMenuInputField* GameOptionsWindow::CreateMenuControl(const char* name, int d
   return input;
 }
 
-class AboutDarwiniaButton : public DarwiniaButton
-{
-  void MouseUp() override
-  {
-    if (!EclGetWindow("about_darwinia"))
-      EclRegisterWindow(new AboutDarwiniaWindow(), m_parent);
-  }
-};
-
 class MainMenuUserProfileButton : public GameMenuButton
 {
   public:
@@ -383,23 +369,6 @@ class OtherOptionsButton : public GameMenuButton
     }
 };
 
-class KeybindingsOptionsButton : public GameMenuButton
-{
-  public:
-    KeybindingsOptionsButton()
-      : GameMenuButton("dialog_inputoptions") {}
-
-    void MouseUp() override
-    {
-      if (!EclGetWindow("dialog_inputoptions"))
-        EclRegisterWindow(new PrefsKeybindingsWindow, m_parent);
-    }
-};
-
-// ****************************************************************************
-// Class MainMenuWindow
-// ****************************************************************************
-
 MainMenuWindow::MainMenuWindow()
   : GameOptionsWindow("dialog_mainmenu")
 {
@@ -500,17 +469,9 @@ void OptionsMenuWindow::Create()
   RegisterButton(sound);
   m_buttonOrder.PutData(sound);
 
-  /*KeybindingsOptionsButton *keys = new KeybindingsOptionsButton();
-  keys->SetShortProperties( "dialog_inputoptions", x, y+=buttonH+gap, buttonW, buttonH, LANGUAGEPHRASE("dialog_inputoptions"));
-  keys->m_fontSize = fontSize;
-  keys->m_centered = true;
-  RegisterButton( keys );
-  m_buttonOrder.PutData( keys );*/
-
   auto other = new OtherOptionsButton();
   other->SetShortProperties("dialog_otheroptions", x, y += buttonH + gap, buttonW, buttonH, LANGUAGEPHRASE("dialog_otheroptions"));
   other->m_fontSize = fontSize;
-  //other->m_centered = true;
   RegisterButton(other);
   m_buttonOrder.PutData(other);
 
@@ -519,21 +480,11 @@ void OptionsMenuWindow::Create()
   auto close = new MenuCloseButton("dialog_back");
   close->SetShortProperties("dialog_close", x, yPos, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_back"));
   close->m_fontSize = fontSize;
-  //close->m_centered = true;
   RegisterButton(close);
   m_buttonOrder.PutData(close);
   m_backButton = close;
 
 }
-
-class ResetLevelButton : public GameMenuButton
-{
-  public:
-    ResetLevelButton()
-      : GameMenuButton(UnicodeString()) {}
-
-    void MouseUp() override { EclRegisterWindow(new ResetLocationWindow(), m_parent); }
-};
 
 class ExitLevelButton : public GameMenuButton
 {

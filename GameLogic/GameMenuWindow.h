@@ -88,7 +88,6 @@ class GameMenuWindow : public DarwiniaWindow
     bool m_xblaOfferSplitscreen;
 
     bool m_quickStart;
-    bool m_singlePlayer;
 
     bool m_clickedCampaign;
     bool m_clickedPrologue;

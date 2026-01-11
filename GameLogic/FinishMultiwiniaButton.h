@@ -41,30 +41,6 @@ public:
     }
 };
 
-class FinishSinglePlayerButton : public BackPageButton
-{
-public:
-    FinishSinglePlayerButton( int _page )
-    :   BackPageButton( _page )
-    {
-    }
-
-    void MouseUp()
-    {
-        g_app->m_multiwinia->m_coopMode = false;
-        g_app->m_multiwinia->m_basicCratesOnly = false;
-        g_app->m_clientToServer->ReliableSetTeamColour(-1);
-        for( int i = 0; i < NUM_TEAMS; ++i )
-        {
-            g_app->m_multiwinia->m_teams[i].m_colourId = -1;
-        }
-        BackPageButton::MouseUp();
-
-        ((GameMenuWindow *)m_parent)->m_chatMessages.EmptyAndDelete();
-        ((GameMenuWindow *)m_parent)->m_serverPassword.Set( UnicodeString() );
-    }
-};
-
 class SaveFiltersButton : public BackPageButton
 {
 public:

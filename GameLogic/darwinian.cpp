@@ -3801,24 +3801,10 @@ inline void SetTexture(const char* texName)
   glBindTexture(GL_TEXTURE_2D, texId);
 }
 
-void SafeSetTexture(const char* texName)
-{
-  glEnd();
-  SetTexture(texName);
-  glBegin(GL_QUADS);
-}
-
 inline void SetBlend(int src, int dst, bool depthmask = true)
 {
   glBlendFunc(src, dst);
   glDepthMask(depthmask);
-}
-
-void SafeSetBlend(int src, int dst, bool depthmask = true)
-{
-  glEnd();
-  SetBlend(src, dst, depthmask);
-  glBegin(GL_QUADS);
 }
 
 void Darwinian::Render(double _predictionTime, double _highDetail)

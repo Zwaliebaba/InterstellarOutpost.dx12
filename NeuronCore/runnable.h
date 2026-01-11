@@ -54,29 +54,6 @@ private:
 	T * m_this;
 };
 
-
-template <class T, class A1> 
-struct Method1 : public Runnable
-{
-	Method1( void (T::*_func)( A1 ), T *_this, A1 _arg )
-	:	m_func( _func ),
-		m_this( _this ),
-		m_arg( _arg )
-	{
-	}
-
-	void Run() const
-	{
-		(m_this->*m_func)( m_arg );
-	}
-
-private:
-
-	void (T::*m_func)( A1 );
-	T * m_this;
-	A1 m_arg;
-};
-
 class Job
 {
 public:

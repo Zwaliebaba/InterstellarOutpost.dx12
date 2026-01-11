@@ -119,14 +119,11 @@ class EscapeRocket : public FuelBuilding
 protected:
     ShapeMarker     *m_booster;   
     ShapeMarker     *m_window[3];
-    Shape           *m_rocketLowRes;
     double           m_shadowTimer;
     double           m_cameraShake;
 
     Vector3         m_vel;
-    bool            m_coloured;
     double           m_attackTimer;
-	//Environment     m_environment; // reflected environment
 
     bool            m_attackWarning;    // set to true when the under attack warning has been issued, false when damage = 0
     bool            m_refueledWarning;

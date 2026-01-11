@@ -35,8 +35,6 @@ public:
     int  GetBuildingLink();                             
     void SetBuildingLink( int _buildingId );
 
-    Vector3 GetPowerLocation();
-
     void SetShapeName   ( char *_shapeName );
 };
 

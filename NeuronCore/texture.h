@@ -35,8 +35,7 @@ class Texture
 {
 public:
 	static Texture* Create(const TextureParams& tp);
-	const TextureParams& GetParams() const;
-	IDirect3DBaseTexture9* GetTexture() const;
+  IDirect3DBaseTexture9* GetTexture() const;
   IDirect3DSurface9* GetRenderTarget(unsigned index = 0) const;
 	~Texture();
 

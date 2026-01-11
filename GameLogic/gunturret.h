@@ -45,7 +45,6 @@ protected:
     double          m_health;
     double          m_ownershipTimer;
     double          m_hadTargetTimer;
-    double          m_stateSwitchTimer; // temp
 
     int             m_kills[NUM_TEAMS];
     double          m_temperature;
@@ -59,10 +58,8 @@ public:
     Vector3         m_targetPos;
     double          m_targetRadius; 
     double          m_targetForce;
-    double          m_targetAngle;
-    
+
     bool            m_friendlyFireWarning;                      // True if firing = lots of friendly deaths
-    float           m_firedLastFrame;
     double          m_fireTimer;
 
     Vector3         m_actualTargetPos;                          // Where our barrels are actually aiming

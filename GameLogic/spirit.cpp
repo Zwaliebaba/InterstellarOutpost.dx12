@@ -225,13 +225,6 @@ void Spirit::SearchForNearbyEggs()
     }
 }
 
-
-void Spirit::SetShamanMode()
-{
-    m_state = StateShaman;
-    m_timeSync = 5.0;
-}
-
 void Spirit::PushFromBuildings()
 {
     START_PROFILE( "PushFromBuildings" );
@@ -447,23 +440,6 @@ int Spirit::NumNearbyEggs()
 
 
     return m_numNearbyEggs;
-}
-
-void Spirit::BreakSpirit()
-{
-    if( m_broken == -1.0 )
-    {
-        m_broken = 0.0;
-        m_shellPos = m_pos;
-        if( m_id.GetTeamId() != 255 )
-        {
-            for( int i = 0; i < 5; ++i )
-            {
-                Vector3 vel = m_vel + Vector3( FRAND(5.0), FRAND(5.0), FRAND(5.0) );
-                g_app->m_particleSystem->CreateParticle(m_pos, vel, Particle::TypeControlFlash, -1.0, g_app->m_location->m_teams[ m_id.GetTeamId() ]->m_colour );
-            }
-        }
-    }
 }
 
 WorldObjectId *Spirit::GetNearbyEggs()

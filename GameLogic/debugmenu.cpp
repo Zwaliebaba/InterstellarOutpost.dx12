@@ -1,7 +1,4 @@
 #include "pch.h"
-#include "text_renderer.h"
-#include "preferences.h"
-#include "window_manager.h"
 #include "language_table.h"
 #include "debugmenu.h"
 #include "network_window.h"
@@ -10,7 +7,6 @@
 #include "prefs_sound_window.h"
 #include "profilewindow.h"
 #include "cheat_window.h"
-#include "reallyquit_window.h"
 #include "app.h"
 #include "camera.h"
 #include "renderer.h"
@@ -116,10 +112,6 @@ void DebugKeyBindings::NetworkButton()
     EclRegisterWindow(nw);
   }
 }
-
-#ifdef LOCATION_EDITOR
-void DebugKeyBindings::EditorButton() { g_app->m_requestToggleEditing = true; }
-#endif // LOCATION_EDITOR
 
 void DebugKeyBindings::DebugCameraButton() { g_app->m_camera->SetNextDebugMode(); }
 

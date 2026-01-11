@@ -250,7 +250,6 @@ void Nuke::Render( double _predictionTime )
     RenderSub( _predictionTime );
     if( m_exploded )
     {
-        //RenderDeaths();
     }
     else
     {
@@ -372,35 +371,6 @@ void Nuke::RenderHistory( double _predictionTime )
         }
     }
 }
-
-void Nuke::RenderDeaths()
-{
-    float fontSize = 15.0f;
-
-    float timeOnScreen = 5.0f - m_casualtyMessageTimer;
-
-    char msg[256];
-    sprintf( msg, "Darwinia Hit, %d Dead", m_numDeaths );
-    float fractionShown = timeOnScreen/1.5f;
-    if( fractionShown < 1.0f ) msg[ int(strlen(msg) * fractionShown) ] = '\x0';
-
-    float alpha = 1.0f;
-    if( timeOnScreen > 4.0f ) alpha = 5.0f - timeOnScreen;
-    alpha = max(alpha, 0.0f);
-    alpha *= 255;
-
-    Vector3 pos = m_pos;
-    pos.y += 200.0f;
-
-    g_gameFont.SetRenderOutline(true);
-    glColor4f(0.75f, 0.75f, 0.75f,0.0f);
-    g_gameFont.DrawText3DCentre( pos, fontSize, msg );
-
-    g_gameFont.SetRenderOutline(false);
-    glColor4f(1.0f,1.0f,1.0f,1.0f);
-    g_gameFont.DrawText3DCentre( pos, fontSize, msg );
-}
-
 
 void Nuke::RenderSub( double _predictionTime )
 {

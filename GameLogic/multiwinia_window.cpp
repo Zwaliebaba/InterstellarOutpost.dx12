@@ -4,13 +4,11 @@
 #include "filesys_utils.h"
 #include "multiwinia_window.h"
 #include "input_field.h"
-#include "helpandoptions_windows.h"
 #include "multiwinia_filedialog.h"
 #include "app.h"
 #include "level_file.h"
 #include "multiwinia.h"
 #include "main.h"
-#include "networkvalue.h"
 
 class CreateMapButton : public GameMenuButton
 {
@@ -53,80 +51,6 @@ public:
         parent->CreateErrorDialogue(message, true);
     }
 };
-
-
-class EditMapButton : public GameMenuButton
-{
-public:
-    EditMapButton()
-    :   GameMenuButton(UnicodeString())
-    {
-    }
-
-    void MouseUp()
-    {
-        MultiwiniaWindow *parent = (MultiwiniaWindow *) m_parent;
-
-        char filename[512];
-        sprintf( filename, "levels/%s", parent->m_mapFilename.Get() );
-        TextReader *reader = g_app->m_resource->GetTextReader( filename );
-
-        if( reader )
-        {
-            delete reader; 
-
-            strcpy( g_app->m_requestedMap, parent->m_mapFilename.Get() );        
-            strcpy( g_app->m_requestedMission, "null" );
-
-            g_app->m_requestToggleEditing = true;
-            g_app->m_requestedLocationId = 999;
-
-            EclRemoveWindow( "dialog_mainmenu" );
-            EclRemoveWindow( "dialog_multiwinia" );
-        }
-    }
-};
-
-
-class PlayMapButton : public DarwiniaButton
-{
-    void MouseUp()
-    {
-        MultiwiniaWindow *parent = (MultiwiniaWindow *) m_parent;
-
-        strcpy( g_app->m_requestedMap, parent->m_mapFilename.Get() );
-        strcpy( g_app->m_requestedMission, "null" );
-        
-        g_app->m_requestToggleEditing = false;
-        g_app->m_requestedLocationId = 999;
-
-        g_app->m_multiwinia->SetGameResearch( parent->m_researchLevel );
-        g_app->m_multiwinia->SetGameOptions( parent->m_gameType, parent->m_params );
-        
-        EclRemoveWindow( "dialog_mainmenu" );
-        EclRemoveWindow( "dialog_multiwinia" );
-    }
-};
-
-/*
-class SelectMapFileDialog : public GameOptionsWindow
-{
-public:
-    SelectMapFileDialog( char *name, char const *parent, 
-                         char const *path=NULL, char const *filter=NULL,
-                         bool allowMultiSelect=false )
-    :   GameOptionsWindow( name )
-    {
-    }
-    
-    void FileSelected( char *_filename )
-    {
-        MultiwiniaWindow *window = (MultiwiniaWindow *) EclGetWindow( m_parent );
-
-        window->m_mapFilename.Set( _filename );
-    }
-};
-*/
 
 class SelectMapButton : public GameMenuButton
 {
@@ -177,10 +101,6 @@ MultiwiniaWindow::MultiwiniaWindow()
     int screenW = g_app->m_renderer->ScreenW();
     int screenH = g_app->m_renderer->ScreenH();
 
-    //SetMenuSize( 200, 230 );
-//    SetPosition( screenW/2.0f - m_w/2.0f,
-//                 screenH/2.0f - m_h/2.0f );
-
     SetMenuSize( screenW, screenH );
     SetPosition( 0, 0 );
     SetMovable( false );
@@ -193,48 +113,11 @@ MultiwiniaWindow::MultiwiniaWindow()
     }    
 }
 
-class CurrentMapButton : public DarwiniaButton
-{
-public:
-    CurrentMapButton()
-    :   DarwiniaButton()
-    {
-    }
-
-    void Render( int realX, int realY, bool highlighted, bool clicked )
-    {
-        int y = realY + m_h * 0.05f;
-        int x = realX + m_w * 0.05f;
-
-        MultiwiniaWindow *parent = (MultiwiniaWindow *)m_parent;
-
-        glColor4f( 1.0f, 1.0f, 1.0f, 0.0f );
-        g_titleFont.SetRenderOutline( true );
-        g_titleFont.DrawText2D( x, y, m_fontSize, LANGUAGEPHRASE("multiwinia_editor_current") );
-        glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
-        g_titleFont.SetRenderOutline( false );
-        g_titleFont.DrawText2D( x, y, m_fontSize, LANGUAGEPHRASE("multiwinia_editor_current") );
-
-        x = realX + m_w - (m_w * 0.05f);
-
-        glColor4f( 1.0f, 1.0f, 1.0f, 0.0f );
-        g_titleFont.SetRenderOutline( true );
-        g_titleFont.DrawText2DRight( x, y, m_fontSize, parent->m_mapFilename.Get() );
-        glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
-        g_titleFont.SetRenderOutline( false );
-        g_titleFont.DrawText2DRight( x, y, m_fontSize, parent->m_mapFilename.Get() );
-    }
-};
-
-
 void MultiwiniaWindow::Create()
 {
     GameOptionsWindow::Create();
 
     SetTitle( LANGUAGEPHRASE( "multiwinia_mainmenu_title" ) );
-
-    int w = g_app->m_renderer->ScreenW();
-    int h = g_app->m_renderer->ScreenH();
 
     float leftX, leftY, leftW, leftH;
     float fontLarge, fontMed, fontSmall;
@@ -254,14 +137,6 @@ void MultiwiniaWindow::Create()
     RegisterButton( title );
     y += buttonH*1.3f;
 
-    //buttonH *= 0.65f;
-
-   /* CurrentMapButton *tb = new CurrentMapButton();
-    tb->SetShortProperties( "current", x, y += buttonH + gap, buttonW, buttonH * 0.65f, UnicodeString() );
-    tb->m_fontSize = fontSmall;
-    //tb->m_centered = true;
-    RegisterButton( tb );*/
-
     SelectMapButton *selectMap = new SelectMapButton();
     selectMap->SetShortProperties( "SelectMap", x, y+=buttonH+gap, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_editor_edit") );
     selectMap->m_fontSize = fontSize;
@@ -269,22 +144,6 @@ void MultiwiniaWindow::Create()
     sprintf(selectMap->m_path, "%s", g_app->GetMapDirectory() );
     RegisterButton( selectMap );
     m_buttonOrder.PutData( selectMap );
-
-#ifdef TARGET_DEBUG
-    selectMap = new SelectMapButton();
-    selectMap->SetShortProperties( "SelectMap", x, y+=buttonH+gap, buttonW, buttonH, UnicodeString("Edit Official Maps") );
-    selectMap->m_fontSize = fontSize;
-    RegisterButton( selectMap );
-    m_buttonOrder.PutData( selectMap );
-#endif
-
-   /* EditMapButton *editMap = new EditMapButton();
-    editMap->SetShortProperties( "Edit", x, y+=buttonH+gap, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_editor_edit") );
-    editMap->m_fontSize = fontSize;
-    RegisterButton( editMap );
-    m_buttonOrder.PutData( editMap );*/
-
-    //y+=buttonH;
 
     NewMapWindowButton *newmap = new NewMapWindowButton();
     newmap->SetShortProperties("newmapbutton", x, y+=buttonH+gap, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_editor_create") );

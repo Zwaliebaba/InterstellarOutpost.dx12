@@ -8,8 +8,6 @@
 
 static HINSTANCE g_hInstance;
 
-#define WH_KEYBOARD_LL 13
-
 bool Direct3DInit(HWND _hWnd, bool _windowed, int _width, int _height, int _colourDepth, int _zDepth, bool _waitVRT);
 void Direct3DShutdown();
 void Direct3DSwapBuffers();
@@ -292,8 +290,6 @@ void WindowManagerDirectX::NastyMoveMouse(int x, int y)
 
 void WindowManagerDirectX::WindowMoved() { m_mouseOffsetX = INT_MAX; }
 
-bool WindowManagerDirectX::Captured() { return m_mouseCaptured; }
-
 void WindowManagerDirectX::CaptureMouse()
 {
   SetCapture(m_hWnd);
@@ -342,18 +338,6 @@ void WindowManagerDirectX::EnsureMouseUncaptured()
 
 void WindowManagerDirectX::HideMousePointer()
 {
-  // TODO: Delete me
-  //	if (m_mousePointerVisible)
-  //		ShowCursor(false);
-  m_mousePointerVisible = false;
-}
-
-void WindowManagerDirectX::UnhideMousePointer()
-{
-  // TODO: Delete me
-  //	if (!m_mousePointerVisible)
-  //		ShowCursor(true);
-  m_mousePointerVisible = true;
 }
 
 void WindowManagerDirectX::OpenWebsite(const char* _url) { ShellExecuteA(nullptr, "open", _url, nullptr, nullptr, SW_SHOWNORMAL); }

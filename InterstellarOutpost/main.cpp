@@ -669,14 +669,6 @@ bool IsFirsttimeSequencing() { return g_RenderingFirstTimeBL; }
 
 static void DoEnterLocation()
 {
-  // If we're in Darwinia mode, we should start the network now.
-  // In Multiwinia mode, we have already started the network much earlier than this.
-  if (!g_app->Multiplayer())
-  {
-    if (!g_app->StartSinglePlayerServer())
-      return;
-  }
-
   bool iAmAServer = g_app->m_server != NULL;
 
   //

@@ -18,7 +18,7 @@
 #include "loading_screen.h"
 #include "app.h"
 #include "landscape_renderer.h"
-#include "location.h"	// For SetupFog
+#include "location.h"	
 #include "level_file.h"
 
 

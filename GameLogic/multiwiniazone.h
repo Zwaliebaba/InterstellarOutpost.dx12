@@ -25,8 +25,7 @@ public:
     AITarget    *m_aiTarget;
     
     LList<int>  m_blitzkriegLinks;
-    int         m_numStandardLinks;
-    
+
     double      m_blitzkriegOwnership;
     int         m_blitzkriegCaptureTeam;
     int         m_blitzkriegUpOrDown;

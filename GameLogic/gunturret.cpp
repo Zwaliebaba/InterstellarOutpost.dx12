@@ -63,16 +63,13 @@ GunTurret::GunTurret()
     m_targetCreated(false),
     m_aiTargetCreated(false),
     m_state(0),
-    m_stateSwitchTimer(0.0),
     m_aiTarget(NULL),
     m_targetRadius(0.0f),
     m_targetForce(0.0f),
-    m_targetAngle(0.0f),
     m_hadTargetTimer(0.0f),
     m_temperature(0.0f),
     m_overheatTimer(-1.0f),
-    m_friendlyFireWarning(false),
-    m_firedLastFrame(0.0f)
+    m_friendlyFireWarning(false)
 {
     SetShape( g_app->m_resource->GetShape( "battlecannonbase.shp" ) );
     m_type = TypeGunTurret;
@@ -572,7 +569,6 @@ void GunTurret::PrimaryFire()
         m_overheatTimer = g_gameTimer.GetGameTime();
         m_temperature += 1.0;
         if( m_temperature > 40 ) m_temperature = 40;
-        m_firedLastFrame = SERVER_ADVANCE_PERIOD;
     }
 }
 
@@ -948,19 +944,9 @@ void GunTurret::Render( double _predictionTime )
     barrelFront = predictedBarrelUp ^ barrelRight;
     barrelFront.Normalise();
 
-    /*if( m_state == GunTurretTypeStandard ||
-        m_state == GunTurretTypeRocket )
-    {
-        if( m_firedLastFrame > 0.0f ) barrelPos -= barrelFront * m_firedLastFrame * 10.0f;
-        m_firedLastFrame -= g_advanceTime;
-        if( m_firedLastFrame < 0.0f ) m_firedLastFrame = 0.0f;
-    }*/
-
     Matrix34 barrelMat( barrelFront, predictedBarrelUp, barrelPos );    
     m_barrel->Render( _predictionTime, barrelMat );
     
-    //RenderSphere( m_centrePos, m_radius * 0.75f );
-
     //
     // Render laser targets for easier aiming
 

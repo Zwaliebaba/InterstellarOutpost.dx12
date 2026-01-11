@@ -35,9 +35,8 @@ public:
 
 protected:
     double       m_hoverHeight;
-    double       m_idleRotateRate;
-        
-    Vector3     m_targetPos;                            // Our internal target position
+
+  Vector3     m_targetPos;                            // Our internal target position
     Vector3     m_targetFront;                          // and orientation
     
     double       m_retargetTimer;                        

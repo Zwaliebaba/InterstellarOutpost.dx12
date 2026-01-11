@@ -8,7 +8,6 @@
 #include "Shader.h"
 #include "FixedPipeline.h"
 #include "app.h"
-#include "deform.h"
 #include "landscape.h"
 #include "landscape_renderer.h"
 #include "location.h"
@@ -263,9 +262,6 @@ static void InitialiseData()
 //  (on misc places) first time they are needed
 void CreateD3dPoolDefaultResources()
 {
-  DEBUG_ASSERT(!g_deformEffect);
-  if (!g_deformEffect)
-    g_deformEffect = DeformEffect::Create();
   DEBUG_ASSERT(!g_fixedPipeline);
   g_fixedPipeline = new FixedPipeline();
 }
@@ -283,7 +279,6 @@ void SafeDeleteTexture(IDirect3DTexture9*& texture)
 void ReleaseD3DPoolDefaultResources()
 {
   SAFE_DELETE(g_fixedPipeline);
-  SAFE_DELETE(g_deformEffect);
   if (g_app && g_app->m_location && g_app->m_location->m_landscape.m_renderer)
     g_app->m_location->m_landscape.m_renderer->ReleaseD3DPoolDefaultResources();
 

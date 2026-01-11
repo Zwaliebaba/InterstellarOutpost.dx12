@@ -31,8 +31,6 @@ class WindowManager
 {
 public:
 	LList		<Resolution *> m_resolutions;
-	bool		m_mousePointerVisible;
-	bool		m_invertY;	// Whether the Y coordinate needs to be inverted or not.
 
 protected:
 	int			m_mouseOffsetX;
@@ -80,11 +78,9 @@ public:
 	virtual void UncaptureMouse() = 0;
 
 	virtual void HideMousePointer() = 0;
-	virtual void UnhideMousePointer() = 0;
 
-    bool Windowed();
-	bool Captured();
-    virtual void OpenWebsite( const char *_url ) = 0;
+  bool Windowed();
+  virtual void OpenWebsite( const char *_url ) = 0;
 
 	void WindowMoved();
     virtual void GetClosestResolution( int *_width, int *_height, int *_refresh );

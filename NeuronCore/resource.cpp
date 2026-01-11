@@ -41,17 +41,6 @@ void Resource::AddBitmap(const char* _name, const BitmapRGBA& _bmp)
   }
 }
 
-void Resource::DeleteBitmap(const char* _name)
-{
-  int index = m_bitmaps.GetIndex(_name);
-  if (index >= 0)
-  {
-    BitmapRGBA* bmp = m_bitmaps.GetData(index);
-    delete bmp;
-    m_bitmaps.RemoveData(index);
-  }
-}
-
 const BitmapRGBA* Resource::GetBitmap(const char* _name)
 {
   BitmapRGBA* bmp = m_bitmaps.GetData(_name);
@@ -284,18 +273,6 @@ class DeleteTextureByName : public Job
     Resource* m_resource;
     const char* m_name;
 };
-
-void Resource::DeleteTextureAsync(const char* _name)
-{
-  if (NetGetCurrentThreadId() == g_app->m_mainThreadId)
-    DeleteTexture(_name);
-  else
-  {
-    DeleteTextureByName t(this, _name);
-    g_loadingScreen->QueueJob(&t);
-    t.Wait();
-  }
-}
 
 bool Resource::DoesShapeExist(const char* _filename)
 {

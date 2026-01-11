@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "opengl_directx_internals.h"
 #include "FixedPipeline.h"
-#include "deform.h"
 #include "bounded_array.h"
 #include "hi_res_time.h"
 #include "input.h"
@@ -22,7 +21,6 @@
 #include "clienttoserver.h"
 #include "app.h"
 #include "camera.h"
-#include "clouds.h"
 #include "entity_grid.h"
 #include "entity_grid_cache.h"
 #include "global_world.h"
@@ -4241,22 +4239,12 @@ int Location::Bang(const Vector3& _pos, double _range, double _damage, int _team
 
   //Vector3 tmp;
   bool isVisible = true;
-  // This test is reported to often fail on explosions from rockets.
-  // To be fixed later...could be caused for example by rockets exploding bit below ground.
-  // !m_landscape.RayHit(g_app->m_camera->GetPos(),_pos-g_app->m_camera->GetPos(),&tmp)
-  //	|| (tmp-g_app->m_camera->GetPos()).Mag()>(_pos-g_app->m_camera->GetPos()).Mag()-0.3;
 
   //
   // Shockwave
 
   if (isVisible)
     CreateShockwave(_pos, _range / 20.0, _teamId, _fromBuildingId);
-
-  //
-  // Punch effect
-
-  if (g_deformEffect && isVisible)
-    g_deformEffect->AddPunch(_pos, _range);
 
   // 
   // Wow, that was a big bang. Maybe we killed a building

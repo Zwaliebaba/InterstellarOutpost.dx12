@@ -1,7 +1,4 @@
 #include "pch.h"
-
-#include <math.h>
-
 #include "debug_render.h"
 #include "math_utils.h"
 #include "ogl_extensions.h"
@@ -10,15 +7,11 @@
 #include "shape.h"
 #include "text_file_writer.h"
 #include "text_stream_readers.h"
-
 #include "app.h"
 #include "camera.h"
-#include "globals.h"
 #include "location.h"
 #include "main.h"
 #include "renderer.h"
-#include "global_world.h"
-
 #include "feedingtube.h"
 
 

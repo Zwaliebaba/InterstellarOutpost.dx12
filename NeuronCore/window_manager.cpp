@@ -13,8 +13,7 @@ WindowManager *g_windowManager = NULL;
 
 
 WindowManager::WindowManager()
-:	m_mousePointerVisible(true),
-	m_mouseOffsetX(INT_MAX),
+:	m_mouseOffsetX(INT_MAX),
 	m_mouseCaptured(false)
 {
 	AbstractListAllDisplayModes();
@@ -77,12 +76,6 @@ Resolution *WindowManager::GetResolution( int _id )
 bool WindowManager::Windowed()
 {
     return m_windowed;
-}
-
-
-bool WindowManager::Captured()
-{
-	return m_mouseCaptured;
 }
 
 void WindowManager::WindowMoved()

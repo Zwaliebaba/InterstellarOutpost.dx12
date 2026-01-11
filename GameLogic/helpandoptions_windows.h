@@ -14,20 +14,12 @@ public:
     void Create();
 };
 
-class SelectHelpWindow : public GameOptionsWindow
-{
-public:
-    SelectHelpWindow();
-    void Create();
-};
-
 class CrateButton : public DarwiniaButton
 {
 private:
 	bool					m_noTexture;
 	char					m_textureName[256];
-	int						m_crateNumber;
-	double					m_startTime;
+  double					m_startTime;
 	unsigned int			m_imageWidth;
 	unsigned int			m_imageHeight;
 	LList<UnicodeString*>	*m_wrapped;	
@@ -51,9 +43,8 @@ private:
 	float	m_crateH;
 	float	m_crateFontSize;
     float	m_crateGap;
-	int	m_crateButtonOrderStartIndex;
 
-	LList<CrateButton*>	m_crateButtons;
+  LList<CrateButton*>	m_crateButtons;
 public:
 	ScrollBar	*m_scrollBar;
 
@@ -86,7 +77,6 @@ public:
     TextButton(char *_string);
     TextButton(UnicodeString _unicode );
     void Render( int realX, int realY, bool highlighted, bool clicked );
-    void ChangeString( char *_newString );
 };
 
 class GameTypeHelpWindow : public GameOptionsWindow
@@ -100,8 +90,6 @@ public:
     void Create();
 
     void ChangePage( int _pageNum );
-
-    static void GetLabelPos( int _gameType, int _labelId, int &_x, int &_y );
 };
 
 #endif

@@ -82,11 +82,6 @@ Texture::Texture(const TextureParams& tp) : m_textureParams(tp)
 	}
 }
 
-const TextureParams& Texture::GetParams() const
-{
-	return m_textureParams;
-}
-
 IDirect3DBaseTexture9* Texture::GetTexture() const
 {
 	if(m_textureParams.m_flags&TF_CUBE) return m_D3DTextureCube;

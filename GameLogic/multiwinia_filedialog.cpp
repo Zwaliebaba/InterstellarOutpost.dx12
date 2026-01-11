@@ -1,21 +1,13 @@
 #include "pch.h"
-
-#include <string.h>
-
-#include "filesys_utils.h"
 #include "hi_res_time.h"
 #include "text_renderer.h"
 #include "input.h"
-#include "resource.h"
 #include "language_table.h"
-
 #include "eclipse.h"
-
 #include "scrollbar.h"
 #include "multiwinia_filedialog.h"
 #include "filedialog.h"
 #include "multiwinia_window.h"
-
 #include "app.h"
 #include "game_menu.h"
 

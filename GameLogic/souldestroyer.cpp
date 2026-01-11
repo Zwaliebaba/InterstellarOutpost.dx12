@@ -4,25 +4,18 @@
 #include "shape.h"
 #include "math_utils.h"
 #include "debug_render.h"
-#include "text_renderer.h"
 #include "hi_res_time.h"
 #include "random_number.h"
-
 #include "app.h"
 #include "camera.h"
-#include "deform.h"
 #include "entity_grid.h"
 #include "explosion.h"
 #include "globals.h"
 #include "location.h"
 #include "team.h"
-#include "unit.h"
 #include "main.h"
-#include "particle_system.h"
 #include "renderer.h"
-
 #include "soundsystem.h"
-
 #include "souldestroyer.h"
 
 Shape *SoulDestroyer::s_shapeHead[NUM_TEAMS];
@@ -215,17 +208,6 @@ bool SoulDestroyer::Advance( Unit *_unit )
     RecordHistoryPosition();
 
     if( m_panic < 0.1 ) Attack( m_pos );
-
-#ifdef USE_DIRECT3D
-	if(g_deformEffect)
-	{
-		Vector3* pos1 = m_positionHistory.GetPointer(m_positionHistory.Size()-1);
-		Vector3* pos2 = m_positionHistory.GetPointer(m_positionHistory.Size()-2);
-		//if(pos1) g_deformEffect->AddTearing(*pos1,0.4);
-		//if(pos1 && pos2) g_deformEffect->AddTearing((*pos1+*pos2)*0.5,0.4);
-		if(pos1 && pos2) g_deformEffect->AddTearingPath(*pos1,*pos2,0.4);
-	}
-#endif
 
 	return Entity::Advance(_unit);
 }

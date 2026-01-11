@@ -48,8 +48,6 @@ public:
     void RenderAlphas           ( double _predictionTime );
     static void RenderBeam      ( Vector3 _from, Vector3 _to );
 
-    void SpecialSummon          ( int _teamId );
-
     Vector3 GetPortalCenter     ();
 
     bool DoesSphereHit      (Vector3 const &_pos, double _radius);

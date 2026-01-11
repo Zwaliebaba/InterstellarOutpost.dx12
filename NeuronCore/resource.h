@@ -65,7 +65,6 @@ public:
     // *** Bitmaps ***
     void            AddBitmap(char const* _name, BitmapRGBA const& _bmp);
     BitmapRGBA const* GetBitmap(char const* _name);
-    void			DeleteBitmap(char const* _name);
 
     // *** Textures ***
     enum {
@@ -80,7 +79,6 @@ public:
     int             GetTextureWithAlpha(char const* _name);
     bool            DoesTextureExist(char const* _name);
     void			DeleteTexture(char const* _name);
-    void			DeleteTextureAsync(char const* _name);
     bool			GetTextureInfo(char const* _name, int& _width, int& _height);
 
     // *** Files ***

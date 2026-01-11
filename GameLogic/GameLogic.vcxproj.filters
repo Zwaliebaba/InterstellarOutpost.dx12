@@ -74,9 +74,6 @@
     <ClCompile Include="profilewindow.cpp">
       <Filter>Interface</Filter>
     </ClCompile>
-    <ClCompile Include="reallyquit_window.cpp">
-      <Filter>Interface</Filter>
-    </ClCompile>
     <ClCompile Include="scrollbar.cpp">
       <Filter>Interface</Filter>
     </ClCompile>
@@ -377,9 +374,6 @@
     <ClInclude Include="FinishMultiwiniaButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
-    <ClInclude Include="GameMenuOptionsButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
     <ClInclude Include="GameMenuWindow.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
@@ -393,12 +387,6 @@
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="GameTypeInfoButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="HelpImageButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="HelpSelectButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="ImageButton.h">
@@ -417,9 +405,6 @@
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="MapData.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="mapDetailsButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="MapImageButton.h">
@@ -444,9 +429,6 @@
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="OptionDetailsButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="PasteKeyButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="PlayGameButton.h">
@@ -540,9 +522,6 @@
       <Filter>Interface</Filter>
     </ClInclude>
     <ClInclude Include="profilewindow.h">
-      <Filter>Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="reallyquit_window.h">
       <Filter>Interface</Filter>
     </ClInclude>
     <ClInclude Include="scrollbar.h">

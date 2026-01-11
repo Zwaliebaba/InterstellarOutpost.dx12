@@ -437,38 +437,6 @@ void Portal::RenderBeam( Vector3 _from, Vector3 _to )
     glDisable       ( GL_BLEND );  
 }
 
-void Portal::SpecialSummon( int _teamId )
-{
-    m_finalSummonState = SummonStatePortalExpand;
-    m_portalRadius = 0.0;
-
-    Team *team = g_app->m_location->m_teams[m_id.GetTeamId()];
-    for( int i = 0; i < team->m_specials.Size(); ++i )
-    {
-        Shaman *e = (Shaman *)g_app->m_location->GetEntitySafe( *team->m_specials.GetPointer(i), Entity::TypeShaman );
-        if( e )
-        {
-            m_portalCentre = e->m_pos;
-//            m_targetShaman = e->m_id;
-            e->Paralyze();
-            break;
-        }
-    }
-
-    // cancel all other final-summons in progress at this portal
-    /*for( int i = 0; i < NUM_TEAMS; ++i )
-    {
-        if( i == _teamId ) continue;
-        if( i == g_app->m_location->GetMonsterTeamId() ) continue;
-        if( g_app->m_location->m_teams[i]->m_teamType == TeamTypeUnused ) continue;
-
-        ReleaseSpirits(i);
-        m_summonType[i] = 0;
-        m_spirits[i].Empty();
-        m_souls[i] = 0;
-    }*/
-}
-
 bool Portal::DoesSphereHit(Vector3 const &_pos, double _radius)
 {
     return false;

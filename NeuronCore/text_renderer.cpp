@@ -36,7 +36,6 @@ void TextRenderer::Initialise(const char* _filename)
   m_filename = _strdup(_filename);
 
   memset(m_oldTextureIds, -1, OLD_TEX_ID_ARRAY_SIZE);
-  m_oldTextureIdsSize = 0;
 
   if (strlen(m_filename) > 4 && strcmp(&m_filename[strlen(m_filename) - 4], ".bmp") == 0)
   {
@@ -72,19 +71,6 @@ void TextRenderer::Shutdown()
   delete [] m_unicodebmpfiles;
   m_unicodebmpfiles = nullptr;
   m_bmpnum = 0;
-}
-
-BitmapRGBA* TextRenderer::GetScaledUp(BitmapRGBA* _bmp)
-{
-  m_bitmapWidth = _bmp->m_width * 2;
-  m_bitmapHeight = _bmp->m_height * 2;
-
-  auto scaledUp = new BitmapRGBA(m_bitmapWidth, m_bitmapHeight);
-  scaledUp->Blit(0, 0, _bmp->m_width, _bmp->m_height, _bmp, 0, 0, scaledUp->m_width, scaledUp->m_height, false);
-
-  delete _bmp;
-
-  return scaledUp;
 }
 
 void TextRenderer::AddUnicodeBitmapInfo(int lower, int upper, const char* _name, int id, float linesOfCharacters, int width, int height)

@@ -3,9 +3,10 @@
 
 #include "darwinia_window.h"
 #include "mainmenus.h"
+#include "preferences.h"
 #include "sound_library_3d.h"
-#include "user_input.h"
 #include "targetcursor.h"
+#include "user_input.h"
 
 class VolumeControl : public DarwiniaButton
 {
