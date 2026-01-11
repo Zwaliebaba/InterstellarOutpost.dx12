@@ -7,190 +7,178 @@
 
 struct RRSolarPanelInfo
 {
-    Vector3 m_pos;
-    int     m_numPanels;
-    int     m_objectiveId;
-    float   m_range;
+  Vector3 m_pos;
+  int m_numPanels;
+  int m_objectiveId;
+  float m_range;
 };
 
 class AI : public Entity
 {
-protected:
-	void AdvanceRadarDishAI();  // used to retarget Radar Dishes
-    void AdvanceOfficerAI();    // used to check if we need to create a new Officer 
-    void AdvanceSpecialsAI();   // runs the AI updates on all special units (officers, armour etc)
-    void AdvanceUnitAI();       // advance the ai for our units, probably just the odd squad
+  protected:
+    void AdvanceRadarDishAI(); // used to retarget Radar Dishes
+    void AdvanceOfficerAI(); // used to check if we need to create a new Officer 
+    void AdvanceSpecialsAI(); // runs the AI updates on all special units (officers, armour etc)
+    void AdvanceUnitAI(); // advance the ai for our units, probably just the odd squad
     void AdvanceCurrentTasks(); // check to see if we have any tasks (probably from crates) and run them
 
-    void AdvanceSinglePlayerAI();   // used to move darwinians around in the standard single-player way
-    void AdvanceMultiwiniaAI();     // uses officers to move darwinians from spawn points
+    void AdvanceSinglePlayerAI(); // used to move darwinians around in the standard single-player way
+    void AdvanceMultiwiniaAI(); // uses officers to move darwinians from spawn points
 
-    void AdvanceCaptureTheStatueAI();	// Capture the statue needs special AI to move statues around
-    void AdvanceAssaultAI();            // special case AI for assault mode uses AIObjective system instead of AITarget priorities
-    void AdvanceRocketRiotAI();         // Fills the objective list for this team for use by armour ai
+    void AdvanceCaptureTheStatueAI(); // Capture the statue needs special AI to move statues around
+    void AdvanceAssaultAI(); // special case AI for assault mode uses AIObjective system instead of AITarget priorities
+    void AdvanceRocketRiotAI(); // Fills the objective list for this team for use by armour ai
 
-    void RunSquad       ( int _taskId );
-    void RunArmour      ( int _taskId );
-    void RunHarvester   ( int _taskId );
-    void RunEngineer    ( int _taskId );
-    void RunAirStrike   ( int _taskId );
-    void RunNuke        ( int _taskId );
-    void RunTank        ( int _taskId );
+    void RunSquad(int _taskId);
+    void RunArmour(int _taskId);
+    void RunHarvester(int _taskId);
+    void RunEngineer(int _taskId);
+    void RunAirStrike(int _taskId);
+    void RunNuke(int _taskId);
+    void RunTank(int _taskId);
 
-	void RunGunTurret	( int _taskId );
-	void RunGunTurretBlitzkrieg( int _taskId );
-    void RunGunTurretRocketRiot( int _taskId ); // rocket riot needs its own gun turret function because of the odd ai target layout
-	void RunSpam		( int _taskId );
-	void RunForest		( int _taskId );
-	void RunAntNest		( int _taskId );
-	void RunEggs		( int _taskId );
-	void RunPlague      ( int _taskId );
-	void RunMeteor		( int _taskId );
-	void RunDarkForest	( int _taskId );
+    void RunGunTurret(int _taskId);
+    void RunGunTurretBlitzkrieg(int _taskId);
+    void RunGunTurretRocketRiot(int _taskId); // rocket riot needs its own gun turret function because of the odd ai target layout
+    void RunSpam(int _taskId);
+    void RunForest(int _taskId);
+    void RunAntNest(int _taskId);
+    void RunEggs(int _taskId);
+    void RunPlague(int _taskId);
+    void RunMeteor(int _taskId);
+    void RunDarkForest(int _taskId);
 
-    void RunPowerup     ();
-    void RunPowerup     ( Vector3 _pos );
+    void RunPowerup();
+    void RunPowerup(Vector3 _pos);
 
     double m_timer;
-	double m_radarReposTimer;
+    double m_radarReposTimer;
 
-    LList<Vector3>	m_ctsScoreZones;
+    LList<Vector3> m_ctsScoreZones;
 
-public:
-    int             m_currentObjective;
-    LList<RRSolarPanelInfo *>   m_rrObjectiveList;
+  public:
+    int m_currentObjective;
+    LList<RRSolarPanelInfo*> m_rrObjectiveList;
 
-public:
     AI();
-    ~AI();
-    
-    void Begin();
-    bool Advance( Unit *_unit );
-    bool ChangeHealth( int _amount, int _damageType = DamageTypeUnresistable );
+    ~AI() override;
 
-    static int FindNearestTarget( Vector3 const &_fromPos, bool _evaluateCliffs = true, bool _allowSteepDownhill = false );
-    int FindTargetBuilding( int _fromTargetId, int _fromTeamId );
+    void Begin() override;
+    bool Advance(Unit* _unit) override;
+    bool ChangeHealth(int _amount, int _damageType = DamageTypeUnresistable) override;
 
-    void Render( double _predictionTime );
+    static int FindNearestTarget(const Vector3& _fromPos, bool _evaluateCliffs = true, bool _allowSteepDownhill = false);
+    int FindTargetBuilding(int _fromTargetId, int _fromTeamId);
 
-    int  SearchForOfficers( Vector3 _pos, double _range, bool _ignoreGotoOfficers = false, bool _gotoOnly = false );
+    void Render(double _predictionTime) override;
 
-    static AI *s_ai[NUM_TEAMS];
+    int SearchForOfficers(Vector3 _pos, double _range, bool _ignoreGotoOfficers = false, bool _gotoOnly = false);
+
+    static AI* s_ai[NUM_TEAMS];
 };
-
-
-
 
 #define AITARGET_LINKRANGE      600.0
 
 struct NeighbourInfo
 {
-    int m_neighbourId;
-    int m_laserFenceId;
+  int m_neighbourId;
+  int m_laserFenceId;
 };
 
 class AITarget : public Building
 {
-protected:
-    double           m_teamCountTimer;
-   
-public:
-    LList<NeighbourInfo *>      m_neighbours;                               // Building IDs of nearby AITargets
+  protected:
+    double m_teamCountTimer;
 
-    int             m_friendCount   [NUM_TEAMS];
-    int             m_enemyCount    [NUM_TEAMS];
-    int             m_idleCount     [NUM_TEAMS];
-    double          m_priority      [NUM_TEAMS];
+  public:
+    LList<NeighbourInfo*> m_neighbours; // Building IDs of nearby AITargets
 
-    int             m_linkId;       // lets you manually connect 2 targets which would otherwise be out of range
-    double          m_priorityModifier;
-    int             m_checkCliffs;
-    double          m_scanRange;
+    int m_friendCount[NUM_TEAMS];
+    int m_enemyCount[NUM_TEAMS];
+    int m_idleCount[NUM_TEAMS];
+    double m_priority[NUM_TEAMS];
 
-	bool			m_radarTarget;	// this target is the entrance to a radar dish
-	int			    m_statueTarget;	// this target is attached to a CTS Statue#
-    bool            m_turretTarget; // this target is attached to a Gun Turret
-    bool            m_crateTarget;
-    int             m_scoreZone;    // if this target is inside a score zone, this will contain the id of the zone
-    bool            m_aiObjectiveTarget[NUM_TEAMS];    // this target is controlled by an ai objective so leave its priorities alone
-    bool            m_waterTarget;    // this target is in the water, and should only be used for Armour path finding
+    int m_linkId; // lets you manually connect 2 targets which would otherwise be out of range
+    double m_priorityModifier;
+    int m_checkCliffs;
+    double m_scanRange;
 
-private:
+    bool m_radarTarget; // this target is the entrance to a radar dish
+    int m_statueTarget; // this target is attached to a CTS Statue#
+    bool m_turretTarget; // this target is attached to a Gun Turret
+    bool m_crateTarget;
+    int m_scoreZone; // if this target is inside a score zone, this will contain the id of the zone
+    bool m_aiObjectiveTarget[NUM_TEAMS]; // this target is controlled by an ai objective so leave its priorities alone
+    bool m_waterTarget; // this target is in the water, and should only be used for Armour path finding
+
+  private:
     void RecalculatePriorityRocketRiot();
     void RecalculatePriorityAssault();
     void RecalculatePriorityCTS();
     void RecalculatePriorityStandard();
-    
-public:
+
+  public:
     AITarget();
-    ~AITarget();
+    ~AITarget() override;
 
-    void    Initialise( Building *_template );
+    void Initialise(Building* _template) override;
 
-    bool    Advance ();
-    void    Render          ( double _predictionTime );
-    void    RenderAlphas    ( double _predictionTime );
+    bool Advance() override;
+    void Render(double _predictionTime) override;
 
-    void    RecalculateNeighbours();
-    void    RecountTeams();
-    void    RecalculateOwnership();
-    void    RecalculatePriority();
+    void RecalculateNeighbours();
+    void RecountTeams();
+    void RecalculateOwnership();
+    void RecalculatePriority();
 
-    double   IsNearTo        ( int _aiTargetId );                            // returns distance or -1
-    bool    IsImportant();
-    bool    IsImportant( int &_buildingId );  // returns true if this point is close to another building, eg spawn point or multiwinia zone
-    bool    NeedsDefending( int _teamid );
+    double IsNearTo(int _aiTargetId); // returns distance or -1
+    bool IsImportant();
+    bool IsImportant(int& _buildingId); // returns true if this point is close to another building, eg spawn point or multiwinia zone
+    bool NeedsDefending(int _teamid);
 
-    bool DoesSphereHit          (Vector3 const &_pos, double _radius);
-    bool DoesShapeHit           (Shape *_shape, Matrix34 _transform);
+    bool DoesSphereHit(const Vector3& _pos, double _radius) override;
+    bool DoesShapeHit(Shape* _shape, Matrix34 _transform) override;
 
-    void SetBuildingLink    ( int _buildingId ); 
-    int  GetBuildingLink    ();
+    void SetBuildingLink(int _buildingId) override;
+    int GetBuildingLink() override;
 
     double GetRange();
 
-    void Read   ( TextReader *_in, bool _dynamic ); 
-    void Write  ( TextWriter *_out );	
+    void Read(TextReader* _in, bool _dynamic) override;
+    void Write(TextWriter* _out) override;
 };
-
-
-
 
 class AISpawnPoint : public Building
 {
-protected:
-    double   m_timer;                // Master timer between spawns
-    bool    m_online;
-    int     m_numSpawned;           // Number spawned this batch
-    int     m_populationLock;       // Building ID (if found), -1 = not yet searched, -2 = nothing found
-    
-    bool    PopulationLocked();
+  protected:
+    double m_timer; // Master timer between spawns
+    bool m_online;
+    int m_numSpawned; // Number spawned this batch
+    int m_populationLock; // Building ID (if found), -1 = not yet searched, -2 = nothing found
 
-public:
-    int     m_entityType;
-    int     m_count;
-    int     m_period;
-    int     m_activatorId;          // Building ID
-    int     m_spawnLimit;           // limits the number of times this building can spawn
-	int		m_routeId;				// Route path that spawned units should follow
+    bool PopulationLocked();
 
-public:
+  public:
+    int m_entityType;
+    int m_count;
+    int m_period;
+    int m_activatorId; // Building ID
+    int m_spawnLimit; // limits the number of times this building can spawn
+    int m_routeId; // Route path that spawned units should follow
+
     AISpawnPoint();
 
-    void    Initialise      ( Building *_template );
-    bool    Advance         ();
-    void    RenderAlphas    ( double _predictionTime );
+    void Initialise(Building* _template) override;
+    bool Advance() override;
 
-    void Read   ( TextReader *_in, bool _dynamic ); 
-    void Write  ( TextWriter *_out );						
+    void Read(TextReader* _in, bool _dynamic) override;
+    void Write(TextWriter* _out) override;
 
-    int  GetBuildingLink();                             
-    void SetBuildingLink( int _buildingId );            
+    int GetBuildingLink() override;
+    void SetBuildingLink(int _buildingId) override;
 
-    bool DoesSphereHit      (Vector3 const &_pos, double _radius);
-    bool DoesShapeHit       (Shape *_shape, Matrix34 _transform);
+    bool DoesSphereHit(const Vector3& _pos, double _radius) override;
+    bool DoesShapeHit(Shape* _shape, Matrix34 _transform) override;
 };
-
-
 
 #endif

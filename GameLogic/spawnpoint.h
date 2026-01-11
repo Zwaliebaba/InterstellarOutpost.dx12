@@ -156,8 +156,6 @@ public:
 
     void    Initialise      ( Building *_template );
     bool    Advance         ();
-    void    Render          ( double _predictionTime );
-    void    RenderAlphas    ( double _predictionTime );
 
     void Read   ( TextReader *_in, bool _dynamic ); 
     void Write  ( TextWriter *_out );						

@@ -27,7 +27,6 @@ public:
 
     void Initialise     ( Building *_template );
     bool Advance        ();
-    void RenderAlphas   ( double predictionTime );        
 
     void Trigger();
 

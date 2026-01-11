@@ -1,9 +1,4 @@
 #include "pch.h"
-
-#include <math.h>
-
-#include "debug_render.h"
-
 #include "text_file_writer.h"
 #include "math_utils.h"
 #include "matrix34.h"
@@ -12,26 +7,20 @@
 #include "text_stream_readers.h"
 #include "preferences.h"
 #include "profiler.h"
-#include "text_renderer.h"
 #include "language_table.h"
 #include "random_number.h"
-
 #include "app.h"
 #include "camera.h"
 #include "globals.h"
 #include "location.h"
 #include "renderer.h"
 #include "team.h"
-#include "unit.h"
 #include "entity_grid.h"
 #include "obstruction_grid.h"
 #include "particle_system.h"
 #include "explosion.h"
-
 #include "soundsystem.h"
-
 #include "clienttoserver.h"
-
 #include "building.h"
 #include "cave.h"
 #include "factory.h"
@@ -68,7 +57,6 @@
 #include "generichub.h"
 #include "feedingtube.h"
 #include "multiwiniazone.h"
-#include "carryablebuilding.h"
 #include "chess.h"
 #include "clonelab.h"
 #include "controlstation.h"
@@ -297,16 +285,7 @@ bool Building::PerformDepthSort(Vector3& _centrePos) { return false; }
 
 void Building::Render(double predictionTime)
 {
-#ifdef DEBUG_RENDER_ENABLED
-  if (g_app->m_editing)
-  {
-    Vector3 pos(m_pos);
-    pos.y += 5.0;
-    RenderArrow(pos, pos + m_front * 20.0, 4.0);
-  }
-#endif
-
-  if (m_shape)
+  if (m_shape != nullptr)
   {
     Matrix34 mat(m_front, m_up, m_pos);
     m_shape->Render(predictionTime, mat);
@@ -323,7 +302,7 @@ void Building::RenderLights()
 {
   if (m_id.GetTeamId() != 255 && m_lights.Size() > 0)
   {
-    if ((g_app->m_clientToServer->m_lastValidSequenceIdFromServer % 10) / 2 == m_id.GetTeamId() || g_app->m_editing)
+    if ((g_app->m_clientToServer->m_lastValidSequenceIdFromServer % 10) / 2 == m_id.GetTeamId())
     {
       for (int i = 0; i < m_lights.Size(); ++i)
       {
@@ -489,38 +468,6 @@ void Building::RenderPorts()
   }
 
   END_PROFILE("RenderPorts");
-}
-
-void Building::RenderHitCheck()
-{
-#ifdef DEBUG_RENDER_ENABLED
-  if (m_shape)
-  {
-    Matrix34 mat(m_front, m_up, m_pos);
-    m_shape->RenderHitCheck(mat);
-  }
-  else
-    RenderSphere(m_pos, m_radius);
-#endif
-}
-
-void Building::RenderLink()
-{
-#ifdef DEBUG_RENDER_ENABLED
-  int buildingId = GetBuildingLink();
-  if (buildingId != -1)
-  {
-    Building* linkBuilding = g_app->m_location->GetBuilding(buildingId);
-    if (linkBuilding)
-    {
-      Vector3 start = m_pos;
-      start.y += 10.0;
-      Vector3 end = linkBuilding->m_pos;
-      end.y += 10.0;
-      RenderArrow(start, end, 6.0, RGBAColour(255, 0, 255));
-    }
-  }
-#endif
 }
 
 void Building::Damage(double _damage) { g_app->m_soundSystem->TriggerBuildingEvent(this, "Damage"); }

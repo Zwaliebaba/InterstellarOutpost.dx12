@@ -39,8 +39,6 @@ public:
     void AdvanceStandard();
     void AdvanceDefensive();
 
-    void RenderAlphas( double _predictionTime );
-
     void RegisterObjectiveMarker( int _markerId, bool _armourMarker = false );
 
     void SetBuildingLink( int _buildingId );
@@ -81,8 +79,6 @@ public:
     void AdvanceStandard();
     void AdvanceDefensive();
     void AdvanceRocketRiot();
-
-    void RenderAlphas( double _predictionTime );
 
     void SetBuildingLink( int _buildingId );
     int  GetBuildingLink();

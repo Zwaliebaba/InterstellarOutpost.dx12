@@ -4,7 +4,7 @@
 
 #include "math_utils.h"
 
-#include "debug_render.h"
+
 #undef TRACK_SYNC_RAND
 #include "random_number.h"
 #include "profiler.h"

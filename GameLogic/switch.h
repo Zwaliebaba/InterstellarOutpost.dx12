@@ -29,7 +29,6 @@ class FenceSwitch : public Building
     bool Advance() override;
     void Render(double predictionTime) override;
     void RenderAlphas(double predictionTime) override;
-    void RenderLink() override;
     void RenderLights() override;
     void RenderConnection(Vector3 _targetPos, bool _active);
 

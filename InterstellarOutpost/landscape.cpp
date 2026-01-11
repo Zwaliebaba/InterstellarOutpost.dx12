@@ -3,7 +3,7 @@
 #include "app.h"
 #include "binary_stream_readers.h"
 #include "bitmap.h"
-#include "debug_render.h"
+
 #include "global_world.h"
 #include "hi_res_time.h"
 #include "landscape_renderer.h"

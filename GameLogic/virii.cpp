@@ -2,7 +2,7 @@
 
 #include "binary_stream_readers.h"
 #include "bitmap.h"
-#include "debug_render.h"
+
 
 #include "math_utils.h"
 #include "profiler.h"

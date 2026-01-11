@@ -2209,7 +2209,6 @@ bool ClientToServer::ProcessServerUpdates(Directory* letter)
         // Prevent updates from being processed while the game is being loaded
         g_app->m_loadingLocation = true;
 
-        g_app->m_requestToggleEditing = false;
         g_app->m_requestedLocationId = 999;
         g_app->m_gameMode = App::GameModeMultiwinia;
         strcpy(g_app->m_requestedMission, "null");

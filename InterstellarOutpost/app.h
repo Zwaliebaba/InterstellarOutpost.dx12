@@ -150,11 +150,9 @@ class App
     // State flags
     bool m_userRequestsPause;
     bool m_lostFocusPause;
-    bool m_editing;
 
     // Requested state flags
     int m_requestedLocationId; // -1 for global world
-    bool m_requestToggleEditing;
     bool m_requestQuit;
 
     char m_userProfileName[256];

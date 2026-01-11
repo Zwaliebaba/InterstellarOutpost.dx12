@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "debug_render.h"
+
 #include "random_number.h"
 #include "particle_system.h"
 #include "app.h"
@@ -35,7 +35,5 @@ bool SmokeMarker::DoesShapeHit(Shape* _shape, Matrix34 _transform) { return fals
 
 bool SmokeMarker::DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, float _rayLen, Vector3* _pos, Vector3* _norm)
 {
-  if (g_app->m_editing)
-    return Building::DoesRayHit(_rayStart, _rayDir, _rayLen, _pos, _norm);
   return false;
 }

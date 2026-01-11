@@ -76,9 +76,7 @@ App::App()
     m_usingFontCopies(false),
     m_userRequestsPause(false),
     m_lostFocusPause(false),
-    m_editing(false),
     m_requestedLocationId(-1),
-    m_requestToggleEditing(false),
     m_requestQuit(false),
     m_levelReset(false),
     m_atMainMenu(true),
@@ -224,10 +222,6 @@ bool App::SaveProfile(bool _global, bool _local)
     return false;
   }
 
-#ifdef TARGET_OS_VISTA
-  if (_global) { SaveRichHeader(); }
-#endif
-
   if (canWrite && _global)
     m_globalWorld->SaveGame(m_gameDataFile);
 
@@ -317,29 +311,26 @@ void App::AddDelayedJob(DelayedJob* _dJob)
 
 void App::StartNetwork(bool _iAmAServer, const char* _serverIp, int _serverPort)
 {
-  if (!g_app->m_editing)
+  char serverIp[16];
+
+  if (_iAmAServer)
   {
-    char serverIp[16];
+    delete m_server;
+    m_server = new Server();
+    m_server->Initialise();
+    m_server->m_noAdvertise = true;
 
-    if (_iAmAServer)
+    if (_serverPort != -1)
     {
-      delete m_server;
-      m_server = new Server();
-      m_server->Initialise();
-      m_server->m_noAdvertise = true;
-
-      if (_serverPort != -1)
-      {
-        GetLocalHostIP(serverIp, sizeof(serverIp));
-        _serverIp = serverIp;
-        _serverPort = g_app->m_server->m_listener->GetPort();
-      }
-      else
-        _serverIp = "127.0.0.1";
+      GetLocalHostIP(serverIp, sizeof(serverIp));
+      _serverIp = serverIp;
+      _serverPort = g_app->m_server->m_listener->GetPort();
     }
-
-    m_clientToServer->ClientJoin(_serverIp, _serverPort);
+    else
+      _serverIp = "127.0.0.1";
   }
+
+  m_clientToServer->ClientJoin(_serverIp, _serverPort);
 }
 
 HRESULT App::StartMultiPlayerServer()
@@ -423,11 +414,7 @@ void App::SetLanguage(const char* _language, bool _test)
   // Load the language text file
 
   char langFilename[256];
-#if defined(TARGET_OS_LINUX) && defined(TARGET_DEMOGAME)
-  sprintf(langFilename, "language/%s_demo.txt", _language);
-#else
   sprintf(langFilename, "language\\%s.txt", _language);
-#endif
 
   auto newLangTable = new LangTable(langFilename);
 
@@ -436,23 +423,6 @@ void App::SetLanguage(const char* _language, bool _test)
 
   // Set the locale so that Uppercasing works correctly
   setlocale(LC_CTYPE, _language);
-
-  //
-  // Load the MOD language file if it exists
-
-  sprintf(langFilename, "strings_%s.txt", _language);
-  TextReader* modLangFile = g_app->m_resource->GetTextReader(langFilename);
-  if (!modLangFile)
-  {
-    sprintf(langFilename, "strings_default.txt");
-    modLangFile = g_app->m_resource->GetTextReader(langFilename);
-  }
-
-  if (modLangFile)
-  {
-    delete modLangFile;
-    newLangTable->ParseLanguageFile(langFilename);
-  }
 
   DebugTrace("Loading fonts\n");
 
@@ -539,17 +509,9 @@ const char* App::GetPreferencesPath()
   static char* path = NULL;
   if (path == NULL)
   {
-#if defined(TARGET_OS_MACOSX)
-    const char* home = getenv("HOME"); if (home != NULL)
-    {
-      path = new char[strlen(home) + 256];
-      sprintf(path, "%s/Library/Preferences/uk.co.introversion.%s.txt", home, APP_NAME);
-    }
-#else
     const char* profileDir = GetProfileDirectory();
     path = new char[strlen(profileDir) + 32];
     sprintf(path, "%spreferences.txt", profileDir);
-#endif
   }
 
   return path;
@@ -638,8 +600,6 @@ int App::GetMaxNumberofPlayers()
 
   int gameType = m_multiwinia->m_gameType;
 
-  MapData* mapData = NULL;
-
   // Determine how many players can join this game
   if (gameType != -1 && m_requestedMap)
   {
@@ -652,7 +612,6 @@ int App::GetMaxNumberofPlayers()
         MapData* m = maps[i];
         if (stricmp(g_app->m_requestedMap, m->m_fileName) == 0)
         {
-          mapData = m;
           return m->m_numPlayers;
         }
       }
@@ -664,9 +623,6 @@ int App::GetMaxNumberofPlayers()
 
 bool App::UseChristmasMode()
 {
-  if (g_app->m_editing)
-    return false;
-
   // Last 2 weeks in December only
   // Also allow user to disable if he wishes
 
@@ -695,11 +651,7 @@ void App::Initialise()
 
   // Load resources
 
-  double start = GetHighResTime();
-
   InitLanguage();
-
-  //m_soundsLoaded = true;
 
   m_negativeRenderer = g_prefsManager->GetInt("RenderNegative", 0) != 0;
   if (m_negativeRenderer)
@@ -714,18 +666,12 @@ void App::Initialise()
   m_soundSystem = new SoundSystem();
   m_clientToServer = new ClientToServer();
 
-  DebugTrace("Inits 2: %f\n", GetHighResTime() - start);
-  start = GetHighResTime();
-
   m_clientToServer->OpenConnections();
 
   m_userInput = new UserInput();
   m_camera = new Camera();
 
   strcpy(m_gameDataFile, "game.txt");
-
-  DebugTrace("Inits 3: %f\n", GetHighResTime() - start);
-  start = GetHighResTime();
 
   SetProfileName(g_prefsManager->GetString("UserProfile", "none"));
 
@@ -734,51 +680,26 @@ void App::Initialise()
   m_script = new Script();
   m_shamanInterface = new ShamanInterface();
 
-  DebugTrace("Inits 4: %f\n", GetHighResTime() - start);
-  start = GetHighResTime();
-
   int menuOption = g_prefsManager->GetInt(OTHER_LARGEMENUS, 0);
   if (menuOption == 2) // (todo) or is running in media center and tenFootMode == -1
     m_largeMenus = true;
-
-  DebugTrace("Inits 5: %f\n", GetHighResTime() - start);
-  start = GetHighResTime();
 
   m_achievementTracker = new AchievementTracker();
   m_multiwinia = new Multiwinia();
   m_gameMenu = new GameMenu();
 
-  DebugTrace("Inits 6: %f\n", GetHighResTime() - start);
-  start = GetHighResTime();
-
 #ifdef BENCHMARK_AND_FTP
   m_benchMark = new BenchMark(); m_benchMark->RequestDXDiag();
 #endif
 
-  DebugTrace("Inits 7: %f\n", GetHighResTime() - start);
-  start = GetHighResTime();
-
-  DebugTrace("Inits 8: %f\n", GetHighResTime() - start);
-  start = GetHighResTime();
-
   //
   // Load save games
 
-  // bool profileLoaded = LoadProfile();
   m_globalWorld = new GlobalWorld;
-
-  DebugTrace("Inits 10: %f\n", GetHighResTime() - start);
-  start = GetHighResTime();
 
   TaskManagerInterface::CreateTaskManager();
 
-  DebugTrace("Inits 11: %f\n", GetHighResTime() - start);
-  start = GetHighResTime();
-
   GameMenuWindow::PreloadTextures();
-
-  DebugTrace("Inits 11b: %f\n", GetHighResTime() - start);
-  start = GetHighResTime();
 }
 
 void App::LoadSounds()

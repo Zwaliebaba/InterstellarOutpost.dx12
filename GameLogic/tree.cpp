@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "debug_render.h"
+
 #include "text_file_writer.h"
 #include "math_utils.h"
 #include "profiler.h"
@@ -622,11 +622,6 @@ void Tree::Generate()
   DebugTrace("Tree generated in %dms\n", static_cast<int>(totalTime * 1000.0));
 }
 
-void Tree::Render(double _predictionTime)
-{
-  //RenderHitCheck();
-}
-
 bool Tree::PerformDepthSort(Vector3& _centrePos)
 {
   _centrePos = m_pos + m_hitcheckCentre * m_height;
@@ -819,16 +814,6 @@ void Tree::RenderAlphas(double _predictionTime)
 
   if (renderAgain)
     RenderAlphas(_predictionTime);
-}
-
-void Tree::RenderHitCheck()
-{
-#ifdef DEBUG_RENDER_ENABLED
-  double actualHeight = GetActualHeight(0.0);
-
-  RenderSphere(m_pos, 10.0);
-  RenderSphere(m_pos + m_hitcheckCentre * actualHeight, m_hitcheckRadius * actualHeight);
-#endif
 }
 
 void Tree::Damage(double _damage)

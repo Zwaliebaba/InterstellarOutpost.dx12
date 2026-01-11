@@ -4,7 +4,7 @@
 #include "resource.h"
 #include "shape.h"
 #include "text_stream_readers.h"
-#include "debug_render.h"
+
 #include "preferences.h"
 #include "language_table.h"
 #include "random_number.h"
@@ -683,13 +683,6 @@ bool SpiritReceiver::Advance()
 
 void SpiritReceiver::Render(double _predictionTime)
 {
-  if (g_app->m_editing)
-  {
-    m_up = g_app->m_location->m_landscape.m_normalMap->GetValue(m_pos.x, m_pos.z);
-    Vector3 right(1, 0, 0);
-    m_front = right ^ m_up;
-  }
-
   ReceiverBuilding::Render(_predictionTime);
 
   Matrix34 mat(m_front, m_up, m_pos);
@@ -768,19 +761,6 @@ void SpiritReceiver::RenderPorts()
   glDisable(GL_TEXTURE_2D);
   glEnable(GL_CULL_FACE);
 }
-
-void SpiritReceiver::RenderAlphas(double _predictionTime)
-{
-  ReceiverBuilding::RenderAlphas(_predictionTime);
-
-  //RenderHitCheck();
-
-  double fractionOccupied = static_cast<double>(GetNumPortsOccupied()) / static_cast<double>(GetNumPorts());
-}
-
-// ****************************************************************************
-// Class UnprocessedSpirit
-// ****************************************************************************
 
 UnprocessedSpirit::UnprocessedSpirit()
   : WorldObject()

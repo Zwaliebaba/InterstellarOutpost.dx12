@@ -1,15 +1,11 @@
 #include "pch.h"
-
-#include "debug_render.h"
 #include "math_utils.h"
 #include "profiler.h"
 #include "resource.h"
 #include "shape.h"
-#include "hi_res_time.h"
 #include "random_number.h"
 #include "preferences.h"
 #include "text_renderer.h"
-
 #include "app.h"
 #include "location.h"
 #include "team.h"
@@ -45,7 +41,6 @@
 #include "crate.h"
 #include "dustball.h"
 #include "spaceship.h"
-#include "jumppad.h"
 #include "multiwiniazone.h"
 
 Darwinian::Darwinian()
@@ -3130,13 +3125,9 @@ bool Darwinian::AdvanceToTargetPosition()
 
 Vector3 Darwinian::PushFromObstructions(const Vector3& pos, bool killem)
 {
-  if (g_app->m_editing)
-    return pos;
   Vector3 result = pos;
   if (m_onGround)
     result.y = g_app->m_location->m_landscape.m_heightMap->GetValue(result.x, result.z);
-
-  // Matrix34 transform( m_front, g_upVector, result );
 
   //
   // Push from Water

@@ -14,7 +14,7 @@
 #include "language_table.h"
 #include "user_info.h"
 #include "resource.h"
-#include "debug_render.h"
+
 #include "app.h"
 #include "camera.h"
 #include "explosion.h"
@@ -308,11 +308,6 @@ void Renderer::RenderFrame(bool withFlip)
 
   if (g_app->m_atMainMenu && g_app->m_gameMenu->m_menuCreated)
     g_app->m_gameMenu->Render();
-  else if (g_app->m_editing)
-  {
-    if (g_app->m_locationId == -1)
-      g_app->m_globalWorld->Render();
-  }
   else
   {
     if (g_app->m_locationId != -1)
@@ -334,7 +329,7 @@ void Renderer::RenderFrame(bool withFlip)
   g_app->m_gameCursor->RenderBasicCursorAlwaysOnTop();
   if (renderChat)
     g_app->m_location->RenderChatMessages();
-  g_app->m_camera->Render();
+
   g_app->m_taskManagerInterface->Render();
 
   g_editorFont.BeginText2D();
@@ -342,7 +337,7 @@ void Renderer::RenderFrame(bool withFlip)
   if (!IsFirsttimeSequencing())
     RenderFadeOut();
 
-  if (g_app->m_location && !g_app->m_editing && !g_app->m_atMainMenu && g_app->m_multiwinia && g_app->m_gameMode == App::GameModeMultiwinia)
+  if (g_app->m_location && !g_app->m_atMainMenu && g_app->m_multiwinia && g_app->m_gameMode == App::GameModeMultiwinia)
     g_app->m_multiwinia->Render();
 
   if (m_displayFPS && !g_app->m_hideInterface)
@@ -378,7 +373,7 @@ void Renderer::RenderFrame(bool withFlip)
     g_gameFont.DrawText2DCentre(m_screenW / 2, 130, 30, LANGUAGEPHRASE("multiwinia_error_syncerror"));
   }
 
-  if ((g_app->m_location || g_app->m_atLobby) && !g_app->m_editing && !g_app->IsSinglePlayer() && g_app->m_clientToServer->
+  if ((g_app->m_location || g_app->m_atLobby) && !g_app->IsSinglePlayer() && g_app->m_clientToServer->
     m_lastServerLetterReceivedTime > 0.0f && GetHighResTime() > g_app->m_clientToServer->m_lastServerLetterReceivedTime + 5.0f && !g_app->
     m_hideInterface)
   {

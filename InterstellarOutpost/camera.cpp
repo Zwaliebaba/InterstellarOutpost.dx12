@@ -2,7 +2,7 @@
 #include "camera.h"
 #include "app.h"
 #include "clienttoserver.h"
-#include "debug_render.h"
+
 #include "eclipse.h"
 #include "entity_grid.h"
 #include "global_world.h"
@@ -44,9 +44,6 @@ std::vector<WorldObjectId> Camera::s_neighbours;
 
 void Camera::AdvanceDebugMode()
 {
-  if (g_app->m_editing)
-    m_targetFov = 60.0f;
-
   float advanceTime = g_advanceTime;
   Vector3 right = m_front ^ m_up;
 
@@ -71,7 +68,7 @@ void Camera::AdvanceDebugMode()
 
   //speedForwards *= 20.0f;
   // TODO: Support mouse/joystick
-  if (EclGetWindows()->Size() == 0 || g_app->m_editing)
+  if (EclGetWindows()->Size() == 0)
   {
     static DPadMovement cam_slide(ControlCameraForwards, ControlCameraBackwards, ControlCameraLeft, ControlCameraRight, ControlCameraUp,
                                   ControlCameraDown, 1);
@@ -746,12 +743,6 @@ void Camera::AdvanceFreeMovementMode()
     g_target->SetMousePos(newMouseX, newMouseY);
     glPopMatrix();
   }
-}
-
-void Camera::Render()
-{
-  //    RenderArrow( m_targetPos, m_targetPos + m_trackVector * m_trackRange, 1.0f );
-  //    RenderSphere( m_targetPos + m_trackVector * m_trackRange, 20.0f );
 }
 
 void Camera::AdvanceBuildingFocusMode()

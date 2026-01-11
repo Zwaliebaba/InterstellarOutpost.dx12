@@ -82,7 +82,5 @@ bool RestrictionZone::DoesShapeHit(Shape* _shape, Matrix34 _transform) { return 
 
 bool RestrictionZone::DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, double _rayLen, Vector3* _pos, Vector3* _norm)
 {
-  if (g_app->m_editing)
-    return Building::DoesRayHit(_rayStart, _rayDir, _rayLen, _pos, _norm);
   return false;
 }

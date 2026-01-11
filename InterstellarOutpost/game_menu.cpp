@@ -436,8 +436,7 @@ void GameMenu::DestroyMenu()
 {
   m_menuCreated = false;
   EclRemoveWindow(/*"GameMenu"*/"multiwinia_mainmenu_title");
-  if (!g_app->m_editing)
-    g_app->m_renderer->StartFadeOut();
+  g_app->m_renderer->StartFadeOut();
 }
 
 bool GameMenu::AddMap(TextReader* _in, const char* _filename)

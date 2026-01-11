@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "resource.h"
-#include "debug_render.h"
+
 #include "shape.h"
 #include "profiler.h"
 
@@ -334,10 +334,6 @@ void SpaceInvader::Render( double _predictionTime )
     Vector3 predictedPos = m_pos + m_vel * _predictionTime;
     glDisable( GL_TEXTURE_2D );
 
-#ifdef DEBUG_RENDER_ENABLED
-    //RenderSphere( m_targetPos, 5.0f );
-#endif
-    
     g_app->m_renderer->SetObjectLighting();
 
     Matrix34 mat(m_front, g_upVector, predictedPos);

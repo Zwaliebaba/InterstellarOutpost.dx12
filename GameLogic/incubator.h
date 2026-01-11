@@ -1,4 +1,3 @@
-
 #ifndef _included_incubator_h
 #define _included_incubator_h
 
@@ -14,51 +13,47 @@ class ShapeMarker;
 
 struct IncubatorIncoming
 {
-    Vector3 m_pos;
-    int     m_entrance;
-    double   m_alpha;
+  Vector3 m_pos;
+  int m_entrance;
+  double m_alpha;
 };
 
-
-class Incubator: public Building
+class Incubator : public Building
 {
-protected:
-    FastDArray      <Spirit> m_spirits;
-    ShapeMarker     *m_spiritCentre;
-    ShapeMarker     *m_exit;
-    ShapeMarker     *m_dock;
-    ShapeMarker     *m_spiritEntrance[3];
+  protected:
+    FastDArray<Spirit> m_spirits;
+    ShapeMarker* m_spiritCentre;
+    ShapeMarker* m_exit;
+    ShapeMarker* m_dock;
+    ShapeMarker* m_spiritEntrance[3];
 
-    int             m_troopType;
-    double           m_timer;
-    
-    LList           <IncubatorIncoming *> m_incoming;
+    int m_troopType;
+    double m_timer;
 
-public:
-    int             m_numStartingSpirits;
+    LList<IncubatorIncoming*> m_incoming;
 
-public:
+  public:
+    int m_numStartingSpirits;
+
     Incubator();
-    ~Incubator();
+    ~Incubator() override;
 
-    void Initialise ( Building *_template );
-    
-    bool Advance    ();   
+    void Initialise(Building* _template) override;
+
+    bool Advance() override;
     void SpawnEntity();
-    void AddSpirit  ( Spirit *_spirit );
+    void AddSpirit(Spirit* _spirit);
 
-    void Render         ( double _predictionTime );
-    void RenderAlphas   ( double _predictionTime );
+    void RenderAlphas(double _predictionTime) override;
 
-    int  NumSpiritsInside();
+    int NumSpiritsInside();
 
-    void Read   ( TextReader *_in, bool _dynamic );     
-    void Write  ( TextWriter *_out );							
+    void Read(TextReader* _in, bool _dynamic) override;
+    void Write(TextWriter* _out) override;
 
-    void GetDockPoint( Vector3 &_pos, Vector3 &_front );
+    void GetDockPoint(Vector3& _pos, Vector3& _front);
 
-    void ListSoundEvents( LList<char *> *_list );
+    void ListSoundEvents(LList<char*>* _list) override;
 };
-
 
 #endif

@@ -1,4 +1,3 @@
-
 #ifndef _included_spiritreceiver_h
 #define _included_spiritreceiver_h
 
@@ -7,49 +6,46 @@
 class SpiritProcessor;
 class UnprocessedSpirit;
 
-
 // ****************************************************************************
 // Class ReceiverBuilding
 // ****************************************************************************
 
 class ReceiverBuilding : public Building
 {
-protected:
-    int             m_spiritLink;
-    ShapeMarker     *m_spiritLocation;
+  protected:
+    int m_spiritLink;
+    ShapeMarker* m_spiritLocation;
 
-    LList           <double> m_spirits;
+    LList<double> m_spirits;
 
-public:
+  public:
     ReceiverBuilding();
-    
-    void Initialise     ( Building *_template );    
-    bool Advance        ();
-    void Render         ( double _predictionTime );
-    void RenderAlphas   ( double _predictionTime );
 
-    bool            IsInView            ();
-    virtual Vector3 GetSpiritLocation   ();
-    virtual void    TriggerSpirit       ( double _initValue );
+    void Initialise(Building* _template) override;
+    bool Advance() override;
+    void Render(double _predictionTime) override;
+    void RenderAlphas(double _predictionTime) override;
 
-    void ListSoundEvents( LList<char *> *_list );
+    bool IsInView() override;
+    virtual Vector3 GetSpiritLocation();
+    virtual void TriggerSpirit(double _initValue);
 
-    static SpiritProcessor *GetSpiritProcessor();
-    
+    void ListSoundEvents(LList<char*>* _list) override;
+
+    static SpiritProcessor* GetSpiritProcessor();
+
     static void BeginRenderUnprocessedSpirits();
-    static void RenderUnprocessedSpirit( Vector3 const &_pos, double _life=1.0 ); // gl friendly
-	static void RenderUnprocessedSpirit_basic( Vector3 const &_pos, double _life=1.0 ); // dx friendly
-	static void RenderUnprocessedSpirit_detail( Vector3 const &_pos, double _life=1.0 ); // dx friendly
+    static void RenderUnprocessedSpirit(const Vector3& _pos, double _life = 1.0); // gl friendly
+    static void RenderUnprocessedSpirit_basic(const Vector3& _pos, double _life = 1.0); // dx friendly
+    static void RenderUnprocessedSpirit_detail(const Vector3& _pos, double _life = 1.0); // dx friendly
     static void EndRenderUnprocessedSpirits();
-    
-    void Read   ( TextReader *_in, bool _dynamic );     
-    void Write  ( TextWriter *_out );							
-    
-    int  GetBuildingLink();                             
-    void SetBuildingLink( int _buildingId );            
+
+    void Read(TextReader* _in, bool _dynamic) override;
+    void Write(TextWriter* _out) override;
+
+    int GetBuildingLink() override;
+    void SetBuildingLink(int _buildingId) override;
 };
-
-
 
 // ****************************************************************************
 // Class SpiritProcessor
@@ -57,30 +53,27 @@ public:
 
 class SpiritProcessor : public ReceiverBuilding
 {
-protected:
-    double   m_timerSync;
-    int     m_numThisSecond;
-    double   m_spawnSync;
-    double   m_throughput;
+  protected:
+    double m_timerSync;
+    int m_numThisSecond;
+    double m_spawnSync;
+    double m_throughput;
 
-public:
-    LList   <UnprocessedSpirit *> m_floatingSpirits;
+  public:
+    LList<UnprocessedSpirit*> m_floatingSpirits;
 
-public:
     SpiritProcessor();
 
-    void TriggerSpirit ( double _initValue );
+    void TriggerSpirit(double _initValue) override;
 
-    void GetObjectiveCounter( UnicodeString & _dest);
+    void GetObjectiveCounter(UnicodeString& _dest) override;
 
-    void Initialise( Building *_building );
-    bool Advance();
-    bool IsInView();
-    void Render( double _predictionTime );
-    void RenderAlphas( double _predictionTime );
+    void Initialise(Building* _building) override;
+    bool Advance() override;
+    bool IsInView() override;
+    void Render(double _predictionTime) override;
+    void RenderAlphas(double _predictionTime) override;
 };
-
-
 
 // ****************************************************************************
 // Class ReceiverLink
@@ -88,11 +81,10 @@ public:
 
 class ReceiverLink : public ReceiverBuilding
 {
-public:
+  public:
     ReceiverLink();
-    bool Advance();
+    bool Advance() override;
 };
-
 
 // ****************************************************************************
 // Class ReceiverSpiritSpawner
@@ -100,11 +92,10 @@ public:
 
 class ReceiverSpiritSpawner : public ReceiverBuilding
 {
-public:
+  public:
     ReceiverSpiritSpawner();
-    bool Advance();
+    bool Advance() override;
 };
-
 
 // ****************************************************************************
 // Class SpiritReceiver
@@ -113,26 +104,24 @@ public:
 #define SPIRITRECEIVER_NUMSTATUSMARKERS 5
 
 class SpiritReceiver : public ReceiverBuilding
-{    
-protected:
-    ShapeMarker *m_headMarker;
-    Shape       *m_headShape;
-    ShapeMarker *m_spiritLink;
-    ShapeMarker *m_statusMarkers[SPIRITRECEIVER_NUMSTATUSMARKERS];
+{
+  protected:
+    ShapeMarker* m_headMarker;
+    Shape* m_headShape;
+    ShapeMarker* m_spiritLink;
+    ShapeMarker* m_statusMarkers[SPIRITRECEIVER_NUMSTATUSMARKERS];
 
-public:
+  public:
     SpiritReceiver();
 
-    Vector3 GetSpiritLocation();
+    Vector3 GetSpiritLocation() override;
 
-    void Initialise     ( Building *_template );
-    bool Advance        ();
-    void Render         ( double _predictionTime );
-    void RenderPorts    ();
-    void RenderAlphas   ( double _predictionTime );
+    void Initialise(Building* _template) override;
+    bool Advance() override;
+    void Render(double _predictionTime) override;
+    void RenderPorts() override;
 
 };
-
 
 // ****************************************************************************
 // Class UnprocessedSpirit
@@ -140,30 +129,31 @@ public:
 
 class UnprocessedSpirit : public WorldObject
 {
-protected:
-    double       m_timeSync;
-    double       m_positionOffset;                       // Used to make them double around a bit
-    double       m_xaxisRate;
-    double       m_yaxisRate;
-    double       m_zaxisRate;
+  protected:
+    double m_timeSync;
+    double m_positionOffset; // Used to make them double around a bit
+    double m_xaxisRate;
+    double m_yaxisRate;
+    double m_zaxisRate;
 
-public:
-    Vector3     m_hover;
+  public:
+    Vector3 m_hover;
+
     enum
     {
-        StateUnprocessedFalling,
-        StateUnprocessedFloating,
-        StateUnprocessedDeath
+      StateUnprocessedFalling,
+      StateUnprocessedFloating,
+      StateUnprocessedDeath
     };
-    int         m_state;
-    
-public:
+
+    int m_state;
+
     UnprocessedSpirit();
 
-    bool Advance();
-    double GetLife();                        // Returns 0.0-1.0 (0.0=dead, 1.0=alive)
+    bool Advance() override;
+    double GetLife(); // Returns 0.0-1.0 (0.0=dead, 1.0=alive)
 
-    void Render( double _predictionTime );
+    void Render(double _predictionTime) override;
 };
 
 #endif

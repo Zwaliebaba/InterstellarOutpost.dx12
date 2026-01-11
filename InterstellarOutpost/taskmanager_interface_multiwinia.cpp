@@ -9,7 +9,7 @@
 #include "profiler.h"
 #include "hi_res_time.h"
 #include "language_table.h"
-#include "debug_render.h"
+
 #include "ogl_extensions.h"
 #include "binary_stream_readers.h"
 #include "preferences.h"
@@ -261,7 +261,7 @@ void TaskManagerInterfaceMultiwinia::RestoreRenderMatrices() { g_app->m_renderer
 
 void TaskManagerInterfaceMultiwinia::Render()
 {
-  if (g_app->m_editing || !g_app->m_location || EclGetWindows()->Size() || g_app->m_hideInterface)
+  if (!g_app->m_location || EclGetWindows()->Size() || g_app->m_hideInterface)
     return;
 
   if (g_app->m_multiwinia->GameInGracePeriod() || g_app->m_multiwinia->GameOver())

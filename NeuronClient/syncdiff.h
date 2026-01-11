@@ -5,22 +5,20 @@
 #include "rgb_colour.h"
 #include "worldobject.h"
 
-class SyncDiff 
+class SyncDiff
 {
-public:
-	SyncDiff( const WorldObjectId &_id, const Vector3 &_pos, const RGBAColour &_colour, const char *_name, const char *_description );
-	~SyncDiff();
+  public:
+    SyncDiff(const WorldObjectId& _id, const Vector3& _pos, const RGBAColour& _colour, const char* _name, const char* _description);
+    ~SyncDiff();
 
-	void			Render();
+    void Print(std::ostream& _o);
 
-	void			Print( std::ostream &_o );
-
-private:
-	WorldObjectId	m_id;
-	Vector3			m_pos;
-	char			*m_name;
-	char			*m_description;
-	RGBAColour		m_colour;
+  private:
+    WorldObjectId m_id;
+    Vector3 m_pos;
+    char* m_name;
+    char* m_description;
+    RGBAColour m_colour;
 
 };
 

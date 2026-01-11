@@ -148,8 +148,6 @@ class ShapeFragment
 
     void Render(double _predictionTime); // Uses display list
     void RenderSlow(); // Doesn't use display list
-    void RenderHitCheck(const Matrix34& _transform);
-    void RenderMarkers(const Matrix34& _transform);
 
     ShapeFragment* LookupFragment(const char* _name); // Recurses into child fragments
     ShapeMarker* LookupMarker(const char* _name); // Recurses into child fragments
@@ -192,7 +190,6 @@ class Shape
     void FlushDisplayList();
 
     void Render(double _predictionTime, const Matrix34& _transform);
-    void RenderHitCheck(const Matrix34& _transform);
 
     bool RayHit(RayPackage* _package, const Matrix34& _transform, bool _accurate = false);
     bool SphereHit(SpherePackage* _package, const Matrix34& _transform, bool _accurate = false);

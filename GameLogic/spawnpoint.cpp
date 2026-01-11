@@ -2,7 +2,7 @@
 #include "text_file_writer.h"
 #include "resource.h"
 #include "shape.h"
-#include "debug_render.h"
+
 #include "text_renderer.h"
 #include "profiler.h"
 #include "text_stream_readers.h"
@@ -60,7 +60,7 @@ void SpawnBuilding::Initialise(Building* _template)
 
 bool SpawnBuilding::IsInView()
 {
-  if (m_visibilityRadius == 0.0 || g_app->m_editing)
+  if (m_visibilityRadius == 0.0)
   {
     if (m_links.Size() == 0)
     {
@@ -553,13 +553,13 @@ bool MasterSpawnPoint::Advance()
 
 void MasterSpawnPoint::Render(double _predictionTime)
 {
-  if (m_isGlobal || g_app->m_editing)
+  if (m_isGlobal)
     SpawnBuilding::Render(_predictionTime);
 }
 
 void MasterSpawnPoint::RenderAlphas(double _predictionTime)
 {
-  if (m_isGlobal || g_app->m_editing)
+  if (m_isGlobal)
     SpawnBuilding::RenderAlphas(_predictionTime);
 }
 
@@ -1178,38 +1178,6 @@ bool SpawnPopulationLock::Advance()
   }
 
   return Building::Advance();
-}
-
-void SpawnPopulationLock::Render(double _predictionTime) {}
-
-void SpawnPopulationLock::RenderAlphas(double _predictionTime)
-{
-  if (g_app->m_editing)
-  {
-    RenderSphere(m_pos, 30.0, RGBAColour(255, 255, 255, 255));
-
-    glDisable(GL_TEXTURE_2D);
-    glColor4f(1.0, 1.0, 1.0, 1.0);
-
-    Vector3 pos = m_pos + Vector3(0, 250, 0);
-
-    g_editorFont.DrawText3DCentre(pos + Vector3(0, 80, 0), 10, "SpawnPopulationLock");
-    g_editorFont.DrawText3DCentre(pos + Vector3(0, 70, 0), 10, "OriginalMaxPopulation = %d", m_originalMaxPopulation);
-    g_editorFont.DrawText3DCentre(pos + Vector3(0, 60, 0), 10, "CurrentMaxPopulation = %d", m_maxPopulation);
-    g_editorFont.DrawText3DCentre(pos + Vector3(0, 50, 0), 10, "Red = %d", m_teamCount[1]);
-    g_editorFont.DrawText3DCentre(pos + Vector3(0, 40, 0), 10, "Green = %d", m_teamCount[0]);
-
-    if (m_teamCount[0] > m_originalMaxPopulation)
-      g_editorFont.DrawText3DCentre(pos + Vector3(0, 30, 0), 10, "Green Overpopulated by %d", m_teamCount[0] - m_originalMaxPopulation);
-
-    if (m_teamCount[1] > m_originalMaxPopulation)
-      g_editorFont.DrawText3DCentre(pos + Vector3(0, 20, 0), 10, "Red Overpopulated by %d", m_teamCount[1] - m_originalMaxPopulation);
-
-#ifdef LOCATION_EDITOR
-    if (g_app->m_editing && g_app->m_locationEditor->m_mode == LocationEditor::ModeBuilding && g_app->m_locationEditor->m_selectionId ==
-      m_id.GetUniqueId()) { RenderSphere(m_pos, m_searchRadius, RGBAColour(255, 255, 255, 100)); }
-#endif
-  }
 }
 
 void SpawnPopulationLock::Read(TextReader* _in, bool _dynamic)

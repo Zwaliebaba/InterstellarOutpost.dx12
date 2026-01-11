@@ -168,7 +168,6 @@ public:
     bool SphereInViewFrustum        (Vector3 const &_centre, float _radius );
 
 	void Advance();
-    void Render();
 
   void SetDebugMode				(int _mode);
 	void SetNextDebugMode			();

@@ -183,7 +183,6 @@ public:
 
     void TriggerSurge   ( double _initValue, int teamId=255 );
     
-    void Render         ( double _predictionTime );
     void RenderAlphas   ( double _predictionTime );
 
     void SetBuildingLink( int _buildingId );            

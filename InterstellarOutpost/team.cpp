@@ -6,7 +6,7 @@
 #include "text_renderer.h"
 #include "shape.h"
 #include "preferences.h"
-#include "debug_render.h"
+
 #include "bitmap.h"
 #include "binary_stream_readers.h"
 #include "language_table.h"
@@ -527,28 +527,6 @@ void Team::Render()
   RenderDarwinians(timeSinceAdvance);
   END_PROFILE("Render Darwinians");
   CHECK_OPENGL_STATE();
-
-  //
-  // Render Sync Errors
-  CHECK_OPENGL_STATE();
-  START_PROFILE("Render Sync Errors");
-  RenderSyncErrors();
-  END_PROFILE("Render Sync Errors");
-  CHECK_OPENGL_STATE();
-}
-
-void Team::RenderSyncErrors()
-{
-  if (g_app->m_hideInterface)
-    return;
-  LList<SyncDiff*>& syncDiffs = m_lobbyTeam->m_syncDifferences;
-  int syncDiffsSize = syncDiffs.Size();
-
-  for (int i = 0; i < syncDiffsSize; i++)
-  {
-    SyncDiff* syncDiff = syncDiffs.GetData(i);
-    syncDiff->Render();
-  }
 }
 
 void Team::RenderVirii(double _predictionTime)

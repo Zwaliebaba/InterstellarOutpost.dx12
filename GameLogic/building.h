@@ -138,8 +138,6 @@ class Building : public WorldObject
     virtual void RenderAlphas(double predictionTime);
     virtual void RenderLights();
     virtual void RenderPorts();
-    virtual void RenderHitCheck();
-    virtual void RenderLink(); // ie link to another building
 
     virtual bool PerformDepthSort(Vector3& _centrePos); // Return true if you plan to use transparencies
 

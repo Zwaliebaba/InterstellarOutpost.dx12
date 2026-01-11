@@ -7,7 +7,7 @@
 #include "profiler.h"
 #include "hi_res_time.h"
 #include "language_table.h"
-#include "debug_render.h"
+
 #include "ogl_extensions.h"
 #include "binary_stream_readers.h"
 #include "preferences.h"

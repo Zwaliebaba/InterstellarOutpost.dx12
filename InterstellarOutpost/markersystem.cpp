@@ -2,7 +2,7 @@
 #include "resource.h"
 #include "profiler.h"
 #include "targetcursor.h"
-#include "debug_render.h"
+
 #include "shape.h"
 #include "app.h"
 #include "renderer.h"
@@ -682,8 +682,6 @@ void MarkerSystem::Advance()
 void MarkerSystem::Render()
 {
   if (!g_app->m_location)
-    return;
-  if (g_app->m_editing)
     return;
   if (g_app->m_hideInterface)
     return;

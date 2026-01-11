@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "debug_render.h"
+
 #include "text_file_writer.h"
 #include "math_utils.h"
 #include "resource.h"
@@ -813,21 +813,6 @@ void AI::AdvanceAssaultAI()
 
 void AI::Render(double _predictionTime)
 {
-  if (g_app->m_editing)
-  {
-    RGBAColour teamCol = g_app->m_location->m_teams[m_id.GetTeamId()]->m_colour;
-
-    Vector3 pos = m_pos;
-    pos.y = 400.0;
-    RenderSphere(pos, 20.0, teamCol);
-
-    int numGreen = g_app->m_location->m_teams[0]->m_others.NumUsed();
-    int numRed = g_app->m_location->m_teams[1]->m_others.NumUsed();
-
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    g_editorFont.DrawText3DCentre(pos - Vector3(0, 30, 0), 25, "Green : %d", numGreen);
-    g_editorFont.DrawText3DCentre(pos - Vector3(0, 60, 0), 25, "Red  : %d", numRed);
-  }
 }
 
 void AI::AdvanceRadarDishAI()
@@ -2152,78 +2137,50 @@ void AITarget::RecalculateNeighbours()
   if (m_pos.y <= 0.0)
     m_waterTarget = true;
 
-  if (g_app->m_editing)
+  for (int i = 0; i < g_app->m_location->m_buildings.Size(); ++i)
   {
-    for (int i = 0; i < g_app->m_location->m_levelFile->m_buildings.Size(); ++i)
+    if (g_app->m_location->m_buildings.ValidIndex(i))
     {
-      if (g_app->m_location->m_levelFile->m_buildings.ValidIndex(i))
+      Building* building = g_app->m_location->m_buildings[i];
+      if (building->m_type == Building::TypeAITarget && building != this && !building->m_destroyed)
       {
-        Building* building = g_app->m_location->m_levelFile->m_buildings[i];
-
-        if (building->m_type == Building::TypeAITarget && building != this)
+        double distance = (building->m_pos - m_pos).Mag();
+        if ((distance <= AITARGET_LINKRANGE || m_linkId == building->m_id.GetUniqueId()))
         {
-          double distance = (building->m_pos - m_pos).Mag();
-          bool checkCliffs = (m_checkCliffs && ((AITarget*)building)->m_checkCliffs);
-          bool isWalkable = g_app->m_location->IsWalkable(m_pos, building->m_pos, checkCliffs);
-          if ((distance <= AITARGET_LINKRANGE || m_linkId == building->m_id.GetUniqueId()) && (isWalkable || m_waterTarget || ((AITarget*)
-            building)->m_waterTarget))
+          bool checkCliffs = (m_checkCliffs && static_cast<AITarget*>(building)->m_checkCliffs);
+          if (m_linkId == building->m_id.GetUniqueId())
+            checkCliffs = false;
+          int fenceId = -1;
+          bool radar = m_radarTarget && static_cast<AITarget*>(building)->m_radarTarget;
+          if (g_app->m_location->IsWalkable(m_pos, building->m_pos, checkCliffs, false, &fenceId) || radar || m_waterTarget || static_cast
+            <AITarget*>(building)->m_waterTarget)
           {
             auto ni = new NeighbourInfo;
             ni->m_neighbourId = building->m_id.GetUniqueId();
-            ni->m_laserFenceId = -1;
+            ni->m_laserFenceId = fenceId;
             m_neighbours.PutData(ni);
           }
         }
       }
-    }
-  }
-  else
-  {
-    for (int i = 0; i < g_app->m_location->m_buildings.Size(); ++i)
-    {
-      if (g_app->m_location->m_buildings.ValidIndex(i))
+
+      if (building->m_type == Building::TypeMultiwiniaZone)
       {
-        Building* building = g_app->m_location->m_buildings[i];
-        if (building->m_type == Building::TypeAITarget && building != this && !building->m_destroyed)
+        if ((m_pos - building->m_pos).Mag() <= building->m_radius)
         {
-          double distance = (building->m_pos - m_pos).Mag();
-          if ((distance <= AITARGET_LINKRANGE || m_linkId == building->m_id.GetUniqueId()))
+          if (g_app->m_multiwinia->m_gameType == Multiwinia::GameTypeCaptureTheStatue)
           {
-            bool checkCliffs = (m_checkCliffs && static_cast<AITarget*>(building)->m_checkCliffs);
-            if (m_linkId == building->m_id.GetUniqueId())
-              checkCliffs = false;
-            int fenceId = -1;
-            bool radar = m_radarTarget && static_cast<AITarget*>(building)->m_radarTarget;
-            if (g_app->m_location->IsWalkable(m_pos, building->m_pos, checkCliffs, false, &fenceId) || radar || m_waterTarget || static_cast
-              <AITarget*>(building)->m_waterTarget)
+            if (building->m_id.GetTeamId() == 255)
             {
-              auto ni = new NeighbourInfo;
-              ni->m_neighbourId = building->m_id.GetUniqueId();
-              ni->m_laserFenceId = fenceId;
-              m_neighbours.PutData(ni);
+              // this is a cts statue spawn zone
+              m_scoreZone = building->m_id.GetUniqueId();
             }
           }
-        }
-
-        if (building->m_type == Building::TypeMultiwiniaZone)
-        {
-          if ((m_pos - building->m_pos).Mag() <= building->m_radius)
+          else if (g_app->m_multiwinia->m_gameType == Multiwinia::GameTypeKingOfTheHill)
           {
-            if (g_app->m_multiwinia->m_gameType == Multiwinia::GameTypeCaptureTheStatue)
+            if (building->m_id.GetTeamId() == 255)
             {
-              if (building->m_id.GetTeamId() == 255)
-              {
-                // this is a cts statue spawn zone
-                m_scoreZone = building->m_id.GetUniqueId();
-              }
-            }
-            else if (g_app->m_multiwinia->m_gameType == Multiwinia::GameTypeKingOfTheHill)
-            {
-              if (building->m_id.GetTeamId() == 255)
-              {
-                // this is a koth score zone
-                m_scoreZone = building->m_id.GetUniqueId();
-              }
+              // this is a koth score zone
+              m_scoreZone = building->m_id.GetUniqueId();
             }
           }
         }
@@ -2722,12 +2679,6 @@ void AITarget::RecalculatePriority()
 
 void AITarget::Render(double _predictionTime)
 {
-  if (g_app->m_editing)
-  {
-    Building::Render(_predictionTime);
-    RecalculateNeighbours();
-  }
-
   if (g_prefsManager->GetInt("RenderAIInfo", 0) == 1 && g_app->m_location)
   {
     int t = g_app->m_location->GetTeamFromPosition(g_prefsManager->GetInt("AIInfoTeam", 1));
@@ -2746,91 +2697,7 @@ void AITarget::Render(double _predictionTime)
         g_editorFont.DrawText3DCentre(m_pos + Vector3(0, 60 + t * 15, 0), 10.0, "%2.2f", m_priority[t]);
       }
     }
-    //g_editorFont.DrawText3DCentre( m_pos + Vector3( 0,110, 0 ), 10.0f, "Neighbours: %d", m_neighbours.Size() );
   }
-}
-
-void AITarget::RenderAlphas(double _predictionTime)
-{
-  //Building::RenderAlphas( _predictionTime );
-  //if( !g_app->m_editing ) return;
-  if (!g_app->m_editing && !g_prefsManager->GetInt("RenderAIInfo", 0))
-    return;
-
-  //g_gameFont.DrawText3D( m_pos, 30.0, "Priority: %2.1f", m_priority[1] );
-
-  Vector3 height(0, 20, 0);
-  glLineWidth(2.0f);
-  glShadeModel(GL_SMOOTH);
-  glEnable(GL_BLEND);
-
-  for (int i = 0; i < m_neighbours.Size(); ++i)
-  {
-    int buildingId = m_neighbours[i]->m_neighbourId;
-    Building* building = g_app->m_location->GetBuilding(buildingId);
-    if (building && building->m_type == TypeAITarget)
-    {
-      RGBAColour col;
-      if (g_app->m_editing)
-        col.Set(255, 0, 0, 255);
-      else if (m_id.GetTeamId() == 255)
-        col.Set(128, 128, 128, 255);
-      else
-      {
-        col = g_app->m_location->m_teams[m_id.GetTeamId()]->m_colour;
-        //glColor4ub( col.r, col.g, col.b, 255 );
-      }
-      Vector3 pos = m_pos;
-      pos.y += 30.0;
-      Vector3 dir = (building->m_pos - m_pos).Normalise();
-      RenderArrow(pos, pos + dir * (m_pos - building->m_pos).Mag() / 2.0, 3.0, col);
-
-      /*glBegin( GL_LINES );
-      if( g_app->m_editing )
-      {
-          glColor4ub( 255, 0, 0, 255 );
-      }
-      else if( m_id.GetTeamId() == 255 )
-      {
-          glColor4ub( 128, 128, 128, 255 );
-      }
-      else
-      {
-          RGBAColour col = g_app->m_location->m_teams[ m_id.GetTeamId() ]->m_colour;
-          glColor4ub( col.r, col.g, col.b, 255 );
-      }
-
-      glVertex3fv( (m_pos+height).GetData() );
-
-      if( g_app->m_editing )
-      {
-          glColor4ub( 255, 0, 0, 255 );
-      }
-      else if( building->m_id.GetTeamId() == 255 )
-      {
-          glColor4ub( 128, 128, 128, 255 );
-      }
-      else
-      {
-          RGBAColour col = g_app->m_location->m_teams[ building->m_id.GetTeamId() ]->m_colour;
-          glColor4ub( col.r, col.g, col.b, 255 );
-      }
-
-      glVertex3fv( (building->m_pos+height).GetData() );
-      glEnd();*/
-    }
-  }
-
-  glShadeModel(GL_FLAT);
-
-#ifdef LOCATION_EDITOR
-  if (g_app->m_editing && g_app->m_locationEditor->m_mode == LocationEditor::ModeBuilding && g_app->m_locationEditor->m_selectionId == m_id.
-    GetUniqueId())
-  {
-    glDisable(GL_CULL_FACE);
-    RenderSphere(m_pos, AITARGET_LINKRANGE, RGBAColour(255, 100, 100, 255));
-  }
-#endif
 }
 
 bool AITarget::DoesSphereHit(const Vector3& _pos, double _radius) { return false; }
@@ -3018,25 +2885,6 @@ bool AISpawnPoint::Advance()
   }
 
   return false;
-}
-
-void AISpawnPoint::RenderAlphas(double _predictionTime)
-{
-  //if( g_app->m_editing )
-  {
-    RGBAColour colour;
-    if (m_id.GetTeamId() == 255)
-      colour.Set(100, 100, 100, 255);
-    else
-      colour = g_app->m_location->m_teams[m_id.GetTeamId()]->m_colour;
-
-    RenderSphere(m_pos, 10.0, colour);
-
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    g_editorFont.DrawText3DCentre(m_pos + Vector3(0, 30, 0), 5.0, "Spawn %d %s's", m_count, Entity::GetTypeName(m_entityType));
-    g_editorFont.DrawText3DCentre(m_pos + Vector3(0, 25, 0), 5.0, "Every %d seconds", m_period);
-    g_editorFont.DrawText3DCentre(m_pos + Vector3(0, 20, 0), 5.0, "Next spawn in %d seconds", static_cast<int>(m_timer));
-  }
 }
 
 int AISpawnPoint::GetBuildingLink() { return m_activatorId; }

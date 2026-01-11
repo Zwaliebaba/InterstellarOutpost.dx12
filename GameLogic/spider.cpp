@@ -657,13 +657,6 @@ void Spider::Render(double _predictionTime)
 
   glDisable(GL_TEXTURE_2D);
 
-  //RenderArrow(m_pos, m_targetPos, 1.0);
-
-  if (m_state == StateAttack)
-  {
-    //RenderArrow(m_pos, m_pounceTarget, 1.0, RGBAColour(255,0,0) );
-  }
-
   g_app->m_renderer->SetObjectLighting();
 
   // 
@@ -671,8 +664,6 @@ void Spider::Render(double _predictionTime)
 
   Vector3 predictedMovement = _predictionTime * m_vel;
   Vector3 predictedPos = m_pos + predictedMovement;
-  //	predictedPos.y = g_app->m_location->m_landscape.m_heightMap->GetValue(predictedPos.x, predictedPos.z) +
-  //					 m_targetHoverHeight;
 
   Vector3 up = g_app->m_location->m_landscape.m_normalMap->GetValue(m_pos.x, m_pos.z);
   Vector3 right = m_up ^ m_front;

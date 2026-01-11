@@ -1,24 +1,17 @@
 #include "pch.h"
-
-#include <math.h>
-
 #include "math_utils.h"
 #include "resource.h"
 #include "profiler.h"
 #include "vector2.h"
 #include "shape.h"
-#include "hi_res_time.h"
-#include "debug_render.h"
-#include "random_number.h"
 
+#include "random_number.h"
 #include "weapons.h"
-#include "insertion_squad.h"
 #include "airstrike.h"
 #include "darwinian.h"
 #include "armour.h"
 #include "tank.h"
 #include "gunturret.h"
-
 #include "multiwinia.h"
 #include "explosion.h"
 #include "app.h"
@@ -32,19 +25,9 @@
 #include "team.h"
 #include "unit.h"
 #include "global_world.h"
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-#include "helpsystem.h"
-#endif
-#include "taskmanager.h"
-
 #include "soundsystem.h"
-#include "sound_library_3d.h"
 
 static std::vector<WorldObjectId> s_neighbours;
-
-// ****************************************************************************
-//  Class ThrowableWeapon
-// ****************************************************************************
 
 ThrowableWeapon::ThrowableWeapon(int _type, const Vector3& _startPos, const Vector3& _front, double _force)
   : m_shape(nullptr),
@@ -86,16 +69,13 @@ void ThrowableWeapon::TriggerSoundEvent(char* _event)
 
 bool ThrowableWeapon::Advance()
 {
-  if (!g_app->m_editing)
+  if (m_type != EffectThrowableAirstrikeMarker && syncfrand(1) > 0.1 / g_gameTimer.GetGameSpeed())
   {
-    if (m_type != EffectThrowableAirstrikeMarker && syncfrand(1) > 0.1 / g_gameTimer.GetGameSpeed())
-    {
-      Vector3 vel(m_vel / 4.0);
-      vel.x += syncsfrand(5.0);
-      vel.y += syncsfrand(5.0);
-      vel.z += syncsfrand(5.0);
-      g_app->m_particleSystem->CreateParticle(m_pos - m_vel * SERVER_ADVANCE_PERIOD, vel, Particle::TypeMissileTrail, 60.0);
-    }
+    Vector3 vel(m_vel / 4.0);
+    vel.x += syncsfrand(5.0);
+    vel.y += syncsfrand(5.0);
+    vel.z += syncsfrand(5.0);
+    g_app->m_particleSystem->CreateParticle(m_pos - m_vel * SERVER_ADVANCE_PERIOD, vel, Particle::TypeMissileTrail, 60.0);
   }
 
   if (m_force > 0.1)
@@ -242,11 +222,8 @@ bool Grenade::Advance()
 
   if (explode)
   {
-    if (!g_app->m_editing)
-    {
-      TriggerSoundEvent("Explode");
-      g_app->m_location->Bang(m_pos, m_power / 2.0, m_power * 2.0, m_id.GetTeamId());
-    }
+    TriggerSoundEvent("Explode");
+    g_app->m_location->Bang(m_pos, m_power / 2.0, m_power * 2.0, m_id.GetTeamId());
     return true;
   }
 
@@ -266,7 +243,6 @@ AirStrikeMarker::AirStrikeMarker(const Vector3& _startPos, const Vector3& _front
 
 bool AirStrikeMarker::Advance()
 {
-  //DebugTrace("Updating AirStrike Marker %d\n", m_id.GetUniqueId() );
   ThrowableWeapon::Advance();
 
   //
@@ -1444,11 +1420,6 @@ void TurretShell::Render(double predictionTime)
 
   predictionTime += SERVER_ADVANCE_PERIOD * predictionAdder;
 
-  //Vector3 predictedVel = m_vel;
-  //predictedVel.y -= 30.0 * predictionTime;
-  //Vector3 predictedPos = m_pos + predictedVel * predictionTime;
-  //RenderSphere( predictedPos, 1.0 );    
-
   Vector3 midPoint = m_pos - m_vel * SERVER_ADVANCE_PERIOD * 0.25;
 
   Vector3 predictedPos = midPoint + m_vel * predictionTime;
@@ -1827,49 +1798,6 @@ void LandMine::Render(double _predictionTime)
 {
   Matrix34 mat(m_front, m_up, m_pos);
   m_shape->Render(_predictionTime, mat);
-
-  /*double signalSize = 6.0;
-  Vector3 camR = g_app->m_camera->GetRight();
-  Vector3 camU = g_app->m_camera->GetUp();
-
-  if( m_id.GetTeamId() == 255 )
-  {
-      glColor3f( 0.5, 0.5, 0.5 );
-  }
-  else
-  {
-      glColor3ubv( g_app->m_location->m_teams[ m_id.GetTeamId() ]->m_colour.GetData() );
-  }
-
-  Vector3 lightPos = m_pos;
-  lightPos += m_up * 10.0;
-  glEnable        ( GL_TEXTURE_2D );
-  glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "textures\\starburst.bmp" ) );
-  glTexParameteri	( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-  glTexParameteri	( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
-  glDisable       ( GL_CULL_FACE );
-  glDepthMask     ( false );
-
-  glEnable        ( GL_BLEND );
-  glBlendFunc     ( GL_SRC_ALPHA, GL_ONE );
-
-  for( int i = 0; i < 10; ++i )
-  {
-      double size = signalSize * (double) i / 10.0;
-      glBegin( GL_QUADS );
-          glTexCoord2f    ( 0.0, 0.0 );             glVertex3dv     ( (lightPos - camR * size - camU * size).GetData() );
-          glTexCoord2f    ( 1.0, 0.0 );             glVertex3dv     ( (lightPos + camR * size - camU * size).GetData() );
-          glTexCoord2f    ( 1.0, 1.0 );             glVertex3dv     ( (lightPos + camR * size + camU * size).GetData() );
-          glTexCoord2f    ( 0.0, 1.0 );             glVertex3dv     ( (lightPos - camR * size + camU * size).GetData() );
-      glEnd();
-  }
-
-  glBlendFunc     ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-  glDisable       ( GL_BLEND );
-
-  glDepthMask     ( true );
-  glEnable        ( GL_CULL_FACE );
-  glDisable       ( GL_TEXTURE_2D ); */
 }
 
 FlameGrenade::FlameGrenade(const Vector3& _startPos, const Vector3& _front, double _force)
@@ -1887,60 +1815,55 @@ bool FlameGrenade::Advance()
 
   if (explode)
   {
-    if (!g_app->m_editing)
+    TriggerSoundEvent("Explode");
+
+    int numFound;
+    bool include[NUM_TEAMS];
+    memset(include, true, sizeof(include));
+    g_app->m_location->m_entityGrid->GetNeighbours(s_neighbours, m_pos.x, m_pos.z, m_power * 1.25, &numFound, include);
+    for (int i = 0; i < numFound; ++i)
     {
-      TriggerSoundEvent("Explode");
+      auto d = static_cast<Darwinian*>(g_app->m_location->GetEntitySafe(s_neighbours[i], Entity::TypeDarwinian));
+      if (d)
+        d->SetFire();
+    }
 
-      //g_app->m_location->Bang( m_pos, m_power/2.0f, m_power*2.0f, m_id.GetTeamId());
-      int numFound;
-      bool include[NUM_TEAMS];
-      memset(include, true, sizeof(include));
-      g_app->m_location->m_entityGrid->GetNeighbours(s_neighbours, m_pos.x, m_pos.z, m_power * 1.25, &numFound, include);
-      for (int i = 0; i < numFound; ++i)
+    for (int i = 0; i < 80; ++i)
+    {
+      Vector3 vel(sfrand(50.0f), sfrand(20.0f), sfrand(50.0f));
+      int particleType = Particle::TypeFireball;
+      if (i > 50)
       {
-        auto d = static_cast<Darwinian*>(g_app->m_location->GetEntitySafe(s_neighbours[i], Entity::TypeDarwinian));
-        if (d)
-          d->SetFire();
+        particleType = Particle::TypeFire;
+        vel = Vector3(sfrand(50.0f), 0.0f, sfrand(50.0f));
       }
 
-      for (int i = 0; i < 80; ++i)
+      if (i > 70)
+        particleType = Particle::TypeMissileTrail;
+
+      float size = 150.0f + frand(100.0f);
+
+      g_app->m_particleSystem->CreateParticle(m_pos + frand(0.2f) * vel, vel, particleType, size);
+    }
+
+    // Set flammable buildings on fire
+    double maxBuildingRange = m_power * 2.0;
+    for (int i = 0; i < g_app->m_location->m_buildings.Size(); ++i)
+    {
+      if (g_app->m_location->m_buildings.ValidIndex(i))
       {
-        Vector3 vel(sfrand(50.0f), sfrand(20.0f), sfrand(50.0f));
-        int particleType = Particle::TypeFireball;
-        if (i > 50)
+        Building* building = g_app->m_location->m_buildings[i];
+        if (building->m_type != Building::TypeTree && building->m_type != Building::TypeTriffid)
+          continue;
+
+        double dist = (m_pos - building->m_pos).Mag();
+
+        if (dist < maxBuildingRange)
         {
-          particleType = Particle::TypeFire;
-          vel = Vector3(sfrand(50.0f), 0.0f, sfrand(50.0f));
-        }
-
-        if (i > 70)
-          particleType = Particle::TypeMissileTrail;
-
-        float size = 150.0f + frand(100.0f);
-
-        g_app->m_particleSystem->CreateParticle(m_pos + frand(0.2f) * vel, vel, particleType, size);
-      }
-
-      // Set flammable buildings on fire
-      double maxBuildingRange = m_power * 2.0;
-      for (int i = 0; i < g_app->m_location->m_buildings.Size(); ++i)
-      {
-        if (g_app->m_location->m_buildings.ValidIndex(i))
-        {
-          Building* building = g_app->m_location->m_buildings[i];
-          if (building->m_type != Building::TypeTree && building->m_type != Building::TypeTriffid)
-            continue;
-
-          double dist = (m_pos - building->m_pos).Mag();
-
-          if (dist < maxBuildingRange)
-          {
-            //double fraction = (_range*3.0 - dist) / _range*3.0;
-            double fraction = 1.0 - dist / maxBuildingRange;
-            fraction = max(0.0, fraction);
-            fraction = min(1.0, fraction);
-            building->Damage(m_power * -4.0);
-          }
+          double fraction = 1.0 - dist / maxBuildingRange;
+          fraction = max(0.0, fraction);
+          fraction = min(1.0, fraction);
+          building->Damage(m_power * -4.0);
         }
       }
     }

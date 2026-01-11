@@ -7,7 +7,6 @@
 #include "text_renderer.h"
 #include "profiler.h"
 #include "language_table.h"
-#include "hi_res_time.h"
 #include "random_number.h"
 #include "soundsystem.h"
 #include "triffid.h"
@@ -64,8 +63,6 @@ Matrix34 Triffid::GetHead(double _predictionTime)
   Vector3 _up = g_upVector;
 
   double timeNow = GetNetworkTime();
-  if (g_app->m_editing)
-    timeNow = GetHighResTime();
   double timer = timeNow + _predictionTime + m_id.GetUniqueId() * 10.0;
 
   if (m_damage > 0.0)
@@ -144,7 +141,7 @@ void Triffid::Render(double _predictionTime)
   //
   // If we are damaged, flicked in and out based on our health
 
-  if (m_renderDamaged && !g_app->m_editing && m_damage > 0.0)
+  if (m_renderDamaged && m_damage > 0.0)
   {
     double timeIndex = g_gameTime + m_id.GetUniqueId() * 10;
     double thefrand = frand();
@@ -177,41 +174,6 @@ void Triffid::Render(double _predictionTime)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   glDisable(GL_NORMALIZE);
-}
-
-void Triffid::RenderAlphas(double _predictionTime)
-{
-  if (g_app->m_editing)
-  {
-    glColor4f(1.0, 0.0, 0.0, 1.0);
-    glLineWidth(1.0);
-
-    Matrix34 headMat = GetHead(_predictionTime);
-    Matrix34 mat(m_front, g_upVector, headMat.pos);
-    Matrix34 launchMat = m_launchPoint->GetWorldMatrix(mat);
-
-    Vector3 point1 = launchMat.pos;
-
-    Vector3 angle = launchMat.f;
-    angle.HorizontalAndNormalise();
-    angle.RotateAroundY(m_variance * 0.5);
-    Vector3 right = angle ^ g_upVector;
-    angle.RotateAround(right * m_pitch * 0.5);
-    Vector3 point2 = point1 + angle * m_force * 3.0;
-
-    angle = launchMat.f;
-    angle.HorizontalAndNormalise();
-    angle.RotateAroundY(m_variance * -0.5);
-    right = angle ^ g_upVector;
-    angle.RotateAround(right * m_pitch * 0.5);
-    Vector3 point3 = point1 + angle * m_force * 3.0;
-
-    glBegin(GL_LINE_LOOP);
-    glVertex3dv(point1.GetData());
-    glVertex3dv(point2.GetData());
-    glVertex3dv(point3.GetData());
-    glEnd();
-  }
 }
 
 void Triffid::Damage(double _damage)
@@ -686,7 +648,7 @@ bool TriffidEgg::Advance(Unit* _unit)
 
     if (m_pos.y < landHeight + 3.0)
       m_pos.y = landHeight + 3.0;
-    if (m_force > 0.1 && !g_app->m_editing)
+    if (m_force > 0.1)
       g_app->m_soundSystem->TriggerEntityEvent(this, "Bounce");
   }
 

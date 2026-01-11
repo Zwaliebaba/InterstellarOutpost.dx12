@@ -104,8 +104,6 @@ public:
     void Initialise     ( Building *_template );
     bool Advance        ();
         
-    void Render         ( double _predictionTime );
-    void RenderPorts    ();
     void RenderAlphas   ( double _predictionTime );
 
     void ListSoundEvents( LList<char *> *_list );

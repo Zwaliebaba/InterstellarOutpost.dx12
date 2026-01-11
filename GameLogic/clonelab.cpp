@@ -6,7 +6,7 @@
 #include "resource.h"
 #include "shape.h"
 #include "text_renderer.h"
-#include "debug_render.h"
+
 
 #include "app.h"
 #include "globals.h"

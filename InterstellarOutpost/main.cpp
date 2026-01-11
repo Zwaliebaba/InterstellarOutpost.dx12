@@ -427,7 +427,7 @@ void GlobalWorldGameLoop()
 
   g_app->m_hideInterface = false;
   g_app->m_atMainMenu = true;
-  while (g_app->m_requestedLocationId == -1 && !g_app->m_requestToggleEditing)
+  while (g_app->m_requestedLocationId == -1)
   {
     if (g_app->m_atMainMenu)
       break;
@@ -477,12 +477,6 @@ void GlobalWorldGameLoop()
     g_app->m_globalWorld->EvaluateEvents();
 
     g_app->m_renderer->Render();
-  }
-
-  if (g_app->m_requestToggleEditing)
-  {
-    g_app->m_editing = true;
-    g_app->m_requestToggleEditing = false;
   }
 
   g_app->m_soundSystem->StopAllSounds(WorldObjectId(), "Ambience EnterGlobalWorld");
@@ -643,26 +637,6 @@ void Finalise()
   g_eventHandler = NULL;
 
   Profiler::Stop();
-  //#endif
-
-#ifdef TARGET_OS_VISTA
-  // Skip if not running on a Media Center
-  if (g_mediaCenter)
-  {
-    // Get the path to Media Center
-    WCHAR szExpandedPath[MAX_PATH];
-    if (ExpandEnvironmentStringsW(L"%SystemRoot%\\ehome\\ehshell.exe", szExpandedPath, MAX_PATH))
-    {
-      // Skip if ehshell.exe doesn't exist
-      if (GetFileAttributesW(szExpandedPath) != 0xFFFFFFFF)
-      {
-        // Launch ehshell.exe 
-        INT_PTR result = (INT_PTR)ShellExecuteW(NULL, L"open", szExpandedPath, NULL, NULL, SW_SHOWNORMAL);
-      }
-    }
-  }
-#endif
-
 }
 
 bool IsFirsttimeSequencing() { return g_RenderingFirstTimeBL; }
@@ -684,10 +658,6 @@ static void DoEnterLocation()
 
   g_app->m_locationInput = new LocationInput();
 
-#if defined(PERMITTED_MAPS)
-  bool mapPermitted = g_app->IsMapPermitted(LevelFile::CalculeCRC(g_app->m_requestedMap));
-#endif
-
   if (loadingNew)
     g_app->m_location->Init(g_app->m_requestedMission, g_app->m_requestedMap);
 
@@ -706,15 +676,6 @@ static void DoEnterLocation()
   g_app->m_camera->SetTarget(Vector3(maxX, 1000, maxX), Vector3(-1, -0.7, -1)); // In case start doesn't exist
   g_app->m_camera->SetTarget("start");
   g_app->m_camera->CutToTarget();
-
-#if defined(PERMITTED_MAPS)
-  if (!mapPermitted)
-  {
-    g_app->m_requestedLocationId = -1;
-    if (g_app->m_gameMode != App::GameModeCampaign) { g_app->m_atMainMenu = true; }
-  }
-#endif
-
 }
 
 void EnterLocation()
@@ -727,37 +688,18 @@ void EnterLocation()
   g_loadingScreen->m_workQueue->Add(&DoEnterLocation);
   g_loadingScreen->Render();
 
-  if (g_app->m_editing)
-  {
-#ifdef LOCATION_EDITOR
-#ifndef PURITY_CONTROL
-    g_app->m_locationEditor = new LocationEditor(); g_app->m_camera->SetDebugMode(Camera::DebugModeAlways); LocationEditorLoop();
-#endif  // PURITY_CONTROL
-#endif // LOCATION_EDITOR
-  }
-  else
-  {
-    g_app->m_camera->SetDebugMode(Camera::DebugModeAuto);
-    g_app->m_camera->RequestMode(Camera::ModeFreeMovement);
+  g_app->m_camera->SetDebugMode(Camera::DebugModeAuto);
+  g_app->m_camera->RequestMode(Camera::ModeFreeMovement);
 
 #ifdef BENCHMARK_AND_FTP
-    g_app->m_benchMark->Begin();
+  g_app->m_benchMark->Begin();
 #endif
 
-    LocationGameLoop();
+  LocationGameLoop();
 
 #ifdef BENCHMARK_AND_FTP
-    g_app->m_benchMark->End(); g_app->m_benchMark->Upload();
+  g_app->m_benchMark->End(); g_app->m_benchMark->Upload();
 #endif
-
-#ifdef DEMOBUILD
-#ifndef DEMO2
-    //PrintMemoryLeaks();
-    //g_windowManager->OpenWebsite( "http://www.darwinia.co.uk/demoend/" );
-    g_windowManager->OpenWebsite("http://www.multiwinia.co.uk/"); Finalise(); exit(0);
-#endif // DEMO2
-#endif // DEMOBUILD
-  }
 }
 
 void EnterGlobalWorld()
@@ -778,7 +720,7 @@ void EnterGlobalWorld()
 
 void MainMenuLoop()
 {
-  while (g_app->m_atMainMenu && !g_app->m_requestToggleEditing)
+  while (g_app->m_atMainMenu)
   {
     UpdateAdvanceTime();
 
@@ -804,13 +746,6 @@ void MainMenuLoop()
       g_app->m_server->AdvanceIfNecessary(GetHighResTime());
 
     g_app->m_clientToServer->AdvanceAndCatchUp();
-  }
-
-  if (g_app->m_requestToggleEditing)
-  {
-    g_app->m_editing = true;
-    g_app->m_requestToggleEditing = false;
-    g_app->m_atMainMenu = false;
   }
 
   g_app->m_soundSystem->StopAllSounds(WorldObjectId(), "MultiwiniaInterface LobbyAmbience");

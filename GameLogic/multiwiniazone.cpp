@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "debug_render.h"
+
 #include "text_file_writer.h"
 #include "text_stream_readers.h"
 #include "math_utils.h"
@@ -432,13 +432,6 @@ bool MultiwiniaZone::Advance()
 
 void MultiwiniaZone::Render(double predictionTime)
 {
-  if (g_app->m_editing)
-  {
-#ifdef DEBUG_RENDER_ENABLED
-    RenderSphere(m_pos, 20.0, RGBAColour(255, 255, 255, 255));
-#endif
-  }
-
   if (g_app->m_multiwinia->m_gameType == Multiwinia::GameTypeBlitzkreig)
   {
     glDisable(GL_LIGHTING);
@@ -640,25 +633,6 @@ void MultiwiniaZone::RenderAlphas(double predictionTime)
     RenderZoneEdge(0, ownedAngle, colour, true);
     RenderZoneEdge(ownedAngle, unclaimedAngle, RGBAColour(128, 128, 128, 255), true);
   }
-  else if (g_app->m_editing)
-  {
-    // Capture statue
-    RGBAColour colour(128, 128, 128, 255);
-    if (m_id.GetTeamId() != 255)
-    {
-      colour = g_app->m_location->m_teams[m_id.GetTeamId()]->m_colour;
-      colour.a = 100;
-    }
-
-    RenderZoneEdge(0, 2.0 * M_PI, colour, true);
-
-    for (int i = 0; i < m_blitzkriegLinks.Size(); ++i)
-    {
-      Building* link = g_app->m_location->GetBuilding(m_blitzkriegLinks[i]);
-      if (link)
-        RenderArrow(m_pos, link->m_pos, 5.0);
-    }
-  }
 
   glEnable(GL_CULL_FACE);
   glShadeModel(GL_FLAT);
@@ -667,27 +641,6 @@ void MultiwiniaZone::RenderAlphas(double predictionTime)
 
 void MultiwiniaZone::RenderBlitzkrieg()
 {
-  //
-  // Sort out flag pos
-  /*if( m_id.GetTeamId() != 255 )
-  {
-      RGBAColour col = g_app->m_location->m_teams[m_id.GetTeamId()]->m_colour;
-      
-      for( int i = 0; i < m_blitzkriegLinks.Size(); ++i )
-      {
-          MultiwiniaZone *zone = (MultiwiniaZone *)g_app->m_location->GetBuilding( m_blitzkriegLinks[i] );
-          if( zone )
-          {
-              Vector3 fromPos, toPos;
-              fromPos = m_pos;
-              toPos = zone->m_pos;
-              fromPos.y += 50.0;
-              toPos.y += 50.0;
-              RenderArrow( fromPos, toPos, 2.0, col );
-          }
-      }
-  }*/
-
   double size = 40.0;
   Vector3 up = g_upVector;
   Vector3 front = m_front;
@@ -761,8 +714,6 @@ void MultiwiniaZone::RenderBlitzkrieg()
   glVertex3dv((m_pos).GetData());
   glVertex3dv((m_pos + up * 50 + up * size * 1.5).GetData());
   glEnd();
-
-  //RenderSphere( m_pos, 20, RGBAColour(255,255,255,255) );
 }
 
 bool MultiwiniaZone::DoesSphereHit(const Vector3& _pos, double _radius) { return false; }
@@ -771,8 +722,6 @@ bool MultiwiniaZone::DoesShapeHit(Shape* _shape, Matrix34 _transform) { return f
 
 bool MultiwiniaZone::DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, double _rayLen, Vector3* _pos, Vector3* _norm)
 {
-  if (g_app->m_editing)
-    return Building::DoesRayHit(_rayStart, _rayDir, _rayLen, _pos, _norm);
   return false;
 }
 

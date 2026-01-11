@@ -2,7 +2,7 @@
 
 #include "resource.h"
 
-#include "debug_render.h"
+
 #include "math_utils.h"
 #include "shape.h"
 #include "bitmap.h"

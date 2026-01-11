@@ -9,7 +9,7 @@
 #include "shape.h"
 #include "text_renderer.h"
 #include "text_stream_readers.h"
-#include "debug_render.h"
+
 #include "language_table.h"
 #include "random_number.h"
 
@@ -548,19 +548,6 @@ bool PylonStart::Advance()
 void PylonStart::RenderAlphas( double _predictionTime )
 {
     PowerBuilding::RenderAlphas( _predictionTime );
-
-#ifdef DEBUG_RENDER_ENABLED
-    if( g_app->m_editing )
-    {
-        Building *req = g_app->m_location->GetBuilding( m_reqBuildingId );
-        if( req )
-        {
-            RenderArrow( m_pos+Vector3(0,50,0), 
-                         req->m_pos+Vector3(0,50,0), 
-                         2.0, RGBAColour(255,0,0) );
-        }
-    }
-#endif
 }
 
 
@@ -815,13 +802,6 @@ void SolarPanel::RenderPorts()
 
 void SolarPanel::Render( double _predictionTime )
 {
-    if( g_app->m_editing )
-    {
-        m_up = g_app->m_location->m_landscape.m_normalMap->GetValue( m_pos.x, m_pos.z );
-        Vector3 right( 1, 0, 0 );
-        m_front = right ^ m_up;
-    }
-
     glShadeModel( GL_SMOOTH );
     PowerBuilding::Render( _predictionTime );
     glShadeModel( GL_FLAT );
@@ -942,31 +922,9 @@ void PowerSplitter::TriggerSurge( double _initValue, int teamId )
     }
 }
 
-
-void PowerSplitter::Render( double _predictionTime )
-{
-    if( g_app->m_editing )
-    {
-        PowerBuilding::Render( _predictionTime );
-    }
-}
-
-
 void PowerSplitter::RenderAlphas( double _predictionTime )
 {
     PowerBuilding::RenderAlphas( _predictionTime );
-
-    if( g_app->m_editing )
-    {
-        for( int i = 0; i < m_links.Size(); ++i )
-        {
-            Building *building = g_app->m_location->GetBuilding(m_links[i] );
-            if( building )
-            {
-                RenderArrow( m_pos + g_upVector * 50, building->m_pos + g_upVector * 50, 1, RGBAColour(255,0,0,255) );
-            }
-        }
-    }
 }
 
 

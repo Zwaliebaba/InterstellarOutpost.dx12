@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "debug_render.h"
+
 #include "random_number.h"
 #include "particle_system.h"
 #include "app.h"
@@ -49,23 +49,6 @@ bool EruptionMarker::Advance()
     return false;
 }
 
-void EruptionMarker::RenderAlphas( double _predictionTime )
-{
-    if( g_app->m_editing )
-    {
-#ifdef LOCATION_EDITOR
-        Building::RenderAlphas( _predictionTime );
-        RenderSphere( m_pos, 30.0 );
-        if( g_app->m_editing &&
-            g_app->m_locationEditor->m_mode == LocationEditor::ModeBuilding &&
-            g_app->m_locationEditor->m_selectionId == m_id.GetUniqueId() )
-        {
-            RenderSphere( m_pos, 35.0 );
-        }
-#endif
-    }
-}
-
 bool EruptionMarker::DoesSphereHit(Vector3 const &_pos, double _radius)
 {
     return false;
@@ -81,12 +64,5 @@ bool EruptionMarker::DoesShapeHit(Shape *_shape, Matrix34 _transform)
 bool EruptionMarker::DoesRayHit(Vector3 const &_rayStart, Vector3 const &_rayDir, 
                                 double _rayLen, Vector3 *_pos, Vector3 *_norm)
 {
-    if( g_app->m_editing )
-    {
-        return Building::DoesRayHit( _rayStart, _rayDir, _rayLen, _pos, _norm );
-    }
-    else
-    {
         return false;
-    }
 }

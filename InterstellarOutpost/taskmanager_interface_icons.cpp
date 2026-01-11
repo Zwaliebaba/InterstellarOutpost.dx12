@@ -9,7 +9,6 @@
 #include "profiler.h"
 #include "hi_res_time.h"
 #include "language_table.h"
-#include "debug_render.h"
 #include "ogl_extensions.h"
 #include "binary_stream_readers.h"
 #include "preferences.h"
@@ -45,7 +44,6 @@
 #include "generator.h"
 #include "researchitem.h"
 #include "spawnpoint.h"
-
 
 TaskManagerInterfaceIcons::TaskManagerInterfaceIcons()
   : m_screenId(ScreenTaskManager),
@@ -589,7 +587,7 @@ void TaskManagerInterfaceIcons::RestoreRenderMatrices() { g_app->m_renderer->Set
 void TaskManagerInterfaceIcons::Render()
 {
   static bool shown = false;
-  if (g_app->m_editing || !g_app->m_location || EclGetWindows()->Size())
+  if (!g_app->m_location || EclGetWindows()->Size())
     return;
 
   START_PROFILE("Render Taskman");
@@ -1578,9 +1576,11 @@ void TaskManagerInterfaceIcons::RenderMessages()
         swprintf(fullMessage, sizeof(fullMessage) / sizeof(wchar_t), L"%ls: %ls v%d.0", message.m_unicodestring, taskName.m_unicodestring,
                  researchLevel);
       }
-      else { swprintf(fullMessage, sizeof(fullMessage) / sizeof(wchar_t), L"%ls: %ls", message.m_unicodestring, taskName.m_unicodestring); }
+      else
+        swprintf(fullMessage, sizeof(fullMessage) / sizeof(wchar_t), L"%ls: %ls", message.m_unicodestring, taskName.m_unicodestring);
     }
-    else { swprintf(fullMessage, sizeof(fullMessage) / sizeof(wchar_t), L"%ls", message.m_unicodestring); }
+    else
+      swprintf(fullMessage, sizeof(fullMessage) / sizeof(wchar_t), L"%ls", message.m_unicodestring);
 
     //
     // Render string

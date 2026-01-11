@@ -1,4 +1,3 @@
-
 #ifndef _included_mine_h
 #define _included_mine_h
 
@@ -7,78 +6,74 @@
 class Refinery;
 class MineCart;
 
-
 // ****************************************************************************
 // Class MineBuilding
 // ****************************************************************************
 
 class MineBuilding : public Building
 {
-protected:
-    int             m_trackLink;
-    ShapeMarker     *m_trackMarker1;
-    ShapeMarker     *m_trackMarker2;
+  protected:
+    int m_trackLink;
+    ShapeMarker* m_trackMarker1;
+    ShapeMarker* m_trackMarker2;
 
-    Matrix34        m_trackMatrix1;
-    Matrix34        m_trackMatrix2;
+    Matrix34 m_trackMatrix1;
+    Matrix34 m_trackMatrix2;
 
-    LList           <MineCart *> m_carts;
+    LList<MineCart*> m_carts;
 
-    double           m_previousMineSpeed;
-    double           m_wheelRotate;
-    
-    static Shape        *s_wheelShape;
-    static Shape        *s_cartShape;
-    static ShapeMarker  *s_cartMarker1;
-    static ShapeMarker  *s_cartMarker2;
-    static ShapeMarker  *s_cartContents[3];
-    static Shape        *s_polygon1;
-    static Shape        *s_primitive1;
-    
-    static double        s_refineryPopulation;
-    static double        s_refineryRecalculateTimer;
-    static double        RefinerySpeed();
-                
-public:
+    double m_previousMineSpeed;
+    double m_wheelRotate;
+
+    static Shape* s_wheelShape;
+    static Shape* s_cartShape;
+    static ShapeMarker* s_cartMarker1;
+    static ShapeMarker* s_cartMarker2;
+    static ShapeMarker* s_cartContents[3];
+    static Shape* s_polygon1;
+    static Shape* s_primitive1;
+
+    static double s_refineryPopulation;
+    static double s_refineryRecalculateTimer;
+    static double RefinerySpeed();
+
+  public:
     MineBuilding();
 
-    void Initialise     ( Building *_template );    
-    bool Advance        ();
+    void Initialise(Building* _template) override;
+    bool Advance() override;
 
-    bool IsInView       ();
+    bool IsInView() override;
 
-    void Render         ( double _predictionTime );
-    void RenderAlphas   ( double _predictionTime );
-    void RenderCart     ( MineCart *_cart, double _predictionTime );
+    void Render(double _predictionTime) override;
+    void RenderAlphas(double _predictionTime) override;
+    void RenderCart(MineCart* _cart, double _predictionTime);
 
-    Vector3     GetTrackMarker1();
-    Vector3     GetTrackMarker2();
-    
-    virtual void TriggerCart ( MineCart *_cart, double _initValue );
-    
-    void ListSoundEvents    ( LList<char *> *_list );
+    Vector3 GetTrackMarker1();
+    Vector3 GetTrackMarker2();
 
-    void Read   ( TextReader *_in, bool _dynamic );     
-    void Write  ( TextWriter *_out );							
-    
-    int  GetBuildingLink();                             
-    void SetBuildingLink( int _buildingId );            
+    virtual void TriggerCart(MineCart* _cart, double _initValue);
+
+    void ListSoundEvents(LList<char*>* _list) override;
+
+    void Read(TextReader* _in, bool _dynamic) override;
+    void Write(TextWriter* _out) override;
+
+    int GetBuildingLink() override;
+    void SetBuildingLink(int _buildingId) override;
 
 };
-
 
 class MineCart
 {
-public:
-    double   m_progress;                     // Progress down current line, 0.0 - 1.0
+  public:
+    double m_progress; // Progress down current line, 0.0 - 1.0
 
-    bool    m_polygons[3];
-    bool    m_primitives[3];
-    
-public:
+    bool m_polygons[3];
+    bool m_primitives[3];
+
     MineCart();
 };
-
 
 // ****************************************************************************
 // Class TrackLink
@@ -86,12 +81,11 @@ public:
 
 class TrackLink : public MineBuilding
 {
-public:
+  public:
     TrackLink();
 
-    bool Advance();
+    bool Advance() override;
 };
-
 
 // ****************************************************************************
 // Class TrackJunction
@@ -99,24 +93,20 @@ public:
 
 class TrackJunction : public MineBuilding
 {
-public:
-    LList<int>      m_trackLinks;
+  public:
+    LList<int> m_trackLinks;
 
-public:
     TrackJunction();
 
-    void Initialise     ( Building *_template );    
+    void Initialise(Building* _template) override;
 
-    void Render         ( double _predictionTime );
-    void TriggerCart    ( MineCart *_cart, double _initValue );
+    void TriggerCart(MineCart* _cart, double _initValue) override;
 
-    void RenderLink     ();
-    void SetBuildingLink( int _buildingId );            
+    void SetBuildingLink(int _buildingId) override;
 
-    void Read   ( TextReader *_in, bool _dynamic );     
-    void Write  ( TextWriter *_out );							
+    void Read(TextReader* _in, bool _dynamic) override;
+    void Write(TextWriter* _out) override;
 };
-
 
 // ****************************************************************************
 // Class TrackStart
@@ -124,20 +114,17 @@ public:
 
 class TrackStart : public MineBuilding
 {
-public:
-    int m_reqBuildingId;                   // This building must be online
-    
-public:    
+  public:
+    int m_reqBuildingId; // This building must be online
+
     TrackStart();
 
-    void Initialise     ( Building *_template );
-    bool Advance        ();    
-    void RenderAlphas   ( double _predictionTime );
+    void Initialise(Building* _template) override;
+    bool Advance() override;
 
-    void Read   ( TextReader *_in, bool _dynamic );     
-    void Write  ( TextWriter *_out );							
+    void Read(TextReader* _in, bool _dynamic) override;
+    void Write(TextWriter* _out) override;
 };
-
 
 // ****************************************************************************
 // Class TrackEnd
@@ -145,21 +132,17 @@ public:
 
 class TrackEnd : public MineBuilding
 {
-public:
-    int m_reqBuildingId;                   // This building must be online
-    
-public:
+  public:
+    int m_reqBuildingId; // This building must be online
+
     TrackEnd();
 
-    void Initialise     ( Building *_template );
-    bool Advance();
+    void Initialise(Building* _template) override;
+    bool Advance() override;
 
-    void RenderAlphas   ( double _predictionTime );
-
-    void Read   ( TextReader *_in, bool _dynamic );     
-    void Write  ( TextWriter *_out );							
+    void Read(TextReader* _in, bool _dynamic) override;
+    void Write(TextWriter* _out) override;
 };
-
 
 // ****************************************************************************
 // Class Refinery
@@ -167,23 +150,22 @@ public:
 
 class Refinery : public MineBuilding
 {
-protected:
-    ShapeMarker *m_wheel1;
-    ShapeMarker *m_wheel2;
-    ShapeMarker *m_wheel3;
-    ShapeMarker *m_counter1;
+  protected:
+    ShapeMarker* m_wheel1;
+    ShapeMarker* m_wheel2;
+    ShapeMarker* m_wheel3;
+    ShapeMarker* m_counter1;
 
-public:
+  public:
     Refinery();
 
-    bool Advance();
-    void Render         ( double _predictionTime );
+    bool Advance() override;
+    void Render(double _predictionTime) override;
 
-    void GetObjectiveCounter(UnicodeString& _dest);
+    void GetObjectiveCounter(UnicodeString& _dest) override;
 
-    void TriggerCart    ( MineCart *_cart, double _initValue );
+    void TriggerCart(MineCart* _cart, double _initValue) override;
 };
-
 
 // ****************************************************************************
 // Class Mine
@@ -191,16 +173,16 @@ public:
 
 class Mine : public MineBuilding
 {
-protected:
-    ShapeMarker *m_wheel1;
-    ShapeMarker *m_wheel2;
-    
-public:
+  protected:
+    ShapeMarker* m_wheel1;
+    ShapeMarker* m_wheel2;
+
+  public:
     Mine();
 
-    void Render         ( double _predictionTime );
-    
-    void TriggerCart    ( MineCart *_cart, double _initValue );
+    void Render(double _predictionTime) override;
+
+    void TriggerCart(MineCart* _cart, double _initValue) override;
 };
 
 #endif

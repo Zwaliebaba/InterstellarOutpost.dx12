@@ -406,7 +406,6 @@ bool Tentacle::GetTrailPosition( Vector3 &_pos, Vector3 &_vel, int _numSteps )
 void Tentacle::Render( double _predictionTime )
 {       
     Vector3 predictedPos = m_pos + m_vel * _predictionTime;
-    //predictedPos.y = g_app->m_location->m_landscape.m_heightMap->GetValue( predictedPos.x, predictedPos.z );
  
     double maxHealth = EntityBlueprint::GetStat( TypeCentipede, StatHealth );
     maxHealth *= m_size * 2;
@@ -418,7 +417,6 @@ void Tentacle::Render( double _predictionTime )
     if( !m_dead )
     {
         glDisable( GL_TEXTURE_2D );
-        //RenderSphere( m_targetPos, 5.0 );
 
         Vector3 predictedFront = m_front;
         Vector3 predictedUp = m_direction;

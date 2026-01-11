@@ -2,7 +2,7 @@
 #include "resource.h"
 #include "shape.h"
 #include "math_utils.h"
-#include "debug_render.h"
+
 #include "hi_res_time.h"
 #include "text_renderer.h"
 #include "preferences.h"

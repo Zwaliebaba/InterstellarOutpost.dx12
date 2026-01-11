@@ -12,7 +12,6 @@ public:
     EruptionMarker();
 
     bool Advance();
-    void RenderAlphas( double _predictionTime );
 
     bool DoesSphereHit          (Vector3 const &_pos, double _radius);
     bool DoesShapeHit           (Shape *_shape, Matrix34 _transform);

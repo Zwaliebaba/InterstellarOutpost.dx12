@@ -5,54 +5,51 @@
 #include "entity.h"
 #include "spiritstore.h"
 
-
 class TextWriter;
 
-
-class Factory: public Building
+class Factory : public Building
 {
-public:
-    unsigned char   m_troopType;
-    unsigned char   m_stats[Entity::NumStats];
+  public:
+    unsigned char m_troopType;
+    unsigned char m_stats[Entity::NumStats];
 
-	int				m_initialCapacity;		// Read from level file
+    int m_initialCapacity; // Read from level file
 
-    int             m_unitId;
-    int             m_numToCreate;
-    int             m_numCreated;
-    
-    double           m_timeToCreate;         // Total Time to create ALL troops
-    double           m_timeSoFar;
+    int m_unitId;
+    int m_numToCreate;
+    int m_numCreated;
+
+    double m_timeToCreate; // Total Time to create ALL troops
+    double m_timeSoFar;
 
     enum
     {
-        StateUnused,
-        StateCreating,
-        StateRecharging
+      StateUnused,
+      StateCreating,
+      StateRecharging
     };
+
     int m_state;
 
-    SpiritStore     m_spiritStore;
+    SpiritStore m_spiritStore;
 
-public:
     Factory();
 
-    void Initialise( Building *_template );
+    void Initialise(Building* _template) override;
 
-    void Render         ( double predictionTime );
-    void RenderAlphas   ( double predictionTime );
+    void Render(double predictionTime) override;
 
-    bool Advance();
+    bool Advance() override;
     void AdvanceStateUnused();
     void AdvanceStateCreating();
     void AdvanceStateRecharging();
 
-    void SetTeamId( int _teamId );
+    void SetTeamId(int _teamId) override;
 
-    void RequestUnit( unsigned char _troopType, int _numToCreate );
+    void RequestUnit(unsigned char _troopType, int _numToCreate);
 
-	void Read(TextReader *_in, bool _dynamic);
-	void Write(TextWriter *_out);
+    void Read(TextReader* _in, bool _dynamic) override;
+    void Write(TextWriter* _out) override;
 };
 
 #endif

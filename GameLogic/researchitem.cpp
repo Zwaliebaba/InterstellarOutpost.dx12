@@ -3,7 +3,6 @@
 #include "resource.h"
 #include "shape.h"
 #include "text_stream_readers.h"
-#include "text_renderer.h"
 #include "math_utils.h"
 #include "preferences.h"
 #include "random_number.h"
@@ -137,12 +136,6 @@ void ResearchItem::Render(double _predictionTime)
   Matrix34 mat(m_front, m_up, predictedPos);
 
   m_shape->Render(0.0, mat);
-
-  if (g_app->m_editing && m_researchType != -1)
-  {
-    g_gameFont.DrawText3DCentre(predictedPos + Vector3(0, 25, 0), 5, GlobalResearch::GetTypeName(m_researchType));
-    g_gameFont.DrawText3DCentre(predictedPos + Vector3(0, 20, 0), 5, "%2.2", m_reprogrammed);
-  }
 }
 
 void ResearchItem::RenderAlphas(double _predictionTime)

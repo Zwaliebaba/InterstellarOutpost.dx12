@@ -4,7 +4,7 @@
 #include "shape.h"
 #include "hi_res_time.h"
 #include "math_utils.h"
-#include "debug_render.h"
+
 #include "text_renderer.h"
 #include "random_number.h"
 
@@ -457,17 +457,6 @@ void Tank::DropMine()
 void Tank::Render( double _predictionTime )
 {       
     if( m_dead ) return;
-
-//#ifdef DEBUG_RENDER_ENABLED
-//    glDisable( GL_DEPTH_TEST );
-//    RenderArrow( m_pos+Vector3(0,10,0), m_wayPoint, 1.0, RGBAColour(255,255,255,155) );
-//    if( m_attackTarget != g_zeroVector )
-//    {
-//        RenderArrow( m_pos+Vector3(0,10,0), m_attackTarget, 1.0, RGBAColour(255,50,50,255) );
-//    }
-//    glEnable( GL_DEPTH_TEST );
-//#endif
-    
 
     //
     // Work out our predicted position

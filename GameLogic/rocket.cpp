@@ -1653,8 +1653,5 @@ bool EscapeRocket::DoesShapeHit(Shape* _shape, Matrix34 _transform) { return fal
 
 bool EscapeRocket::DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, double _rayLen, Vector3* _pos, Vector3* _norm)
 {
-  if (g_app->m_editing)
-    return RaySphereIntersection(_rayStart, _rayDir, m_pos, m_radius, _rayLen);
-
   return false;
 }

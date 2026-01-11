@@ -1,33 +1,22 @@
 #include "pch.h"
-
-#include <math.h>
-
-#include "debug_render.h"
 #include "math_utils.h"
 #include "ogl_extensions.h"
 #include "profiler.h"
 #include "resource.h"
 #include "shape.h"
-#include "random_number.h"
 #include "text_stream_readers.h"
 #include "text_file_writer.h"
-
 #include "app.h"
 #include "camera.h"
 #include "entity_grid.h"
-#include "globals.h"
 #include "location.h"
 #include "location_input.h"
 #include "main.h"
-#include "particle_system.h"
-#include "renderer.h"
 #include "team.h"
 #include "global_world.h"
 #include "unit.h"
 #include "level_file.h"
-
 #include "soundsystem.h"
-
 #include "radardish.h"
 #include "ai.h"
 #include "darwinian.h"
@@ -396,8 +385,6 @@ void RadarDish::RenderAlphas(double _predictionTime)
   Teleport::RenderAlphas(_predictionTime);
 
   bool renderLinks = false;
-  if (g_app->m_editing)
-    renderLinks = true;
 
   if (g_app->m_location->GetMyTeam())
   {
@@ -423,14 +410,9 @@ void RadarDish::RenderAlphas(double _predictionTime)
         auto r = static_cast<RadarDish*>(g_app->m_location->GetBuilding(m_validLinkList[i]));
         if (r)
         {
-          if (g_app->m_editing)
-            RenderArrow(GetDishPos(_predictionTime), r->GetDishPos(_predictionTime), 1.0);
-          else
-          {
-            m_range = (r->m_pos - m_pos).Mag();
-            m_receiverId = r->m_id.GetUniqueId();
-            RenderSignal(_predictionTime, 10.0, 0.3);
-          }
+          m_range = (r->m_pos - m_pos).Mag();
+          m_receiverId = r->m_id.GetUniqueId();
+          RenderSignal(_predictionTime, 10.0, 0.3);
         }
       }
     }

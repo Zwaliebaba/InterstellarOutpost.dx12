@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "hi_res_time.h"
-#include "debug_render.h"
+
 #include "3d_sprite.h"
 #include "resource.h"
 #include "random_number.h"

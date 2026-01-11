@@ -3,7 +3,7 @@
 #include "text_renderer.h"
 #include "resource.h"
 #include "bitmap.h"
-#include "debug_render.h"
+
 
 #include "binary_stream_readers.h"
 

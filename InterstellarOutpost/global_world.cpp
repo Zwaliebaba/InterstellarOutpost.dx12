@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "unicode_text_stream_reader.h"
-#include "debug_render.h"
+
 #include "language_table.h"
 #include "filesys_utils.h"
 #include "text_file_writer.h"
@@ -803,11 +803,8 @@ void SphereWorld::Render()
   RenderIslands();
   RenderTrunkLinks();
 
-  if (!g_app->m_editing)
-  {
-    RenderSpirits();
-    RenderHeaven();
-  }
+  RenderSpirits();
+  RenderHeaven();
 
   glEnable(GL_CULL_FACE); // CRASH WORKAROUND - FIX AND DELETE ASAP
   CHECK_OPENGL_STATE();
@@ -995,8 +992,6 @@ void SphereWorld::RenderWorldShape()
 
 void SphereWorld::RenderTrunkLinks()
 {
-  //if( g_app->m_editing ) return;
-
   Matrix34 rootMat(0);
 
   glEnable(GL_BLEND);
@@ -1013,7 +1008,7 @@ void SphereWorld::RenderTrunkLinks()
       GlobalLocation* fromLoc = g_app->m_globalWorld->GetLocation(building->m_locationId);
       GlobalLocation* toLoc = g_app->m_globalWorld->GetLocation(building->m_link);
 
-      if (fromLoc && toLoc && (fromLoc->m_available && toLoc->m_available) || g_app->m_editing)
+      if (fromLoc && toLoc && (fromLoc->m_available && toLoc->m_available))
       {
         Vector3 fromPos = g_app->m_globalWorld->GetLocationPosition(building->m_locationId);
         Vector3 toPos = g_app->m_globalWorld->GetLocationPosition(building->m_link);
@@ -1022,9 +1017,6 @@ void SphereWorld::RenderTrunkLinks()
           glColor4f(0.4, 0.3, 1.0, 1.0);
         else
           glColor4f(0.4, 0.3, 1.0, 0.4);
-
-        //fromPos *= 120.0;
-        //toPos *= 120.0;
 
         Vector3 midPoint = fromPos + (toPos - fromPos) / 2.0;
         Vector3 camToMidPoint = g_app->m_camera->GetPos() - midPoint;
@@ -1169,7 +1161,7 @@ void SphereWorld::RenderIslands()
   for (int i = 0; i < g_app->m_globalWorld->m_locations.Size(); ++i)
   {
     GlobalLocation* loc = g_app->m_globalWorld->m_locations.GetData(i);
-    if (loc->m_available || g_app->m_editing)
+    if (loc->m_available)
     {
       Vector3 islandPos = g_app->m_globalWorld->GetLocationPosition(loc->m_id);
 
@@ -1207,7 +1199,7 @@ void SphereWorld::RenderIslands()
   for (int i = 0; i < g_app->m_globalWorld->m_locations.Size(); ++i)
   {
     GlobalLocation* loc = g_app->m_globalWorld->m_locations.GetData(i);
-    if (loc->m_available || g_app->m_editing)
+    if (loc->m_available)
     {
       Vector3 islandPos = g_app->m_globalWorld->GetLocationPosition(loc->m_id);
       UnicodeString islandName;
@@ -1221,12 +1213,6 @@ void SphereWorld::RenderIslands()
       glColor4f(0.7, 0.7, 0.7, 0.0);
       g_gameFont.DrawText3DCentre(islandPos + camUp * size * 1.5, size * 3.0, islandName);
 
-      if (g_app->m_editing)
-      {
-        g_gameFont.DrawText3DCentre(islandPos, size, loc->m_mapFilename);
-        g_gameFont.DrawText3DCentre(islandPos - camUp * size, size, loc->m_missionFilename);
-      }
-
       islandPos += camUp * size * 0.3;
       islandPos += camRight * size * 0.1;
 
@@ -1236,12 +1222,6 @@ void SphereWorld::RenderIslands()
         glColor4f(0.5, 0.5, 0.5, 1.0);
 
       g_gameFont.DrawText3DCentre(islandPos + camUp * size * 1.5, size * 3.0, islandName);
-
-      if (g_app->m_editing)
-      {
-        g_gameFont.DrawText3DCentre(islandPos, size, loc->m_mapFilename);
-        g_gameFont.DrawText3DCentre(islandPos - camUp * size, size, loc->m_missionFilename);
-      }
     }
   }
 
@@ -1320,100 +1300,56 @@ GlobalWorld::~GlobalWorld()
 
 void GlobalWorld::Advance()
 {
-  if (g_app->m_editing)
+  bool chatLog = g_app->m_camera->ChatLogVisible();
+
+  // Has the user clicked on a location?
+  if (g_inputManager->controlEvent(ControlSelectLocation) && m_locationRequested == -1 && EclGetWindows()->Size() == 0 && !chatLog)
   {
-    if (m_editorMode == 0)
+    Vector3 rayStart, rayDir;
+    g_app->m_camera->GetClickRay(g_target->X(), g_target->Y(), &rayStart, &rayDir);
+    int locId = LocationHit(rayStart, rayDir);
+    if (locId != -1)
     {
-      // Edit locations
-      if (g_inputManager->controlEvent(ControlSelectLocation))
+      GlobalLocation* loc = GetLocation(locId);
+      if (strcmp(loc->m_missionFilename, "null") != 0 && loc->m_available)
       {
-        Vector3 rayStart, rayDir;
-        g_app->m_camera->GetClickRay(g_target->X(), g_target->Y(), &rayStart, &rayDir);
-        int locId = LocationHit(rayStart, rayDir);
-        if (locId != -1)
-        {
-          GlobalLocation* loc = GetLocation(locId);
-          g_app->m_requestedLocationId = locId;
-          strcpy(g_app->m_requestedMission, loc->m_missionFilename);
-          strcpy(g_app->m_requestedMap, loc->m_mapFilename);
-        }
+        // Default behaviour is to go the location
+        m_locationRequested = locId;
+        g_app->m_renderer->StartFadeOut();
       }
-    }
-    else
-    {
-      // Move locations
-      if (g_inputManager->controlEvent(ControlSelectLocation))
-      {
-        Vector3 rayStart, rayDir;
-        g_app->m_camera->GetClickRay(g_target->X(), g_target->Y(), &rayStart, &rayDir);
-        m_editorSelectionId = LocationHit(rayStart, rayDir);
-      }
-      else if (g_inputManager->controlEvent(ControlLocationDragActive))
-      {
-        GlobalLocation* loc = GetLocation(m_editorSelectionId);
-        if (loc)
-        {
-          Vector3 mousePos3D = g_app->m_userInput->GetMousePos3d();
-          loc->m_pos = mousePos3D / 120.0;
-        }
-      }
-      else if (g_inputManager->controlEvent(ControlDeselectLocation))
-        m_editorSelectionId = -1;
     }
   }
-  else
+  // Is the cursor attracted to a point?
+  else if (m_locationRequested == -1 && EclGetWindows()->Size() == 0 && !chatLog)
   {
-    bool chatLog = g_app->m_camera->ChatLogVisible();
-
-    // Has the user clicked on a location?
-    if (g_inputManager->controlEvent(ControlSelectLocation) && m_locationRequested == -1 && EclGetWindows()->Size() == 0 && !chatLog)
+    Vector3 rayStart, rayDir;
+    g_app->m_camera->GetClickRay(g_target->X(), g_target->Y(), &rayStart, &rayDir);
+    int locId = LocationHit(rayStart, rayDir, 10000.0);
+    if (locId != -1)
     {
-      Vector3 rayStart, rayDir;
-      g_app->m_camera->GetClickRay(g_target->X(), g_target->Y(), &rayStart, &rayDir);
-      int locId = LocationHit(rayStart, rayDir);
-      if (locId != -1)
-      {
-        GlobalLocation* loc = GetLocation(locId);
-        if (strcmp(loc->m_missionFilename, "null") != 0 && loc->m_available)
-        {
-          // Default behaviour is to go the location
-          m_locationRequested = locId;
-          g_app->m_renderer->StartFadeOut();
-        }
-      }
+      // We're close to a location, but not there, so drag the pointer towards it
+      GlobalLocation* loc = GetLocation(locId);
+      float locX, locY;
+      g_app->m_camera->Get2DScreenPos(loc->m_pos, &locX, &locY);
+      locY = g_app->m_renderer->ScreenH() - locY;
+      int movX = static_cast<int>(locX - g_target->X());
+      int movY = static_cast<int>(locY - g_target->Y());
+      int movMag2 = movX * movX + movY * movY;
+      int movFactor = 30 / movMag2;
+      if (movFactor > 0)
+        g_target->MoveCursor(movX * movFactor, movY * movFactor);
     }
-    // Is the cursor attracted to a point?
-    else if (m_locationRequested == -1 && EclGetWindows()->Size() == 0 && !chatLog)
-    {
-      Vector3 rayStart, rayDir;
-      g_app->m_camera->GetClickRay(g_target->X(), g_target->Y(), &rayStart, &rayDir);
-      int locId = LocationHit(rayStart, rayDir, 10000.0);
-      if (locId != -1)
-      {
-        // We're close to a location, but not there, so drag the pointer towards it
-        GlobalLocation* loc = GetLocation(locId);
-        float locX, locY;
-        g_app->m_camera->Get2DScreenPos(loc->m_pos, &locX, &locY);
-        locY = g_app->m_renderer->ScreenH() - locY;
-        int movX = static_cast<int>(locX - g_target->X());
-        int movY = static_cast<int>(locY - g_target->Y());
-        int movMag2 = movX * movX + movY * movY;
-        int movFactor = 30 / movMag2;
-        if (movFactor > 0)
-          g_target->MoveCursor(movX * movFactor, movY * movFactor);
-      }
-    }
+  }
 
-    // Has the fade out finished?
-    if (m_locationRequested != -1 && g_app->m_renderer->IsFadeComplete())
-    {
-      GlobalLocation* loc = GetLocation(m_locationRequested);
-      g_app->m_requestedLocationId = m_locationRequested;
-      strcpy(g_app->m_requestedMission, loc->m_missionFilename);
-      strcpy(g_app->m_requestedMap, loc->m_mapFilename);
+  // Has the fade out finished?
+  if (m_locationRequested != -1 && g_app->m_renderer->IsFadeComplete())
+  {
+    GlobalLocation* loc = GetLocation(m_locationRequested);
+    g_app->m_requestedLocationId = m_locationRequested;
+    strcpy(g_app->m_requestedMission, loc->m_missionFilename);
+    strcpy(g_app->m_requestedMap, loc->m_mapFilename);
 
-      m_locationRequested = -1;
-    }
+    m_locationRequested = -1;
   }
 }
 
@@ -1421,11 +1357,8 @@ void GlobalWorld::Render()
 {
   START_PROFILE("Render Global World");
 
-  if (!g_app->m_editing)
-    m_globalInternet->Render();
-  CHECK_OPENGL_STATE();
+  m_globalInternet->Render();
   m_sphereWorld->Render();
-  CHECK_OPENGL_STATE();
 
   END_PROFILE("Render Global World");
 }
@@ -1473,8 +1406,6 @@ GlobalLocation* GlobalWorld::GetHighlightedLocation()
   GlobalLocation* loc = GetLocation(locId);
 
   if (loc && loc->m_available)
-    return loc;
-  if (loc && g_app->m_editing)
     return loc;
 
   return NULL;
@@ -1735,17 +1666,14 @@ void GlobalWorld::LoadGame(char* _filename)
 
   char fullFilename[256];
 
-  if (!g_app->m_editing)
-  {
-    sprintf(fullFilename, "%susers/%s/%s", g_app->GetProfileDirectory(), g_app->m_userProfileName, _filename);
-    if (DoesFileExist(fullFilename))
-      in = new UnicodeTextFileReader(fullFilename);
+  sprintf(fullFilename, "%susers/%s/%s", g_app->GetProfileDirectory(), g_app->m_userProfileName, _filename);
+  if (DoesFileExist(fullFilename))
+    in = new UnicodeTextFileReader(fullFilename);
 
-    if (in && !in->IsUnicode())
-    {
-      delete in;
-      in = new TextFileReader(fullFilename);
-    }
+  if (in && !in->IsUnicode())
+  {
+    delete in;
+    in = new TextFileReader(fullFilename);
   }
 
   bool newProfile = false;
@@ -1845,7 +1773,6 @@ void GlobalWorld::LoadGame(char* _filename)
       if (objectivesComplete)
         loc->m_missionCompleted = true;
     }
-
   }
   DebugTrace("All Map Files successfully loaded\n");
 
@@ -1863,7 +1790,7 @@ void GlobalWorld::SaveGame(char* _filename)
   TextFileWriter* out = NULL;
   char fullFilename[256];
 
-  if (!g_app->m_editing && stricmp(g_app->m_userProfileName, "none") != 0)
+  if (stricmp(g_app->m_userProfileName, "none") != 0)
   {
     sprintf(fullFilename, "%susers/%s/%s", g_app->GetProfileDirectory(), g_app->m_userProfileName, _filename);
 
@@ -2019,20 +1946,7 @@ void GlobalWorld::SaveLocations(char* _filename)
 }
 
 // Find the lowest unused building ID in the current location
-int GlobalWorld::GenerateBuildingId()
-{
-  if (!g_app->m_editing)
-    return s_nextUniqueBuildingId++;
-
-  int id = 0;
-  while (true)
-  {
-    if (!g_app->m_location->GetBuilding(id))
-      break;
-    ++id;
-  }
-  return id;
-}
+int GlobalWorld::GenerateBuildingId() { return s_nextUniqueBuildingId++; }
 
 // Checks to see if any event's conditions are true. If they are, the first action
 // for that event will be executed. That event action is then deleted, and if there

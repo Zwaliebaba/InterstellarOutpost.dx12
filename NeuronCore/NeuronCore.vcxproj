@@ -92,7 +92,6 @@
     <ClInclude Include="bytestream.h" />
     <ClInclude Include="darray.h" />
     <ClInclude Include="Debug.h" />
-    <ClInclude Include="debug_render.h" />
     <ClInclude Include="DeviceNotify.h" />
     <ClInclude Include="directory.h" />
     <ClInclude Include="Event.h" />
@@ -170,7 +169,6 @@
     <ClCompile Include="3d_sprite.cpp" />
     <ClCompile Include="binary_stream_readers.cpp" />
     <ClCompile Include="bitmap.cpp" />
-    <ClCompile Include="debug_render.cpp" />
     <ClCompile Include="directory.cpp" />
     <ClCompile Include="EventManager.cpp" />
     <ClCompile Include="filecrc.cpp" />

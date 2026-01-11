@@ -11,7 +11,7 @@
 #include "resource.h"
 #include "shape.h"
 #include "text_renderer.h"
-#include "debug_render.h"
+
 #include "preferences.h"
 #include "random_number.h"
 #include "filesys_utils.h"
@@ -213,30 +213,19 @@ void Location::Init(const char* _missionFilename, const char* _mapFilename)
     }
   }
 
-  if (!g_app->m_editing)
-  {
-    InitBuildings();
-    RecalculateAITargets();
+  InitBuildings();
+  RecalculateAITargets();
 
-    double obstrGridSize = 64.f;
-    if (g_app->Multiplayer())
-      obstrGridSize = 32.0;
+  double obstrGridSize = 64.f;
+  if (g_app->Multiplayer())
+    obstrGridSize = 32.0;
 
-    m_entityGrid = new EntityGrid(32.0, 32.0);
-    m_entityGridCache = new EntityGridCache();
-    m_obstructionGrid = new ObstructionGrid(obstrGridSize, obstrGridSize);
+  m_entityGrid = new EntityGrid(32.0, 32.0);
+  m_entityGridCache = new EntityGridCache();
+  m_obstructionGrid = new ObstructionGrid(obstrGridSize, obstrGridSize);
 
-    m_routingSystem.Initialise();
-    m_seaRoutingSystem.Initialise();
-  }
-  else
-  {
-    for (int i = 0; i < m_levelFile->m_buildings.Size(); i++)
-    {
-      Building* building = m_levelFile->m_buildings.GetData(i);
-      building->m_pos.y = m_landscape.m_heightMap->GetValue(building->m_pos.x, building->m_pos.z);
-    }
-  }
+  m_routingSystem.Initialise();
+  m_seaRoutingSystem.Initialise();
 
   InitTeams();
 
@@ -767,8 +756,6 @@ Building* Location::GetBuilding(int _id)
   if (_id == -1)
     return NULL;
 
-  if (g_app->m_editing)
-    return m_levelFile->GetBuilding(_id);
   for (int i = 0; i < m_buildings.Size(); ++i)
   {
     if (m_buildings.ValidIndex(i))
@@ -1665,28 +1652,19 @@ void Location::Render()
   RenderBuildings();
   
   // good up to here
-  if (!g_app->m_editing && m_teams)
+  if (m_teams)
   {
     RenderTeams(); // must be u
-    CHECK_OPENGL_STATE();
   }
 
   //
   // Render all alpha'd objects
 
   RenderBuildingAlphas();
-  CHECK_OPENGL_STATE();
 
-  if (!g_app->m_editing)
-  {
-    CHECK_OPENGL_STATE();
-    RenderParticles();
-    CHECK_OPENGL_STATE();
-    RenderWeapons();
-    CHECK_OPENGL_STATE();
-    RenderSpirits();
-    CHECK_OPENGL_STATE();
-  }
+  RenderParticles();
+  RenderWeapons();
+  RenderSpirits();
 
   START_PROFILE("Render Routing System");
   m_routingSystem.Render();
@@ -2000,8 +1978,6 @@ void Location::RenderCurrentMessage()
 void Location::RenderChatMessages()
 {
   if (g_app->m_hideInterface)
-    return;
-  if (g_app->m_editing)
     return;
 
   static float boxHeight = 0.0f;
@@ -3731,8 +3707,6 @@ WorldObjectId Location::GetEntityId(const Vector3& startRay, const Vector3& dire
           static_cast<Officer*>(ent)->CalculateBoundingSphere(spherePos, sphereRadius);
 
           Vector3 hitPos;
-
-          //RenderSphere( spherePos, sphereRadius );
 
           bool rayHit = RaySphereIntersection(startRay, direction, spherePos, sphereRadius, 1e10, &hitPos);
           if (rayHit)

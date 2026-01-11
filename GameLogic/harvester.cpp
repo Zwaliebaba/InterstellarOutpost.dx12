@@ -8,7 +8,7 @@
 #include "shape.h"
 
 #include "text_renderer.h"
-#include "debug_render.h"
+
 #include "language_table.h"
 #include "random_number.h"
 #include "input.h"

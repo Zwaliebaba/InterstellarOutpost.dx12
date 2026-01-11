@@ -142,7 +142,6 @@ class Team
     void RenderVirii(double _predictionTime);
     void RenderDarwinians(double _predictionTime);
     void RenderOthers(double _predictionTime);
-    void RenderSyncErrors();
 
     static char* GetTeamType(int _teamType);
 

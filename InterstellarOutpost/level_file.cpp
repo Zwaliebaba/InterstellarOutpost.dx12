@@ -73,18 +73,15 @@ void LevelFile::ParseMissionFile(const char* _filename)
   TextReader* in = NULL;
   char fullFilename[256];
 
-  if (!g_app->m_editing)
-  {
-    // Try to load a save game first
-    sprintf(fullFilename, "%susers/%s/%s", g_app->GetProfileDirectory(), g_app->m_userProfileName, _filename);
-    if (DoesFileExist(fullFilename))
-      in = new UnicodeTextFileReader(fullFilename);
+  // Try to load a save game first
+  sprintf(fullFilename, "%susers/%s/%s", g_app->GetProfileDirectory(), g_app->m_userProfileName, _filename);
+  if (DoesFileExist(fullFilename))
+    in = new UnicodeTextFileReader(fullFilename);
 
-    if (in && !in->IsUnicode())
-    {
-      delete in;
-      in = new TextFileReader(fullFilename);
-    }
+  if (in && !in->IsUnicode())
+  {
+    delete in;
+    in = new TextFileReader(fullFilename);
   }
 
   if (!in)
@@ -1374,10 +1371,7 @@ void LevelFile::SaveMapFile(TextWriter* _out)
   if (g_app->m_multiwinia)
   {
     WriteCameraMounts(_out);
-    //WriteCameraAnims(_out);
-    //WriteBuildings(_out, true);
     WriteInstantUnits(_out);
-    //WritePrimaryObjectives(_out);
   }
 }
 
@@ -1386,16 +1380,13 @@ void LevelFile::SaveMissionFile(const char* _filename)
   TextFileWriter* out = NULL;
   char fullFilename[256];
 
-  if (!g_app->m_editing)
-  {
-    sprintf(fullFilename, "%susers/%s/%s", g_app->GetProfileDirectory(), g_app->m_userProfileName, _filename);
+  sprintf(fullFilename, "%susers/%s/%s", g_app->GetProfileDirectory(), g_app->m_userProfileName, _filename);
 
 #if defined(TARGET_DEBUG)
-    out = new TextFileWriter(fullFilename, false);
+  out = new TextFileWriter(fullFilename, false);
 #else
-    out = new TextFileWriter(fullFilename, true);
+  out = new TextFileWriter(fullFilename, true);
 #endif
-  }
 
   if (!out)
   {
@@ -1821,60 +1812,57 @@ void LevelFile::ParseRunningPrograms(TextReader* _in)
 
 void LevelFile::WriteRunningPrograms(TextWriter* _out)
 {
-  if (!g_app->m_editing)
+  Team* team = g_app->m_location->GetMyTeam();
+
+  _out->printf("\nRunningPrograms_StartDefinition\n");
+  //_out->printf( "\t# x      y       z      size\n");
+  _out->printf("\t# ==========================\n");
+
+  //
+  // Engineer     count   state   numSpirits  waypointX waypointZ    (positionX positionZ health)
+  // Squaddie     count   state   weaponType  waypointX waypointZ    (positionX positionZ health)
+
+  for (int t = 0; t < team->m_taskManager->m_tasks.Size(); ++t)
   {
-    Team* team = g_app->m_location->GetMyTeam();
-
-    _out->printf("\nRunningPrograms_StartDefinition\n");
-    //_out->printf( "\t# x      y       z      size\n");
-    _out->printf("\t# ==========================\n");
-
-    //
-    // Engineer     count   state   numSpirits  waypointX waypointZ    (positionX positionZ health)
-    // Squaddie     count   state   weaponType  waypointX waypointZ    (positionX positionZ health)
-
-    for (int t = 0; t < team->m_taskManager->m_tasks.Size(); ++t)
+    Task* task = team->m_taskManager->m_tasks[t];
+    if (task->m_state == Task::StateRunning)
     {
-      Task* task = team->m_taskManager->m_tasks[t];
-      if (task->m_state == Task::StateRunning)
+      if (task->m_type == GlobalResearch::TypeEngineer)
       {
-        if (task->m_type == GlobalResearch::TypeEngineer)
+        Engineer* engineer = static_cast<Engineer*>(g_app->m_location->GetEntitySafe(task->m_objId, Entity::TypeEngineer));
+        if (engineer)
         {
-          Engineer* engineer = static_cast<Engineer*>(g_app->m_location->GetEntitySafe(task->m_objId, Entity::TypeEngineer));
-          if (engineer)
-          {
-            _out->printf("\t%-15s %6d %6d %6d %8.2f %8.2f %8.2f %8.2f %d\n", Entity::GetTypeName(Entity::TypeEngineer), 1,
-                         engineer->m_state, engineer->GetNumSpirits(), engineer->m_wayPoint.x, engineer->m_wayPoint.z, engineer->m_pos.x,
-                         engineer->m_pos.z, engineer->m_stats[Entity::StatHealth]);
-          }
+          _out->printf("\t%-15s %6d %6d %6d %8.2f %8.2f %8.2f %8.2f %d\n", Entity::GetTypeName(Entity::TypeEngineer), 1,
+                       engineer->m_state, engineer->GetNumSpirits(), engineer->m_wayPoint.x, engineer->m_wayPoint.z, engineer->m_pos.x,
+                       engineer->m_pos.z, engineer->m_stats[Entity::StatHealth]);
         }
+      }
 
-        if (task->m_type == GlobalResearch::TypeSquad)
+      if (task->m_type == GlobalResearch::TypeSquad)
+      {
+        InsertionSquad* squad = static_cast<InsertionSquad*>(g_app->m_location->GetUnit(task->m_objId));
+        if (squad && squad->m_troopType == Entity::TypeInsertionSquadie)
         {
-          InsertionSquad* squad = static_cast<InsertionSquad*>(g_app->m_location->GetUnit(task->m_objId));
-          if (squad && squad->m_troopType == Entity::TypeInsertionSquadie)
+          _out->printf("\t%-15s %6d %6d %6d %8.2 %8.2", Entity::GetTypeName(Entity::TypeInsertionSquadie), squad->m_entities.NumUsed(), 0,
+                       squad->m_weaponType, squad->GetWayPoint().x, squad->GetWayPoint().z);
+
+          for (int e = 0; e < squad->m_entities.Size(); ++e)
           {
-            _out->printf("\t%-15s %6d %6d %6d %8.2 %8.2", Entity::GetTypeName(Entity::TypeInsertionSquadie), squad->m_entities.NumUsed(), 0,
-                         squad->m_weaponType, squad->GetWayPoint().x, squad->GetWayPoint().z);
-
-            for (int e = 0; e < squad->m_entities.Size(); ++e)
+            if (squad->m_entities.ValidIndex(e))
             {
-              if (squad->m_entities.ValidIndex(e))
-              {
-                Entity* entity = squad->m_entities[e];
+              Entity* entity = squad->m_entities[e];
 
-                _out->printf(" %8.2 %8.2 %6d", entity->m_pos.x, entity->m_pos.z, entity->m_stats[Entity::StatHealth]);
-              }
+              _out->printf(" %8.2 %8.2 %6d", entity->m_pos.x, entity->m_pos.z, entity->m_stats[Entity::StatHealth]);
             }
-
-            _out->printf("\n");
           }
+
+          _out->printf("\n");
         }
       }
     }
-
-    _out->printf("RunningPrograms_EndDefinition\n");
   }
+
+  _out->printf("RunningPrograms_EndDefinition\n");
 }
 
 void LevelFile::ParseDifficulty(TextReader* _in)

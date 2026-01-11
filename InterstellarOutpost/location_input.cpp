@@ -9,7 +9,7 @@
 #include "input_types.h"
 #include "random_number.h"
 #include "preferences.h"
-#include "debug_render.h"
+
 #include "clienttoserver.h"
 #include "soundsystem.h"
 #include "chatinput_window.h"
