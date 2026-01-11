@@ -11,7 +11,7 @@
 class BinaryReader;
 
 
-int FileCRC( BinaryReader *reader );
+size_t FileCRC(BinaryReader* reader);
 
 
 

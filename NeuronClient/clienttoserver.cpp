@@ -1388,38 +1388,6 @@ int ClientToServer::GetNumSlicesToAdvance(bool catchUp)
   return (numSlicesToAdvance);
 }
 
-//int ClientToServer::GetNumSlicesToAdvance( bool catchUp )
-//{
-//	if (catchUp)
-//	{
-//		return NUM_SLICES_PER_FRAME;
-//	}
-//
-//    int numUpdatesToProcess = m_lastValidSequenceIdFromServer - g_lastProcessedSequenceId;
-//    int numSlicesPending = numUpdatesToProcess * NUM_SLICES_PER_FRAME;
-//    if( g_sliceNum != -1 ) numSlicesPending -= g_sliceNum;
-//    else if( g_sliceNum == -1 ) numSlicesPending -= 10;
-//    
-//    if( numSlicesPending > 20 )
-//    {
-//        return NUM_SLICES_PER_FRAME;
-//    }
-//
-//    //float timeSinceStartOfAdvance = g_gameTime - g_lastServerAdvance;
-//    float timeSinceStartOfServerAdvance = GetHighResTime() - g_gameTimer.m_lastClientAdvance;
-//	//int numSlicesThatShouldBePending = 10 - timeSinceStartOfAdvance * 10.0f;
-//
-//    int numSlicesToAdvance = timeSinceStartOfServerAdvance * 100;
-//    if( g_sliceNum != -1 ) numSlicesToAdvance -= g_sliceNum;
-//    if( g_sliceNum == -1 ) numSlicesToAdvance -= 10;
-//
-//    //DEBUG_ASSERT( numSlicesToAdvance >= 0 );
-//    numSlicesToAdvance = max( numSlicesToAdvance, 0 );
-//    numSlicesToAdvance = min( numSlicesToAdvance, 10 );
-//    
-//    return numSlicesToAdvance;
-//}
-
 void ClientToServer::GenerateSyncValue()
 {
   auto frame = new IFrame;

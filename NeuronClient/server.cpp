@@ -9,7 +9,6 @@
 #include "hi_res_time.h"
 #include "profiler.h"
 #include "preferences.h"
-#include "hash.h"
 #include "app.h"
 #include "globals.h"
 #include "team.h"
@@ -120,15 +119,24 @@ static unsigned MakeRandom()
 
 static int GenSyncRandSeed(double _startTime, unsigned _random)
 {
-  unsigned int hash[5];
-  hash_context c;
+  // Combine _random and _startTime bits using simple mixing
+  unsigned long long timeBits;
+  static_assert(sizeof(timeBits) == sizeof(_startTime));
+  memcpy(&timeBits, &_startTime, sizeof(_startTime));
 
-  hash_initial(&c);
-  Hash(c, _random);
-  Hash(c, _startTime);
-  hash_final(&c, hash);
+  // Mix the bits together using a simple hash-like combination
+  unsigned result = _random;
+  result ^= static_cast<unsigned>(timeBits & 0xFFFFFFFF);
+  result ^= static_cast<unsigned>((timeBits >> 32) & 0xFFFFFFFF);
 
-  return static_cast<int>(hash[0]);
+  // Additional mixing to improve distribution
+  result ^= (result >> 16);
+  result *= 0x85ebca6b;
+  result ^= (result >> 13);
+  result *= 0xc2b2ae35;
+  result ^= (result >> 16);
+
+  return static_cast<int>(result);
 }
 
 void Server::Initialise()

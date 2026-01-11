@@ -1,93 +1,76 @@
-# InterstellarOutpost.dx12 – AI agent working notes
+# InterstellarOutpost.dx12 – AI Agent Working Notes
 
-These instructions make AI coding agents productive in this Windows/MSVC C++23 game project. They distill the repo’s architecture, workflows, and conventions; stick to these patterns and file locations.
+These instructions make AI coding agents productive in this Windows/MSVC C++23 game project.
 
 ## Context
-Project Type: Game
-Project Name: Interstellar Outpost 
-Language: C++
-Framework / Libraries: STL / CMake / CTest
-Architecture: Modular / RAII / OOP
+- **Project:** Interstellar Outpost – a DirectX 12 game ported from an OpenGL codebase
+- **Language:** C++23 (MSVC), uses WinRT for platform integration
+- **Build:** Visual Studio solution (`InterstellarOutpost.slnx`), MSBuild via vcxproj files
+- **Architecture:** Modular static libraries with raw-pointer cross-references to a singleton `App` (`g_app`)
 
-## General guidelines
-- Code Style: The project uses an .editorconfig file to enforce coding standards. Follow the rules defined in .editorconfig for indentation, line endings, and other formatting. Additional information can be found on the wiki at Implementation. The code requires C++23 features.
-- Error Handling: Use C++ exceptions for error handling and uses RAII smart pointers to ensure resources are properly managed. For some functions that return HRESULT error codes, they are marked noexcept, use std::nothrow for memory allocation, and should not throw exceptions.
+## Architecture Overview
 
-## Patterns
+### Library Structure
+| Directory | Purpose | Key Globals |
+|-----------|---------|-------------|
+| `NeuronCore/` | Platform abstractions, math, file I/O, OpenGL→DX12 translation layer | `g_prefsManager`,`g_windowManager` |
+| `NeuronClient/` | Input, sound, networking, Eclipse UI framework | `g_inputManager`, `g_eventHandler` |
+| `GameLogic/` | Game entities (`Entity`, `Building`, `WorldObject` hierarchies), AI, UI windows | — |
+| `InterstellarOutpost/` | Main application loop, renderer, camera, location management | `g_app` (singleton `App*`) |
 
-### Patterns to Follow
-Use RAII for all resource ownership (memory, file handles, etc.).
-Many classes utilize the pImpl idiom to hide implementation details, and to enable optimized memory alignment in the implementation.
-Use std::unique_ptr for exclusive ownership and std::shared_ptr for shared ownership.
-Use winrt::com_ptr for COM object management.
-Make use of anonymous namespaces to limit scope of functions and variables.
-Make use of DEBUG_ASSERT for debugging checks, but be sure to validate input parameters in release builds.
-Make use of the DebugTrace helper to log diagnostic messages, particularly at the point of throwing an exception.
+### Data Flow
+1. `main.cpp` owns the game loop (`UpdateAdvanceTime()`, `HandleCommonConditions()`)
+2. `App` orchestrates subsystems: `Renderer`, `SoundSystem`, `Location`, `GlobalWorld`, `Server`/`ClientToServer`
+3. Entity types derive from `WorldObject` → `Entity` (or `Building`) with type enums for polymorphic dispatch
+4. Preferences managed via `g_prefsManager->GetInt/SetInt/Save()` pattern
 
-### Patterns to Avoid
+## Formatting & Style
+Enforced via `.editorconfig`:
+- **Indent:** 2 spaces for C++ files
+- **Line length:** 140 max
+- **Braces:** same-line for simple blocks
 
-- Don’t use raw pointers for ownership.
-- Avoid macros for constants—prefer `constexpr` or `inline` `const`.
-- Don’t put implementation logic in header files unless using templates.
-- Avoid using `using namespace` in header files to prevent polluting the global namespace.
+## Patterns to Follow
+- **RAII everywhere**: `std::unique_ptr` for exclusive, `std::shared_ptr` for shared, `winrt::com_ptr` for DX/COM
+- **Diagnostics**: `DebugTrace(fmt, ...)` (debug-only via `OutputDebugString`), `DEBUG_ASSERT(expr)` for invariants (see `NeuronCore/Debug.h`)
+- **Fatal errors**: `Neuron::Fatal(fmt, ...)` triggers `__debugbreak()` then throws `std::exception`
+- **HRESULT handling**: mark functions `noexcept`, use `winrt::check_hresult`, allocate with `std::nothrow`
+- **Enum iteration**: use `ENUM_HELPER(T, Start, End)` macro from `NeuronHelper.h` for range-for support
 
-## No speculation
+## Patterns to Avoid
+- Raw owning pointers (use smart pointers)
+- Macros for constants—prefer `constexpr`
+- Implementation in headers (except templates)
+- `using namespace` in headers
 
-When creating documentation:
+## Key Files to Read First
+| File | Why |
+|------|-----|
+| `InterstellarOutpost/main.cpp` | Game loop, timing, input handling |
+| `InterstellarOutpost/app.h` | `App` class – central coordinator |
+| `NeuronCore/Debug.h` | `DebugTrace`, `DEBUG_ASSERT`, `Fatal` |
+| `NeuronCore/NeuronCore.h` | Master PCH, WinRT imports, STL includes |
+| `GameLogic/entity.h`, `building.h` | Entity/building type hierarchies |
 
-### Document Only What Exists
+## Build & Run
+```
+Open InterstellarOutpost.slnx → Build (Ctrl+Shift+B) → F5
+```
+Assets in `InterstellarOutpost/Assets/` are deployed to output alongside the executable.
 
-- Only document features, patterns, and decisions that are explicitly present in the source code.
-- Only include configurations and requirements that are clearly specified.
-- Do not make assumptions about implementation details.
+## Adding New Entity/Building Types
+1. Add enum value in `Entity::Type*` or `Building::Type*`
+2. Create `.cpp/.h` in `GameLogic/` deriving from base class
+3. Update factory method (`Entity::NewEntity` / `Building::NewBuilding`)
+4. Wire into `Location` if needed
 
-### Handle Missing Information
+## Documentation Rules
+- **Document only what exists**—cite file:line when referencing patterns
+- Ask clarifying questions rather than speculate on intent
+- Review each documented item against source code
 
-- Ask the user questions to gather missing information.
-- Document gaps in current implementation or specifications.
-- List open questions that need to be addressed.
-
-### Source Material
-
-- Always cite the specific source file and line numbers for documented features.
-- Link directly to relevant source code when possible.
-- Indicate when information comes from requirements vs. implementation.
-
-### Verification Process
-
-- Review each documented item against source code whenever related to the task.
-- Remove any speculative content.
-- Ensure all documentation is verifiable against the current state of the codebase.
-
-## Data and assets
-- `gamedata/` is auto‑mirrored to `bin/<Config>/gamedata` by a root custom target (`copy_gamedata`). If assets are “missing,” check that mirror path exists.
-
-## CMake patterns to follow
-- Link only via alias targets. Example from `src/CMakeLists.txt`:
-	- `target_link_libraries(InterstellarOutpost PRIVATE InterstellarOutpost::NeuronCore InterstellarOutpost::NeuronClient InterstellarOutpost::GameLogic)`
-- Tests are simple executables registered with CTest (no external framework required). Use the helper in `tests/CMakeLists.txt`:
-	- `add_project_test(test_name SOURCES test_xyz.cpp LIBRARIES InterstellarOutpost::GameLogic ... TIMEOUT 30)`
-	- Working dir is forced to the test’s target output folder so `gamedata` resolves.
-
-## Source layout highlights
-- App: `src/` (entry in `main.cpp`, app wiring, rendering, input, state). Key files: `GameApp.cpp/.h`, `Renderer.*`, `camera.*`, `user_input.*`, `taskmanager*`, `location*`, `global_world*`.
-- Engine libs: `libs/NeuronCore` (core utilities, JSON, PIX), `libs/NeuronClient` (client subsystems), `libs/GameLogic` (entities, world rules). Each has its own `CMakeLists.txt` and exposes a namespaced alias.
-
-### Pointers to read first
-- `README.md` (quickstart + architecture), `CMakePresets.json` (presets), root `CMakeLists.txt` (enforced policies and `copy_gamedata`).
-- `src/main.cpp` for the game loops and timing; `tests/CMakeLists.txt` for adding tests; `libs/*/CMakeLists.txt` for alias/visibility patterns.
-
-## Code Review Instructions
-
-When reviewing code, focus on the following aspects:
-
-- Adherence to coding standards defined in `.editorconfig`.
-- Make coding recommendations based on the *C++ Core Guidelines*.
-- Proper use of RAII and smart pointers.
-- Correct error handling practices and C++ Exception safety.
-- Clarity and maintainability of the code.
-- Adequate comments where necessary.
-- Compliance with the project's architecture and design patterns.
-- Ensure that all public functions and classes are covered by unit tests located on tests\ where applicable. Report any gaps in test coverage.
-- Check for performance implications, especially in geometry processing algorithms.
-- Provide brutally honest feedback on code quality, design, and potential improvements as needed.
+## Code Review Focus
+- Adherence to `.editorconfig` and C++ Core Guidelines
+- RAII and smart-pointer correctness
+- Exception safety (`noexcept` where appropriate)
+- Test coverage for public interfaces

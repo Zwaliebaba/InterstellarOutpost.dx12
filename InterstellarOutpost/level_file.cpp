@@ -2138,14 +2138,6 @@ void LevelFile::WriteMultiwiniaOptions(TextWriter* _out)
 
 bool LevelFile::HasEffect(char* _effect)
 {
-  /*for( int i = 0; i < m_effects.Size(); ++i )
-  {
-      if( strcmp( m_effects[i], _effect ) == 0 )
-      {
-          return true;
-      }
-  }*/
-
   return false;
 }
 

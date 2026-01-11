@@ -2621,11 +2621,6 @@ void GameMenuWindow::SetupMapSelectPage()
 
   for (int i = 0; i < maps.Size(); ++i)
   {
-#ifdef PERMITTED_MAPS
-    if (!g_app->IsMapPermitted(gameType, maps[i]->m_mapId))
-      continue;
-#endif
-
     auto lsb = new LevelSelectButton();
 
     char name[512];

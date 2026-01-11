@@ -9,10 +9,6 @@
 #include "team.h"
 #include "unit.h"
 #include "main.h"
-
-#include <unrar/rarbloat.h>
-#include <unrar/sha1.h>
-
 #include <strstream>
 #include <fstream>
 
@@ -732,32 +728,29 @@ void IFrame::CalculateDiff( const IFrame &_other, const RGBAColour &_otherColour
 
 void IFrame::CalculateHashValue()
 {
-	hash_context c;
+	// Simple FNV-1a style hash - no need to copy the data
+	unsigned hash = 2166136261u;
+	const unsigned char* data = reinterpret_cast<const unsigned char*>(m_data);
 
-    hash_initial( &c );
+	for (int i = 0; i < m_length; ++i)
+	{
+		hash ^= data[i];
+		hash *= 16777619u;
+	}
 
-	// Unfortunately for us, our SHA1 implementation modifies the data it 
-	// processes, so we take a copy.
+	// Final mixing
+	hash ^= (hash >> 16);
+	hash *= 0x85ebca6b;
+	hash ^= (hash >> 13);
 
-	char *scratch = new char[m_length];
-	
-	memcpy( scratch, m_data, m_length );
-
-	hash_process( &c, (unsigned char *) scratch, m_length );
-	uint32 hashResult[5];
-	hash_final( &c, hashResult );
-
-	m_hashValue = hashResult[0] & 0xFF;
+	m_hashValue = hash & 0xFF;
 	m_sequenceId = g_lastProcessedSequenceId;
 
 	static int maxIFrameLength = 0;
-	if (m_length > maxIFrameLength) 
+	if (m_length > maxIFrameLength)
 	{
 		maxIFrameLength = m_length;
-		//DebugTrace("Biggest IFrame so far: %d bytes\n", m_length);
 	}
-
-	delete[] scratch;
 }
 
 void DumpSyncDiffs( LList<SyncDiff *> &_differences )

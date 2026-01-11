@@ -120,8 +120,6 @@ App::App()
 
   g_loadingScreen->m_workQueue->Add(&App::Initialise, this);
 
-  // Need to serialise the loading of the sounds on PC 
-  // Can't unrar too files at once (unrar not thread safe, regrettably)
   g_loadingScreen->Render();
   m_soundsWorkQueue->Add(&App::LoadSounds, this);
 }

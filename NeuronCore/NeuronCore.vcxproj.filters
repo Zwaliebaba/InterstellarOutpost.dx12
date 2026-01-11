@@ -114,7 +114,6 @@
     <ClInclude Include="sorting_hash_table.h">
       <Filter>Container Templaces</Filter>
     </ClInclude>
-    <ClInclude Include="hash.h" />
     <ClInclude Include="map_utils.h" />
     <ClInclude Include="network_stream.h" />
     <ClInclude Include="profiler.h" />
@@ -157,17 +156,7 @@
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="random_number.h" />
-    <ClInclude Include="HashData.h" />
     <ClInclude Include="filecrc.h" />
-    <ClInclude Include="unrar\crc.h">
-      <Filter>Unrar</Filter>
-    </ClInclude>
-    <ClInclude Include="unrar\raros.h">
-      <Filter>Unrar</Filter>
-    </ClInclude>
-    <ClInclude Include="unrar\sha1.h">
-      <Filter>Unrar</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -269,14 +258,7 @@
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="random_number.cpp" />
-    <ClCompile Include="HashData.cpp" />
     <ClCompile Include="filecrc.cpp" />
-    <ClCompile Include="unrar\crc.cpp">
-      <Filter>Unrar</Filter>
-    </ClCompile>
-    <ClCompile Include="unrar\sha1.cpp">
-      <Filter>Unrar</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Project Files">
@@ -296,9 +278,6 @@
     </Filter>
     <Filter Include="Core">
       <UniqueIdentifier>{9e8d5b6c-4ac5-4753-8454-52d952cec10c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Unrar">
-      <UniqueIdentifier>{01996563-2845-4fdc-8b9d-7d70a1c994b2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

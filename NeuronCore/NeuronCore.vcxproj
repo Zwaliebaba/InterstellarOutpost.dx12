@@ -104,8 +104,6 @@
     <ClInclude Include="filesys_utils.h" />
     <ClInclude Include="FixedPipeline.h" />
     <ClInclude Include="float_vector3.h" />
-    <ClInclude Include="hash.h" />
-    <ClInclude Include="HashData.h" />
     <ClInclude Include="hash_map_darwin.h" />
     <ClInclude Include="hash_table.h" />
     <ClInclude Include="hi_res_time.h" />
@@ -166,9 +164,6 @@
     <ClInclude Include="unicode_string.h" />
     <ClInclude Include="unicode_text_file_writer.h" />
     <ClInclude Include="unicode_text_stream_reader.h" />
-    <ClInclude Include="unrar\crc.h" />
-    <ClInclude Include="unrar\raros.h" />
-    <ClInclude Include="unrar\sha1.h" />
     <ClInclude Include="user_info.h" />
     <ClInclude Include="vector2.h" />
     <ClInclude Include="vector3.h" />
@@ -189,7 +184,6 @@
     <ClCompile Include="FileSys.cpp" />
     <ClCompile Include="filesys_utils.cpp" />
     <ClCompile Include="FixedPipeline.cpp" />
-    <ClCompile Include="HashData.cpp" />
     <ClCompile Include="hi_res_time.cpp" />
     <ClCompile Include="invert_matrix.cpp" />
     <ClCompile Include="language_table.cpp" />
@@ -243,12 +237,6 @@
     <ClCompile Include="unicode_string.cpp" />
     <ClCompile Include="unicode_text_file_writer.cpp" />
     <ClCompile Include="unicode_text_stream_reader.cpp" />
-    <ClCompile Include="unrar\crc.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="unrar\sha1.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="user_info.cpp" />
     <ClCompile Include="vector2.cpp" />
     <ClCompile Include="vector3.cpp" />

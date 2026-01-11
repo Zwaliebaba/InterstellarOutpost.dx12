@@ -207,45 +207,6 @@ class LevelSelectButton : public LevelSelectButtonBase
         glDisable(GL_TEXTURE_2D);
       }
 
-      //    if( mapData->m_coop || mapData->m_forceCoop )
-      //    {
-      //        //g_gameFont.DrawText2D( realX + 400.0f, realY + 10.0f, m_fontSize, "%d Player", numPlayers );
-      //        char imageName[512];
-      //        sprintf( imageName, "icons\\menu_coop.bmp" );
-      //        if( mapData->m_forceCoop ) sprintf( imageName, "icons\\menu_forcecoop.bmp" );
-
-      //        if( g_app->m_resource->DoesTextureExist( imageName ) )
-      //        {        
-      //            int texId = g_app->m_resource->GetTexture( imageName );
-
-      //            glEnable( GL_TEXTURE_2D );
-      //            glBindTexture( GL_TEXTURE_2D, texId );
-      //            glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-      //            glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
-      //if( IS_DEMO && main->DemoRestrictedMap( mapData->m_mapId ) )
-      //            {
-      //                glColor4f( 0.2f, 0.2f, 0.2f, 0.7f );
-      //            }
-
-      //            int x = coopX;
-      //            int w = 32.0f * scale;
-      //            int h = 32.0f * scale;
-      //            int y = realY + 2;
-
-      //            w *= 0.7f;
-      //            h *= 0.7f;
-
-      //            glBegin( GL_QUADS );
-      //                glTexCoord2i(0,1);      glVertex2f( x, y );
-      //                glTexCoord2i(1,1);      glVertex2f( x+w, y );
-      //                glTexCoord2i(1,0);      glVertex2f( x+w, y + h );
-      //                glTexCoord2i(0,0);      glVertex2f( x, y + h );
-      //            glEnd();
-
-      //            glDisable( GL_TEXTURE_2D );
-      //        }     
-      //    }
-
       if (highlighted && GameMenuButton::s_previousHighlightButton != this)
       {
         g_app->m_soundSystem->TriggerOtherEvent(nullptr, "MenuRollOver", SoundSourceBlueprint::TypeMultiwiniaInterface);
