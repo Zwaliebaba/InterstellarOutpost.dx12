@@ -45,14 +45,11 @@ public:
 
 	// Grab the icon path associated with a particular control type
 	const std::string &getIcon( ControlType id ) const;
-	const std::string &getIcon( controltype_t id ) const;
 
-	void setIcon( controltype_t id, std::string const &iconfile );
+  void setIcon( controltype_t id, std::string const &iconfile );
 
 	// Associate an InputSpec with a control type, returning true on success
 	bool bind( controltype_t type, InputSpec const &spec, bool replace = false );
-
-	//bool replacePrimaryBinding( controltype_t type, InputSpec const &spec );
 
 	// Signals a frame change
 	void Advance();

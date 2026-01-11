@@ -100,13 +100,7 @@ class LevelSelectButton : public LevelSelectButtonBase
       }
       else
       {
-        const char* tempLevelName = GetMapNameId(maps[m_levelIndex]->m_fileName);
-        strcpy(levelName, tempLevelName);
-        if (!levelName)
-        {
-          //levelName = maps[m_levelId]->m_fileName;
-          strcpy(levelName, maps[m_levelIndex]->m_fileName);
-        }
+        strcpy(levelName, maps[m_levelIndex]->m_fileName);
       }
 
       UnicodeString name = LANGUAGEPHRASE(levelName);

@@ -28,9 +28,8 @@ public:
 
 	inline T const			&GetData		(unsigned short _x, unsigned short _y) const;
 	inline T				*GetPointer		(unsigned short _x, unsigned short _y);
-	inline T const			*GetConstPointer(unsigned short _x, unsigned short _y) const;
-	
-	inline void				PutData			(unsigned short _x, unsigned short _y, T const &_value);
+
+  inline void				PutData			(unsigned short _x, unsigned short _y, T const &_value);
 	inline void				AddToData		(unsigned short _x, unsigned short _y, T const &_value);
 	
 	inline unsigned short	GetNumRows		() const;
@@ -95,15 +94,6 @@ inline T* Array2D<T>::GetPointer(unsigned short _x, unsigned short _y)
 	if (_x >= m_numColumns || _y >= m_numRows) return &m_outsideValue;
 	return &(m_data[_y * m_numColumns + _x]);
 }
-
-
-template <class T>
-inline T const* Array2D<T>::GetConstPointer(unsigned short _x, unsigned short _y) const
-{
-	if (_x >= m_numColumns || _y >= m_numRows) return &m_outsideValue;
-	return &(m_data[_y * m_numColumns + _x]);
-}
-
 
 template <class T>
 inline void Array2D<T>::PutData(unsigned short _x, unsigned short _y, T const& _value)

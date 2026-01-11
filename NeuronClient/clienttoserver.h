@@ -118,7 +118,6 @@ class ClientToServer
     bool ProcessServerUpdates(Directory* letter);
     void ProcessFTPLetter(Directory* _letter);
 
-    void DebugPrintInbox();
     void GetSyncFileName(const char* _prefix, char* _syncFilename, int _bufSize);
 
     void ClientJoin(const char* _serverIp, int _serverPort);

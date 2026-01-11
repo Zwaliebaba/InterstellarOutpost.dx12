@@ -29,13 +29,9 @@ public:
 	NetSocketHandle		GetBoundSocketHandle();
 
 	NetRetCode	Bind();
-	
-    NetRetCode  EnableBroadcast();
 
-	int			GetPort() const;
+  int			GetPort() const;
 
-	NetIpAddress	GetListenAddress() const;
-	
 protected:
 	void AppDebugOutNetSocketError( int _errorCode );
 

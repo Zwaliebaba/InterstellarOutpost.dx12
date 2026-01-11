@@ -41,8 +41,7 @@ public:
 
 	T 				GetValue(double _x, double _y) const;
 	T const			&GetValueNearest(double _x, double _y) const; // Like GetValue but without interpolation
-	T				*GetPointerNearest(double _x, double _y) const;
-	T				GetHighestValue() const;
+  T				GetHighestValue() const;
 
     inline int		GetMapIndexX(double _realX) const;
     inline int		GetMapIndexY(double _realY) const;
@@ -157,14 +156,6 @@ T const& SurfaceMap2D<T>::GetValueNearest(double _x, double _y) const
 {
 	return GetData(floor(_x * m_invCellSizeX), floor(_y * m_invCellSizeY));
 }
-
-
-template <class T>
-T* SurfaceMap2D<T>::GetPointerNearest(double _x, double _y) const
-{
-	return GetPointer(floor(_x * m_invCellSizeX), floor(_y * m_invCellSizeY));
-}
-
 
 template <class T>
 T SurfaceMap2D<T>::GetHighestValue() const

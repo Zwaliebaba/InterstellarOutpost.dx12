@@ -317,7 +317,7 @@ int BlueprintStore::GetNumInfected()
     int result = 0;
     for( int i = 0; i < BLUEPRINTSTORE_NUMSEGMENTS; ++i )
     {
-        if( !(m_segments[i] < 100.0) )
+        if(m_segments[i] >= 100.0)
         {
             ++result;
         }
@@ -331,7 +331,7 @@ int BlueprintStore::GetNumClean()
     int result = 0;
     for( int i = 0; i < BLUEPRINTSTORE_NUMSEGMENTS; ++i )
     {
-        if( !(m_segments[i] > 0.0 ) )
+        if(m_segments[i] <= 0.0)
         {
             ++result;
         }

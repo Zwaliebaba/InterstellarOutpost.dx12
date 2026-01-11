@@ -61,36 +61,4 @@ public:
 	int				Tell		();
 };
 
-
-//*****************************************************************************
-// Class BinaryDataReader
-//*****************************************************************************
-
-class BinaryDataReader: public BinaryReader
-{
-protected:
-	unsigned int		m_offset;
-
-public:
-	unsigned char const *m_data;
-	unsigned int		m_dataSize;
-
-	BinaryDataReader			(unsigned char const *_data, unsigned int _dataSize, 
-								 char const *_filename);
-	~BinaryDataReader			();
-
-    bool			IsOpen		();
-
-	signed char		ReadS8		();
-	short			ReadS16		();
-	int				ReadS32		();
-	unsigned char	ReadU8		();
-
-	unsigned int	ReadBytes	(unsigned int _count, unsigned char *_buffer);
-
-	int				Seek		(int _offset, int _origin);
-	int				Tell		();
-};
-
-
 #endif

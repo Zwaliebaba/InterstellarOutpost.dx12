@@ -1,6 +1,4 @@
 #include "pch.h"
-
-#ifdef USE_DIRECT3D
 #include "opengl_trace.h"
 #include "opengl_directx_internals.h"
 #include "opengl_directx_dlist_dev.h"
@@ -15,8 +13,6 @@
 #include "landscape_renderer.h"
 #include "location.h"
 #include "renderer.h"
-#include "water.h"
-#include "water_reflection.h"
 #include "input.h"
 #include "resource.h"
 #include "work_queue.h"
@@ -87,7 +83,6 @@ namespace OpenGLD3D
 // Misc
 static D3DCULL s_cullMode = D3DCULL_CW;
 static bool s_ccwFrontFace = true;
-static bool s_cullBackFace = true;
 
 // Hints
 static GLenum s_fogHint = GL_DONT_CARE;
@@ -95,7 +90,6 @@ static GLenum s_polygonSmoothHint = GL_DONT_CARE;
 
 // Matrix and Projection
 static GLenum s_matrixMode = GL_MODELVIEW;
-static auto s_targetMatrixTransformType = D3DTS_WORLD;
 static MatrixStack* s_pTargetMatrixStack = nullptr;
 
 static MatrixStack* s_pModelViewMatrixStack = nullptr;
@@ -184,24 +178,7 @@ class CurrentAttributes : public CustomVertex
 
 static CurrentAttributes s_currentAttribs;
 
-// Attribute Stack
-class Attributes
-{
-  public:
-    Attributes(const CurrentAttributes& _currentAttribs, IDirect3DStateBlock9* _state);
-
-    CurrentAttributes m_currentAttribs;
-    IDirect3DStateBlock9* m_d3dState;
-};
-
-static std::stack<Attributes> s_attributeStack;
 bool GenerateMipmaps();
-
-// --- Attributes -----------------------------------------------------------------
-
-Attributes::Attributes(const CurrentAttributes& _currentAttribs, IDirect3DStateBlock9* _state)
-  : m_currentAttribs(_currentAttribs),
-    m_d3dState(_state) {}
 
 // --- CurrentAttributes ----------------------------------------------------------
 
@@ -237,7 +214,6 @@ static void InitialiseData()
   s_pProjectionMatrixStackActual = new MatrixStackActual(D3DTS_PROJECTION);
 
   s_matrixMode = GL_MODELVIEW;
-  s_targetMatrixTransformType = D3DTS_WORLD;
   s_pModelViewMatrixStack = s_pModelViewMatrixStackActual;
   s_pProjectionMatrixStack = s_pProjectionMatrixStackActual;
   s_pTargetMatrixStack = s_pModelViewMatrixStack;
@@ -266,7 +242,6 @@ static void InitialiseData()
 
   // Misc
   s_ccwFrontFace = true;
-  s_cullBackFace = true;
   s_cullMode = D3DCULL_CW;
 
   // Hints
@@ -291,9 +266,6 @@ void CreateD3dPoolDefaultResources()
   DEBUG_ASSERT(!g_deformEffect);
   if (!g_deformEffect)
     g_deformEffect = DeformEffect::Create();
-  //DEBUG_ASSERT(!g_waterReflectionEffect);
-  if (!g_waterReflectionEffect)
-    g_waterReflectionEffect = WaterReflectionEffect::Create();
   DEBUG_ASSERT(!g_fixedPipeline);
   g_fixedPipeline = new FixedPipeline();
 }
@@ -312,9 +284,6 @@ void ReleaseD3DPoolDefaultResources()
 {
   SAFE_DELETE(g_fixedPipeline);
   SAFE_DELETE(g_deformEffect);
-  SAFE_DELETE(g_waterReflectionEffect);
-  if (g_app && g_app->m_location && g_app->m_location->m_water)
-    g_app->m_location->m_water->ReleaseD3DPoolDefaultResources();
   if (g_app && g_app->m_location && g_app->m_location->m_landscape.m_renderer)
     g_app->m_location->m_landscape.m_renderer->ReleaseD3DPoolDefaultResources();
 
@@ -330,8 +299,6 @@ void CreateD3DResources() { CreateD3dPoolDefaultResources(); }
 void ReleaseD3DResources()
 {
   ReleaseD3DPoolDefaultResources();
-  if (g_app && g_app->m_location && g_app->m_location->m_water)
-    g_app->m_location->m_water->ReleaseD3DResources();
   if (g_app && g_app->m_location && g_app->m_location->m_landscape.m_renderer)
     g_app->m_location->m_landscape.m_renderer->ReleaseD3DResources();
 }
@@ -605,12 +572,10 @@ void glMatrixMode(GLenum mode)
   {
   case GL_MODELVIEW:
     s_pTargetMatrixStack = s_pModelViewMatrixStack;
-    s_targetMatrixTransformType = D3DTS_WORLD;
     break;
 
   case GL_PROJECTION:
     s_pTargetMatrixStack = s_pProjectionMatrixStack;
-    s_targetMatrixTransformType = D3DTS_PROJECTION;
     break;
   }
 }
@@ -1237,15 +1202,6 @@ bool GeneratingMipmaps()
   return !s_texturesToMipmap.empty();
 }
 
-int OpenGLRegisterD3DTexture(LPDIRECT3DTEXTURE9 _texture)
-{
-  GLuint id;
-  glGenTextures(1, &id);
-
-  s_textureIds[id] = _texture;
-  return id;
-}
-
 static int d3dCreateTexture(GLenum target, GLint components, GLint width, GLint height, GLenum format, GLenum type, const void* data,
                             bool mipmapping, bool _compressed = false)
 {
@@ -1547,21 +1503,6 @@ static GLenum direct3DBlendFactorToOpenGL(D3DBLEND factor)
   }
 }
 
-static GLenum direct3DFogModeToOpenGL(D3DFOGMODE param)
-{
-  switch (param)
-  {
-  case D3DFOG_LINEAR:
-    return GL_LINEAR;
-  //case GL_EXP: return D3DFOG_EXP;
-  //case GL_EXP2: return D3DFOG_EXP2;
-  default:
-    // Invalid fog mode
-    DEBUG_ASSERT(FALSE);
-    return GL_LINEAR;
-  }
-}
-
 void glGetIntegerv(GLenum pname, GLint* params)
 {
   GL_TRACE_IMP(" glGetIntegerv(%s, (int *)%p)", glEnumToString(pname), params);
@@ -1655,15 +1596,6 @@ void glGetIntegerv(GLenum pname, GLint* params)
 
   default: GL_TRACE("-glGetIntegerv(%s, (int *)%p) not implemented", glEnumToString(pname), params)
   }
-}
-
-static void direct3DColourToFloatv(D3DCOLOR colour, GLfloat* params)
-{
-  // ((D3DCOLOR)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
-  params[0] = ((colour >> 16) & 0xff) / 255.0f;
-  params[1] = ((colour >> 8) & 0xff) / 255.0f;
-  params[2] = ((colour) & 0xff) / 255.0f;
-  params[3] = ((colour >> 24) & 0xff) / 255.0f; // endianity
 }
 
 void glGetFloatv(GLenum pname, GLfloat* params)
@@ -1861,15 +1793,6 @@ static void transformByModelView(D3DVECTOR& v, float w /* 0.0f for directional, 
 void glLightfv(GLenum light, GLenum pname, const GLfloat* params)
 {
   GL_TRACE_IMP(" glLightfv(%s, %s, (const float *)%p)", glEnumToString(light), glEnumToString(pname), params)
-
-  // Possible rewrite: 
-  //	- Change this function to modify just a D3DLIGHT9 structure
-  //	- and make the state changes only when required.
-
-  //20 glLightfv(GL_LIGHT0, GL_POSITION, (const float *)0017F458)
-  //21 glLightfv(GL_LIGHT0, GL_DIFFUSE, (const float *)0017F484)
-  //22 glLightfv(GL_LIGHT0, GL_SPECULAR, (const float *)0017F484)
-  //23 glLightfv(GL_LIGHT0, GL_AMBIENT, (const float *)0017F49C)
 
   DWORD lightIndex = light - GL_LIGHT0;
 
@@ -2540,25 +2463,6 @@ void glClipPlane(GLenum plane, const GLdouble* equation)
 void glFinish()
 {
   GL_TRACE_IMP(" glFinish()");
-
-  return;
-
-  // Lock the back buffer to force Direct3D to flush all pending graphics operations
-
-  IDirect3DSurface9* backbuffer = nullptr;
-  HRESULT hr = g_pd3dDeviceActual->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backbuffer);
-  DEBUG_ASSERT(hr == D3D_OK);
-
-  D3DLOCKED_RECT lockedRect;
-  hr = backbuffer->LockRect(&lockedRect, nullptr, 0);
-  DEBUG_ASSERT(hr != D3DERR_INVALIDCALL);
-  DEBUG_ASSERT(hr != D3DERR_WASSTILLDRAWING);
-  DEBUG_ASSERT(hr == D3D_OK);
-
-  hr = backbuffer->UnlockRect();
-  DEBUG_ASSERT(hr == D3D_OK);
-
-  backbuffer->Release();
 }
 
 void glScissor(GLint x, GLint y, GLsizei width, GLsizei height)
@@ -2577,4 +2481,3 @@ int Shader::SetSamplerGLTextureId(const char* name, int tex) { return SetSampler
 
 int Shader::SetSamplerGLFixedStage(const char* name, int tex) { return SetSamplerGLTextureId(name, s_textureStates[tex].target); }
 
-#endif // USE_DIRECT3D

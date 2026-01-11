@@ -30,8 +30,7 @@ public:
 	bool					m_hasLoaded;
 
 protected:
-    int	m_numOfficialLevels;
-	int	m_totalKills;
+  int	m_totalKills;
 
 public:
     AchievementTracker();
@@ -42,14 +41,8 @@ public:
     bool AlreadyWonLevel( char *_mapName );
     bool AlreadyVisitedLevel( char *_mapName );
 
-    unsigned char *GetWonLevels();
-    unsigned char *GetVisitedLevels();
-
     int NumWonLevels();
     int NumVisitedLevels();
-	int GetCurrentLevelId();
-	const char *GetLevelName( int _id ) const;
-	int GetLevelId( const char *_mapFilename );
 
     void SetNumLevels( int _numLevels );
 
@@ -61,8 +54,6 @@ public:
 	unsigned char GetViralAchievementMask();
 
 	bool HasLoaded();
-
-	int GetTotalKills();
 };
 
 #endif

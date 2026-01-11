@@ -126,8 +126,6 @@ void RestartWindowManagerAndRenderer()
 	
 	bool hack = !g_windowManager->Windowed() && !g_prefsManager->GetInt( "ScreenWindowed" );
 
-	// shutdown old window
-	//getW32EventHandler()->UnbindAltTab(); // was unbind done by someone else? it will be too late when window is destroyed
 	g_windowManager->DestroyWin();
 	delete g_app->m_renderer;
 

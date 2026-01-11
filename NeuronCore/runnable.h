@@ -77,14 +77,6 @@ private:
 	A1 m_arg;
 };
 
-template <class T, class A1>
-inline
-Method1<T, A1> *method1( void (T::*_func)( A1 ), T *_this, A1 _arg )
-{
-	return new Method1< T, A1 >( _func, _this, _arg );
-}
-
-
 class Job
 {
 public:

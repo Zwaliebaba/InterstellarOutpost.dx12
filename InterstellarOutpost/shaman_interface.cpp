@@ -61,26 +61,6 @@ void ShamanInterface::Advance()
 			m_circleOffset = ((M_PI * 2) / m_icons.Size()) * -m_currentSelectedIcon;
 		}
 	}
-
-	//AdvanceMouseInIcon();
-}
-
-void ShamanInterface::AdvanceMouseInIcon()
-{
-	Vector2 mousePos( g_target->X(), g_target->Y() );
-	for( int i = 0; i < m_icons.Size(); ++i )
-	{
-		float distance = (m_icons[i]->m_screenPos - mousePos).Mag();
-		if( distance <= 60.0 ) // half icon size
-		{	
-			if( m_currentSelectedIcon != i )
-			{
-				m_currentSelectedIcon = i;
-				g_app->m_soundSystem->TriggerOtherEvent( NULL, "MouseOverIcon", SoundSourceBlueprint::TypeInterface );
-			}
-			break;
-		}
-	}
 }
 
 void ShamanInterface::AdvanceSelectionInput()
@@ -122,26 +102,6 @@ void ShamanInterface::Render()
 	}
 	RenderSelectionIcon();
 	RenderEggs();
-
-	// render summon time
-	/*if( m_icons.ValidIndex( m_currentSelectedIcon ) )
-	{
-		float summonTime = Shaman::GetSummonTime(m_icons[m_currentSelectedIcon]->m_type);
-		char time[64];
-		sprintf( time, "Time: %2.0", summonTime );
-
-		int x = g_app->m_renderer->ScreenW() / 2.0;
-		int y = (g_app->m_renderer->ScreenH() / 2.0) + 75;
-
-		glColor4f( 1.0, 1.0, 1.0, 0.0);
-		g_gameFont.SetRenderOutline(true);
-		g_gameFont.DrawText2DCentre( x, y, 20.0, time );
-		
-		g_gameFont.SetRenderOutline(false);
-		glColor4f( 1.0, 1.0, 1.0, 1.0 );
-		g_gameFont.DrawText2DCentre( x, y, 20.0, time );
-	}*/
-
 	g_gameFont.EndText2D();
 }
 

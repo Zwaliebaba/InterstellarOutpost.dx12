@@ -81,55 +81,6 @@ bool DoesFileExist(const char *_fullPath)
 #define FILE_PATH_BUFFER_SIZE 256
 static char s_filePathBuffer[FILE_PATH_BUFFER_SIZE + 1];
 
-char *ConcatPaths(const char *_firstComponent, ...)
-{
-	va_list components;
-	const char *component;
-	char *buffer, *returnBuffer;
-	
-	buffer = _strdup(_firstComponent);
-	
-	va_start(components, _firstComponent);
-	while ((component = va_arg(components, const char *)) != 0)
-	{
-		buffer = (char *)realloc(buffer, strlen(buffer) + 1 + strlen(component) + 1);
-		strcat(buffer, "/");
-		strcat(buffer, component);
-	}
-	va_end(components);
-	
-	returnBuffer = newStr(buffer);
-	free(buffer);
-	return returnBuffer;
-}
-
-char *GetDirectoryPart(const char *_fullFilePath)
-{
-    strncpy(s_filePathBuffer, _fullFilePath, FILE_PATH_BUFFER_SIZE);
-    
-    char *finalSlash = strrchr(s_filePathBuffer, '/');
-    if( finalSlash )
-    {
-        *(finalSlash+1) = '\x0';
-        return s_filePathBuffer;
-    }
-
-    return NULL;
-}
-
-
-char *GetFilenamePart(const char  *_fullFilePath)
-{
-    const char *filePart = strrchr(_fullFilePath, '/') + 1;
-    if( filePart )
-    {
-        strncpy(s_filePathBuffer, filePart, FILE_PATH_BUFFER_SIZE);
-        return s_filePathBuffer;
-    }
-    return NULL;
-}
-
-
 const char *GetExtensionPart(const char *_fullFilePath)
 {
     if( !strrchr(_fullFilePath, '.') ) return NULL;
@@ -161,7 +112,7 @@ bool AreFilesIdentical(const char *_name1, const char *_name2)
         exitNow = true;
     }
 
-    while (exitNow == false && !feof(in1) && !feof(in2))
+    while (!exitNow && !feof(in1) && !feof(in2))
     {
         int a = fgetc(in1);
         int b = fgetc(in2);
@@ -173,7 +124,7 @@ bool AreFilesIdentical(const char *_name1, const char *_name2)
         }
     }
 
-    if (exitNow == false && feof(in1) != feof(in2))
+    if (!exitNow && feof(in1) != feof(in2))
     {
         rv = false;
     }
@@ -191,35 +142,6 @@ bool CreateDirectory(const char *_directory)
     if( result == 0 ) return true;                              // Directory was created
     if( result == -1 && errno == 17 /* EEXIST */ ) return true;              // Directory already exists    
     else return false;
-}
-
-bool CreateDirectoryRecursively(const char *_directory)
-{
-	const char *p;
-	char *buffer;
-	bool error = false;
-	
-	if ( strlen(_directory) == 0 )
-		return false;
-
-	buffer = new char[ strlen(_directory) + 1 ];
-	p = _directory;
-	if (*p == '/')
-		p++;
-	
-	p = strchr(p, '/');
-	while (p != NULL && !error)
-	{
-		memcpy(buffer, _directory, p - _directory);
-		buffer[ p-_directory ] = '\0';
-		error = !CreateDirectory(buffer);
-		p = strchr(p+1, '/');
-	}
-	
-	if (error)
-		return false;
-	else
-		return CreateDirectory(_directory);
 }
 
 void DeleteThisFile(const char *_filename)

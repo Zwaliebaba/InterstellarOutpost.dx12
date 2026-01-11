@@ -167,23 +167,6 @@ void DropDownMenu::SelectOption( int _value )
     if( m_int ) *m_int = _value;
 }
 
-
-bool DropDownMenu::SelectOption2(char const *_option)
-{
-	for (int i = 0; i < m_options.Size(); ++i)
-	{
-		char *itemName = m_options[i]->m_word;
-		if (stricmp(itemName, _option) == 0)
-		{
-			SelectOption(m_options[i]->m_value);
-			return true;
-		}
-	}
-
-	return false;
-}
-
-
 int DropDownMenu::GetSelectionValue()
 {
 	if (m_currentOption >= 0 && m_currentOption < m_options.Size())
@@ -193,20 +176,6 @@ int DropDownMenu::GetSelectionValue()
 	
 	return -1;
 }
-
-
-void DropDownMenu::GetSelectionName(UnicodeString &_dest)
-{
-	if (m_currentOption < 0 || m_currentOption > m_options.Size())
-	{
-		_dest = UnicodeString();
-	}
-	else
-	{
-		_dest = LANGUAGEPHRASE(m_options[m_currentOption]->m_word);
-	}
-}
-
 
 void DropDownMenu::RegisterInt( int *_int )
 {

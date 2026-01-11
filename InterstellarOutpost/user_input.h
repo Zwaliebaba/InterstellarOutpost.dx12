@@ -19,8 +19,7 @@ public:
 private:
 	Vector3		m_mousePos3d;
 
-    void	AdvanceMouse();
-	void	AdvanceMenus();
+  void	AdvanceMenus();
 
     LList   <Vector3 *> m_mousePosHistory;
 	

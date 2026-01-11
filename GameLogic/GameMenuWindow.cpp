@@ -19,7 +19,6 @@
 #include "NewOrJoinButton.h"
 #include "QuitButton.h"
 #include "PrologueButton.h"
-#include "CampaignButton.h"
 #include "WaitingButton.h"
 #include "ServerTitleInfoButton.h"
 #include "FiltersPageButton.h"
@@ -45,6 +44,7 @@
 #include "KickPlayerButton.h"
 #include "ConnectButton.h"
 #include "CSpectatorButton.h"
+#include "main.h"
 #include "motdButton.h"
 #include "update_page_buttons.h"
 #include "mainmenus.h"
@@ -292,7 +292,6 @@ GameMenuWindow::GameMenuWindow()
     m_customMapId(-1),
     m_waitingForTeamID(false),
     m_waitingGameType(-1),
-    m_setupNewPage(false),
     m_gameTypeFilter(-1),
     m_showDemosFilter(true),
     m_showIncompatibleGamesFilter(true),
@@ -426,7 +425,7 @@ void GameMenuWindow::Update()
   }
 
   if (m_currentPage != m_newPage)
-    m_setupNewPage = true;
+    ;
 }
 
 void GameMenuWindow::CreateErrorDialogue(UnicodeString _error, int _backPage)
@@ -1507,7 +1506,6 @@ void GameMenuWindow::SetupNewPage(int _page)
     g_app->m_renderer->StartMenuTransition();
 
   m_currentPage = _page;
-  m_setupNewPage = false;
 }
 
 void GameMenuWindow::SetupMainPage()
@@ -1612,11 +1610,11 @@ void GameMenuWindow::SetupDarwiniaPage()
   RegisterButton(pb);
   m_buttonOrder.PutData(pb);
 
-  auto cb = new CampaignButton("Campaign");
-  cb->SetShortProperties("campaign", x, y += gap + buttonH, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_campaign"));
-  RegisterButton(cb);
-  cb->m_fontSize = fontSize;
-  m_buttonOrder.PutData(cb);
+  //auto cb = new CampaignButton("Campaign");
+  //cb->SetShortProperties("campaign", x, y += gap + buttonH, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_campaign"));
+  //RegisterButton(cb);
+  //cb->m_fontSize = fontSize;
+  //m_buttonOrder.PutData(cb);
 
   y = leftY + leftH - (buttonH * 2);
 
@@ -1660,7 +1658,6 @@ void GameMenuWindow::SetupQuickMatchGamePage()
   m_serverY = y;
   m_serverW = buttonW;
   m_serverH = buttonH * 0.6f;
-  m_serverFontSize = fontSmall;
   m_serverGap = m_serverH;
   m_serverButtonOrderStartIndex = m_buttonOrder.Size();
 
@@ -1700,7 +1697,6 @@ void GameMenuWindow::SetupAchievementsPage()
   m_serverY = y;
   m_serverW = titleW * 0.9f;
   m_serverH = (g_app->m_renderer->ScreenH() / 16) * 1.6f; // 64 pixels is height of achievement images
-  m_serverFontSize = fontSmall;
   m_serverGap = m_serverH;
   m_serverButtonOrderStartIndex = m_buttonOrder.Size();
 
@@ -1762,7 +1758,6 @@ void GameMenuWindow::SetupJoinGamePage()
   m_serverY = y;
   m_serverW = titleW * 0.9f;
   m_serverH = buttonH * 0.6f;
-  m_serverFontSize = fontSmall;
   m_serverGap = m_serverH;
   m_serverButtonOrderStartIndex = m_buttonOrder.Size();
 
@@ -2004,15 +1999,6 @@ void GameMenuWindow::SetupNewOrJoinPage()
   button->m_fontSize = fontSize;
   RegisterButton(button);
   m_buttonOrder.PutData(button);
-
-  // Quick match for PC
-  // Removed by Chris.  It doesn't work.
-
-  //QuickMatchButton *qm = new QuickMatchButton();
-  //qm->SetShortProperties( "quickmatch", buttonX, yPos+=buttonH+gap, buttonW, buttonH, LANGUAGEPHRASE("multiwinia_menu_quickmatch") );
-  //qm->m_fontSize = fontSize;
-  //RegisterButton( qm );
-  //m_buttonOrder.PutData( qm );
 
   yPos = leftY + leftH - buttonH * 2;
 

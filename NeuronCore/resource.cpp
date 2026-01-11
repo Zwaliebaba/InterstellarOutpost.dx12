@@ -346,18 +346,6 @@ Shape* Resource::GetShapeCopy(const char* _name, bool _animating, bool _buildDis
   return theShape;
 }
 
-bool Resource::SoundExists(const char* _soundName)
-{
-  bool exists = false;
-  char buf[512];
-
-  sprintf(buf, "%s\\sounds\\%s.wav", FileSys::GetHomeDirectoryA().c_str(), _soundName);
-  if (exists = FileExists(buf))
-    return exists;
-
-  return false;
-}
-
 SoundStreamDecoder* Resource::GetSoundStreamDecoder(const char* _filename)
 {
   char buf[256];
@@ -376,44 +364,6 @@ SoundStreamDecoder* Resource::GetSoundStreamDecoder(const char* _filename)
     return nullptr;
 
   return ssd;
-}
-
-int Resource::WildCmp(const char* wild, const char* string)
-{
-  const char* cp = nullptr;
-  const char* mp = nullptr;
-
-  while ((*string) && (*wild != '*'))
-  {
-    if ((*wild != *string) && (*wild != '?'))
-      return 0;
-    wild++;
-    string++;
-  }
-
-  while (*string)
-  {
-    if (*wild == '*')
-    {
-      if (!*++wild)
-        return 1;
-      mp = wild;
-      cp = string + 1;
-    }
-    else if ((*wild == *string) || (*wild == '?'))
-    {
-      wild++;
-      string++;
-    }
-    else
-    {
-      wild = mp;
-      string = cp++;
-    }
-  }
-
-  while (*wild == '*') { wild++; }
-  return !*wild;
 }
 
 int Resource::CreateDisplayList(const char* _name)
@@ -667,62 +617,6 @@ char* Resource::GenerateName()
 
   return name;
 }
-
-void Resource::LoadMod(const char* _modName)
-{
-#ifndef DEMOBUILD
-#ifndef PURITY_CONTROL
-#ifdef USE_DARWINIA_MOD_SYSTEM
-  bool modsEnabled = g_prefsManager->GetInt("ModSystemEnabled", 0) != 0; if (modsEnabled)
-  {
-    if (m_modName)
-    {
-      delete m_modName;
-      m_modName = NULL;
-    }
-
-    if (stricmp(_modName, "none") != 0)
-    {
-      m_modName = _strdup(_modName);
-
-      FlushOpenGlState();
-      RegenerateOpenGlState();
-    }
-
-    EntityBlueprint::Initialise();
-    const char* lang = g_app->GetDefaultLanguage();
-    g_app->SetLanguage(g_prefsManager->GetString("TextLanguage", lang), false);
-    g_prefsManager->SetString("Mod", _modName);
-    g_prefsManager->Save();
-
-    /*if( strcmp( g_app->m_userProfileName, "none" ) == 0 )
-    {
-        // new mod is being loaded - create a user profile to go with it
-        g_app->SetProfileName( m_modName );
-        g_app->LoadProfile();
-        g_app->SaveProfile( true, false );
-    }*/
-  }
-#endif // USE_DARWINIA_MOD_SYSTEM
-#endif // !PURITY_CONTROL
-#endif // !DEMOBUILD
-}
-
-char* Resource::GetBaseDirectory()
-{
-  static char result[256];
-
-  if (m_modName)
-    sprintf(result, "%smods/%s/", g_app->GetProfileDirectory(), m_modName);
-  else
-    sprintf(result, "");
-
-  return result;
-}
-
-const char* Resource::GetModName() { return m_modName; }
-
-bool Resource::IsModLoaded() { return (m_modName != nullptr); }
 
 TextFileWriter* Resource::GetTextFileWriter(const char* _filename, bool _encrypt)
 {

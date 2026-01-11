@@ -67,15 +67,10 @@ public:
 	bool RawDoesPhraseExist					(char const *_key, InputMode _mood);
 	const UnicodeString &RawLookupPhrase	(char const *_key, InputMode _mood);
 
-    DArray<LangPhrase *> *GetPhraseList();
-
-    void TestAgainstEnglish();     
+  void TestAgainstEnglish();
     void ReplaceStringFlag					( char flag, char *string, char *subject );
 
-	bool ReadUnicode();
-
-	bool buildCaption(UnicodeString const &_baseString, UnicodeString& _dest);
-	bool buildCaption(UnicodeString const &_baseString, UnicodeString& _dest, InputMode _mood);
+  bool buildCaption(UnicodeString const &_baseString, UnicodeString& _dest, InputMode _mood);
 	bool buildCaption( UnicodeString const &_baseString, UnicodeString& _dest, CaptionParserMode &_mode );
 	bool buildPhrase( UnicodeString const &_baseString, UnicodeString& _dest, CaptionParserMode &_mode );
 	bool consumeMarker( UnicodeString const &_baseString, UnicodeString& _dest, CaptionParserMode &_mode );
@@ -84,13 +79,7 @@ public:
 	bool consumeIfMarker( UnicodeString const &_baseString, UnicodeString& _dest, CaptionParserMode &_mode );
 };
 
-
-LList <char *> *WordWrapText(const char *_string, 
-                             float _linewidth, 
-                             float _fontWidth,
-                             bool _wrapToWindow=true);
-
-LList <UnicodeString *> *WordWrapText(const UnicodeString &_string, 
+LList <UnicodeString *> *WordWrapText(const UnicodeString &_string,
                              float _linewidth, 
                              float _fontWidth,
                              bool _wrapToWindow=true,
@@ -101,7 +90,5 @@ LList <UnicodeString *> *WordWrapText(const UnicodeString &_string,
 #define ISLANGUAGEPHRASE_ANY(x) g_app->m_langTable->DoesPhraseExist(x)
 
 #define RAWLANGUAGEPHRASE(x)           g_app->m_langTable->RawLookupPhrase(x)
-//#define MOODYLANGUAGEPHRASE(x,y)       g_app->m_langTable->RawLookupPhrase((x),(y))
-//#define MOODYISLANGUAGEPHRASE(x,y)     g_app->m_langTable->RawDoesPhraseExist((x),(y))
 
 #endif

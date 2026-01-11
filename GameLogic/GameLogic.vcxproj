@@ -93,9 +93,6 @@
     <ClInclude Include="blueprintstore.h" />
     <ClInclude Include="bridge.h" />
     <ClInclude Include="building.h" />
-    <ClInclude Include="BuyNowInfoButton.h" />
-    <ClInclude Include="BuyNowModeButton.h" />
-    <ClInclude Include="CampaignButton.h" />
     <ClInclude Include="carryablebuilding.h" />
     <ClInclude Include="cave.h" />
     <ClInclude Include="centipede.h" />
@@ -106,7 +103,6 @@
     <ClInclude Include="clonelab.h" />
     <ClInclude Include="ConnectButton.h" />
     <ClInclude Include="constructionyard.h" />
-    <ClInclude Include="controllerunplugged_window.h" />
     <ClInclude Include="controlstation.h" />
     <ClInclude Include="controltower.h" />
     <ClInclude Include="crate.h" />
@@ -114,8 +110,6 @@
     <ClInclude Include="CSpectatorButton.h" />
     <ClInclude Include="DarwiniaModeButton.h" />
     <ClInclude Include="darwinian.h" />
-    <ClInclude Include="DarwiniaPlusMPButton.h" />
-    <ClInclude Include="DarwiniaPlusSPButton.h" />
     <ClInclude Include="darwinia_window.h" />
     <ClInclude Include="debugmenu.h" />
     <ClInclude Include="dropship.h" />
@@ -137,7 +131,6 @@
     <ClInclude Include="GameMenuOptionsButton.h" />
     <ClInclude Include="GameMenuWindow.h" />
     <ClInclude Include="GamerTagButton.h" />
-    <ClInclude Include="GameTypeAnyButton.h" />
     <ClInclude Include="GameTypeButton.h" />
     <ClInclude Include="GameTypeImageButton.h" />
     <ClInclude Include="GameTypeInfoButton.h" />
@@ -174,15 +167,12 @@
     <ClInclude Include="meteor.h" />
     <ClInclude Include="mine.h" />
     <ClInclude Include="motdButton.h" />
-    <ClInclude Include="MultiwiniaModeButton.h" />
-    <ClInclude Include="MultiwiniaVersusCpuButton.h" />
     <ClInclude Include="multiwiniazone.h" />
     <ClInclude Include="multiwinia_filedialog.h" />
     <ClInclude Include="multiwinia_window.h" />
     <ClInclude Include="network_window.h" />
     <ClInclude Include="NewOrJoinButton.h" />
     <ClInclude Include="NewServerButton.h" />
-    <ClInclude Include="NextHelpButton.h" />
     <ClInclude Include="nuke.h" />
     <ClInclude Include="officer.h" />
     <ClInclude Include="OptionDetailsButton.h" />
@@ -200,13 +190,11 @@
     <ClInclude Include="profilewindow.h" />
     <ClInclude Include="PrologueButton.h" />
     <ClInclude Include="pulsebomb.h" />
-    <ClInclude Include="QuickMatchButton.h" />
     <ClInclude Include="QuickStartButton.h" />
     <ClInclude Include="QuitButton.h" />
     <ClInclude Include="radardish.h" />
     <ClInclude Include="randomiser.h" />
     <ClInclude Include="reallyquit_window.h" />
-    <ClInclude Include="RequestAIButton.h" />
     <ClInclude Include="researchitem.h" />
     <ClInclude Include="ResearchModeButton.h" />
     <ClInclude Include="restrictionzone.h" />
@@ -240,8 +228,6 @@
     <ClInclude Include="triffid.h" />
     <ClInclude Include="tripod.h" />
     <ClInclude Include="trunkport.h" />
-    <ClInclude Include="UnlockFullGameButton.h" />
-    <ClInclude Include="updateavailable_window.h" />
     <ClInclude Include="update_page_buttons.h" />
     <ClInclude Include="upgrade_port.h" />
     <ClInclude Include="userprofile_window.h" />
@@ -271,7 +257,6 @@
     <ClCompile Include="chess.cpp" />
     <ClCompile Include="clonelab.cpp" />
     <ClCompile Include="constructionyard.cpp" />
-    <ClCompile Include="controllerunplugged_window.cpp" />
     <ClCompile Include="controlstation.cpp" />
     <ClCompile Include="controltower.cpp" />
     <ClCompile Include="crate.cpp" />
@@ -363,7 +348,6 @@
     <ClCompile Include="triffid.cpp" />
     <ClCompile Include="tripod.cpp" />
     <ClCompile Include="trunkport.cpp" />
-    <ClCompile Include="updateavailable_window.cpp" />
     <ClCompile Include="upgrade_port.cpp" />
     <ClCompile Include="userprofile_window.cpp" />
     <ClCompile Include="virii.cpp" />

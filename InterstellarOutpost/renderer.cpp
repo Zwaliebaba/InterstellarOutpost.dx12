@@ -5,7 +5,6 @@
 #include "hi_res_time.h"
 #include "eventhandler.h"
 #include "math_utils.h"
-#include "mouse_cursor.h"
 #include "ogl_extensions.h"
 #include "preferences.h"
 #include "profiler.h"
@@ -16,8 +15,6 @@
 #include "user_info.h"
 #include "resource.h"
 #include "debug_render.h"
-#include "deform.h"
-#include "water_reflection.h"
 #include "app.h"
 #include "camera.h"
 #include "explosion.h"
@@ -47,22 +44,11 @@
 
 #define USE_PIXEL_EFFECT_GRID_OPTIMISATION	1
 
-enum
-{
-  PosterMakerInactive,
-  PosterMakerTiling,
-  PosterMakerPixelEffect
-} PosterMakerState;
-
 Renderer::Renderer()
   : m_fps(60),
     m_displayFPS(true),
-    m_renderDebug(false),
-    m_displayInputMode(false),
-    m_renderingPoster(PosterMakerInactive),
     m_lastFrameBufferTexture(-1),
     m_renderDarwinLogo(-1.0f),
-    m_gamma(1.2f),
     m_nearPlane(5.0f),
     m_farPlane(150000.0f),
     m_texCoordW(0),
@@ -83,19 +69,6 @@ Renderer::Renderer()
 #ifdef USE_DIRECT3D
 #include "opengl_directx_internals.h"
 
-void Renderer::SetScreenGamma(float _gamma)
-{
-  DebugTrace("Setting Screen Gamma to %f\n", _gamma);
-  m_gamma = _gamma;
-
-  float g = 2.0 - _gamma;
-
-  D3DGAMMARAMP gamma;
-  for (int i = 0; i < 256; i++)
-    gamma.red[i] = gamma.green[i] = gamma.blue[i] = pow(i / 255.0f, g) * 65535;
-
-  OpenGLD3D::g_pd3dDevice->SetGammaRamp(0, 0, &gamma);
-}
 #endif
 
 void Renderer::Initialise()
@@ -187,106 +160,6 @@ void Renderer::Initialise()
 void Renderer::Restart() { BuildOpenGlState(); }
 
 void Renderer::BuildOpenGlState() { glGenTextures(1, &m_pixelEffectTexId); }
-
-void Renderer::RenderFlatTexture()
-{
-  glColor3ubv(g_colourWhite.GetData());
-  glEnable(GL_TEXTURE_2D);
-  int textureId = g_app->m_resource->GetTexture("textures\\privatedemo.bmp", true, true);
-  if (textureId == -1)
-    return;
-  glBindTexture(GL_TEXTURE_2D, textureId);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-  float size = m_nearPlane * 0.3f;
-  Vector3 up = g_app->m_camera->GetUp() * 1.0f * size;
-  Vector3 right = g_app->m_camera->GetRight() * 1.0f * size;
-  Vector3 pos = g_app->m_camera->GetPos() + g_app->m_camera->GetFront() * m_nearPlane * 1.01f;
-
-  glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glEnable(GL_ALPHA_TEST);
-  glAlphaFunc(GL_GREATER, 0.02f);
-
-  glBegin(GL_QUADS);
-  glTexCoord2f(1.0f, 1.0f);
-  glVertex3dv((pos + up - right).GetData());
-  glTexCoord2f(0.0f, 1.0f);
-  glVertex3dv((pos + up + right).GetData());
-  glTexCoord2f(0.0f, 0.0f);
-  glVertex3dv((pos - up + right).GetData());
-  glTexCoord2f(1.0f, 0.0f);
-  glVertex3dv((pos - up - right).GetData());
-  glEnd();
-
-  glAlphaFunc(GL_GREATER, 0.01);
-  glDisable(GL_ALPHA_TEST);
-  glDisable(GL_BLEND);
-
-  glDisable(GL_TEXTURE_2D);
-
-  glLineWidth(1.0f);
-  glBegin(GL_LINE_LOOP);
-  glVertex3dv((pos + up - right).GetData());
-  glVertex3dv((pos + up + right).GetData());
-  glVertex3dv((pos - up + right).GetData());
-  glVertex3dv((pos - up - right).GetData());
-  glEnd();
-}
-
-void Renderer::RenderLogo()
-{
-  glColor3ubv(g_colourWhite.GetData());
-  glEnable(GL_BLEND);
-  glDepthMask(false);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  glColor4ub(0, 0, 0, 200);
-  float logoW = 200;
-  float logoH = 35;
-  glBegin(GL_QUADS);
-  glVertex2f(m_screenW - logoW - 10, m_screenH - logoH - 10);
-  glVertex2f(m_screenW - 10, m_screenH - logoH - 10);
-  glVertex2f(m_screenW - 10, m_screenH - 10);
-  glVertex2f(m_screenW - logoW - 10, m_screenH - 10);
-  glEnd();
-
-  glColor4ub(255, 255, 255, 255);
-  glEnable(GL_TEXTURE_2D);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-  int textureId = g_app->m_resource->GetTexture("textures\\privatedemo.bmp", true, false);
-  if (textureId == -1)
-    return;
-  glBindTexture(GL_TEXTURE_2D, textureId);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-  glBegin(GL_QUADS);
-  glTexCoord2f(0.0f, 1.0f);
-  glVertex2f(m_screenW - logoW - 10, m_screenH - logoH - 10);
-  glTexCoord2f(1.0f, 1.0f);
-  glVertex2f(m_screenW - 10, m_screenH - logoH - 10);
-  glTexCoord2f(1.0f, 0.0f);
-  glVertex2f(m_screenW - 10, m_screenH - 10);
-  glTexCoord2f(0.0f, 0.0f);
-  glVertex2f(m_screenW - logoW - 10, m_screenH - 10);
-  glEnd();
-
-  glDepthMask(true);
-  glDisable(GL_TEXTURE_2D);
-  glDisable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  glColor4f(1.0f, 0.75f, 0.75f, 1.0f);
-  g_gameFont.DrawText2D(20, m_screenH - 70, 25, LANGUAGEPHRASE("privatedemo1"));
-  g_gameFont.DrawText2D(20, m_screenH - 40, 25, LANGUAGEPHRASE("privatedemo2"));
-  g_gameFont.DrawText2D(20, m_screenH - 10, 10, LANGUAGEPHRASE("privatedemo2"));
-}
 
 void Renderer::Render()
 {
@@ -433,68 +306,19 @@ void Renderer::RenderFrame(bool withFlip)
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
   END_PROFILE("Render Clear");
 
-  bool deformStarted = false;
-
   if (g_app->m_atMainMenu && g_app->m_gameMenu->m_menuCreated)
     g_app->m_gameMenu->Render();
   else if (g_app->m_editing)
   {
-    if (g_app->m_locationId != -1)
-    {
-#ifdef LOCATION_EDITOR
-      SetupMatricesFor3D(); g_app->m_location->Render(); g_app->m_locationEditor->Render();
-#endif // LOCATION_EDITOR
-    }
-    else
+    if (g_app->m_locationId == -1)
       g_app->m_globalWorld->Render();
   }
   else
   {
     if (g_app->m_locationId != -1)
     {
-      if (g_prefsManager->GetInt("RenderPixelShader") > 0 && !g_app->Multiplayer())
-      {
-        switch (m_renderingPoster)
-        {
-        case PosterMakerInactive:
-        {
-          PreRenderPixelEffect();
-
-          if (g_prefsManager->GetInt("RenderWaterEffect", 1) && g_waterReflectionEffect)
-          {
-            g_waterReflectionEffect->PreRenderWaterReflection();
-          } if (g_deformEffect)
-          {
-            deformStarted = true;
-            g_deformEffect->Start();
-          }
-
-          START_PROFILE("Render Clear");
-          glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-          END_PROFILE("Render Clear");
-
-          g_app->m_location->Render();
-          renderChat = true;
-          ApplyPixelEffect();
-
-          SetupMatricesFor3D();
-          break;
-        }
-        case PosterMakerTiling:
-          g_app->m_location->Render();
-          ApplyPixelEffect();
-          SetupMatricesFor3D();
-          break;
-        case PosterMakerPixelEffect:
-          PreRenderPixelEffect();
-          break;
-        }
-      }
-      else
-      {
         g_app->m_location->Render();
         renderChat = true;
-      }
     }
     else
       g_app->m_globalWorld->Render();
@@ -502,9 +326,6 @@ void Renderer::RenderFrame(bool withFlip)
 
   g_explosionManager.Render();
   g_app->m_particleSystem->Render();
-
-  if (g_deformEffect && deformStarted)
-    g_deformEffect->Stop();
 
   g_app->m_markerSystem->Render();
   g_app->m_shamanInterface->Render();
@@ -561,8 +382,6 @@ void Renderer::RenderFrame(bool withFlip)
     m_lastServerLetterReceivedTime > 0.0f && GetHighResTime() > g_app->m_clientToServer->m_lastServerLetterReceivedTime + 5.0f && !g_app->
     m_hideInterface)
   {
-    double timeLag = GetHighResTime() - g_app->m_clientToServer->m_lastServerLetterReceivedTime;
-
     glColor4f(1.0f, 1.0f, 1.0f, 0.0f);
     g_gameFont.SetRenderOutline(true);
     g_gameFont.DrawText2DCentre(m_screenW / 2, 170, 30, LANGUAGEPHRASE("multiwinia_error_lostconnection"));
@@ -678,44 +497,13 @@ int Renderer::ScreenW() const { return m_screenW; }
 
 int Renderer::ScreenH() const { return m_screenH; }
 
-// Used for temporary res change while rendering into texture of different size.
-void Renderer::SetScreenRes(int w, int h)
-{
-  m_screenW = w;
-  m_screenH = h;
-}
-
 void Renderer::SetupProjMatrixFor3D() const
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 
-  if (m_renderingPoster == PosterMakerTiling)
-  {
-    const float screenH = ScreenH();
-    const float screenW = ScreenW();
-    int posterResolution = g_prefsManager->GetInt("RenderPosterResolution", 1);
-
-    float scale = g_app->m_camera->GetFov() / 78.0f;
-    float left = -scale * m_nearPlane;
-    float aspect = screenH / screenW;
-    float top = -aspect * scale * m_nearPlane;
-    float tileWidth = (-left * 2.0f) / static_cast<float>(posterResolution);
-    float tileHeight = (-top * 2.0f) / static_cast<float>(posterResolution);
-
-    float y = m_tileIndex / posterResolution;
-    float x = m_tileIndex % posterResolution;
-    float x1 = left + x * tileWidth;
-    float x2 = x1 + tileWidth;
-    float y1 = top + y * tileHeight;
-    float y2 = y1 + tileHeight;
-    glFrustum(x1, x2, y1, y2, m_nearPlane, m_farPlane);
-  }
-  else
-  {
     gluPerspective(g_app->m_camera->GetFov(), static_cast<float>(m_screenW) / static_cast<float>(m_screenH), // Aspect ratio
                    m_nearPlane, m_farPlane);
-  }
 }
 
 void Renderer::SetupMatricesFor3D() const
@@ -844,8 +632,6 @@ void Renderer::CheckOpenGLState(bool fullCheck, int lineNumber) const
   {
     for (int i = 0; i < g_app->m_location->m_lights.Size(); i++)
     {
-      Light* light = g_app->m_location->m_lights.GetData(i);
-
       float amb = 0.0f;
       GLfloat ambCol1[] = {amb, amb, amb, 1.0f};
 
@@ -1019,9 +805,6 @@ void Renderer::PreRenderPixelEffect()
     for (int x = 0; x < PIXEL_EFFECT_GRID_RES; ++x)
       m_pixelEffectGrid[y][x] = 1e9;
   }
-  // memset(m_pixelEffectGrid, 0, sizeof(m_pixelEffectGrid));
-
-  float timeSinceAdvance = g_predictionTime;
 
   //
   // Blend our old glow texture into place
@@ -1411,11 +1194,8 @@ void Renderer::UpdateTotalMatrix()
   DEBUG_ASSERT(p[4] == 0.0);
   DEBUG_ASSERT(p[6] == 0.0);
   DEBUG_ASSERT(p[7] == 0.0);
-  if (m_renderingPoster == PosterMakerInactive)
-  {
     DEBUG_ASSERT(p[8] == 0.0);
     DEBUG_ASSERT(p[9] == 0.0);
-  }
   DEBUG_ASSERT(p[12] == 0.0);
   DEBUG_ASSERT(p[13] == 0.0);
   DEBUG_ASSERT(p[15] == 0.0);

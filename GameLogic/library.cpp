@@ -37,7 +37,6 @@ bool Library::Advance()
 
             ResearchItem *item = new ResearchItem();
             item->m_researchType = i;
-            item->m_inLibrary = true;
             item->m_pos = scrollPos.pos;
             item->m_id.SetUniqueId( g_app->m_globalWorld->GenerateBuildingId() );
             g_app->m_location->m_buildings.PutData( item );

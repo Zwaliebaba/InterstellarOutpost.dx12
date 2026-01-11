@@ -1,5 +1,6 @@
 #ifndef __WAITINGBUTTON__
 #define __WAITINGBUTTON__
+#include "main.h"
 
 class WaitingButton : public DarwiniaButton
 {

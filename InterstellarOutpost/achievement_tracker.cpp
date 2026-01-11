@@ -20,7 +20,6 @@
 AchievementTracker::AchievementTracker()
 :   m_isMasterPlayer(false),
 	m_hasLoaded(false),
-	m_numOfficialLevels(0),
 	m_totalKills(-1)
 {
     memset( m_won, 0, sizeof(m_won) );
@@ -61,11 +60,6 @@ void AchievementTracker::Load()
 bool AchievementTracker::HasLoaded()
 {
 	return m_hasLoaded;
-}
-
-int AchievementTracker::GetTotalKills()
-{
-	return m_totalKills;
 }
 
 void AchievementTracker::AddToTotalKills(int kills)
@@ -119,46 +113,6 @@ void AchievementTracker::AddVisitedLevel(char *_mapName)
     }
 }
 
-int AchievementTracker::GetLevelId( const char *_mapFilename )
-{
-	return m_levelList.GetData( _mapFilename, -1 );
-}
-
-int AchievementTracker::GetCurrentLevelId()
-{	
-	Location *location = g_app->m_location;
-	if( !location )
-		return -1;
-
-	LevelFile *levelFile = location->m_levelFile;
-	if( !levelFile )
-		return -1;
-
-	int levelId = GetLevelId( levelFile->m_mapFilename );
-
-	if( levelId == -1 )
-	{
-		DebugTrace("Failed to get level id for %s\n", levelFile->m_mapFilename);
-	}
-
-	return levelId;
-}
-
-const char *AchievementTracker::GetLevelName( int _id ) const
-{
-	LevelListReverseMap::const_iterator i = m_levelListReverse.find( _id );
-	if( i == m_levelListReverse.end() )
-	{
-		DebugTrace("AchievementTracker::GetLevelName(%d) - no such level id.\n", _id );
-		return NULL;
-	}
-	else
-		return i->second.c_str();
-}
-
-
-
-
 bool AchievementTracker::AlreadyWonLevel( char *_mapName )
 {
     int levelId = m_levelList.GetData( _mapName, -1 );  
@@ -176,19 +130,7 @@ bool AchievementTracker::AlreadyVisitedLevel(char *_mapName)
 }
 
 void AchievementTracker::SetNumLevels( int _numLevels )
-{
-    m_numOfficialLevels = _numLevels;
-}
-
-unsigned char *AchievementTracker::GetWonLevels()
-{
-    return m_won;
-}
-
-unsigned char *AchievementTracker::GetVisitedLevels()
-{
-    return m_visited;
-}
+{}
 
 int AchievementTracker::NumWonLevels()
 {

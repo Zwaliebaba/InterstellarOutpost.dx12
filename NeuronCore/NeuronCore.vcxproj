@@ -107,7 +107,6 @@
     <ClInclude Include="hash_map_darwin.h" />
     <ClInclude Include="hash_table.h" />
     <ClInclude Include="hi_res_time.h" />
-    <ClInclude Include="invert_matrix.h" />
     <ClInclude Include="language_table.h" />
     <ClInclude Include="llist.h" />
     <ClInclude Include="map_utils.h" />
@@ -115,7 +114,6 @@
     <ClInclude Include="matrix33.h" />
     <ClInclude Include="matrix34.h" />
     <ClInclude Include="matrix_cache.h" />
-    <ClInclude Include="mouse_cursor.h" />
     <ClInclude Include="network_stream.h" />
     <ClInclude Include="net_lib.h" />
     <ClInclude Include="net_lib_apple.h" />
@@ -140,10 +138,8 @@
     <ClInclude Include="plane.h" />
     <ClInclude Include="preferences.h" />
     <ClInclude Include="preference_names.h" />
-    <ClInclude Include="presized_array.h" />
     <ClInclude Include="profiler.h" />
     <ClInclude Include="random_number.h" />
-    <ClInclude Include="render_utils.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rgb_colour.h" />
     <ClInclude Include="runnable.h" />
@@ -185,12 +181,10 @@
     <ClCompile Include="filesys_utils.cpp" />
     <ClCompile Include="FixedPipeline.cpp" />
     <ClCompile Include="hi_res_time.cpp" />
-    <ClCompile Include="invert_matrix.cpp" />
     <ClCompile Include="language_table.cpp" />
     <ClCompile Include="math_utils.cpp" />
     <ClCompile Include="matrix33.cpp" />
     <ClCompile Include="matrix34.cpp" />
-    <ClCompile Include="mouse_cursor.cpp" />
     <ClCompile Include="network_stream.cpp" />
     <ClCompile Include="network_stream_inlines.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -217,7 +211,6 @@
     <ClCompile Include="preferences.cpp" />
     <ClCompile Include="profiler.cpp" />
     <ClCompile Include="random_number.cpp" />
-    <ClCompile Include="render_utils.cpp" />
     <ClCompile Include="resource.cpp" />
     <ClCompile Include="rgb_colour.cpp" />
     <ClCompile Include="runnable.cpp" />

@@ -5,13 +5,10 @@
 #include "bitmap.h"
 #include "text_renderer.h"
 #include "language_table.h"
-
 #include "app.h"
 #include "team.h"
 #include "location.h"
-#include "global_world.h"
 #include "renderer.h"
-
 #include "animatedpanel_renderer.h"
 
 

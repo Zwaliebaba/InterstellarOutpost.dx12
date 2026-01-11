@@ -47,9 +47,8 @@ protected:
     Vector3         m_targetPos;
     bool            m_armed;
     Shape           *m_bombShape;
-    int             m_napalmDrops;
 
-public:
+  public:
     SpaceInvader();
 
     bool Advance        ( Unit *_unit );

@@ -55,7 +55,6 @@ protected:
 
     char* m_modName;
 
-    int WildCmp(char const* _wild, char const* _string);
     TextureInfo* ProcessBmp(BitmapRGBA& _bmp, int _flags);
 
 public:
@@ -117,15 +116,9 @@ public:
     // responsibility to delete the name later. Use "delete []" NOT "free".
     char* GenerateName();
 
-    void            LoadMod(char const* _modName);
-    bool            IsModLoaded();
-    char* GetBaseDirectory();
-    const char* GetModName();
-
     std::vector<std::string> ListResources(char const* _dir, char const* _filter, bool _longResults = true);
 
     bool			FileExists(const char* _file);
-    bool			SoundExists(const char* _file);
 };
 
 

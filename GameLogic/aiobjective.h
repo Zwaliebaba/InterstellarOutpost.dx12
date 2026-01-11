@@ -26,9 +26,7 @@ public:
     bool        m_defenseObjective;
     double      m_timer;
 
-    //int         m_armourObjective;      // if set to true, the markers attached to this objective become Armour targets - if there are any objectives with this flag on a level, armour will only drop at those objectives
     int         m_armourMarker;
-    int         m_wallTarget;           
 
     static bool s_objectivesInitialised;
 

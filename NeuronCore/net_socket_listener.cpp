@@ -128,27 +128,6 @@ NetRetCode NetSocketListener::Bind()
   return NetFailed;
 }
 
-NetIpAddress NetSocketListener::GetListenAddress() const
-{
-  NetIpAddress addr;
-
-  socklen_t size = sizeof(addr);
-
-  getsockname(m_sockfd, (sockaddr*)&addr, &size);
-  return addr;
-}
-
-NetRetCode NetSocketListener::EnableBroadcast()
-{
-  int opt = 1;
-  int result = setsockopt(m_sockfd, SOL_SOCKET, SO_BROADCAST, (char*)&opt, sizeof(int));
-
-  if (result == 0)
-    return NetOk;
-
-  return NetFailed;
-}
-
 void NetSocketListener::AppDebugOutNetSocketError(int _errorCode)
 {
 #ifdef WIN32

@@ -1,19 +1,12 @@
 #include "pch.h"
-
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-
 #include "debug_render.h"
 #include "math_utils.h"
 #include "profiler.h"
 #include "resource.h"
 #include "shape.h"
-#include "texture_uv.h"
 #include "text_stream_readers.h"
 #include "language_table.h"
 #include "random_number.h"
-
 #include "app.h"
 #include "camera.h"
 #include "main.h"
@@ -23,19 +16,16 @@
 #include "soundsystem.h"
 #include "team.h"
 #include "unit.h"
-#include "location.h"
 #include "entity_grid.h"
 #include "obstruction_grid.h"
 #include "routing_system.h"
 #include "level_file.h"
-
 #include "entity.h"
 #include "radardish.h"
 #include "bridge.h"
 #include "insertion_squad.h"
 #include "engineer.h"
 #include "virii.h"
-#include "insertion_squad.h"
 #include "lasertrooper.h"
 #include "egg.h"
 #include "sporegenerator.h"

@@ -80,9 +80,7 @@ public:
 	static const unsigned int	m_uvOffset;
 
 public:
-	int				m_numTriangles;
-
-	LandscapeRenderer(SurfaceMap2D <double> *_heightMap);
+  LandscapeRenderer(SurfaceMap2D <double> *_heightMap);
 	~LandscapeRenderer();
 
 #ifdef USE_DIRECT3D

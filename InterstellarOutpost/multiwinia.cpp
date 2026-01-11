@@ -67,9 +67,6 @@ Multiwinia::Multiwinia()
     m_firstReinforcements(true),
     m_rocketStatusPanel(NULL)
 {
-  for (int i = 0; i < NUM_TEAMS; i++)
-    m_teamsStatus[i] = 0;
-
   LoadBlueprints();
 
   Reset();
@@ -130,7 +127,6 @@ void Multiwinia::Reset()
     m_eliminationTimer[i] = 30;
     m_eliminationBonusTimer[i] = 5;
     m_numEliminations[i] = 0;
-    m_timeEliminated[i] = 0.0;
   }
 
   m_statueSpawner = -1.0;
@@ -156,9 +152,6 @@ void Multiwinia::Reset()
   m_firstReinforcements = true;
   m_aiType = AITypeStandard;
   m_positionTimer = 0.0;
-
-  for (int i = 0; i < NUM_TEAMS; i++)
-    m_teamsStatus[i] = 0;
 
   m_assaultObjectives.Empty();
   PulseBomb::s_defaultTime = 0.0;
@@ -678,61 +671,6 @@ void Multiwinia::AdvanceKingOfTheHill()
 #endif
 }
 
-void Multiwinia::AdvanceChess()
-{
-  m_timer -= SERVER_ADVANCE_PERIOD;
-  if (m_timer <= 0.0f)
-  {
-    if (m_timeRemaining > 0)
-      m_timeRemaining--;
-    m_timer = 1.0f;
-
-    BackupScores();
-  }
-}
-
-void Multiwinia::AdvanceShaman()
-{
-  if (!m_initialised)
-  {
-    for (int i = 0; i < NUM_TEAMS; ++i)
-    {
-      m_teams[i].m_score = 200;
-      m_teams[i].m_prevScore = 200;
-    }
-    m_initialised = true;
-  }
-
-  m_timer -= SERVER_ADVANCE_PERIOD;
-  if (m_timer <= 0.0f)
-  {
-    m_timer = 1.0f;
-
-    BackupScores();
-  }
-
-  /*m_timer -= SERVER_ADVANCE_PERIOD;
-  if( m_timer <= 0.0f )
-  {
-      m_timer = 1.0f;
-      if( m_timeRemaining > 0 ) m_timeRemaining--;
-  BackupScores();
-
-      for( int i = 0; i < g_app->m_location->m_buildings.Size(); ++i )
-      {
-          Building *b = g_app->m_location->GetBuilding(i);
-          if( b && b->m_type == Building::TypePortal )
-          {
-              if( b->m_id.GetTeamId() != 255 )
-              {
-                  if( g_app->m_location->m_teams[b->m_id.GetTeamId()]->m_monsterTeam ) continue;
-        ++m_teams[b->m_id.GetTeamId()].m_score;
-              }
-          }
-      }
-  }*/
-}
-
 void Multiwinia::AdvanceRocketRiot()
 {
 #ifndef MULTIWINIA_DEMOONLY
@@ -1113,36 +1051,6 @@ void Multiwinia::AdvanceRetribution()
       m_eliminationBonusTimer[t] = 45;
   }
 }
-
-/*
-    Code for retribution : random darwinwians spawn
-
-    Vector3 pos;
-    while( g_app->m_location->m_landscape.m_heightMap->GetValue( pos.x, pos.z ) < 20.0f ||
-          RestrictionZone::IsRestricted( pos ) ||
-          !g_app->m_location->ViablePosition( pos ) )
-    {
-        float worldSizeX = g_app->m_location->m_landscape.GetWorldSizeX();
-        float worldSizeZ = g_app->m_location->m_landscape.GetWorldSizeZ();
-        pos.Set( FRAND(worldSizeX), 0.0f, FRAND(worldSizeZ) );
-        pos.y = g_app->m_location->m_landscape.m_heightMap->GetValue( pos.x, pos.z );
-    }
-
-    int num = 25 + syncrand() % 10;
-    for( int i = 0; i < num; ++i )
-    {
-        Vector3 vel = g_upVector + Vector3(SFRAND(1), 0.0f, SFRAND(1) );
-        vel.SetLength( 10.0f + syncfrand(20.0f) );
-        WorldObjectId id = g_app->m_location->SpawnEntities( pos, t, -1, Entity::TypeDarwinian, 1, vel, 0.0f, 0.0f );
-        Entity *entity = g_app->m_location->GetEntity( id );
-        entity->m_front.y = 0.0f;
-        entity->m_front.Normalise();
-        entity->m_onGround = false;
-    }
-    g_app->m_markerSystem->RegisterMarker_Fixed( t, pos, "icons\\icon_darwinian.bmp", false );
-    g_app->m_location->SetCurrentMessage( LANGUAGEPHRASE("multiwinia_retribution"), t );
-
-    */
 
 void Multiwinia::EnsureStartingStatue()
 {
@@ -2251,7 +2159,6 @@ void Multiwinia::Advance()
   case GameTypeKingOfTheHill:
     AdvanceKingOfTheHill();
     break;
-  //case GameTypeShaman :               AdvanceShaman();                break;
   case GameTypeRocketRiot:
     AdvanceRocketRiot();
     break;
@@ -2520,7 +2427,6 @@ void Multiwinia::RemoveTeams(int _clientId/*, int _reason */)
 void Multiwinia::EliminateTeam(int _teamId)
 {
   m_eliminated[_teamId] = true;
-  m_timeEliminated[_teamId] = GetNetworkTime();
   UnicodeString msg;
   if (g_app->m_globalWorld->m_myTeamId == _teamId)
     msg = LANGUAGEPHRASE("multiwinia_player_eliminated");
@@ -3914,35 +3820,6 @@ void Multiwinia::RenderOverlay_GracePeriod()
   g_titleFont.DrawText2DCentre(xPos, yPos, fontSize, statusMsg);
 }
 
-int Multiwinia::GetNumHumanTeams() const
-{
-  int result = 0;
-  for (int i = 0; i < NUM_TEAMS; i++)
-  {
-    if (m_teams[i].m_teamType == TeamTypeLocalPlayer || m_teams[i].m_teamType == TeamTypeRemotePlayer)
-      result++;
-  }
-  return result;
-}
-
-int Multiwinia::GetNumCpuTeams() const
-{
-  int result = 0;
-  for (int i = 0; i < NUM_TEAMS; i++)
-  {
-    if (m_teams[i].m_teamType == TeamTypeCPU)
-      result++;
-  }
-  return result;
-}
-
-std::string Multiwinia::GameTypeString(int _gameType)
-{
-  if (s_gameBlueprints.ValidIndex(_gameType))
-    return s_gameBlueprints[_gameType]->GetName();
-  return "multiwinia_gametype_unknown";
-}
-
 void Multiwinia::DeclareWinner(int _teamId)
 {
   Team* t = g_app->m_location->GetMyTeam();
@@ -4001,12 +3878,6 @@ void Multiwinia::CheckMasterAchievement()
       }
     }
   }
-}
-
-void Multiwinia::CheckMentorAchievement()
-{
-  if (!g_app->m_server)
-    return;
 }
 
 void Multiwinia::ZeroScores()

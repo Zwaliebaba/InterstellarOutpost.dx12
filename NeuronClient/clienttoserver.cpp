@@ -526,21 +526,6 @@ float ClientToServer::GetEstimatedLatency()
   return estimatedLatency;
 }
 
-void ClientToServer::DebugPrintInbox()
-{
-  m_inboxMutex->Lock();
-  int i;
-  bool inserted = false;
-  for (i = 0; i < m_inbox.Size(); i++)
-  {
-    Directory* thisLetter = m_inbox[i];
-    int thisSeqId = thisLetter->GetDataInt(NET_DARWINIA_SEQID);
-
-    DebugTrace("inbox[%d] = seq id %d\n", i, thisSeqId);
-  }
-  m_inboxMutex->Lock();
-}
-
 void ClientToServer::ReceiveLetter(Directory* letter, int _bandwidthUsed)
 {
   m_receiveRate.Count(UDP_HEADER_SIZE + _bandwidthUsed);
@@ -2098,9 +2083,6 @@ bool ClientToServer::ProcessServerUpdates(Directory* letter)
         if (version > GameOptionVersion(gameOption))
         {
           SetGameOptionVersion(gameOption, -1, version);
-
-          if (GAMEOPTION_TEAMSSTATUS_LBOUND <= gameOption && gameOption <= GAMEOPTION_TEAMSSTATUS_UBOUND)
-            g_app->m_multiwinia->m_teamsStatus[gameOption - GAMEOPTION_TEAMSSTATUS_LBOUND] = value;
 
           switch (gameOption)
           {

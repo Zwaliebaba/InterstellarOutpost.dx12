@@ -19,16 +19,6 @@ void DarwiniaLogBuffer::Display()
 	}
 }
 
-
-void DisplayLog()
-{
-	// Suitable for calling from gdb if you have the symbols
-	// Otherwise send Darwinia a HUP signal and this
-	// routine will be printed.
-	g_log.Display();
-}
-
-
 const char *SkipRelativePathPrefix(const char *_filename)
 {
 	const char *filename = _filename;

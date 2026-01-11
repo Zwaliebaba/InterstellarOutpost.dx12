@@ -43,8 +43,7 @@ protected:
 	void RenderBackground();
 	void RenderEggs();
 
-	void AdvanceMouseInIcon();
-	void AdvanceSelectionInput();
+  void AdvanceSelectionInput();
 
 	void SetupIcons();
 

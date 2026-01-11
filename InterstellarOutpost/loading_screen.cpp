@@ -123,40 +123,6 @@ void LoadingScreen::RenderIVLogo(float _alpha)
   glDisable(GL_TEXTURE_2D);
 }
 
-void LoadingScreen::RenderPlatformLogo(const char* path, int w, int h, bool scale, float _alpha)
-{
-  glColor4f(1.0f, 1.0f, 1.0f, _alpha);
-
-  int screenW = g_app->m_renderer->ScreenW();
-  int screenH = g_app->m_renderer->ScreenH();
-
-  glEnable(GL_TEXTURE_2D);
-  glColor4f(1.0f, 1.0f, 1.0f, _alpha);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture(path));
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  float scaleFactor = scale ? g_app->m_renderer->ScreenH() / 1024.0f : 1.0;
-  w *= scaleFactor;
-  h *= scaleFactor;
-
-  float x = (screenW / 2.0f) - (w / 2.0f);
-  float y = (screenH / 2.0f) - (h / 2.0f);
-
-  glBegin(GL_QUADS);
-  glTexCoord2i(0, 1);
-  glVertex2f(x, y);
-  glTexCoord2i(1, 1);
-  glVertex2f(x + w, y);
-  glTexCoord2i(1, 0);
-  glVertex2f(x + w, y + h);
-  glTexCoord2i(0, 0);
-  glVertex2f(x, y + h);
-  glEnd();
-
-  glDisable(GL_TEXTURE_2D);
-}
-
 void LoadingScreen::RenderFrame()
 {
   NetLockMutex lock(g_openGLMutex);

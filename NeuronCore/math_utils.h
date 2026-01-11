@@ -73,19 +73,12 @@ double RayRayDist(Vector3 const &a, Vector3 const &aDir,
 				 Vector3 const &b, Vector3 const &bDir,
 				 Vector3 *posOnA=NULL, Vector3 *posOnB=NULL);
 
-double RaySegDist(Vector3 const &pointOnLine, Vector3 const &lineDir,
-				 Vector3 const &segStart, Vector3 const &segEnd,
-				 Vector3 *posOnRay=NULL, Vector3 *posInSeg=NULL);
-
 bool RayTriIntersection         (Vector3 const &orig, Vector3 const &dir,
 						         Vector3 const &vert0, Vector3 const &vert1, Vector3 const &vert2,
 						         double _rayLen=1e10, Vector3 *result=NULL);
 
 int RayPlaneIntersection(Vector3 const &pOnLine, Vector3 const &lineDir,
 						 Plane const &plane, Vector3 *intersectionPoint=NULL);
-//bool RayPlaneIntersection       (Vector3 const &rayStart, Vector3 const &rayDir,
-//                                  Vector3 const &planePos, Vector3 const &planeNormal,
-//						         double _rayLen=1e10, Vector3 *pos=NULL );
 
 bool RaySphereIntersection      ( Vector3 const &rayStart, Vector3 const &rayDir, 
 	                              Vector3 const &spherePos, double sphereRadius,
@@ -96,9 +89,6 @@ bool SphereSphereIntersection   ( Vector3 const &_sphere1Pos, double _sphere1Rad
 
 bool SphereTriangleIntersection(Vector3 const &sphereCentre, double sphereRadius,
 								Vector3 const &t1, Vector3 const &t2, Vector3 const &t3);
-
-bool TriTriIntersection(Vector3 const &v0, Vector3 const &v1, Vector3 const &v2,
-						Vector3 const &u0, Vector3 const &u1, Vector3 const &u2);
 
 #endif
 

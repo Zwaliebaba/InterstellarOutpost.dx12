@@ -68,7 +68,7 @@ bool Wall::Advance()
         AIObjective *ai = (AIObjective *)g_app->m_location->GetBuilding( m_objectiveLink );
         if( ai && ai->m_type == Building::TypeAIObjective )
         {
-            ai->m_wallTarget = m_id.GetUniqueId();
+          m_id.GetUniqueId();
             m_registered = true;
         }
     }

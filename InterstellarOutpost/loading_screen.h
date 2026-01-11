@@ -31,9 +31,8 @@ private:
 	void RenderFrame();
 	void RenderSpinningDarwinian();
 	void RenderIVLogo( float _alpha );
-	void RenderPlatformLogo( const char *path, int w, int h, bool scale, float _alpha );
 
-	bool JobsToDo();
+  bool JobsToDo();
 	Job *TryDequeueJob();
 
 

@@ -39,7 +39,6 @@ AI::AI()
   : Entity(),
     m_timer(0.0),
     m_radarReposTimer(10.0),
-    m_tutorialCentreZoneCaptured(false),
     m_currentObjective(-1)
 {
   SetType(TypeAI);
@@ -1168,23 +1167,6 @@ void AI::AdvanceCaptureTheStatueAI()
       if (b && b->m_type == Building::TypeStatue && b->m_id.GetTeamId() == m_id.GetTeamId())
       {
         Statue* statue = static_cast<Statue*>(b);
-        /*if( statue->m_waypoint == statue->m_pos )
-        {
-                  bool includes[NUM_TEAMS];
-                  memset( includes, false, sizeof(bool) * NUM_TEAMS );
-                  includes[m_id.GetTeamId()] = true;
-          int numFound;
-          g_app->m_location->m_entityGrid->GetNeighbours( s_neighbours, statue->m_pos.x, statue->m_pos.z, 50.0, &numFound, includes );
-
-          for( int j = 0; j < numFound; ++j )
-          {
-            Darwinian *d = (Darwinian *)g_app->m_location->GetEntitySafe( s_neighbours[j], Entity::TypeDarwinian );
-            if( d )
-            {
-              d->GiveOrders( GetClosestScoreZonePos( statue->m_pos ) );
-            }
-          }
-        }*/
 
         if (statue->m_vel.Mag() == 0.0)
         {
@@ -1228,37 +1210,6 @@ void AI::AdvanceCaptureTheStatueAI()
       }
     }
   }
-}
-
-Vector3 AI::GetClosestScoreZonePos(Vector3 _pos)
-{
-  if (m_ctsScoreZones.Size() == 0)
-  {
-    // find the score zones and add them to a list for quick access
-    for (int i = 0; i < g_app->m_location->m_buildings.Size(); ++i)
-    {
-      if (g_app->m_location->m_buildings.ValidIndex(i))
-      {
-        Building* b = g_app->m_location->m_buildings[i];
-        if (b && b->m_type == Building::TypeMultiwiniaZone && b->m_id.GetTeamId() == m_id.GetTeamId())
-          m_ctsScoreZones.PutData(b->m_pos);
-      }
-    }
-  }
-
-  double distance = FLT_MAX;
-  Vector3 pos;
-
-  for (int i = 0; i < m_ctsScoreZones.Size(); ++i)
-  {
-    if ((*m_ctsScoreZones.GetPointer(i) - _pos).Mag() < distance)
-    {
-      distance = (*m_ctsScoreZones.GetPointer(i) - _pos).Mag();
-      pos = *m_ctsScoreZones.GetPointer(i);
-    }
-  }
-
-  return pos;
 }
 
 void AI::RunSquad(int _taskId)
@@ -2149,23 +2100,6 @@ void AI::RunDarkForest(int _taskId)
   }
 }
 
-bool AI::HasDarwinianPowerup()
-{
-  Team* team = g_app->m_location->m_teams[m_id.GetTeamId()];
-  for (int i = 0; i < team->m_taskManager->m_tasks.Size(); ++i)
-  {
-    Task* t = team->m_taskManager->m_tasks[i];
-    if (t)
-    {
-      if (t->m_type == GlobalResearch::TypeSubversion || t->m_type == GlobalResearch::TypeBooster || t->m_type ==
-        GlobalResearch::TypeHotFeet || t->m_type == GlobalResearch::TypeRage)
-        return true;
-    }
-  }
-  return false;
-}
-
-
 AITarget::AITarget()
   : Building(),
     m_teamCountTimer(0.0),
@@ -2794,7 +2728,7 @@ void AITarget::Render(double _predictionTime)
     RecalculateNeighbours();
   }
 
-  if (g_prefsManager->GetInt("RenderAIInfo", 0) == 1 && g_app->m_location && g_app->m_location)
+  if (g_prefsManager->GetInt("RenderAIInfo", 0) == 1 && g_app->m_location)
   {
     int t = g_app->m_location->GetTeamFromPosition(g_prefsManager->GetInt("AIInfoTeam", 1));
     if (t != 255)

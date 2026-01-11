@@ -27,7 +27,6 @@
 #include "inputdriver_idle.h"
 #include "inputdriver_value.h"
 #include "prefs_other_window.h"
-#include "controllerunplugged_window.h"
 #include "sound_library_2d.h"
 #include "sound_library_3d_software.h"
 #include "sample_cache.h"
@@ -46,8 +45,6 @@
 #include "taskmanager_interface.h"
 #include "team.h"
 #include "user_input.h"
-#include "attract.h"
-#include "water.h"
 #include "game_menu.h"
 #include "shaman_interface.h"
 #include "markersystem.h"
@@ -58,7 +55,6 @@
 #include "level_file.h"
 #include "entity_grid.h"
 #include "mainmenus.h"
-#include "updateavailable_window.h"
 #include "debugmenu.h"
 #include "clienttoserver.h"
 #include "server.h"
@@ -86,24 +82,12 @@ bool g_RenderingFirstTimeBL = false;
 
 bool requestBootloader = false;
 
-void SwitchTaskManagerForX360Controller();
-
 // ******************
 //  Local Functions
 // ******************
 
 void UpdateAdvanceTime()
 {
-  int recordDemo = g_prefsManager->GetInt("RecordDemo");
-  if (recordDemo == 1 || recordDemo == 2)
-  {
-    int demoFrameRate = g_prefsManager->GetInt("DemoFrameRate", 25);
-    g_advanceTime = 1.0 / static_cast<double>(demoFrameRate);
-    IncrementFakeTime(1.0 / static_cast<double>(demoFrameRate));
-    g_gameTime = GetHighResTime();
-  }
-  else
-  {
     if (!g_app->GamePaused())
     {
       double realTime = GetHighResTime();
@@ -112,7 +96,6 @@ void UpdateAdvanceTime()
         g_advanceTime = 0.25;
       g_gameTime = realTime;
     }
-  }
 }
 
 bool WindowsOnScreen() { return EclGetWindows()->Size() > 0; }
@@ -161,53 +144,30 @@ void SendTeamControlsToNetwork(TeamControls& teamControls)
   // Read the current teamControls from the inputManager				
 
   bool chatLog = g_app->m_camera->ChatLogVisible();
-  bool entityUnderMouse = false;
-  int numMouseButtons = g_prefsManager->GetInt("ControlMouseButtons", 3);
 
   Team* team = g_app->m_location->GetMyTeam();
   if (team)
   {
-    bool checkMouse = false;
-    if (teamControls.m_unitMove)
-      checkMouse = true;
+    // We don't actually want to pass any left-clicks to the network system
+    // If the user has left-clicked on another of his entities, because that 
+    // entity is about to be selected.  We don't want our original entity 
+    // walking up to him.
+    WorldObjectId idUnderMouse;
+    bool objectUnderMouse = g_app->m_locationInput->GetObjectUnderMouse(idUnderMouse, g_app->m_globalWorld->m_myTeamId);
 
-    bool orderGiven = false;
-    if (g_inputManager->getInputMode() == INPUT_MODE_KEYBOARD && teamControls.m_primaryFireTarget)
-      orderGiven = true;
-    if (g_inputManager->getInputMode() == INPUT_MODE_GAMEPAD && teamControls.m_secondaryFireDirected)
-      orderGiven = true;
-
-    if (team->GetMyEntity() && team->GetMyEntity()->m_type == Entity::TypeOfficer && orderGiven)
-      checkMouse = true;
-
-    //if( checkMouse )
+    if (objectUnderMouse)
     {
-      // We don't actually want to pass any left-clicks to the network system
-      // If the user has left-clicked on another of his entities, because that 
-      // entity is about to be selected.  We don't want our original entity 
-      // walking up to him.
-      WorldObjectId idUnderMouse;
-      bool objectUnderMouse = g_app->m_locationInput->GetObjectUnderMouse(idUnderMouse, g_app->m_globalWorld->m_myTeamId);
+      Entity* entity = g_app->m_location->GetEntity(idUnderMouse);
+      if (entity)
+        teamControls.m_mousePos = entity->m_pos;
+    }
 
-      bool isCurrentEntity = (objectUnderMouse && idUnderMouse.GetUnitId() == -1 && idUnderMouse.GetIndex() == team->m_currentEntityId);
-      bool isCurrentUnit = (objectUnderMouse && idUnderMouse.GetUnitId() != -1 && idUnderMouse.GetUnitId() == team->m_currentUnitId);
-
-      entityUnderMouse = (objectUnderMouse && idUnderMouse.GetUnitId() != UNIT_BUILDINGS && !isCurrentEntity && !isCurrentUnit);
-
-      if (objectUnderMouse)
-      {
-        Entity* entity = g_app->m_location->GetEntity(idUnderMouse);
-        if (entity)
-          teamControls.m_mousePos = entity->m_pos;
-      }
-
-      if (idUnderMouse.GetUnitId() == UNIT_BUILDINGS)
-      {
-        // Focus the mouse on a Radar Dish if one exists under the mouse
-        Building* building = g_app->m_location->GetBuilding(idUnderMouse.GetUniqueId());
-        if (building && building->m_type == Building::TypeRadarDish)
-          teamControls.m_mousePos = building->m_pos;
-      }
+    if (idUnderMouse.GetUnitId() == UNIT_BUILDINGS)
+    {
+      // Focus the mouse on a Radar Dish if one exists under the mouse
+      Building* building = g_app->m_location->GetBuilding(idUnderMouse.GetUniqueId());
+      if (building && building->m_type == Building::TypeRadarDish)
+        teamControls.m_mousePos = building->m_pos;
     }
   }
 
@@ -355,7 +315,6 @@ void LocationGameLoop()
 
       // The following are candidates for running in parallel
       // using something like OpenMP
-      g_app->m_location->m_water->Advance();
       bool soundSystemIsInitialized = g_app->m_soundSystem->IsInitialized();
       if (soundSystemIsInitialized)
         g_soundLibrary2d->TopupBuffer();
@@ -364,7 +323,6 @@ void LocationGameLoop()
         g_app->m_camera->Advance();
 
       g_app->m_locationInput->Advance();
-      //g_app->m_taskManager->Advance();
       g_app->m_taskManagerInterface->Advance();
       g_app->m_script->Advance();
       g_explosionManager.Advance();
@@ -393,25 +351,6 @@ void LocationGameLoop()
   g_app->m_soundSystem->StopAllSounds(WorldObjectId(), "Ambience EnterLocation");
   g_app->m_soundSystem->TriggerOtherEvent(NULL, "ExitLocation", SoundSourceBlueprint::TypeAmbience);
   g_app->ShutdownCurrentGame();
-}
-
-void SwitchTaskManagerForX360Controller()
-{
-  static int oldControlType = INPUT_MODE_KEYBOARD;
-
-  if (oldControlType != INPUT_MODE_GAMEPAD && g_inputManager->getInputMode() == INPUT_MODE_GAMEPAD && !g_app->m_taskManagerInterface->
-    IsVisible())
-  {
-    // user has just switched to the game pad
-    TaskManagerInterface::CreateTaskManager();
-    oldControlType = INPUT_MODE_GAMEPAD;
-  }
-  else if (oldControlType == INPUT_MODE_GAMEPAD && g_inputManager->getInputMode() != INPUT_MODE_GAMEPAD && !g_app->m_taskManagerInterface->
-    IsVisible())
-  {
-    TaskManagerInterface::CreateTaskManager();
-    oldControlType = g_inputManager->getInputMode();
-  }
 }
 
 #ifdef LOCATION_EDITOR
@@ -549,25 +488,8 @@ void GlobalWorldGameLoop()
   g_app->m_soundSystem->StopAllSounds(WorldObjectId(), "Ambience EnterGlobalWorld");
 }
 
-void TestHarnessLoop()
-{
-#ifdef TEST_HARNESS_ENABLED
-  g_app->m_testHarness->RunTest();
-#endif
-}
-
 void SetPreferenceOverrides()
 {
-  // Fog can be an issue on certain drivers (e.g. Mac OS X - can causes FIFO hangs)
-
-#ifdef FOG_LOGGING
-  extern bool g_fogLogging; g_fogLogging = g_prefsManager->GetInt("RenderFog", 1) == 2;
-#endif
-
-#ifdef FOG_PREFERENCE
-  extern bool g_fogEnabled; g_fogEnabled = g_prefsManager->GetInt("RenderFog", 1);
-#endif
-
 }
 
 void InitialiseInputManager()
@@ -648,7 +570,6 @@ void Initialise()
 #endif
 
   g_target = new TargetCursor();
-  //if( g_prefsManager->GetInt("ControlMethod")==0 ) getW32EventHandler()->BindAltTab();
   EntityBlueprint::Initialise();
   g_windowManager->HideMousePointer();
 
@@ -745,12 +666,6 @@ void Finalise()
 }
 
 bool IsFirsttimeSequencing() { return g_RenderingFirstTimeBL; }
-
-void RequestBootloaderSequence()
-{
-  requestBootloader = true;
-  g_RenderingFirstTimeBL = true;
-}
 
 static void DoEnterLocation()
 {

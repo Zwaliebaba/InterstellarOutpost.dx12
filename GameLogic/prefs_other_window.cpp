@@ -2,18 +2,16 @@
 #include "preferences.h"
 #include "text_renderer.h"
 #include "language_table.h"
-#include "filesys_utils.h"
 #include "resource.h"
 #include "network_defines.h"
 #include "clienttoserver.h"
 #include "prefs_other_window.h"
 #include "drop_down_menu.h"
-
 #include "app.h"
+#include "input_field.h"
 #include "renderer.h"
 #include "location.h"
 #include "level_file.h"
-#include "water.h"
 #include "main.h"
 
 class ApplyOtherButton : public GameMenuButton
@@ -52,9 +50,6 @@ class ApplyOtherButton : public GameMenuButton
       {
         LandscapeDef* def = &g_app->m_location->m_levelFile->m_landscape;
         g_app->m_location->m_landscape.Init(def);
-
-        delete g_app->m_location->m_water;
-        g_app->m_location->m_water = new Water();
       }
 
       // Network settings
@@ -154,7 +149,7 @@ PrefsOtherWindow::PrefsOtherWindow()
   else
     m_bootLoader = 2;
 
-  m_christmas = g_prefsManager->GetInt(OTHER_CHRISTMASENABLED, 1);
+  g_prefsManager->GetInt(OTHER_CHRISTMASENABLED, 1);
   if (g_app->m_locationId == -1)
   {
     m_difficulty = g_prefsManager->GetInt(OTHER_DIFFICULTY, 1) - 1;
@@ -225,13 +220,6 @@ void PrefsOtherWindow::Create()
   y = static_cast<int>(y);
   border = static_cast<int>(border);
   buttonH = static_cast<int>(buttonH);
-
-  auto helpEnabled = new GameMenuCheckBox();
-  helpEnabled->SetShortProperties("dialog_helpsystem", x, y += border, buttonW, buttonH, LANGUAGEPHRASE("dialog_helpsystem"));
-  helpEnabled->RegisterInt(&m_helpEnabled);
-  helpEnabled->m_fontSize = fontSize;
-  RegisterButton(helpEnabled);
-  m_buttonOrder.PutData(helpEnabled);
 
   bool networkingOptionDisabled = g_app->m_server != nullptr;
 

@@ -61,13 +61,6 @@ const InputSpecList& ControlBindings::operator[](controltype_t id) const
 
 const std::string& ControlBindings::getIcon(ControlType id) const { return icons[id]; }
 
-const std::string& ControlBindings::getIcon(controltype_t id) const
-{
-  if (0 <= id && id < NumControlTypes)
-    return icons[id];
-  throw "Invalid control type.";
-}
-
 void ControlBindings::setIcon(controltype_t id, const std::string& iconfile)
 {
   if (0 <= id && id < NumControlTypes)

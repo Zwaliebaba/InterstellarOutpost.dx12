@@ -19,7 +19,6 @@ class Camera
 public:
     enum Mode
     {
-		ModeReplay = 0,
 		ModeSphereWorld = 1,
         ModeFreeMovement = 2,		// Remember to update the static string table
         ModeBuildingFocus = 3,		// at the end of camera.cpp when you update this
@@ -39,7 +38,6 @@ public:
 
 	enum
 	{
-		DebugModeNever,
 		DebugModeAlways,
 		DebugModeAuto,
 		DebugModeNumStates
@@ -66,22 +64,14 @@ protected:
     void AdvanceSphereWorldFocusMode();
 
 	float DistanceToBlockage(Vector3 const &_dir, float _maxDist);
-	float DirectDistanceToBlockage(Vector3 const &_from, Vector3 const &_to, float const _maxDist);
-    void GetHighestPoint( Vector3 const &_from, Vector3 const &_to, float _maxDist, Vector3 &location );
-	void GetHighestTangentPoint( Vector3 const &_from, Vector3 const &_to, float _maxDist, Vector3 &location );
 
-	bool GetEntityToTrack( WorldObjectId &selection );
+    bool GetEntityToTrack( WorldObjectId &selection );
 	void AdvanceAutomaticTracking();
     void RotateTowardsEntity( Entity *entity );
 
-	bool AdvanceNotTooLow( Vector3 &targetCamera );
-	bool AdvanceCanSeeUnits( Vector3 &targetCamera );
-	bool AdvanceNotTooFarAway( Vector3 &targetCamera );
-	bool AdvanceCameraMoveBehind( Vector3 &cameraTarget );
-	bool AdvanceManualRotateCamera( Vector3 &cameraTarget );
-	bool AdvanceManualCameraHeight( Vector3 &cameraTarget );
+  bool AdvanceCameraMoveBehind( Vector3 &cameraTarget );
 
-	void UpdateControlVector();		// updates the vector used by units in direct control for the purposes of determining directions
+    void UpdateControlVector();		// updates the vector used by units in direct control for the purposes of determining directions
 
 	bool DoesLocationDataExist();
 
@@ -95,8 +85,7 @@ public:
 	float m_camEntDiffAngle;
 
 	Entity			*m_targettingEntity;
-	WorldObjectId	m_targettingEntityId;
-	Vector3			m_targetVector;
+  Vector3			m_targetVector;
 	Vector3			m_wantedTargetVector;
 
 	Entity *m_trackingEntity;	// The entity we are tracking
@@ -108,26 +97,20 @@ private:
 	float   m_maxFovRadians;    // Updated once per frame from m_fov in SetupProjectionMatrix
     float   m_height;			// Distance above ground (in metres)
     Vector3 m_vel;
-   
-	float	m_minX, m_maxX;		// Bounds of camera movement
-	float	m_minZ, m_maxZ;
-    Vector3 m_targetFront;        
+
+    Vector3 m_targetFront;
     Vector3 m_targetUp;
     float   m_targetFov;
-	Vector3 m_cameraTarget;		// Target Position of camera for automatic entity tracking	
-	Vector3 m_predictedEntityPos;	// Predicted Position of entity for automatic entity tracking
+	Vector3 m_cameraTarget;		// Target Position of camera for automatic entity tracking
 
 	Vector3 m_startPos;			// Camera pos and orientation at the start of a "MoveToTarget"
 	Vector3 m_startFront;
-	Vector3 m_startUp;
-	double  m_startTime;
+  double  m_startTime;
 	float	m_moveDuration;
 
 	float	m_distFromEntity;	// Used in EntityFollowMode and MicroUnitMode
-    float   m_currentDistance;	// Used in Manual Camera Rotation when tracking entities
-	float	m_heightMultiplier;
 
-    int		m_mode;
+  int		m_mode;
 	int		m_debugMode;
 	int		m_framesInThisMode;
     
@@ -151,9 +134,8 @@ private:
 	WorldObjectId	m_lastSquadieId;
 	WorldObjectId	m_trackingEntityId;
 	int				m_trackingCameraDist;
-	Vector3			m_newTargetPosTemp;
 
-    float   m_cameraShake;
+  float   m_cameraShake;
 
     bool    m_entityTrack;         // the current state of automatic entity tracking
 	bool	m_resettingCameraPos;
@@ -185,13 +167,10 @@ public:
 	bool PosInViewFrustum			(Vector3 const &_pos);
     bool SphereInViewFrustum        (Vector3 const &_centre, float _radius );
 
-    Building *GetBestBuildingInView ();  // Is the player currently looking at a building?
-                                                                                
 	void Advance();
     void Render();
 
-	int	 GetDebugMode				();
-	void SetDebugMode				(int _mode);
+  void SetDebugMode				(int _mode);
 	void SetNextDebugMode			();
 
 	void RequestMode				(int _mode);
@@ -199,19 +178,14 @@ public:
     void RequestSphereFocusMode     ();
     void RequestRadarAimMode        (Building *_building);
     void RequestEntityTrackMode     (WorldObjectId const &_id);
-    void RequestEntityFollowMode    (WorldObjectId const &_id);
     void RequestTurretAimMode       (Building *_building);
 
     void CreateCameraShake          (float _intensity);
 
-	bool IsMoving					();
     bool IsInteractive              ();
     bool IsInMode                   (int _mode);
-	
-    void RecordCameraPosition       ();                 // So you can return easily
-    void RestoreCameraPosition      ( bool _cut=false );
 
-	// SetTarget() only sets the target data. To make these changes take effect, call either
+    // SetTarget() only sets the target data. To make these changes take effect, call either
 	// CutToTarget() or RequestMode(Camera::ModeMoveToTarget), depending on whether you 
 	// want an instant cut or a smooth transition
 	void SetTarget		(Vector3 const &_pos, Vector3 const &_front, Vector3 const &_up=g_upVector);
@@ -243,15 +217,9 @@ public:
 	//! Mirrors camera by water surface. Do it again to revert the effect.
 	void WaterReflect   ();
 
-	//! Sets camera for rendering into cubemap.
-	//! Eye is in pos, looking in dir, aspect is 1, FOV is pi/2.
-	void SetCubemapSide (Vector3 const &_pos, Vector3 const &_dir);
+  bool TargetEntity	(short _x, short _y);
 
-	bool TargetEntity	(short _x, short _y);
-
-	inline float GetHeight() { return m_height; }
-
-	bool ChatLogVisible ();
+  bool ChatLogVisible ();
 };
 
 

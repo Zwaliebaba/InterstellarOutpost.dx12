@@ -354,17 +354,6 @@ ShapeFragment::~ShapeFragment()
 #endif
 }
 
-
-void ShapeFragment::BuildDisplayList()
-{
-#ifndef EXPORTER_BUILD
-	DEBUG_ASSERT(m_displayListName == NULL);
-	m_displayListName = g_app->m_resource->GenerateName();
-	g_app->m_resource->CreateDisplayListAsync(m_displayListName, Method<ShapeFragment>( &ShapeFragment::RenderSlow, this ) );
-#endif
-}
-
-
 void ShapeFragment::WriteToFile(FILE *_out) const
 {
     int i;
@@ -857,38 +846,12 @@ void ShapeFragment::RegisterPositions(Vector3 *_positions, unsigned int _numPosi
 	}
 }
 
-
-void ShapeFragment::RegisterNormals(Vector3 *_norms, unsigned int _numNorms)
-{
-    delete [] m_normals;
-    m_normals = _norms;
-    m_numNormals = _numNorms;
-}
-
-
 void ShapeFragment::RegisterColours(RGBAColour *_colours, unsigned int _numColours)
 {
     delete [] m_colours;
     m_colours = _colours;
     m_numColours = _numColours;
 }
-
-
-void ShapeFragment::RegisterVertices(VertexPosCol *_verts, unsigned int _numVerts)
-{
-	delete [] m_vertices;
-	m_vertices = _verts;
-	m_numVertices = _numVerts;
-}
-
-
-void ShapeFragment::RegisterTriangles(ShapeTriangle *_tris, unsigned int _numTris)
-{
-	delete [] m_triangles;
-	m_triangles = _tris;
-	m_numTriangles = _numTris;
-}
-
 
 void ShapeFragment::Render(double _predictionTime)
 {
@@ -1076,7 +1039,6 @@ void ShapeFragment::RenderHitCheck(Matrix34 const &_transform)
 }
 
 
-// *** RenderMarkers
 void ShapeFragment::RenderMarkers(Matrix34 const &_rootTransform)
 {
 #ifndef EXPORTER_BUILD
@@ -1383,7 +1345,7 @@ void Shape::BuildDisplayList()
 	{
 		if( m_displayListName )
 		{
-			DebugTrace("Warning: Shape::BuildDisplayList called when there's already a display list. Fix memory leak\n");
+			DebugTrace("Warning: Shape::BuildDsplayList called when there's already a display list. Fix memory leak\n");
 		}
 		m_displayListName = g_app->m_resource->GenerateName();
 
@@ -1488,12 +1450,6 @@ void Shape::Load(TextReader *_in)
 	}
 }
 
-
-void Shape::WriteToFile(FILE *_out) const
-{
-	m_rootFragment->WriteToFile(_out);
-}
-
 void Shape::Render(double _predictionTime, Matrix34 const &_transform)
 {
 #ifndef EXPORTER_BUILD
@@ -1537,22 +1493,6 @@ void Shape::RenderHitCheck(Matrix34 const &_transform)
 	m_rootFragment->RenderHitCheck(_transform);
 #endif
 }
-
-
-void Shape::RenderMarkers(Matrix34 const &_transform)
-{
-#ifndef EXPORTER_BUILD
-	// Like the main render function this function starts a recursive tree
-	// walk, rendering as it goes. UNLIKE the main renderer, it doesn't
-	// use the OpenGL matrix stack to store the combined matrix results, but
-	// rather does all the matrix muls using our own Matrix34 code. The
-	// reason for this is that this function is designed to aid debugging
-	// of the hitcheck. Since the hitcheck uses no OpenGL commands, it
-	// makes sense to emulate that behaviour here as much as possible.
-	m_rootFragment->RenderMarkers(_transform);
-#endif
-}
-
 
 bool Shape::RayHit(RayPackage *_package, Matrix34 const &_transform, bool _accurate)
 {

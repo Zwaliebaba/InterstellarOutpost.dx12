@@ -34,8 +34,6 @@ protected:
     void    AdvanceGracePeriod();
     void    AdvanceSkirmish();
     void    AdvanceKingOfTheHill();
-    void    AdvanceChess();
-    void    AdvanceShaman();
     void    AdvanceRocketRiot();
     void    AdvanceCaptureStatue();
     void    AdvanceTankBattle();
@@ -53,9 +51,8 @@ protected:
     void    RenderRocketStatusPanel();
 
     void    CheckMasterAchievement();
-    void    CheckMentorAchievement();
 
-public:
+  public:
     int			m_gameType;
     int			m_params        [MULTIWINIA_MAXPARAMS];    
 	
@@ -97,7 +94,6 @@ public:
 
     bool        m_eliminated    [NUM_TEAMS];
     int         m_numEliminations[NUM_TEAMS];   // tracks the number of team eliminations each team has scored (blitzkrieg)
-    double      m_timeEliminated[NUM_TEAMS];    // the GetNetworkTime() that a team was eliminated (dom)
     int         m_eliminationTimer[NUM_TEAMS];
     double       m_eliminationBonusTimer[NUM_TEAMS];
 
@@ -108,8 +104,6 @@ public:
     bool        m_basicCratesOnly;
 
     bool        m_firstReinforcements;
-
-    int         m_teamsStatus[NUM_TEAMS];
 
     RocketStatusPanel   *m_rocketStatusPanel;
 
@@ -162,10 +156,6 @@ public:
     void EliminateTeam      ( int _teamId );
     void RecordDefenseTime  ( double _time, int _teamId );
     bool IsEliminated       ( int _teamId );
-
-	int GetNumHumanTeams() const;
-	int GetNumCpuTeams() const;
-	static std::string GameTypeString( int _gameType );
 
     int  CountDarwinians ( int _teamId );
 

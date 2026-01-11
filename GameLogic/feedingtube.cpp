@@ -219,9 +219,7 @@ void FeedingTube::RenderSignal( double _predictionTime, double _radius, double _
     double texXInner = -g_gameTime/_radius;
     double texXOuter = -g_gameTime;
 
-    //double texXInner = -1.0/_radius;
-    //double texXOuter = -1.0;
-	if (true) {
+   {
     glBegin( GL_QUAD_STRIP );
 
     for( int s = 0; s < numSteps; ++s )

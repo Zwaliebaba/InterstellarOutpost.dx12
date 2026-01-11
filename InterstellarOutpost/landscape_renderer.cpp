@@ -16,21 +16,14 @@
 #include "FixedPipeline.h"
 #include "random_number.h"
 #include "loading_screen.h"
-
 #include "app.h"
-#include "camera.h"
 #include "landscape_renderer.h"
 #include "location.h"	// For SetupFog
-#include "renderer.h"
 #include "level_file.h"
 
 
 #define MAIN_DISPLAY_LIST_NAME "LandscapeMain"
 #define OVERLAY_DISPLAY_LIST_NAME "LandscapeOverlay"
-
-#ifdef USE_DIRECT3D
-	#define USE_DIRECT3D_TRILIST // Convert from tristrip to trilist (because of flatshading)
-#endif
 
 //*****************************************************************************
 // Protected Functions
@@ -101,7 +94,6 @@ void LandscapeRenderer::BuildVertArrayAndTriStrip(SurfaceMap2D <double> *_height
 	// end strip
 	strip->m_numVerts = m_verts.NumUsed();
 	m_strips.PutData(strip);
-	m_numTriangles = strip->m_numVerts - 2;
 }
 
 
@@ -384,37 +376,12 @@ void LandscapeRenderer::BuildOpenGlState(SurfaceMap2D <double> *_heightMap)
 	BuildColourArray();
 	BuildUVArray(_heightMap);
 
-#ifdef USE_DIRECT3D
 	// Flip the normals for Direct3D
 	const int numUsed = m_verts.NumUsed();
 	for (int i = 0; i < numUsed; ++i)
 	{
 		m_verts[i].m_norm = -1 * Vector3(m_verts[i].m_norm);
 	}
-#ifdef USE_DIRECT3D_TRILIST
-	// Convert from tristrip to trilist (because of flatshading)
-	if(m_verts.NumUsed())
-	{
-		FastDArray <LandVertex> trilist;
-		LandTriangleStrip *strip = m_strips[0];
-		trilist.SetSize((strip->m_numVerts-2)*3);
-		for(unsigned i=0;i<strip->m_numVerts-2;i++)
-		{
-			//!!! skip degenerated
-			LandVertex tmp = m_verts[i+2];
-			tmp.m_pos = m_verts[i        ].m_pos; tmp.m_uv = m_verts[i        ].m_uv; trilist.PutData(tmp);
-			tmp.m_pos = m_verts[i+1+(i%2)].m_pos; tmp.m_uv = m_verts[i+1+(i%2)].m_uv; trilist.PutData(tmp);
-			tmp.m_pos = m_verts[i+2-(i%2)].m_pos; tmp.m_uv = m_verts[i+2-(i%2)].m_uv; trilist.PutData(tmp);
-		}
-		char* buf = new char[sizeof(m_verts)];
-		memcpy(buf,&m_verts,sizeof(m_verts));
-		memcpy(&m_verts,&trilist,sizeof(m_verts));
-		memcpy(&trilist,buf,sizeof(m_verts));
-		delete[] buf;
-		trilist.Empty();
-	}
-#endif
-#endif
 
 	if (m_verts.NumUsed() <= 0)
 		return;
@@ -507,30 +474,15 @@ void LandscapeRenderer::RenderMainSlow()
 		}
 	}
 
-#ifdef USE_DIRECT3D_TRILIST
-	if(m_verts.NumUsed())
-	{
-		if(g_fixedPipeline && OpenGLD3D::g_pd3dDevice==OpenGLD3D::g_pd3dDeviceActual)
-		{
-			g_fixedPipeline->Bind();
-		}
-		OpenGLD3D::g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, 0, m_verts.NumUsed()/3);
-	}
-#else
 	for (int z = 0; z < m_strips.Size(); ++z)
 	{
 			LandTriangleStrip *strip = m_strips[z];
-#ifdef USE_DIRECT3D
 			if(strip->m_numVerts>2)
 			{
 				if(g_fixedPipeline) g_fixedPipeline->Bind();
 				OpenGLD3D::g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, strip->m_firstVertIndex, strip->m_numVerts-2);
 			}
-#else
-			glDrawArrays(GL_TRIANGLE_STRIP, strip->m_firstVertIndex, strip->m_numVerts);
-#endif
 	}
-#endif
 
 	if (m_renderMode == RenderModeVertexBufferObject)
     {
@@ -607,29 +559,14 @@ void LandscapeRenderer::RenderOverlaySlow()
 			break;
 	}
 
-#ifdef USE_DIRECT3D_TRILIST
-	if(m_verts.NumUsed())
-	{
-		if(g_fixedPipeline && OpenGLD3D::g_pd3dDevice==OpenGLD3D::g_pd3dDeviceActual)
-		{
-			g_fixedPipeline->Bind();
-		}
-		OpenGLD3D::g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLELIST, 0, m_verts.NumUsed()/3);
-	}
-#else
 	for (int z = 0; z < m_strips.Size(); ++z)
 	{
 		LandTriangleStrip *strip = m_strips[z];
 
-#ifdef USE_DIRECT3D
 		if(g_fixedPipeline) g_fixedPipeline->Bind();
 		OpenGLD3D::g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, strip->m_firstVertIndex, strip->m_numVerts-2);
-#else
-		glDrawArrays(GL_TRIANGLE_STRIP, strip->m_firstVertIndex, strip->m_numVerts);
-#endif
 
 	}
-#endif
 
 	switch (m_renderMode) {
 		case RenderModeVertexBufferObject:

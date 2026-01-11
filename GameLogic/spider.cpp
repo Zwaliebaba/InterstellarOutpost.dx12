@@ -25,14 +25,11 @@
 #define HOVER_HEIGHT				3.0
 
 #define TURN_RATE					0.1
-#define NORMAL_SPEED				300.0
-#define ATTACK_SPEED				90.0
 
 #define MAX_PATH_HEIGHT				100.0
 
 #define ATTACK_SEARCH_MAX_RADIUS	250.0
 #define ATTACK_SEARCH_MIN_RADIUS	100.0
-#define ATTACK_PREAMBLE				5.0	// Minimum time between choosing a target and starting to charge (most of this time will normally be spent turning)
 
 
 #define SPIRIT_MAXSEARCHRANGE       100.0

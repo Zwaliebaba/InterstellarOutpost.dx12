@@ -93,18 +93,6 @@ IDirect3DBaseTexture9* Texture::GetTexture() const
 	return m_D3DTexture2D;
 }
 
-IDirect3DCubeTexture9* Texture::GetTextureCube() const
-{
-	if(m_textureParams.m_flags&TF_CUBE) return m_D3DTextureCube;
-	return NULL;
-}
-
-IDirect3DTexture9* Texture::GetTexture2D() const
-{
-	if(!(m_textureParams.m_flags&TF_CUBE)) return m_D3DTexture2D;
-	return NULL;
-}
-
 IDirect3DSurface9* Texture::GetRenderTarget(unsigned index) const
 {
 	DEBUG_ASSERT(index < 6);

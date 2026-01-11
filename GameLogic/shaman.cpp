@@ -40,10 +40,8 @@
 Shaman::Shaman()
 :	Entity(),
 	m_sacraficeDarwinians(false),
-	m_toggleTimer(0.0),
 	m_sacraficeTimer(0.0),
     m_sacrafices(0),
-    m_targetPortal(-1),
     m_vunerable(true),
     m_paralyzed(false),
     m_summonType(Entity::TypeInvalid),
@@ -79,55 +77,6 @@ void Shaman::Begin()
 
 bool Shaman::Advance( Unit *_unit )
 {
-	/*if( !m_onGround ) AdvanceInAir( _unit );
-	AdvanceToTargetPosition();
-
-    if( m_mode == ModeCreateDarwinians ) AdvanceCreateDarwinians();
-	
-    if( !m_paralyzed )
-    {
-        if( m_summonType == 255 )   // we're doing the final summon, so make sure we are still linked to the enemy portal
-        {
-            Portal *p = (Portal *)g_app->m_location->GetBuilding( m_targetPortal );
-            if( p && p->m_type == Building::TypePortal )
-            {
-                if( !Portal::s_masterPortals[p->m_id.GetTeamId()]->m_vunerable[m_id.GetTeamId()] )
-                {
-                    // we're no longer linked, so cancel the summon
-                    m_summonType = Entity::TypeInvalid;
-                    m_sacraficeDarwinians = false;
-                }
-            }
-                
-        }
-
-	    if( m_sacraficeDarwinians )
-        {
-            if( m_sacrafices < GetSoulRequirement( m_summonType ) ) 
-            {
-                //GrabSouls();
-                SacraficeDarwinians();
-            }
-            else
-            {
-                m_sacraficeDarwinians = false;
-                m_summonType = Entity::TypeInvalid;
-            }
-        }
-    }
-
-    bool iAmDead = Entity::Advance( _unit );
-
-    if( m_dead )
-    {
-        Portal *p = (Portal *)g_app->m_location->GetBuilding( m_targetPortal );
-        if( p )
-        {
-            p->ClearSummon( m_id.GetTeamId() );
-            m_targetPortal = -1;
-        }        
-    }
-*/
     return true;
 }
 
@@ -190,25 +139,6 @@ bool Shaman::AdvanceToTargetPosition()
     }
 
     return false;    
-}
-
-void Shaman::AdvanceCreateDarwinians()
-{
-    for( int i = 0; i < g_app->m_location->m_spirits.Size(); ++i )
-    {
-        if( g_app->m_location->m_spirits.ValidIndex( i ) )
-        {
-            Spirit *s = g_app->m_location->m_spirits.GetPointer(i);
-            if( s->m_state != Spirit::StateFloating ) continue;
-
-            if( (m_pos - s->m_pos).Mag() <= 50.0 )
-            {
-                g_app->m_location->SpawnEntities( s->m_pos, m_id.GetTeamId(), -1, Entity::TypeDarwinian, 1, g_zeroVector, 0.0 );
-                s->m_state = Spirit::StateDeath;
-                s->SkipStage();
-            }
-        }
-    }
 }
 
 bool Shaman::ChangeHealth( int _amount, int _damageType )
@@ -399,120 +329,6 @@ void Shaman::SummonEntity( int _type )
 
 void Shaman::BeginSummoning( int _type )
 {
-   /* if( m_summonType != Entity::TypeInvalid ) return;
-
-    if( _type == 255 )
-    {
-        bool specialSummon = false;
-        int targetTeam = -1;
-        for( int i = 0; i < NUM_TEAMS; ++i )
-        {
-            if( g_app->m_location->m_teams[i]->m_teamType == TeamTypeUnused ) continue;
-            if( i == g_app->m_location->GetMonsterTeamId() ) continue;
-            if( i = g_app->m_location->GetFuturewinianTeamId() ) continue;
-            if( Portal::s_masterPortals[i]->m_vunerable[m_id.GetTeamId()] )
-            {
-                specialSummon = true;
-                targetTeam = i;
-            }
-        }
-        if( !specialSummon ) return;
-
-        m_sacrafices = Portal::s_masterPortals[targetTeam]->m_spirits[m_id.GetTeamId()].Size();
-        m_targetPortal = Portal::s_masterPortals[targetTeam]->m_id.GetUniqueId();
-    }
-    else if( _type == Entity::NumEntityTypes )
-    {
-        if( !CanCapturePortal() ) return;
-        m_targetPortal = GetNearestPortal();
-        m_sacrafices = 0;
-    }
-    else
-    {
-        if( !CanSummonEntity( _type ) ) return;
-	    if( _type == m_summonType ) return;
-        m_targetPortal = GetNearestPortal();
-        if( m_targetPortal == -1 ) return;
-        m_sacrafices = 0;
-    }
-
-    Portal *p = (Portal *)g_app->m_location->GetBuilding( m_targetPortal );
-    if( _type == 255 || p->m_summonType[m_id.GetTeamId()] == Entity::TypeInvalid )
-    {
-        p->m_summonType[m_id.GetTeamId()] = _type;
-
-	    m_summonType = _type;
-        m_sacraficeDarwinians = true;
-    }
-    else
-    {
-        m_targetPortal = -1;
-    }*/
-}
-
-void Shaman::SacraficeDarwinians()
-{
-    m_sacraficeTimer -= SERVER_ADVANCE_PERIOD;
-    if( m_sacraficeTimer <= 0.0 ) 
-    {
-        m_sacraficeTimer = 1.0;
-
-	    int numFound;
-        g_app->m_location->m_entityGrid->GetEnemies( s_neighbours, m_pos.x, m_pos.z, 50.0, &numFound, 255 );
-
-        WorldObjectId nearestId;
-        double nearestDistance = 99999.9;
-
-        int numSacrafices = 0;
-        for( int i = 0; i < numFound; ++i )
-        {
-            WorldObjectId id = s_neighbours[i];
-            Entity *entity = g_app->m_location->GetEntity( id );
-            if( entity && entity->m_type == Entity::TypeDarwinian && !entity->m_dead )
-            {
-                Darwinian *d = (Darwinian *)entity;
-                if( d->m_state != Darwinian::StateBeingSacraficed &&
-                    d->m_state != Darwinian::StateOperatingPort &&
-                    d->m_state != Darwinian::StateInsideArmour )
-                {
-                    d->Sacrafice(m_id, m_targetPortal );
-                    numSacrafices++;
-                    m_sacrafices++;
-
-                    int numFlashes = 5 + AppRandom() % 5;
-                    for( int j = 0; j < numFlashes; ++j )
-                    {
-                        Vector3 vel( sfrand(15.0), frand(15.0), sfrand(15.0) );
-                        double size = j * 15;
-                        g_app->m_particleSystem->CreateParticle( d->m_pos, vel, Particle::TypeFire, size );
-                    }
-                    if( m_sacrafices >= GetSoulRequirement( m_summonType ) ) break;
-                }
-            }
-        }
-    }
-}
-
-void Shaman::GrabSouls()
-{
-   /* Portal *p = (Portal *)g_app->m_location->GetBuilding( m_targetPortal );
-    if( !p ) return;
-
-    for( int i = 0; i < g_app->m_location->m_spirits.Size(); ++i )
-    {
-        Spirit *s = g_app->m_location->GetSpirit(i);
-        if( s )
-        {
-            double distance = (s->m_pos - m_pos).Mag();
-            if( distance < 50.0 &&
-                s->m_state == Spirit::StateFloating )
-            {
-                p->GiveSpirit(i, m_id.GetTeamId() );
-                s->m_state = Spirit::StateShaman;
-                m_sacrafices++;
-            }
-        }
-    }*/
 }
 
 int Shaman::GetNearestPortal()
@@ -718,90 +534,5 @@ bool Shaman::IsSummonable( int _entityType )
             return true;
 
 		default: return false;
-	}
-}
-
-double Shaman::GetSummonTime( int _entityType )
-{
-	switch( _entityType )
-	{
-		case Entity::TypeCentipede:			return 20.0;
-		case Entity::TypeArmyAnt:			return 10.0;
-		case Entity::TypeSoulDestroyer:		return 60.0;
-		case Entity::TypeSpider:			return 30.0;
-		case Entity::TypeSporeGenerator:	return 10.0;
-		case Entity::TypeTripod:			return 15.0;
-		case Entity::TypeVirii:				return 5.0;
-		case Entity::TypeDarwinian:			return 10.0;
-
-		default: return -1.0;
-	}
-}
-
-int Shaman::GetDefaultSpawnNumber( int _entityType )
-{
-	switch( _entityType )
-	{
-		case Entity::TypeCentipede:			return 1;
-		case Entity::TypeArmyAnt:			return 3;
-		case Entity::TypeSoulDestroyer:		return 1;
-		case Entity::TypeSpider:			return 3;
-		case Entity::TypeSporeGenerator:	return 1;
-		case Entity::TypeTripod:			return 1;
-		case Entity::TypeVirii:				return 1;
-		case Entity::TypeDarwinian:			return 1;
-
-		default: return 0;
-	}
-}
-
-int Shaman::GetSoulRequirement(int _entityType)
-{
-	switch( _entityType )
-	{
-        case 255:                           return 200;
-		case Entity::TypeCentipede:			return 30;
-		case Entity::TypeArmyAnt:			return 20;
-		case Entity::TypeSoulDestroyer:		return 100;
-		case Entity::TypeSpider:			return 25;
-		case Entity::TypeSporeGenerator:	return 15;
-		case Entity::TypeTripod:			return 15;
-		case Entity::TypeVirii:				return 15;
-		case Entity::TypeDarwinian:			return 20;
-        case Entity::NumEntityTypes:        return 25;
-
-		default: return 999;
-	}
-}
-
-int Shaman::GetEggType(int _entityType)
-{
-	switch( _entityType )
-	{
-		case Entity::TypeCentipede:			return Triffid::SpawnCentipede;
-		case Entity::TypeSpider:			return Triffid::SpawnSpider;
-		case Entity::TypeVirii:				return Triffid::SpawnVirii;
-		case Entity::TypeDarwinian:			return Triffid::SpawnDarwinians;
-        case Entity::TypeArmyAnt:           return Triffid::SpawnAnts;
-        case Entity::TypeSoulDestroyer:     return Triffid::SpawnSoulDestroyer;
-        case Entity::TypeSporeGenerator:    return Triffid::SpawnSporeGenerator;
-
-		default: return -1;
-	}
-}
-
-int Shaman::GetTypeFromEgg(int _eggSpawnType)
-{
-	switch( _eggSpawnType )
-	{
-		case Triffid::SpawnCentipede:			return Entity::TypeCentipede;
-		case Triffid::SpawnSpider:				return Entity::TypeSpider;
-		case Triffid::SpawnVirii:				return Entity::TypeVirii;
-		case Triffid::SpawnDarwinians:			return Entity::TypeDarwinian;
-        case Triffid::SpawnAnts:                return Entity::TypeArmyAnt;
-        case Triffid::SpawnSoulDestroyer:       return Entity::TypeSoulDestroyer;
-        case Triffid::SpawnSporeGenerator:      return Entity::TypeSporeGenerator;
-
-		default: return -1;
 	}
 }

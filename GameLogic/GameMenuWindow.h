@@ -77,7 +77,6 @@ class GameMenuWindow : public DarwiniaWindow
     float m_serverW;
     float m_serverH;
     float m_serverGap;
-    float m_serverFontSize;
 
     int m_serverButtonOrderStartIndex;
 
@@ -112,10 +111,6 @@ class GameMenuWindow : public DarwiniaWindow
     bool m_waitingForTeamID;
     int m_waitingGameType;
 
-    char m_authKey[256];
-    bool m_setupNewPage;
-
-    bool m_teamNameChanged;
     PlayerNameString m_teamName;
     ServerPasswordString m_serverPassword;
 
@@ -140,7 +135,6 @@ class GameMenuWindow : public DarwiniaWindow
       PageResearch = 8,
       PageMapSelect = 9,
       PageAdvancedOptions = 12,
-      PageXBLASignIn = 14,
       PagePlayerOptions = 24,
       PageSearchFilters = 25,
       PageUpdateAvailable = 31,
@@ -150,16 +144,6 @@ class GameMenuWindow : public DarwiniaWindow
       PageEnterPassword = 36,
       PageWaitForGameToStart = 37,
       NumPages = 38
-    };
-
-    enum
-    {
-      HelpPageGeneral = 1,
-      HelpPageSkirmish,
-      HelpPageKoth,
-      HelpPageCts,
-      HelpPageRR,
-      NumHelpPages
     };
 
     ScrollBar* m_scrollBar;

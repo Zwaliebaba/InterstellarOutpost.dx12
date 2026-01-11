@@ -15,8 +15,7 @@ protected:
 public:
     int     m_researchType;                             // indexes into GlobalResearch::m_type
     int     m_level;
-    bool    m_inLibrary;   
-	double m_percentResearchedSmooth;
+    double m_percentResearchedSmooth;
 
 public:
     ResearchItem();

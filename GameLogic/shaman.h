@@ -18,9 +18,8 @@ protected:
 
 	bool	m_sacraficeDarwinians;
 	double	m_sacraficeTimer;
-	double	m_toggleTimer;
 
-    int     m_summonType;
+  int     m_summonType;
 
     int     m_mode;
     double   m_lastModeChange;
@@ -32,15 +31,10 @@ public:
         ModeNone,
         ModeCreateDarwinians,
         ModeFollow,
-        //ModeSacrafice, 
-        //ModeTeleport,
         NumModes
     };
 
-	//LList<int>	m_eggQueue;
-
     int     m_sacrafices;
-    int     m_targetPortal;
 
     bool    m_vunerable;
     bool    m_paralyzed;        // the final summon is being cast on him, so he can no longer act
@@ -55,9 +49,8 @@ public:
 
 	bool Advance					( Unit *_unit );
 	bool AdvanceToTargetPosition	();
-    void AdvanceCreateDarwinians    ();
 
-	void Render						( double predictionTime );
+  void Render						( double predictionTime );
     void RenderTeleportTargets      ();
 
     bool ChangeHealth               ( int _amount, int _damageType = DamageTypeUnresistable );
@@ -67,9 +60,7 @@ public:
 	void BeginSummoning				( int _type );
 	void SummonEntity				( int _type );
 
-	void SacraficeDarwinians		();
-	bool IsSacraficing				();
-    void GrabSouls                  (); // Grab any nearby free souls
+  bool IsSacraficing				();
 
     bool CallingDarwinians          ();
 
@@ -88,11 +79,6 @@ public:
     bool            CanCapturePortal();
 
     static bool     IsSummonable ( int _entityType );
-	static double	GetSummonTime( int _entityType );
-	static int		GetDefaultSpawnNumber( int _entityType );
-	static int		GetSoulRequirement( int _entityType );
-	static int		GetEggType( int _entityType );
-	static int      GetTypeFromEgg( int _eggSpawnType );
 };
 
 #endif

@@ -92,15 +92,6 @@ class ApplyKeybindingsButton : public DarwiniaButton
 
     TaskManagerInterface::CreateTaskManager();
 
-    /*W32EventHandler *w = getW32EventHandler();
-    if ( w ) {
-      w->UnbindAltTab();
-
-          if( parent->m_controlMethod == 0 )
-        {
-          w->BindAltTab();
-      }
-    }*/
 
     g_prefsManager->Save();
     prefsMan.Save();

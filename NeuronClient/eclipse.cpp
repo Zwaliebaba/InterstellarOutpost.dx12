@@ -334,21 +334,6 @@ char* EclGetCurrentClickedButton()
   return "None";
 }
 
-char* EclGenerateUniqueWindowName(char* name)
-{
-  static char uniqueName[SIZE_ECLWINDOW_NAME];
-
-  int index = 1;
-  strcpy(uniqueName, name);
-  while (EclGetWindow(uniqueName))
-  {
-    ++index;
-    sprintf(uniqueName, "%s%d", name, index);
-  }
-
-  return uniqueName;
-}
-
 void EclRegisterWindow(EclWindow* window, EclWindow* parent)
 {
   //    DebugAssert( window );
@@ -559,8 +544,6 @@ int EclGetScreenW() { return screenW; }
 
 int EclGetScreenH() { return screenH; }
 
-void EclRegisterClearFunction(void (*_clearDraw)(int, int, int, int)) { clearDraw = _clearDraw; }
-
 void EclDirtyWindow(char* name)
 {
 
@@ -593,24 +576,6 @@ void EclDirtyRectangle(int x, int y, int w, int h)
       EclDirtyWindow(window);
   }
 }
-
-void EclResetDirtyRectangles()
-{
-  while (dirtyrects.GetData(0))
-  {
-    DirtyRect* dr = dirtyrects.GetData(0);
-    delete dr;
-    dirtyrects.RemoveData(0);
-  }
-
-  for (int i = 0; i < windows.Size(); ++i)
-  {
-    EclWindow* window = windows.GetData(i);
-    window->m_dirty = false;
-  }
-}
-
-LList<DirtyRect*>* EclGetDirtyRects() { return &dirtyrects; }
 
 bool EclRectangleOverlap(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2)
 {

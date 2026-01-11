@@ -107,7 +107,6 @@
     <Manifest Include="app.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="3d_sierpinski_gasket.h" />
     <ClInclude Include="achievement_tracker.h" />
     <ClInclude Include="animatedpanel.h" />
     <ClInclude Include="animatedpanel_renderer.h" />
@@ -135,7 +134,6 @@
     <ClInclude Include="location.h" />
     <ClInclude Include="location_input.h" />
     <ClInclude Include="main.h" />
-    <ClInclude Include="mapcrc.h" />
     <ClInclude Include="mapfile.h" />
     <ClInclude Include="markersystem.h" />
     <ClInclude Include="multiwinia.h" />
@@ -156,11 +154,8 @@
     <ClInclude Include="testharness.h" />
     <ClInclude Include="unit.h" />
     <ClInclude Include="user_input.h" />
-    <ClInclude Include="water.h" />
-    <ClInclude Include="water_reflection.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="3d_sierpinski_gasket.cpp" />
     <ClCompile Include="achievement_tracker.cpp" />
     <ClCompile Include="animatedpanel.cpp" />
     <ClCompile Include="animatedpanel_renderer.cpp" />
@@ -207,8 +202,6 @@
     <ClCompile Include="testharness.cpp" />
     <ClCompile Include="unit.cpp" />
     <ClCompile Include="user_input.cpp" />
-    <ClCompile Include="water.cpp" />
-    <ClCompile Include="water_reflection.cpp" />
   </ItemGroup>
   <!--
     Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging

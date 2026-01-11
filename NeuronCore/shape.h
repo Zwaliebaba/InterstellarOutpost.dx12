@@ -19,7 +19,6 @@ class RayPackage
 {
   public:
     Vector3 m_rayStart;
-    Vector3 m_rayEnd;
     Vector3 m_rayDir;
     double m_rayLen;
 
@@ -27,9 +26,7 @@ class RayPackage
       : m_rayStart(_start),
         m_rayDir(_dir)
     {
-      m_rayLen = _length;
-      m_rayEnd = m_rayStart + m_rayDir * _length;
-    }
+      m_rayLen = _length; }
 };
 
 // *******************
@@ -144,13 +141,8 @@ class ShapeFragment
     ShapeFragment(const char* _name, const char* _parentName);
     ~ShapeFragment();
 
-    void BuildDisplayList();
-
     void RegisterPositions(Vector3* positions, unsigned int numPositions);
-    void RegisterNormals(Vector3* norms, unsigned int numNorms);
     void RegisterColours(RGBAColour* colours, unsigned int numColours);
-    void RegisterVertices(VertexPosCol* verts, unsigned int numVerts);
-    void RegisterTriangles(ShapeTriangle* tris, unsigned int numTris);
 
     void WriteToFile(FILE* _out) const;
 
@@ -199,11 +191,8 @@ class Shape
     void BuildDisplayList();
     void FlushDisplayList();
 
-    void WriteToFile(FILE* _out) const;
-
     void Render(double _predictionTime, const Matrix34& _transform);
     void RenderHitCheck(const Matrix34& _transform);
-    void RenderMarkers(const Matrix34& _transform);
 
     bool RayHit(RayPackage* _package, const Matrix34& _transform, bool _accurate = false);
     bool SphereHit(SpherePackage* _package, const Matrix34& _transform, bool _accurate = false);

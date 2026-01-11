@@ -42,7 +42,6 @@ bool Crate::s_spaceShipUsed = false;
 
 Crate::Crate()
   : Building(),
-    m_recountTimer(1.0),
     m_captureTimer(0.0),
     m_life(60.0),
     m_bubbleTimer(100.0),
@@ -154,21 +153,6 @@ static void colourToInt(unsigned _r, unsigned _g, unsigned _b, unsigned _a, unsi
   *_colour |= _g;
   *_colour |= _b;
   *_colour |= _a;
-}
-
-static int getNextTeam(int _teamId, int* _teams)
-{
-  int current = _teamId;
-  while (true)
-  {
-    current++;
-    if (current >= NUM_TEAMS)
-      current = 0;
-    if (current == _teamId)
-      return g_app->m_location->GetMonsterTeamId(); // we've looped back around, only 1 team present
-    if (_teams[current] == 1)
-      return current;
-  }
 }
 
 bool Crate::IsBasicCrate(int _type)
@@ -391,7 +375,6 @@ void Crate::CaptureCrate()
     RunMagicalForest(m_pos, monsterTeam);
     messageShown = true;
     break;
-  //        case CrateRewardFormationIncrease:  RunFormtationIncrease( m_id.GetTeamId() );      messageShown = true;      break;
   case CrateRewardRocketDarwinians:
     RunRocketDarwinians(m_id.GetTeamId());
     messageShown = true;
@@ -499,7 +482,6 @@ void Crate::CaptureCrate(int _crateId, int _teamId)
   case CrateRewardRage:
     team->m_taskManager->RunTask(GlobalResearch::TypeRage);
     break;
-  //        case CrateRewardFormationIncrease:  RunFormtationIncrease( _teamId );                                   break;
   case CrateRewardRocketDarwinians:
     RunRocketDarwinians(_teamId);
     break;
@@ -681,8 +663,6 @@ void Crate::AdvanceOnGround()
     m_captureTimer = min(m_captureTimer, CRATE_CAPTURE_TIME);
     int postIntCaptured = static_cast<int>(5.0 * m_captureTimer / CRATE_CAPTURE_TIME);
 
-    /*m_life += SERVER_ADVANCE_PERIOD;
-    m_life = min( 60.0, m_life );*/
     m_life = 60.0;
 
     if (postIntCaptured != prevIntCaptured)
@@ -731,7 +711,7 @@ void Crate::AdvanceOnGround()
     {
       StopCaptureSounds();
       char newSound[256];
-      sprintf(newSound, "Capturing_%pc", postIntCaptured);
+      sprintf(newSound, "Capturing_%dpc", postIntCaptured);
       g_app->m_soundSystem->TriggerBuildingEvent(this, newSound);
     }
 
@@ -760,11 +740,9 @@ void Crate::AdvanceOnGround()
       {
         if (m_captureTimer <= 0.0)
         {
-          //RunUncapturedCrate( g_app->m_location->GetMonsterTeamId() );
           m_destroyed = true;
           g_app->m_soundSystem->TriggerBuildingEvent(this, "Expired");
 
-          //g_app->m_location->SetCurrentMessage( "Crate Expired!" );
           if (m_aiTarget)
           {
             m_aiTarget->m_destroyed = true;
@@ -790,7 +768,6 @@ void Crate::AdvanceOnGround()
 
 int Crate::RecalculateOwnership(int& _num)
 {
-  //if( GetNetworkTime() > m_recountTimer )
   {
     int teamCount[NUM_TEAMS];
     memset(teamCount, 0, sizeof(int) * NUM_TEAMS);
@@ -838,7 +815,7 @@ int Crate::RecalculateOwnership(int& _num)
     {
         SetTeamId( 255 );
     }*/
-    m_recountTimer = GetNetworkTime() + 1.0;
+    GetNetworkTime() + 1.0;
 
     return newTeamId;
   }
@@ -2031,58 +2008,6 @@ void Crate::RunRandomiser(const Vector3& _pos, int _teamId)
 #endif
 }
 
-void Crate::RunExtinguisher(const Vector3& _pos, int _teamId)
-{
-  int numFound;
-  g_app->m_location->m_entityGrid->GetEnemies(s_neighbours, _pos.x, _pos.z, POWERUP_EFFECT_RANGE * 2.0, &numFound, 255);
-
-  for (int i = 0; i < numFound; ++i)
-  {
-    WorldObjectId id = s_neighbours[i];
-    auto d = static_cast<Darwinian*>(g_app->m_location->GetEntitySafe(id, Entity::TypeDarwinian));
-    if (d)
-    {
-      if (d->m_state == Darwinian::StateOnFire)
-        d->m_state = Darwinian::StateIdle;
-    }
-  }
-
-  for (int i = 0; i < g_app->m_location->m_buildings.Size(); ++i)
-  {
-    if (g_app->m_location->m_buildings.ValidIndex(i))
-    {
-      Tree* tree = static_cast<Tree*>(g_app->m_location->m_buildings[i]);
-      if (tree->m_type == TypeTree)
-      {
-        if ((tree->m_pos - _pos).Mag() <= POWERUP_EFFECT_RANGE * 2.0)
-        {
-          if (tree->IsOnFire())
-            tree->SetFireAmount(-tree->GetFireAmount());
-        }
-      }
-    }
-  }
-
-  for (int i = 0; i < 200; ++i)
-  {
-    RGBAColour col(70, 180, 200, 200);
-    if (i > 100)
-      col.Set(255, 255, 255, 200);
-    Vector3 pos = _pos;
-    pos.x += sfrand(POWERUP_EFFECT_RANGE * 4.0);
-    pos.z += sfrand(POWERUP_EFFECT_RANGE * 4.0);
-    while ((pos - _pos).Mag() > POWERUP_EFFECT_RANGE * 2.0)
-    {
-      pos = _pos;
-      pos.x += sfrand(POWERUP_EFFECT_RANGE * 4.0);
-      pos.z += sfrand(POWERUP_EFFECT_RANGE * 4.0);
-    }
-    pos.y = g_app->m_location->m_landscape.m_heightMap->GetValue(pos.x, pos.z);
-    double size = 50.0 + frand(100.0);
-    g_app->m_particleSystem->CreateParticle(pos, g_upVector * 10.0, Particle::TypeFire, size, col);
-  }
-}
-
 void Crate::RunSpawnMania()
 {
 #ifdef INCLUDE_CRATES_ADVANCED
@@ -2134,22 +2059,6 @@ void Crate::RunCrateMania()
   TriggerSoundEvent(CrateRewardCrateMania, g_zeroVector, 255);
 #endif
 
-}
-
-void Crate::RunFormtationIncrease(int _teamId)
-{
-  /*Team *team = g_app->m_location->m_teams[_teamId];
-  int maxSize = team->m_evolutions[Team::EvolutionFormationSize];
-
-  team->m_evolutions[Team::EvolutionFormationSize] = 200;
-  //else if( maxSize == 120 ) team->m_evolutions[Team::EvolutionFormationSize] = 225;
-
-  UnicodeString msg = LANGUAGEPHRASE("crate_message_formationbooster");
-  msg.ReplaceStringFlag( 'T', team->GetTeamName() );
-  //sprintf( msg, "%s %s", team->GetTeamName(), LANGUAGEPHRASE("crate_message_formationbooster") );
-  g_app->m_location->SetCurrentMessage( msg, _teamId  );
-
-  TriggerSoundEvent( CrateRewardFormationIncrease, g_zeroVector, 255 );*/
 }
 
 void Crate::RunRocketDarwinians(int _teamId)

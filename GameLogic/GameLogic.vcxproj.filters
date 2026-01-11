@@ -23,9 +23,6 @@
     <ClCompile Include="checkbox.cpp">
       <Filter>Interface</Filter>
     </ClCompile>
-    <ClCompile Include="controllerunplugged_window.cpp">
-      <Filter>Interface</Filter>
-    </ClCompile>
     <ClCompile Include="darwinia_window.cpp">
       <Filter>Interface</Filter>
     </ClCompile>
@@ -81,9 +78,6 @@
       <Filter>Interface</Filter>
     </ClCompile>
     <ClCompile Include="scrollbar.cpp">
-      <Filter>Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="updateavailable_window.cpp">
       <Filter>Interface</Filter>
     </ClCompile>
     <ClCompile Include="userprofile_window.cpp">
@@ -359,15 +353,6 @@
     <ClInclude Include="ApplyNameButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
-    <ClInclude Include="BuyNowInfoButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="BuyNowModeButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="CampaignButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
     <ClInclude Include="ConnectButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
@@ -378,12 +363,6 @@
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="DarwiniaModeButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="DarwiniaPlusMPButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="DarwiniaPlusSPButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="ErrorDialog.h">
@@ -405,9 +384,6 @@
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="GamerTagButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="GameTypeAnyButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="GameTypeButton.h">
@@ -461,19 +437,10 @@
     <ClInclude Include="motdButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
-    <ClInclude Include="MultiwiniaModeButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="MultiwiniaVersusCpuButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
     <ClInclude Include="NewOrJoinButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="NewServerButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="NextHelpButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="OptionDetailsButton.h">
@@ -491,16 +458,10 @@
     <ClInclude Include="PrologueButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
-    <ClInclude Include="QuickMatchButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
     <ClInclude Include="QuickStartButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="QuitButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="RequestAIButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="ResearchModeButton.h">
@@ -513,9 +474,6 @@
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="TestBedButtons.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
-    <ClInclude Include="UnlockFullGameButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
     <ClInclude Include="update_page_buttons.h">
@@ -531,9 +489,6 @@
       <Filter>Interface</Filter>
     </ClInclude>
     <ClInclude Include="checkbox.h">
-      <Filter>Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="controllerunplugged_window.h">
       <Filter>Interface</Filter>
     </ClInclude>
     <ClInclude Include="darwinia_window.h">
@@ -591,9 +546,6 @@
       <Filter>Interface</Filter>
     </ClInclude>
     <ClInclude Include="scrollbar.h">
-      <Filter>Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="updateavailable_window.h">
       <Filter>Interface</Filter>
     </ClInclude>
     <ClInclude Include="userprofile_window.h">

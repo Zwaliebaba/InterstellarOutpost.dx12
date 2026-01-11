@@ -20,9 +20,6 @@
     <ClInclude Include="iframe.h">
       <Filter>Network</Filter>
     </ClInclude>
-    <ClInclude Include="listener.h">
-      <Filter>Network</Filter>
-    </ClInclude>
     <ClInclude Include="network_defines.h">
       <Filter>Network</Filter>
     </ClInclude>
@@ -201,9 +198,6 @@
     <ClCompile Include="iframe.cpp">
       <Filter>Network</Filter>
     </ClCompile>
-    <ClCompile Include="listener.cpp">
-      <Filter>Network</Filter>
-    </ClCompile>
     <ClCompile Include="network_quality.cpp">
       <Filter>Network</Filter>
     </ClCompile>
@@ -256,9 +250,6 @@
       <Filter>Audio</Filter>
     </ClCompile>
     <ClCompile Include="control_bindings.cpp">
-      <Filter>Input</Filter>
-    </ClCompile>
-    <ClCompile Include="control_types.cpp">
       <Filter>Input</Filter>
     </ClCompile>
     <ClCompile Include="eventhandler.cpp">

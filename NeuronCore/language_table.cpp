@@ -16,8 +16,6 @@
 
 #include "input.h"
 
-#define DEBUG_PRINT_LANGTABLE 0
-
 #ifdef TARGET_MSVC
 	#define snprintf _snprintf
 #endif
@@ -253,29 +251,6 @@ bool LangTable::specific_key_exists( const char * _key, InputMode _mood )
 
 		return RawDoesPhraseExist( key, _mood );
 	} else return false;
-}
-
-
-bool buildCaption(UnicodeString const &_baseString, UnicodeString &_dest, InputMode _mood); // see sepulveda_strings.cpp
-
-// Only used for debugging
-bool printTable( HashTable<int> const *keys, const UnicodeString *table, std::ostream &out )
-{
-	if ( keys && table && out.good() ) {
-		for ( int i = 0; i < keys->Size(); ++i ) {
-			if ( keys->ValidIndex( i ) ) {
-				out << keys->GetName( i ) << '\t'
-				    << ( table + keys->GetData( i ) ) << std::endl;
-			}
-		}
-		return true;
-	}
-	return false;
-}
-
-bool LangTable::ReadUnicode()
-{
-	return m_loadedUnicodeFile;
 }
 
 void LangTable::RebuildTables()
@@ -590,12 +565,6 @@ bool LangTable::consumeOtherMarker( UnicodeString const &_baseString, UnicodeStr
 	return true; // Always succeed
 }
 
-bool LangTable::buildCaption(UnicodeString const &_baseString, UnicodeString& _dest) {
-	CaptionParserMode mode;
-	return buildCaption( _baseString, _dest, mode );
-}
-
-
 bool LangTable::buildCaption(UnicodeString const &_baseString, UnicodeString& _dest, InputMode _mood) {
 	CaptionParserMode mode;
 	mode.mood = _mood;
@@ -777,13 +746,6 @@ void LangTable::TestAgainstEnglish()
     fclose( output );
 }
 
-
-DArray<LangPhrase *> *LangTable::GetPhraseList()
-{
-    DArray<LangPhrase *> *englishPhrases = m_phrasesRaw.ConvertToDArray();
-    return englishPhrases;
-}
-
 // UnicodeString version
 LList <UnicodeString*> *WordWrapText (const UnicodeString &_string, float _lineWidth, float _fontWidth, bool _wrapToWindow, bool _forceWrap) 
 {
@@ -888,83 +850,6 @@ LList <UnicodeString*> *WordWrapText (const UnicodeString &_string, float _lineW
 
 	return llist;
 }
-
-
-// Goes through the string and divides it up into several 
-// smaller strings, taking into account newline characters,
-// and the width of the text area.
-LList <char *> *WordWrapText (const char *_string, float _lineWidth, float _fontWidth, bool _wrapToWindow) 
-{
-	if ( !_string ) return NULL;
-    if ( _lineWidth < 0 && _wrapToWindow ) return NULL;
-
-	// Calculate the maximum width in characters for 1 line
-    int linewidth = int(_lineWidth / _fontWidth);
-	
-
-	// Create a copy of the string which we will use as our output strings
-	// (All connected together but seperated by 0)
-	// And add a newline on at the end (to make sure a newline will be found)
-
-	char *newstring = new char [ strlen(_string) + 2 ];
-	sprintf( newstring, "%s\n", _string );
-
-	// Build a linked list of pointers into this new string
-	// Each pointer representing another line
-
-	LList <char *> *llist = new LList <char *> ();
-
-	char *currentpos = newstring;
-	llist->PutData( currentpos );
-
-	while ( true ) 
-    {
-		char *nextnewline = strchr( currentpos, '\n' );
-		if ( !nextnewline ) break;
-
-		if ( _wrapToWindow && nextnewline - currentpos > linewidth ) 
-        {
-
-			// This line is too long and needs trimming down
-			// Ignore the newline char we found - it will be dealt with
-			// as part of the next line
-			// Place a terminater in the space between the last 2 words
-			currentpos += linewidth;
-			char oldchar = *(currentpos - 1);
-			*(currentpos - 1) = 0;
-			char *space = strrchr( currentpos - linewidth, ' ' );
-			
-			if ( space ) 
-            {
-				*(currentpos - 1) = oldchar;
-				currentpos = space + 1;
-				*space = 0;
-				llist->PutData( currentpos );
-			}
-			else 
-            {
-				// We cannot wrap this line - the word is longer than the max line width                
-			}
-		}
-		else 
-        {
-			// Found a newline char - replace with a terminator
-			// then add this position in as the next line	
-			// then continue from this position
-			currentpos =  nextnewline + 1;
-			*nextnewline = 0;
-    		llist->PutData( currentpos );
-		}
-	}
-
-    //
-    // The very last line is always empty.
-    // Remove it.
-    llist->RemoveData( llist->Size() - 1 );
-
-	return llist;
-}
-
 
 void LangTable::ReplaceStringFlag( char flag, char *string, char *subject )
 {

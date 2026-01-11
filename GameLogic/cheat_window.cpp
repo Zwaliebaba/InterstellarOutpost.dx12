@@ -275,12 +275,10 @@ class NetworkStatsCreateButton : public DarwiniaButton
 class CrateCreateButton : public DarwiniaButton
 {
   public:
-    bool m_good;
     int m_reward;
 
     CrateCreateButton()
       : DarwiniaButton(),
-        m_good(true),
         m_reward(-1) {}
 
     void MouseUp() override
@@ -419,7 +417,6 @@ void CheatWindow::Create()
     if (g_app->Multiplayer())
     {
       auto ccb = new CrateCreateButton();
-      ccb->m_good = true;
       ccb->SetShortProperties("GoodCrate", 10, y += 20, (m_w / 2) - 20, -1, UnicodeString("GoodCrate"));
       RegisterButton(ccb);
       m_buttonOrder.PutData(ccb);

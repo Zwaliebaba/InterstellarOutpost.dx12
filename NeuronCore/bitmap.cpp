@@ -262,89 +262,6 @@ static void writeInt(unsigned _x, FILE* _out)
   fputc(_x & 0xFF, _out);
 }
 
-void BitmapRGBA::WriteBMPFileHeader(FILE* _out)
-{
-  BitmapFileHeader fileheader;
-  fileheader.bfType = 19778;
-  fileheader.bfSize = m_width * m_height * 3 + 54;
-  fileheader.bfReserved1 = 0;
-  fileheader.bfReserved2 = 0;
-  fileheader.bfOffBits = 54;
-
-  writeShort(fileheader.bfType, _out);
-  writeInt(fileheader.bfSize, _out);
-  writeShort(fileheader.bfReserved1, _out);
-  writeShort(fileheader.bfReserved2, _out);
-  writeInt(fileheader.bfOffBits, _out);
-}
-
-void BitmapRGBA::WriteWinBMPInfoHeader(FILE* _out)
-{
-  WinBmpInfoHeader win_infoheader;
-
-  win_infoheader.biWidth = m_width;
-  win_infoheader.biHeight = m_height;
-  win_infoheader.biPlanes = 1;
-  win_infoheader.biBitCount = 24;
-  win_infoheader.biCompression = 0;
-  win_infoheader.biSizeImage = m_width * m_height * 3;
-  win_infoheader.biXPelsPerMeter = 2835;
-  win_infoheader.biYPelsPerMeter = 2835;
-  win_infoheader.biClrUsed = 0;
-  win_infoheader.biClrImportant = 0;
-
-  writeInt(win_infoheader.biWidth, _out);
-  writeInt(win_infoheader.biHeight, _out);
-  writeShort(win_infoheader.biPlanes, _out);
-  writeShort(win_infoheader.biBitCount, _out);
-  writeInt(win_infoheader.biCompression, _out);
-  writeInt(win_infoheader.biSizeImage, _out);
-  writeInt(win_infoheader.biXPelsPerMeter, _out);
-  writeInt(win_infoheader.biYPelsPerMeter, _out);
-  writeInt(win_infoheader.biClrUsed, _out);
-  writeInt(win_infoheader.biClrImportant, _out);
-}
-
-void BitmapRGBA::Write24BitLine(FILE* _out, int _y)
-{
-  int nbytes = 0;
-
-  for (int x = 0; x < m_width; ++x)
-  {
-    const RGBAColour& c = GetPixel(x, _y);
-    fputc(c.b, _out);
-    fputc(c.g, _out);
-    fputc(c.r, _out);
-    nbytes += 3;
-  }
-
-  for (int padding = (4 - nbytes) & 3; padding; --padding)
-    fputc(0, _out);
-}
-
-void BitmapRGBA::SaveBmp(const char* _filename)
-{
-  FILE* _out = fopen(_filename, "wb");
-  ASSERT_TEXT(_out, "Couldn't create image file %s", _filename);
-  WriteBmp(_out);
-  fclose(_out);
-}
-
-void BitmapRGBA::WriteBmp(FILE* _out)
-{
-  ASSERT_TEXT(_out, "Couldn't write image file");
-
-  WriteBMPFileHeader(_out);
-
-  unsigned long nextHeaderSize = 40;
-  writeInt(nextHeaderSize, _out);
-
-  WriteWinBMPInfoHeader(_out);
-
-  for (int y = 0; y < m_height; ++y)
-    Write24BitLine(_out, y);
-}
-
 // ****************************************************************************
 // Public Functions
 // ****************************************************************************
@@ -448,24 +365,6 @@ const RGBAColour& BitmapRGBA::GetPixelClipped(int x, int y) const
   return m_lines[y][x];
 }
 
-void BitmapRGBA::DrawLine(int x1, int y1, int x2, int y2, const RGBAColour& colour)
-{
-  int numSteps = sqrtf((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-  float dx = static_cast<float>(x2 - x1) / static_cast<float>(numSteps);
-  float dy = static_cast<float>(y2 - y1) / static_cast<float>(numSteps);
-
-  float currentX = x1;
-  float currentY = y1;
-
-  for (int i = 0; i < numSteps; ++i)
-  {
-    PutPixelClipped(currentX, currentY, colour);
-
-    currentX += dx;
-    currentY += dy;
-  }
-}
-
 // *** GetInterpolatedPixel
 RGBAColour BitmapRGBA::GetInterpolatedPixel(float _x, float _y) const
 {
@@ -504,64 +403,6 @@ RGBAColour BitmapRGBA::GetInterpolatedPixel(float _x, float _y) const
       c22.a) * weight22);
 
   return returnVal;
-}
-
-void BitmapRGBA::ConvertToGreyScale()
-{
-  RGBAColour* c = m_pixels;
-  unsigned numPixels = m_width * m_height;
-
-  while (numPixels--)
-  {
-    int average = (c->r + c->b + c->g) / 3;
-    c->r = average;
-    c->b = average;
-    c->g = average;
-    c++;
-  }
-}
-
-void BitmapRGBA::ConvertToColour(RGBAColour _col, int _threshold)
-{
-  RGBAColour* c = m_pixels;
-  unsigned numPixels = m_width * m_height;
-
-  while (numPixels--)
-  {
-    float average = (c->r + c->b + c->g) / 3.0f;
-    if (average < _threshold)
-    {
-      int r, g, b;
-      r = ((255.0f - average) / 255.0f) * _col.r;
-      g = ((255.0f - average) / 255.0f) * _col.g;
-      b = ((255.0f - average) / 255.0f) * _col.b;
-
-      c->r = r;
-      c->b = b;
-      c->g = g;
-    }
-    c++;
-  }
-}
-
-void BitmapRGBA::ConvertColour(RGBAColour oldColour, RGBAColour newColour)
-{
-  RGBAColour* c = m_pixels;
-  unsigned numPixels = m_width * m_height;
-
-  while (numPixels--)
-  {
-    int rDif = static_cast<int>(oldColour.r) - static_cast<int>(c->r);
-    int gDif = static_cast<int>(oldColour.g) - static_cast<int>(c->g);
-    int bDif = static_cast<int>(oldColour.b) - static_cast<int>(c->b);
-
-    float diff = sqrtf(rDif * rDif + gDif * gDif + bDif * bDif);
-
-    if (diff < 10)
-      c->Set(newColour.r, newColour.g, newColour.b);
-
-    c++;
-  }
 }
 
 void BitmapRGBA::ConvertRedChannel(RGBAColour newColour)
@@ -619,79 +460,6 @@ void BitmapRGBA::Blit(int _srcX, int _srcY, int _srcW, int _srcH, const BitmapRG
     }
     sy += syPitch;
   }
-}
-
-// *** BlitOr
-void BitmapRGBA::BlitOr(int _srcX, int _srcY, int _srcW, int _srcH, const BitmapRGBA* _srcBmp, int _destX, int _destY, int _destW,
-                        int _destH, bool _bilinear)
-{
-  DEBUG_ASSERT(_srcX + _srcW <= _srcBmp->m_width);
-  DEBUG_ASSERT(_srcY + _srcH <= _srcBmp->m_height);
-  DEBUG_ASSERT(_destX + _destW <= m_width);
-  DEBUG_ASSERT(_destY + _destH <= m_height);
-
-  float sxPitch = static_cast<float>(_srcW) / static_cast<float>(_destW);
-  float syPitch = static_cast<float>(_srcH) / static_cast<float>(_destH);
-
-  float sy = _srcY;
-  for (int dy = _destY; dy < _destY + _destH; ++dy)
-  {
-    float sx = _srcX;
-    if (_bilinear)
-    {
-      for (int dx = _destX; dx < _destX + _destW; ++dx)
-      {
-        const RGBAColour& c = _srcBmp->GetInterpolatedPixel(sx, sy);
-        PutPixelOr(dx, dy, c);
-        sx += sxPitch;
-      }
-    }
-    else
-    {
-      for (int dx = _destX; dx < _destX + _destW; ++dx)
-      {
-        const RGBAColour& c = _srcBmp->GetPixelClipped(sx, sy);
-        PutPixelOr(dx, dy, c);
-        sx += sxPitch;
-      }
-    }
-    sy += syPitch;
-  }
-}
-
-void BitmapRGBA::ApplyDilateFilter()
-{
-  auto temp = new RGBAColour[m_width * m_height];
-  memcpy(temp, m_pixels, sizeof(RGBAColour) * m_width * m_height);
-
-  for (int x = 1; x < m_width - 1; ++x)
-  {
-    for (int y = 1; y < m_height - 1; ++y)
-    {
-      float adjacentRed = 0.0f;
-      float adjacentGreen = 0.0f;
-      float adjacentBlue = 0.0f;
-      for (int i = -1; i <= 1; ++i)
-      {
-        for (int j = -1; j <= 1; ++j)
-        {
-          if (i != 0 || j != 0)
-          {
-            RGBAColour col = temp[(y + j) * m_width + (x + i)];
-            adjacentRed += col.r;
-            adjacentGreen += col.g;
-            adjacentBlue += col.b;
-          }
-        }
-      }
-      adjacentRed /= 8.0f;
-      adjacentGreen /= 8.0f;
-      adjacentBlue /= 8.0f;
-
-      m_pixels[y * m_width + x].Set(adjacentRed, adjacentGreen, adjacentBlue);
-    }
-  }
-  delete[] temp;
 }
 
 void BitmapRGBA::ApplyBlurFilter(float _scale)
@@ -789,14 +557,13 @@ void BitmapRGBA::ApplyBlurFilter(float _scale)
 
 void BitmapRGBA::ConvertColourToAlpha()
 {
-  RGBAColour col;
   RGBAColour newCol(255, 255, 255, 0);
 
   for (int y = 0; y < m_height; ++y)
   {
     for (int x = 0; x < m_width; ++x)
     {
-      col = GetPixel(x, y);
+      RGBAColour col = GetPixel(x, y);
       newCol.a = col.g;
       PutPixel(x, y, newCol);
     }
@@ -827,18 +594,6 @@ void BitmapRGBA::Clear(const RGBAColour& colour)
   const int size = sizeof(RGBAColour) * m_width;
   for (int y = 0; y < m_height; ++y)
     memcpy(m_lines[y], m_lines[0], size);
-}
-
-void BitmapRGBA::SwapRB()
-{
-  for (int y = 0; y < m_height; ++y)
-  {
-    for (int x = 0; x < m_width; ++x)
-    {
-      const RGBAColour c(GetPixel(x, y));
-      PutPixel(x, y, RGBAColour(c.b, c.g, c.r, c.a));
-    }
-  }
 }
 
 class TextureToConvert : public Job
@@ -882,17 +637,7 @@ int BitmapRGBA::ConvertToTextureAsync(bool _mipmapping, bool _compressed) const
 int BitmapRGBA::ConvertToTexture(bool _mipmapping, bool _compressed) const
 {
   bool requireScale = false;
-  bool requirePowerOfTwo;
-  bool requireSquare;
 
-#if defined(USE_DIRECT3D)
-  requirePowerOfTwo = true;
-  requireSquare = false;
-#else
-  // Could add in some additional check here to check for ARB_texture_rectangle support
-  requirePowerOfTwo = RequirePowerOfTwoTextures() || g_prefsManager->GetInt("ManuallyScaleTextures", 0); requireSquare =
-    RequireSquareTextures();
-#endif
   int maxTextureSize = GetMaxTextureSize();
   if (maxTextureSize != 0)
     requireScale = true;
@@ -929,15 +674,6 @@ int BitmapRGBA::ConvertToTexture(bool _mipmapping, bool _compressed) const
       }
     }
 
-    if (requirePowerOfTwo)
-    {
-      newWidth = nearestPowerOfTwo(m_width);
-      newHeight = nearestPowerOfTwo(m_height);
-    }
-
-    if (requireSquare)
-      newWidth = newHeight = max(newWidth, newHeight);
-
     if (m_width != newWidth || m_height != newHeight)
     {
       BitmapRGBA scaled(newWidth, newHeight);
@@ -970,7 +706,6 @@ int BitmapRGBA::ConvertToTexture(bool _mipmapping, bool _compressed) const
   return static_cast<int>(texId);
 }
 
-void BitmapRGBA::SetMaxTextureSize(int size) { gMaxTextureSize = size; }
 int BitmapRGBA::GetMaxTextureSize(void) { return gMaxTextureSize; }
 
 void BitmapRGBA::CheckGLError() const

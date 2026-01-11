@@ -29,8 +29,6 @@ protected:
     void AdvanceAssaultAI();            // special case AI for assault mode uses AIObjective system instead of AITarget priorities
     void AdvanceRocketRiotAI();         // Fills the objective list for this team for use by armour ai
 
-	Vector3 GetClosestScoreZonePos( Vector3 _pos );
-
     void RunSquad       ( int _taskId );
     void RunArmour      ( int _taskId );
     void RunHarvester   ( int _taskId );
@@ -52,14 +50,11 @@ protected:
 
     void RunPowerup     ();
     void RunPowerup     ( Vector3 _pos );
-    bool HasDarwinianPowerup(); // returns true if we have a Subversion, Personal Shield or Hot Feet task available
 
     double m_timer;
 	double m_radarReposTimer;
 
-    bool m_tutorialCentreZoneCaptured;
-
-	LList<Vector3>	m_ctsScoreZones;
+    LList<Vector3>	m_ctsScoreZones;
 
 public:
     int             m_currentObjective;
@@ -111,9 +106,6 @@ public:
     double          m_priorityModifier;
     int             m_checkCliffs;
     double          m_scanRange;
-    int             m_areaControl;  // when very close to 1 or more other targets, this value determines whether this
-                                    // target should update or simply pass and let another target update
-                                    // -1 = pass, 1 = always update, 0 = act normally
 
 	bool			m_radarTarget;	// this target is the entrance to a radar dish
 	int			    m_statueTarget;	// this target is attached to a CTS Statue#

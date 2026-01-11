@@ -73,12 +73,6 @@ std::string InputPrefs::GetKeyboardLayout()
 #endif
 }
 
-bool InputPrefs::IsKeyboardFrenchLocale()
-{
-	return GetKeyboardLayout() == "fr_FR";
-}
-
-
 const string & InputPrefs::GetLocalePrefsPath()
 {
 	static string path = "";

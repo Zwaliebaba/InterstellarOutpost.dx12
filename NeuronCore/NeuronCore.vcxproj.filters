@@ -48,13 +48,11 @@
     <ClInclude Include="FixedPipeline.h" />
     <ClInclude Include="float_vector3.h" />
     <ClInclude Include="hi_res_time.h" />
-    <ClInclude Include="invert_matrix.h" />
     <ClInclude Include="language_table.h" />
     <ClInclude Include="math_utils.h" />
     <ClInclude Include="matrix_cache.h" />
     <ClInclude Include="matrix33.h" />
     <ClInclude Include="matrix34.h" />
-    <ClInclude Include="mouse_cursor.h" />
     <ClInclude Include="ogl_extensions.h" />
     <ClInclude Include="opengl_directx.h" />
     <ClInclude Include="opengl_directx_dlist.h" />
@@ -66,8 +64,6 @@
     <ClInclude Include="plane.h" />
     <ClInclude Include="preference_names.h" />
     <ClInclude Include="preferences.h" />
-    <ClInclude Include="presized_array.h" />
-    <ClInclude Include="render_utils.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rgb_colour.h" />
     <ClInclude Include="runnable.h" />
@@ -194,12 +190,10 @@
     <ClCompile Include="debug_render.cpp" />
     <ClCompile Include="FixedPipeline.cpp" />
     <ClCompile Include="hi_res_time.cpp" />
-    <ClCompile Include="invert_matrix.cpp" />
     <ClCompile Include="language_table.cpp" />
     <ClCompile Include="math_utils.cpp" />
     <ClCompile Include="matrix33.cpp" />
     <ClCompile Include="matrix34.cpp" />
-    <ClCompile Include="mouse_cursor.cpp" />
     <ClCompile Include="ogl_extensions_directx.cpp" />
     <ClCompile Include="opengl_directx.cpp" />
     <ClCompile Include="opengl_directx_dlist.cpp" />
@@ -209,7 +203,6 @@
     <ClCompile Include="opengl_trace.cpp" />
     <ClCompile Include="plane.cpp" />
     <ClCompile Include="preferences.cpp" />
-    <ClCompile Include="render_utils.cpp" />
     <ClCompile Include="resource.cpp" />
     <ClCompile Include="rgb_colour.cpp" />
     <ClCompile Include="runnable.cpp" />

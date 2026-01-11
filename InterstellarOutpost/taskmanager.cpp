@@ -549,20 +549,10 @@ void Task::TargetMeteorShower(const Vector3& _pos)
 
 void Task::TargetExtinguisher(const Vector3& _pos)
 {
-  /* Crate::RunExtinguisher( _pos, m_teamId );
-   Team *team = g_app->m_location->m_teams[ m_teamId ];
-   team->m_taskManager->TerminateTask( m_id, false );
-
-   Crate::TriggerSoundEvent( Crate::CrateRewardExtinguisher, g_zeroVector, 255 );*/
 }
 
 void Task::TargetTank(const Vector3& _pos)
 {
-  /* m_objId = g_app->m_location->SpawnEntities( _pos, m_teamId, -1, Entity::TypeTank, 1, g_zeroVector, 0 );
-   g_app->m_location->m_teams[m_teamId]->SelectUnit( -1, m_objId.GetIndex(), -1 );
-   m_state = StateRunning;
-
-   Crate::TriggerSoundEvent( Crate::CrateRewardTank, g_zeroVector, 255 );*/
 }
 
 bool Task::ShutdownController()

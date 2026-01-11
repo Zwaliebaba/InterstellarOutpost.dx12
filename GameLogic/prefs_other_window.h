@@ -15,8 +15,7 @@ public:
 	int		m_usePortForwarding;
 	int		m_serverPort;
 	int	    m_clientPort;
-    int     m_christmas;
-    int     m_language;
+  int     m_language;
 	int		m_difficulty;
 	int		m_largeMenus;
     int     m_automaticCamera;

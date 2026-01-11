@@ -60,10 +60,8 @@ public:
     void					Empty               ();
     void					AddOption           ( char const *_option, int _value = INT_MIN );
     int						GetSelectionValue   ();
-	void					GetSelectionName	( UnicodeString& _dest);
     virtual void			SelectOption        ( int _option );
-	bool					SelectOption2		( char const *_option );
-    
+
     virtual void    CreateMenu();
     void    RemoveMenu();
     bool    IsMenuVisible();

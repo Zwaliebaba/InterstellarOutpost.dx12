@@ -37,9 +37,7 @@ public:
 	static Texture* Create(const TextureParams& tp);
 	const TextureParams& GetParams() const;
 	IDirect3DBaseTexture9* GetTexture() const;
-	IDirect3DTexture9* GetTexture2D() const;
-	IDirect3DCubeTexture9* GetTextureCube() const;
-	IDirect3DSurface9* GetRenderTarget(unsigned index = 0) const;
+  IDirect3DSurface9* GetRenderTarget(unsigned index = 0) const;
 	~Texture();
 
 private:

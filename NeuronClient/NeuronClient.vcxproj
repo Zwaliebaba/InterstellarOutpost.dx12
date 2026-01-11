@@ -127,7 +127,6 @@
     <ClInclude Include="input_types.h" />
     <ClInclude Include="keydefs.h" />
     <ClInclude Include="keynames.h" />
-    <ClInclude Include="listener.h" />
     <ClInclude Include="movement2d.h" />
     <ClInclude Include="networkvalue.h" />
     <ClInclude Include="network_defines.h" />
@@ -159,7 +158,6 @@
     <ClCompile Include="bandwidth.cpp" />
     <ClCompile Include="clienttoserver.cpp" />
     <ClCompile Include="control_bindings.cpp" />
-    <ClCompile Include="control_types.cpp" />
     <ClCompile Include="eclbutton.cpp" />
     <ClCompile Include="eclipse.cpp" />
     <ClCompile Include="eclwindow.cpp" />
@@ -186,7 +184,6 @@
     <ClCompile Include="inputspec.cpp" />
     <ClCompile Include="input_types.cpp" />
     <ClCompile Include="keynames.cpp" />
-    <ClCompile Include="listener.cpp" />
     <ClCompile Include="movement2d.cpp" />
     <ClCompile Include="networkvalue.cpp" />
     <ClCompile Include="network_quality.cpp" />

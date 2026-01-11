@@ -3,7 +3,6 @@
 #include "clienttoserver.h"
 #include "hi_res_time.h"
 #include "language_table.h"
-#include "mouse_cursor.h"
 #include "preferences.h"
 #include "resource.h"
 #include "profiler.h"
@@ -49,8 +48,6 @@ void SetPreferenceOverrides(); // See main.cpp
 
 App* g_app = NULL;
 
-static bool s_profileDirectory = true;
-
 App::App()
   : m_userInput(NULL),
     m_resource(NULL),
@@ -63,11 +60,9 @@ App::App()
     m_camera(NULL),
     m_server(NULL),
     m_clientToServer(NULL),
-    m_originVersion("unknown"),
     m_mainThreadId(NetGetCurrentThreadId()),
     m_renderer(NULL),
     m_locationInput(NULL),
-    m_effectProcessor(NULL),
     m_taskManagerInterface(NULL),
     m_script(NULL),
     m_testHarness(NULL),
@@ -79,7 +74,6 @@ App::App()
     m_difficultyLevel(0),
     m_largeMenus(false),
     m_usingFontCopies(false),
-    m_steamInited(false),
     m_userRequestsPause(false),
     m_lostFocusPause(false),
     m_editing(false),
@@ -96,7 +90,6 @@ App::App()
     m_soundsLoaded(false),
     m_requireSoundsLoaded(false),
     m_doMenuTransition(false),
-    m_checkedForPDLC(false),
     m_soundsWorkQueue(new WorkQueue),
     m_oldLangTable(NULL)
 {
@@ -550,8 +543,6 @@ bool App::Multiplayer() { return g_app->m_gameMode == GameModeMultiwinia; }
 
 bool App::IsSinglePlayer() { return (g_app->m_gameMode == GameModeCampaign || g_app->m_gameMode == GameModePrologue); }
 
-void App::UseProfileDirectory(bool _profileDirectory) { s_profileDirectory = _profileDirectory; }
-
 const char* App::GetProfileDirectory() { return ""; }
 
 const char* App::GetPreferencesPath()
@@ -573,34 +564,6 @@ const char* App::GetPreferencesPath()
   }
 
   return path;
-}
-
-const char* App::GetScreenshotDirectory()
-{
-#if defined(TARGET_OS_VISTA)
-  static char dir[MAX_PATH]; SHGetFolderPath(NULL, CSIDL_DESKTOP, NULL, SHGFP_TYPE_CURRENT, dir); sprintf(dir, "%s\\", dir); return dir;
-#elif defined(TARGET_OS_MACOSX)
-  FSRef ref; static char dir[1024] = ""; if (strlen(dir) == 0)
-  {
-    if (FSFindFolder(kUserDomain, kPictureDocumentsFolderType, kCreateFolder, &ref) != noErr)
-      return NULL;
-    if (FSRefMakePath(&ref, (UInt8*)dir, sizeof(dir) - 32) != noErr)
-      return NULL;
-    strcat(dir, "/Multiwinia/");
-    // note that it's okay for the directory to not exist yet
-  } return dir;
-#else
-  static char* path = NULL;
-
-  if (path == NULL)
-  {
-    const char* profileDir = GetProfileDirectory();
-    path = new char[strlen(profileDir) + 32];
-    sprintf(path, "%sscreenshots/", profileDir);
-  }
-
-  return path;
-#endif
 }
 
 const char* App::GetMapDirectory()
@@ -655,8 +618,6 @@ bool App::GamePaused() const
 
 bool App::EarnedAchievement(int _achievementId) { return false; }
 
-void App::CheckMasterAchievement() {}
-
 void App::GiveAchievement(int _achievementId)
 {
   // achievements should only be available in games without AI players
@@ -673,24 +634,6 @@ void App::GiveAchievement(int _achievementId)
   if (EarnedAchievement(_achievementId))
     return;
 }
-
-int App::GetMapID(int gameMode, int mapCrcId)
-{
-  if (gameMode < 0 || gameMode >= MAX_GAME_TYPES)
-    return -1;
-
-  DArray<MapData*>& maps = g_app->m_gameMenu->m_maps[gameMode];
-
-  for (int i = 0; i < maps.Size(); i++)
-  {
-    if (maps.ValidIndex(i) && maps[i]->m_mapId == mapCrcId)
-      return i;
-  }
-
-  return -1;
-}
-
-const char* App::GetBuyNowURL() const { return "http://store.introversion.co.uk"; }
 
 void App::CheckSounds()
 {
@@ -769,7 +712,7 @@ void App::Initialise()
 
   //m_soundsLoaded = true;
 
-  m_negativeRenderer = g_prefsManager->GetInt("RenderNegative", 0) ? true : false;
+  m_negativeRenderer = g_prefsManager->GetInt("RenderNegative", 0) != 0;
   if (m_negativeRenderer)
     m_backgroundColour.Set(255, 255, 255, 255);
   else

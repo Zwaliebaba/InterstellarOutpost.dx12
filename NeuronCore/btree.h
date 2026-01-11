@@ -25,8 +25,6 @@ protected:
     BTree *ltree;
     BTree *rtree;
 
-	bool m_caseSensitive;
-		
     void RecursiveConvertToDArray ( DArray <T> *darray, BTree <T> *btree );
     void RecursiveConvertIndexToDArray ( DArray <char *> *darray, BTree <T> *btree );
     
@@ -59,7 +57,6 @@ public:
     inline BTree *Right () const;
     
     DArray <T> *ConvertToDArray ();
-    DArray <char *> *ConvertIndexToDArray ();
 };
 
 
@@ -342,18 +339,6 @@ DArray <T>* BTree<T>::ConvertToDArray()
 
     return darray;
 }
-
-
-template <class T>
-DArray <char*>* BTree<T>::ConvertIndexToDArray()
-{
-    DArray <char*>* darray = new DArray <char*>;
-    darray->SetSize(Size());
-    RecursiveConvertIndexToDArray(darray, this);
-
-    return darray;
-}
-
 
 template <class T>
 void BTree<T>::RecursiveConvertToDArray(DArray <T>* darray, BTree<T>* btree)

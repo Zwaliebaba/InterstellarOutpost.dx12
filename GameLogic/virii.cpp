@@ -890,7 +890,6 @@ void Virii::Render( double predictionTime, int teamId, int _detail )
 
     #define wormWidth       3.0
     #define wormTexW        32.0/(32.0+128.0)
-    #define wormTexHeight   (10.0 * 2)/1024.0
 
     #define glowWidth       12.0
     #define glowTexXpos     32.0/(32.0+128.0)

@@ -36,7 +36,6 @@
 #include "team.h"
 #include "unit.h"
 #include "user_input.h"
-#include "water.h"
 #include "gamecursor.h"
 #include "taskmanager.h"
 #include "taskmanager_interface.h"
@@ -93,11 +92,8 @@ Location::Location()
     m_entityGridCache(NULL),
     m_obstructionGrid(NULL),
     m_levelFile(NULL),
-    m_clouds(NULL),
-    m_water(NULL),
     m_christmasTimer(-99.9),
     m_spawnSync(0.0),
-    m_crateTimer(0.0),
     m_spawnManiaTimer(0.0),
     m_bitzkreigTimer(0.0),
     m_allowMonsterTeam(true),
@@ -187,20 +183,8 @@ void Location::Init(const char* _missionFilename, const char* _mapFilename)
     m_christmasMode = true;
   }
 
-  DebugTrace("Location::Init Step 1 took %f seconds\n", GetHighResTime() - t);
-  t = GetHighResTime();
   InitLights();
-  DebugTrace("Location::Init Step 2 took %f seconds\n", GetHighResTime() - t);
-  t = GetHighResTime();
   InitLandscape();
-  DebugTrace("Location::Init Step 3 took %f seconds\n", GetHighResTime() - t);
-  t = GetHighResTime();
-
-  m_water = new Water();
-  DebugTrace("Location::Init Step 4 took %f seconds\n", GetHighResTime() - t);
-  t = GetHighResTime();
-
-  //memset( m_teamPosition, -1, sizeof(int) * NUM_TEAMS);
 
   // if we're in coop mode, set up our team positions, colours, allies etc
   if (g_app->m_multiwinia->m_gameType == Multiwinia::GameTypeAssault)
@@ -230,16 +214,11 @@ void Location::Init(const char* _missionFilename, const char* _mapFilename)
       }
     }
   }
-  DebugTrace("Location::Init Step 5 took %f seconds\n", GetHighResTime() - t);
-  t = GetHighResTime();
 
   if (!g_app->m_editing)
   {
     InitBuildings();
     RecalculateAITargets();
-
-    DebugTrace("Location::Init Step 5.1 took %f seconds\n", GetHighResTime() - t);
-    t = GetHighResTime();
 
     double obstrGridSize = 64.f;
     if (g_app->Multiplayer())
@@ -249,18 +228,8 @@ void Location::Init(const char* _missionFilename, const char* _mapFilename)
     m_entityGridCache = new EntityGridCache();
     m_obstructionGrid = new ObstructionGrid(obstrGridSize, obstrGridSize);
 
-    DebugTrace("Location::Init Step 5.2 took %f seconds\n", GetHighResTime() - t);
-    t = GetHighResTime();
-
-    m_clouds = new Clouds();
-
-    DebugTrace("Location::Init Step 5.3 took %f seconds\n", GetHighResTime() - t);
-    t = GetHighResTime();
     m_routingSystem.Initialise();
     m_seaRoutingSystem.Initialise();
-
-    DebugTrace("Location::Init Step 5.4 took %f seconds\n", GetHighResTime() - t);
-    t = GetHighResTime();
   }
   else
   {
@@ -270,9 +239,6 @@ void Location::Init(const char* _missionFilename, const char* _mapFilename)
       building->m_pos.y = m_landscape.m_heightMap->GetValue(building->m_pos.x, building->m_pos.z);
     }
   }
-
-  DebugTrace("Location::Init Step 6 took %f seconds\n", GetHighResTime() - t);
-  t = GetHighResTime();
 
   InitTeams();
 
@@ -351,12 +317,6 @@ void Location::Init(const char* _missionFilename, const char* _mapFilename)
 
 void Location::Empty()
 {
-  if (m_water)
-  {
-    delete m_water;
-    m_water = NULL;
-  }
-
   m_landscape.Empty();
 
   m_lights.EmptyAndDelete(); // LList <Light *>
@@ -393,11 +353,6 @@ void Location::Empty()
   {
     delete m_obstructionGrid;
     m_obstructionGrid = NULL;
-  }
-  if (m_clouds)
-  {
-    delete m_clouds;
-    m_clouds = NULL;
   }
 
   AIObjective::s_objectivesInitialised = false;
@@ -637,7 +592,7 @@ Vector3 Location::FindValidSpawnPosition(const Vector3& _pos, double _spread)
     randomPos.x += radius * sin(theta);
     randomPos.z += radius * cos(theta);
 
-    bool onMap = randomPos.x >= 0 && randomPos.z >= 0 && randomPos.x<m_landscape.GetWorldSizeX() && randomPos.z<m_landscape.GetWorldSizeZ();
+    const bool onMap = randomPos.x >= 0 && randomPos.z >= 0 && randomPos.x<m_landscape.GetWorldSizeX() && randomPos.z<m_landscape.GetWorldSizeZ();
 
     if (onMap)
     {
@@ -1157,17 +1112,6 @@ void Location::AdvanceSpirits(int _slice)
   END_PROFILE("Advance Spirits");
 }
 
-// *** AdvanceClouds
-void Location::AdvanceClouds(int _slice)
-{
-  if (_slice == 3)
-  {
-    START_PROFILE("Advance Clouds");
-    m_clouds->Advance();
-    END_PROFILE("Advance Clouds");
-  }
-}
-
 // *** DoMissionCompleteActions
 // Does whatever needs to be done when a mission is completed
 void Location::DoMissionCompleteActions()
@@ -1178,23 +1122,7 @@ void Location::DoMissionCompleteActions()
   GlobalLocation* gloc = g_app->m_globalWorld->GetLocation(g_app->m_locationId);
   gloc->m_missionCompleted = true;
 
-  //gloc->m_missionAvailable = false;
-  //strcpy(gloc->m_missionFilename, "null");
-
   g_app->m_taskManagerInterface->SetCurrentMessage(TaskManagerInterface::MessageObjectivesComplete, -1, 5.0);
-
-  //    if( !g_app->m_camera->IsInteractive() ||
-  //        g_app->m_script->IsRunningScript() )
-  //    {
-  //        return;
-  //    }
-
-  //
-  // Get Sepulveda to tell you that the level is complete
-
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-  g_app->m_sepulveda->Say("PrimaryObjectivesComplete");
-#endif
 }
 
 // *** MissionComplete
@@ -1220,9 +1148,7 @@ void Location::Advance(int _slice)
 {
   m_lastSliceProcessed = _slice;
 
-#undef for
-#pragma omp parallel for schedule(dynamic)
-  for (int step = 0; step <= 4; step++)
+  for (int step = 0; step <= 3; step++)
   {
     switch (step)
     {
@@ -1237,9 +1163,6 @@ void Location::Advance(int _slice)
       break;
     case 3:
       AdvanceSpirits(_slice);
-      break;
-    case 4:
-      AdvanceClouds(_slice);
       break;
     }
   }
@@ -1733,56 +1656,22 @@ void Location::RenderSpirits()
   END_PROFILE("Render Spirits");
 }
 
-// *** RenderWater
-void Location::RenderWater()
-{
-  if (m_water)
-    m_water->Render();
-}
-
 // *** Render
-void Location::Render(bool renderWaterAndClouds)
+void Location::Render()
 {
-#ifdef TESTBED_ENABLED
-  if (g_app->GetTestBedMode() == TESTBED_ON)
-  {
-    if (!g_app->GetTestBedRendering())
-      return;
-  }
-#endif
-
   //
   // Render all solid objects
 
-  if (renderWaterAndClouds)
-    RenderClouds();
-  CHECK_OPENGL_STATE();
-
   RenderLandscape();
 
-  CHECK_OPENGL_STATE();
-  if (renderWaterAndClouds)
-    RenderWater();
-#ifdef USE_DIRECT3D
-		else glDisable(GL_CLIP_PLANE2);
-#endif
-  CHECK_OPENGL_STATE();
-
   RenderBuildings();
-  CHECK_OPENGL_STATE();
-
+  
   // good up to here
   if (!g_app->m_editing && m_teams)
   {
     RenderTeams(); // must be u
     CHECK_OPENGL_STATE();
   }
-
-  // good after here
-
-  //if( m_entityGrid ) m_entityGrid->Render();
-  //if( m_entityGridCache ) m_entityGridCache->Render();
-  //if( m_obstructionGrid ) m_obstructionGrid->Render();
 
   //
   // Render all alpha'd objects
@@ -1803,12 +1692,12 @@ void Location::Render(bool renderWaterAndClouds)
 
   START_PROFILE("Render Routing System");
   m_routingSystem.Render();
-  //m_seaRoutingSystem.Render(); // only ai use this so it shouldn't be rendered under normal circumstances
+
   END_PROFILE("Render Routing System");
 
   START_PROFILE("RenderCurrentMessage");
   RenderCurrentMessage();
-  //RenderChatMessages();
+
   END_PROFILE("RenderCurrentMessage");
   CHECK_OPENGL_STATE();
 }
@@ -1972,23 +1861,6 @@ void Location::RenderBuildingAlphas()
   glDisable(GL_FOG);
 
   END_PROFILE("Render Building Alphas");
-}
-
-// *** Render Clouds
-void Location::RenderClouds()
-{
-  START_PROFILE("Render Clouds");
-
-  if (m_clouds)
-  {
-    double timeSinceAdvance = g_predictionTime;
-    if (m_lastSliceProcessed >= 3)
-      m_clouds->Render(timeSinceAdvance);
-    else
-      m_clouds->Render(timeSinceAdvance + g_gameTimer.GetServerAdvancePeriod());
-  }
-
-  END_PROFILE("Render Clouds");
 }
 
 // *** Render Effects
@@ -4578,9 +4450,6 @@ void Location::RegenerateOpenGlState()
 {
   // Tell the landscape
   g_app->m_location->m_landscape.BuildOpenGlState();
-
-  // Tell the water
-  g_app->m_location->m_water->BuildOpenGlState();
 }
 
 void Location::RecalculateAITargets()
@@ -4691,23 +4560,6 @@ void Location::SetCurrentMessage(const UnicodeString& _message, int _teamId, boo
   m_messageTeam = _teamId;
   m_messageTimer = GetHighResTime() + 3.0;
   m_messageNoOverwrite = _noOverwrite;
-}
-
-bool Location::ViablePosition(const Vector3& _pos)
-{
-  for (int i = 0; i < m_buildings.Size(); ++i)
-  {
-    if (m_buildings.ValidIndex(i))
-    {
-      Building* b = m_buildings[i];
-      if (b->m_type == Building::TypeAITarget)
-      {
-        if (IsWalkable(_pos, b->m_pos, false, true))
-          return true;
-      }
-    }
-  }
-  return false;
 }
 
 void Location::DumpWorldToSyncLog(const char* _filename)

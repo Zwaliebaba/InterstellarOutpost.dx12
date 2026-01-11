@@ -26,8 +26,7 @@ AIObjective::AIObjective()
     m_active(true),
     m_timer(5.0),
     m_armourMarker(-1),
-    m_defenseObjective(false),
-    m_wallTarget(-1)
+    m_defenseObjective(false)
 {
     m_type = Building::TypeAIObjective;
 }

@@ -2,8 +2,6 @@
 #include "resource.h"
 #include "debug_render.h"
 #include "shape.h"
-#include "hi_res_time.h"
-#include "random_number.h"
 #include "profiler.h"
 
 #include "airstrike.h"
@@ -166,7 +164,7 @@ bool AirstrikeUnit::Advance( int _slice )
             bool amIThere = AdvanceToTargetPosition( m_exitPosition );
             break;
         }
-    };
+    }
         
     return Unit::Advance( _slice );
 }
@@ -180,27 +178,13 @@ bool AirstrikeUnit::IsInView()
 
 void AirstrikeUnit::Render( double _predictionTime )
 {
-//#ifdef DEBUG_RENDER_ENABLED
-//    glDisable( GL_TEXTURE_2D );
-//    Vector3 height(0,50,0);
-//    RenderArrow     ( m_enterPosition, m_attackPosition, 10.0f, RGBAColour(255,50,50,255) );
-//    RenderArrow     ( m_attackPosition, m_exitPosition, 10.0f, RGBAColour(255,50,50,255) );
-//    
-//    Vector3 right = m_front ^ m_up;
-//    RenderSphere    ( m_wayPoint, 5.0f, RGBAColour(255,255,255,255) );
-//    RenderArrow     ( m_wayPoint, m_wayPoint + m_front * 50.0f, 10.0f, RGBAColour(255,255,255,255) );
-//    RenderArrow     ( m_wayPoint, m_wayPoint + m_up * 30.0f, 6.0f, RGBAColour(50,50,255,255) );    
-//    RenderArrow     ( m_wayPoint, m_wayPoint + right * 30.0f, 6.0f, RGBAColour(50,255,50,255) );
-//#endif
-
     Unit::Render( _predictionTime );
 }
 
 
 SpaceInvader::SpaceInvader()
 :   Entity(),
-    m_armed(true),
-    m_napalmDrops(30)
+    m_armed(true)
 {
     m_shape = g_app->m_resource->GetShape( "spaceinvader.shp" );
     m_bombShape = g_app->m_resource->GetShape( "throwable.shp" );

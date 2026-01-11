@@ -1,15 +1,11 @@
 #include "pch.h"
 #include "resource.h"
 #include "matrix34.h"
-#include "shape.h"
 #include "math_utils.h"
-#include "debug_render.h"
 #include "profiler.h"
 #include "preferences.h"
 #include "random_number.h"
-
 #include "soundsystem.h"
-
 #include "app.h"
 #include "renderer.h"
 #include "location.h"
@@ -18,10 +14,8 @@
 #include "particle_system.h"
 #include "entity_grid.h"
 #include "camera.h"
-#include "landscape.h"
 #include "team.h"
 #include "gametimer.h"
-
 #include "armyant.h"
 #include "anthill.h"
 #include "darwinian.h"

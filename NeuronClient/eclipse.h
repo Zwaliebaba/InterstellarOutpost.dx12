@@ -57,7 +57,6 @@ char *EclGetCurrentClickedButton   ();
 char *EclGetCurrentFocus             ();
 void EclSetCurrentFocus              (const char *name );
 
-char *EclGenerateUniqueWindowName( char *name );                                // In static mem (don't delete!)
 LList <EclWindow *> *EclGetWindows ();
 
 // Dirty rectangles
@@ -74,20 +73,12 @@ public:
 	int m_height;
 };
 
-
-void EclRegisterClearFunction   ( void (*_clearDraw) (int, int, int, int) );
-
 void EclDirtyWindow             ( char *name );
 void EclDirtyWindow             ( EclWindow *window );
 void EclDirtyRectangle          ( int x, int y, int w, int h );
 
 bool EclRectangleOverlap        ( int x1, int y1, int w1, int h1,		
                                   int x2, int y2, int w2, int h2 );
-
-void EclResetDirtyRectangles    ();
-
-LList<DirtyRect *> *EclGetDirtyRects ();
-
 
 // Other
 

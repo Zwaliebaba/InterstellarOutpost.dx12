@@ -101,8 +101,6 @@ class App
     NetMutex m_networkMutex;
     NetMutex m_delayedJobListMutex;
 
-    char* m_originVersion;
-
 #ifdef TESTBED_ENABLED
     // Testbed stuff
     TESTBED_MODE m_eTestBedMode; TESTBED_TYPE m_eTestBedType; TESTBED_STATE m_eTestBedState; float m_fTestBedDelay; float
@@ -128,7 +126,6 @@ class App
     NetThreadId m_mainThreadId;
     Renderer* m_renderer;
     LocationInput* m_locationInput;
-    EffectProcessor* m_effectProcessor;
     TaskManagerInterface* m_taskManagerInterface;
     Script* m_script;
     TestHarness* m_testHarness;
@@ -149,7 +146,6 @@ class App
     bool m_largeMenus;
 
     bool m_usingFontCopies;
-    bool m_steamInited;
 
     // State flags
     bool m_userRequestsPause;
@@ -180,7 +176,6 @@ class App
     bool m_requireSoundsLoaded;
 
     bool m_doMenuTransition;
-    bool m_checkedForPDLC;
 
     // these should be renamed once the list of achievements has been finalised
     enum
@@ -250,10 +245,8 @@ class App
     bool Multiplayer();
     bool IsSinglePlayer();
 
-    static void UseProfileDirectory(bool _profileDirectory);
     static const char* GetProfileDirectory();
     static const char* GetPreferencesPath();
-    static const char* GetScreenshotDirectory();
     static const char* GetMapDirectory();
 
     void UpdateDifficultyFromPreferences();
@@ -262,12 +255,7 @@ class App
     bool GamePaused() const;
 
     bool EarnedAchievement(int _achievementId);
-    void CheckMasterAchievement(); // check to see if the signed in player is on the master list, and give the acheivement if they are
     void GiveAchievement(int _achievementId);
-
-    int GetMapID(int gameMode, int mapCrcId);
-
-    const char* GetBuyNowURL() const;
 
     void CheckSounds();
 
@@ -284,9 +272,6 @@ class App
 
     LangTable* m_oldLangTable;
     void DeleteOldLangTable();
-
-    void DoStartServer();
-    void DoCheckForPDLC();
 };
 
 extern App* g_app;

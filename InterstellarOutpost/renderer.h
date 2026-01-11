@@ -20,14 +20,9 @@ class Renderer
   public:
     int m_fps;
     bool m_displayFPS;
-    bool m_renderDebug;
-    bool m_displayInputMode;
-    int m_renderingPoster;
     int m_lastFrameBufferTexture;
 
     float m_renderDarwinLogo;
-
-    float m_gamma;
 
   private:
     float m_nearPlane;
@@ -64,10 +59,6 @@ class Renderer
     int GetGLStateInt(int pname) const;
     float GetGLStateFloat(int pname) const;
 
-    void RenderFlatTexture();
-    void RenderLogo();
-    void RenderHelp();
-
     void PaintPixels();
     void PreRenderPixelEffect();
     void ApplyPixelEffect();
@@ -103,7 +94,6 @@ class Renderer
 
     int ScreenW() const;
     int ScreenH() const;
-    void SetScreenRes(int w, int h);
 
     void SetupProjMatrixFor3D() const;
     void SetupMatricesFor3D() const;
@@ -127,10 +117,6 @@ class Renderer
 
     void Clip(int _x, int _y, int _w, int _h); // takes the upper left coords of a rectangle, plus width and height
     void EndClip();
-
-#ifdef USE_DIRECT3D
-    void SetScreenGamma(float _gamma);
-#endif
 };
 
 #endif

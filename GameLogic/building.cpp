@@ -310,8 +310,6 @@ void Building::Render(double predictionTime)
   {
     Matrix34 mat(m_front, m_up, m_pos);
     m_shape->Render(predictionTime, mat);
-
-    //m_shape->RenderMarkers(mat);
   }
 }
 
@@ -319,15 +317,6 @@ void Building::RenderAlphas(double predictionTime)
 {
   RenderLights();
   RenderPorts();
-
-  //RenderHitCheck();
-  //RenderSphere(m_pos, 300);		
-
-  //	if (m_shape)
-  //	{
-  //		Matrix34 mat(m_front, g_upVector, m_pos);
-  //		m_shape->RenderMarkers(mat);
-  //	}
 }
 
 void Building::RenderLights()

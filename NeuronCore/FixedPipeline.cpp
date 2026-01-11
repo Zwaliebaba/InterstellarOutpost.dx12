@@ -1,15 +1,8 @@
 #include "pch.h"
-
-#ifdef USE_DIRECT3D
-
-#include "App.h"
-
 #include "FixedPipeline.h"
 #include "opengl_directx_internals.h"
 #include "ogl_extensions.h"
-#include "Renderer.h"
 #include "Shader.h"
-#include "Texture.h"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -68,23 +61,11 @@ void FixedPipeline::Bind()
 	D3DXMatrixInverse(&invMat, NULL, &matWorld);
 	m_bound->SetMatrix("matWorldViewIT", &invMat._11);
 
-	// D3DXMatrixMultiply(&compMat, &matWorld, &matProj);
-	// m_bound->SetMatrix("matWorldViewProj", &compMat._11);
 	m_bound->SetMatrix("matProj", (FLOAT *) &matProj );
-
-	//// Set the projection matrix
-	//D3DXMATRIXA16 matProjT;
-	//D3DXMatrixTranspose( &matProjT, &matProj );
-	//OpenGLD3D::g_pd3dDevice->SetVertexShaderConstantF( 8, (FLOAT *) &matProjT, 4 );
 
 	// set material
 	if(resetAll || m_state.m_specular!=m_oldState.m_specular)
 		m_bound->SetBool("bSpecular",m_state.m_specular);
-	// samplers are always already correctly set (but it is not guaranteed)
-	//if(tex0)
-	//	m_bound->SetSamplerGLFixedStage("map0",0);
-	//if(tex1)
-	//	m_bound->SetSamplerGLFixedStage("map1",1);
 
 	// set lights
 	m_state.m_numLights = 0;
@@ -168,5 +149,3 @@ FixedPipeline::~FixedPipeline()
 }
 
 FixedPipeline* g_fixedPipeline = NULL;
-
-#endif // USE_DIRECT3D

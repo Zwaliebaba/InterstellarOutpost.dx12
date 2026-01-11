@@ -570,15 +570,7 @@ void SoundInstance::OpenStream( bool _keepCurrentStream )
 		sampleName = group->m_samples[ sampleIndex ];
 		
 		m_cachedSampleHandle = g_cachedSampleManager.GetSample(sampleName);
-#ifdef TARGET_OS_MACOSX
-		// if we are unable to load the sample that we wanted
-		// or the sound that we chose is still loading
-		// then we fall back on the first sample in the group
-		if(!m_cachedSampleHandle || !m_cachedSampleHandle->m_cachedSample->LoadState())
-			sampleName = group->m_samples[0];
-#endif
     }
-	DebugTrace("sampleName: %d, %s\n", m_sourceType, sampleName);
 	if(!m_cachedSampleHandle)	
 		m_cachedSampleHandle = g_cachedSampleManager.GetSample(sampleName);
 }

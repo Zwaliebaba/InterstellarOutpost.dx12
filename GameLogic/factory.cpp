@@ -1,6 +1,4 @@
 #include "pch.h"
-
-
 #include "text_file_writer.h"
 #include "text_stream_readers.h"
 #include "math_utils.h"
@@ -8,18 +6,14 @@
 #include "resource.h"
 #include "shape.h"
 #include "random_number.h"
-
 #include "app.h"
-#include "globals.h"
 #include "main.h"
 #include "location.h"
 #include "renderer.h"
 #include "soundsystem.h"
 #include "team.h"
 #include "unit.h"
-
 #include "factory.h"
-#include "insertion_squad.h"
 
 
 Factory::Factory()
@@ -129,9 +123,8 @@ bool Factory::Advance()
         case StateUnused:           AdvanceStateUnused();           break;
         case StateCreating:         AdvanceStateCreating();         break;
         case StateRecharging:       AdvanceStateRecharging();       break;
-    };
+    }
 
-    
     m_spiritStore.Advance();
     
     return Building::Advance();

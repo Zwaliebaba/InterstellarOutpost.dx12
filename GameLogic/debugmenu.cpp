@@ -90,110 +90,8 @@ class CheatButton : public DarwiniaButton
 #endif
 
 // ****************************************************************************
-// Class DebugMenu
-// ****************************************************************************
-
-DebugMenu::DebugMenu(const char* name)
-  : DarwiniaWindow(name)
-{
-  m_x = 10;
-  m_y = 20;
-  m_w = 170;
-  m_h = 75;
-}
-
-void DebugMenu::Advance() {}
-
-void DebugMenu::Create()
-{
-  DarwiniaWindow::Create();
-
-  int pitch = 18;
-  int y = 5;
-
-  DarwiniaButton* button;
-
-  button = new ProfileButton();
-  button->SetShortProperties("Profile (F6)", 10, y += pitch, m_w - 20, -1, UnicodeString("Profile (F6)"));
-  RegisterButton(button);
-  m_buttonOrder.PutData(button);
-
-  button = new NetworkButton();
-  button->SetShortProperties("Network Stats", 10, y += pitch, m_w - 20, -1, UnicodeString("Network Stats"));
-  RegisterButton(button);
-  m_buttonOrder.PutData(button);
-
-  button = new FPSButton();
-  button->SetShortProperties("Display FPS (F5)", 10, y += pitch, m_w - 20, -1, UnicodeString("Display FPS (F5)"));
-  RegisterButton(button);
-  m_buttonOrder.PutData(button);
-
-  y += pitch / 2.0;
-
-  y += pitch / 2.0;
-
-  button = new DebugCameraButton();
-  button->SetShortProperties("Dbg Cam (F2)", 10, y += pitch, m_w - 20, -1, UnicodeString("Dbg Cam (F2)"));
-  RegisterButton(button);
-  m_buttonOrder.PutData(button);
-
-  y += pitch / 2.0;
-
-  bool modsEnabled = false;
-
-#ifdef LOCATION_EDITOR
-  if (modsEnabled)
-  {
-    button = new EditorButton();
-    button->SetShortProperties("Toggle Editor (F3)", 10, y += pitch, m_w - 20, -1, UnicodeString("Toggle Editor (F3)"));
-    RegisterButton(button);
-    m_buttonOrder.PutData(button);
-  }
-#endif // LOCATION_EDITOR
-
-#ifdef CHEATMENU_ENABLED
-  button = new CheatButton();
-  button->SetShortProperties("Cheat Menu (F4)", 10, y += pitch, m_w - 20, -1, UnicodeString("Cheat Menu (F4)"));
-  RegisterButton(button);
-#endif
-}
-
-void DebugMenu::Render(bool hasFocus)
-{
-  Advance();
-
-  DarwiniaWindow::Render(hasFocus);
-
-  EclButton* camDbgButton = GetButton("Dbg Cam (F2)");
-  DEBUG_ASSERT(camDbgButton);
-  int y = m_y + camDbgButton->m_y + 11;
-
-  switch (g_app->m_camera->GetDebugMode())
-  {
-  case Camera::DebugModeAlways:
-    g_editorFont.DrawText2D(m_x + m_w - 47, y, 10, "Always");
-    break;
-  case Camera::DebugModeAuto:
-    g_editorFont.DrawText2D(m_x + m_w - 47, y, 10, "Auto");
-    break;
-  case Camera::DebugModeNever:
-    g_editorFont.DrawText2D(m_x + m_w - 47, y, 10, "Never");
-    break;
-  }
-}
-
-// ****************************************************************************
 // Class DebugKeyBindings
 // ****************************************************************************
-
-void DebugKeyBindings::DebugMenu()
-{
-  char* debugMenuWindowName = "dialog_toolsmenu";
-  if (EclGetWindow(debugMenuWindowName))
-    EclRemoveWindow(debugMenuWindowName);
-  else
-    EclRegisterWindow(new ::DebugMenu(debugMenuWindowName));
-}
 
 void DebugKeyBindings::ProfileButton()
 {
@@ -241,16 +139,3 @@ void DebugKeyBindings::CheatButton()
   }
 }
 #endif
-
-void DebugKeyBindings::ReallyQuitButton()
-{
-  // Bring up a really quit window
-  if (!EclGetWindow(REALLYQUIT_WINDOWNAME))
-    EclRegisterWindow(new ReallyQuitWindow());
-}
-
-void DebugKeyBindings::ToggleFullscreenButton()
-{
-  bool switchingToWindowed;
-  SetWindowed(!g_windowManager->Windowed(), true, switchingToWindowed);
-}

@@ -6,13 +6,11 @@ class CSpectatorButton : public GameMenuButton
 public:
 	int		m_teamId;
 	int		m_teamType;
-	double	m_teamChangeTime;
 
-	CSpectatorButton()
+  CSpectatorButton()
 	:	GameMenuButton(UnicodeString()),
 		m_teamId(-1),
-		m_teamType(-1),
-		m_teamChangeTime(0.0)
+		m_teamType(-1)
 	{
 		m_centered = true;
 		m_ir = m_ig = m_ib = 1.0f;

@@ -17,7 +17,6 @@ class AITarget;
 class Crate : public Building
 {
   protected:
-    double m_recountTimer;
     double m_captureTimer;
     double m_life; // ticks down if the crate isnt being captured
     double m_bubbleTimer;
@@ -161,7 +160,6 @@ class Crate : public Building
     static void RunSubversion(const Vector3& _pos, int _teamId, int _taskId);
     static void RunBooster(const Vector3& _pos, int _teamId, int _taskId);
     static void RunHotFeet(const Vector3& _pos, int _teamId, int _taskId);
-    static void RunShaman(const Vector3& _pos, int _teamId);
     static void RunInfection(const Vector3& _pos, int _teamId);
     static void RunMagicalForest(const Vector3& _pos, int _teamId);
     static void RunDarkForest(const Vector3& _pos, int _teamId);
@@ -170,18 +168,15 @@ class Crate : public Building
     static void RunEggs(const Vector3& _pos, int _teamId);
     static void RunMeteorShower(const Vector3& _pos, int _teamId);
     static void RunRandomiser(const Vector3& _pos, int _teamId);
-    static void RunExtinguisher(const Vector3& _pos, int _teamId);
     static void RunRage(const Vector3& _pos, int _teamId, int _taskId);
     static void RunSpawnMania();
     static void RunBitzkreig();
     static void RunCrateMania();
-    static void RunFormtationIncrease(int _teamId);
     static void RunRocketDarwinians(int _teamId);
     static void RunSpaceShip();
     static void RunTriffids(const Vector3& _pos, int _teamId);
     static void RunSlowDownTime();
     static void RunSpeedUpTime();
-    static void RunEngineers(const Vector3& _pos, int _teamId);
     static void RunTheBeast(const Vector3& _pos);
 };
 

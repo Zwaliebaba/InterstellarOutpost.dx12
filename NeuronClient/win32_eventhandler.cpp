@@ -105,32 +105,8 @@ void W32EventHandler::AddEventProcessor( W32EventProcessor *_driver )
 
 void W32EventHandler::RemoveEventProcessor( W32EventProcessor *_driver )
 {
-	std::remove( w32eventprocs.begin(), w32eventprocs.end(), _driver );
+	std::erase(w32eventprocs, _driver );
 }
-
-
-void W32EventHandler::ResetWindowHandle()
-{
-    UnbindAltTab();
-    if( g_altTabBound ) BindAltTab();
-}
-
-
-void W32EventHandler::BindAltTab()
-{
-	DEBUG_ASSERT((HWND)g_windowManager->Window());
-	RegisterHotKey((HWND)g_windowManager->Window(), 0, MOD_ALT, VK_TAB);
-    g_altTabBound = true;
-}
-
-
-void W32EventHandler::UnbindAltTab()
-{
-	DEBUG_ASSERT((HWND)g_windowManager->Window());
-	UnregisterHotKey(g_hwnd, 0);
-	UnregisterHotKey((HWND)g_windowManager->Window(), 0);
-}
-
 
 bool W32EventHandler::WindowHasFocus() { return g_windowHasFocus; }
 
