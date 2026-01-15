@@ -8,11 +8,11 @@
 #include "routing_system.h"
 #include "slice_darray.h"
 #include "spirit.h"
+#include "taskmanager.h"
 #include "unicode_string.h"
 #include "vector3.h"
 #include "weapons.h"
 #include "worldobject.h"
-#include "taskmanager.h"
 
 class ServerToClientLetter;
 class WorldObject;

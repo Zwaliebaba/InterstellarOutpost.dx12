@@ -7,9 +7,7 @@
 #include "targetcursor.h"
 #include "input.h"
 #include "input_types.h"
-#include "random_number.h"
 #include "preferences.h"
-
 #include "clienttoserver.h"
 #include "soundsystem.h"
 #include "chatinput_window.h"
@@ -18,7 +16,6 @@
 #include "engineer.h"
 #include "radardish.h"
 #include "officer.h"
-#include "insertion_squad.h"
 #include "armour.h"
 #include "darwinian.h"
 #include "app.h"
@@ -32,7 +29,6 @@
 #include "taskmanager.h"
 #include "taskmanager_interface.h"
 #include "team.h"
-#include "entity_grid.h"
 #include "level_file.h"
 #include "multiwinia.h"
 #include "markersystem.h"
@@ -705,7 +701,7 @@ void LocationInput::AdvanceTeamControl()
           }
 
           m_routeId = g_app->m_location->m_routingSystem.GenerateRoute(team->m_selectedDarwinianCentre, highlightedObjectPos, directRoute);
-          DebugTrace("Generated route - %d\n", m_routeId);
+          DebugTrace("Generated route - {}\n", m_routeId);
           g_app->m_location->m_routingSystem.SetRouteIntensity(m_routeId, 1.0);
         }
       }

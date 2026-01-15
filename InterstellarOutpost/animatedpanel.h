@@ -1,7 +1,6 @@
 #ifndef _included_animatedpanel_h
 #define _included_animatedpanel_h
 
-#include "darray.h"
 #include "llist.h"
 #include "text_stream_readers.h"
 #include "text_file_writer.h"

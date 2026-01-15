@@ -11,10 +11,6 @@ class Vector3;
 class Building;
 class GlobalInternet;
 
-// ****************************************************************************
-// GlobalLocation
-// ****************************************************************************
-
 class GlobalLocation
 {
   public:

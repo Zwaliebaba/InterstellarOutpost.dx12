@@ -1,27 +1,22 @@
 #ifndef INCLUDED_LANDSCAPE_RENDERER_H
 #define INCLUDED_LANDSCAPE_RENDERER_H
 
-
 #include "2d_surface_map.h"
 #include "fast_darray.h"
 #include "rgb_colour.h"
 #include "texture_uv.h"
-#include "vector3.h"
 #include "float_vector3.h"
-
 
 class BitmapRGBA;
 
-
 class LandVertex
 {
-public:
-	FloatVector3 m_pos;
-	FloatVector3 m_norm;
-	RGBAColour	 m_col;
-	TextureUV	 m_uv;
+  public:
+    FloatVector3 m_pos;
+    FloatVector3 m_norm;
+    RGBAColour m_col;
+    TextureUV m_uv;
 };
-
 
 //*****************************************************************************
 // Class LandTriangleStrip
@@ -29,13 +24,14 @@ public:
 
 class LandTriangleStrip
 {
-public:
-	int				m_firstVertIndex;
-	int				m_numVerts;
+  public:
+    int m_firstVertIndex;
+    int m_numVerts;
 
-	LandTriangleStrip(): m_firstVertIndex(-1), m_numVerts(-2) {}
+    LandTriangleStrip()
+      : m_firstVertIndex(-1),
+        m_numVerts(-2) {}
 };
-
 
 //*****************************************************************************
 // Class LandscapeRenderer
@@ -45,57 +41,54 @@ struct IDirect3DVertexBuffer9;
 
 class LandscapeRenderer
 {
-protected:
-	enum
-	{
-		RenderModeVertexArray,
-		RenderModeDisplayList,
-		RenderModeVertexBufferObject,
-		RenderModeVertexBufferDirect3D
-	};
+  protected:
+    enum
+    {
+      RenderModeVertexArray,
+      RenderModeDisplayList,
+      RenderModeVertexBufferObject,
+      RenderModeVertexBufferDirect3D
+    };
 
-    const BitmapRGBA      *m_landscapeColour;
-	float			m_highest;
-	int				m_renderMode;
+    const BitmapRGBA* m_landscapeColour;
+    float m_highest;
+    int m_renderMode;
 
-	FastDArray		<LandVertex> m_verts;
+    FastDArray<LandVertex> m_verts;
 
-	GLuint			m_vertexBuffer;
+    GLuint m_vertexBuffer;
 
-	FastDArray		<LandTriangleStrip *> m_strips;
+    FastDArray<LandTriangleStrip*> m_strips;
 
-	void BuildVertArrayAndTriStrip(SurfaceMap2D <double> *_heightMap);
-	void BuildNormArray();
-	void BuildUVArray(SurfaceMap2D <double> *_heightMap);
-	void GetLandscapeColour(float _height, float _gradient, 
-							unsigned int _x, unsigned int _y, RGBAColour *_colour);
-	void BuildColourArray();
+    void BuildVertArrayAndTriStrip(SurfaceMap2D<double>* _heightMap);
+    void BuildNormArray();
+    void BuildUVArray(SurfaceMap2D<double>* _heightMap);
+    void GetLandscapeColour(float _height, float _gradient, unsigned int _x, unsigned int _y, RGBAColour* _colour);
+    void BuildColourArray();
 
-	void DoBindBuffers();
+    void DoBindBuffers();
 
-public:
-	static const unsigned int	m_posOffset;
-	static const unsigned int	m_normOffset;
-	static const unsigned int	m_colOffset;
-	static const unsigned int	m_uvOffset;
+  public:
+    static const unsigned int m_posOffset;
+    static const unsigned int m_normOffset;
+    static const unsigned int m_colOffset;
+    static const unsigned int m_uvOffset;
 
-public:
-  LandscapeRenderer(SurfaceMap2D <double> *_heightMap);
-	~LandscapeRenderer();
+    LandscapeRenderer(SurfaceMap2D<double>* _heightMap);
+    ~LandscapeRenderer();
 
 #ifdef USE_DIRECT3D
-	void ReleaseD3DPoolDefaultResources();
-	void ReleaseD3DResources();
+    void ReleaseD3DPoolDefaultResources();
+    void ReleaseD3DResources();
 #endif
 
-	void BuildOpenGlState(SurfaceMap2D <double> *_heightMap);
+    void BuildOpenGlState(SurfaceMap2D<double>* _heightMap);
 
-	void Initialise();
+    void Initialise();
 
-	void RenderMainSlow();
-	void RenderOverlaySlow();
-	void Render();
+    void RenderMainSlow();
+    void RenderOverlaySlow();
+    void Render();
 };
-
 
 #endif

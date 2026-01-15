@@ -2,7 +2,6 @@
 #define _included_ai_h
 
 #include "location.h"
-
 #include "entity.h"
 
 struct RRSolarPanelInfo

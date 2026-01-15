@@ -1,29 +1,16 @@
 #include "pch.h"
 #include "landscape.h"
 #include "app.h"
-#include "binary_stream_readers.h"
-#include "bitmap.h"
-
-#include "global_world.h"
 #include "hi_res_time.h"
 #include "landscape_renderer.h"
 #include "level_file.h"
 #include "location.h"
 #include "math_utils.h"
-#include "preferences.h"
-#include "profiler.h"
 #include "random_number.h"
 #include "resource.h"
-#include "rgb_colour.h"
 #include "vector2.h"
 #include "vector3.h"
 
-// ****************************************************************************
-// Class LandscapeTile
-// ****************************************************************************
-
-// *** Constructor
-// Called from Landscape constructor
 LandscapeTile::LandscapeTile()
   : m_fractalDimension(1.2),
     m_heightScale(1.0),

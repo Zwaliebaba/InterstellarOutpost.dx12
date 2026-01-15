@@ -617,9 +617,6 @@ void Tree::Generate()
   AppSeedRandom(m_seed);
   RenderBranch(g_zeroVector, g_upVector, m_iterations, true, false, false);
   m_hitcheckRadius *= 0.8;
-
-  double totalTime = GetHighResTime() - timeNow;
-  DebugTrace("Tree generated in %dms\n", static_cast<int>(totalTime * 1000.0));
 }
 
 bool Tree::PerformDepthSort(Vector3& _centrePos)
@@ -633,11 +630,8 @@ void Tree::RenderAlphas(double _predictionTime)
   if (m_branchDisplayListId == -1 || m_leafDisplayListId == -1)
     Generate();
 
-  //if( g_app->m_editing )
-  {
-    intToArray(m_branchColour, m_branchColourArray);
-    intToArray(m_leafColour, m_leafColourArray);
-  }
+  intToArray(m_branchColour, m_branchColourArray);
+  intToArray(m_leafColour, m_leafColourArray);
 
   double actualHeight = GetActualHeight(_predictionTime);
 

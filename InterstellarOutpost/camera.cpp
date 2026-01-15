@@ -2,7 +2,6 @@
 #include "camera.h"
 #include "app.h"
 #include "clienttoserver.h"
-
 #include "eclipse.h"
 #include "entity_grid.h"
 #include "global_world.h"
@@ -26,7 +25,6 @@
 #include "taskmanager.h"
 #include "taskmanager_interface.h"
 #include "team.h"
-#include "teleport.h"
 #include "unit.h"
 #include "user_input.h"
 #include "window_manager.h"

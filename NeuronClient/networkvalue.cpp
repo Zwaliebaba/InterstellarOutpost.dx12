@@ -173,7 +173,7 @@ void NetworkChar::FromUnicodeString(const UnicodeString& _from)
 
 void LocalString::Set(const char* _x)
 {
-  snprintf(m_buf, m_bufSize, "%s", _x);
+  _snprintf(m_buf, m_bufSize, "%s", _x);
   m_buf[m_bufSize - 1] = '\0';
 }
 

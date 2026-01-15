@@ -52,7 +52,6 @@ class Tentacle : public Entity
     bool Advance(Unit* _unit) override;
     bool ChangeHealth(int _amount, int _damageType = DamageTypeUnresistable) override;
     void Render(double _predictionTime) override;
-    bool RenderPixelEffect(double _predictionTime) override;
 
     bool IsInView() override;
 

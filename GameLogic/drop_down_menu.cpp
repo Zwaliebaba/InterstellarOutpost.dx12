@@ -1,18 +1,9 @@
 #include "pch.h"
-#include "text_renderer.h"
 #include "string_utils.h"
-
-#include <string.h>
-
 #include "app.h"
 #include "renderer.h"
 #include "networkvalue.h"
 #include "drop_down_menu.h"
-
-
-// ****************************************************************************
-// Class DropDownOptionData
-// ****************************************************************************
 
 DropDownOptionData::DropDownOptionData(const char *_word, int _value)
 	: m_word(newStr(_word)), m_value(_value)

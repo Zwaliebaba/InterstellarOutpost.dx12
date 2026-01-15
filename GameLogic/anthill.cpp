@@ -1,31 +1,23 @@
 #include "pch.h"
-
-
-#include "text_file_writer.h"
-#include "hi_res_time.h"
-#include "math_utils.h"
-#include "profiler.h"
-#include "resource.h"
-#include "text_stream_readers.h"
-#include "text_renderer.h"
-#include "random_number.h"
-
-#include "particle_system.h"
-#include "app.h"
-#include "location.h"
-#include "entity_grid.h"
-#include "explosion.h"
-#include "team.h"
-#include "main.h"
-#include "level_file.h"
-
 #include "anthill.h"
+#include "app.h"
 #include "armyant.h"
 #include "darwinian.h"
-#include "spawnpoint.h"
-#include "virii.h"
-
+#include "entity_grid.h"
+#include "explosion.h"
+#include "gametimer.h"
+#include "level_file.h"
+#include "location.h"
+#include "main.h"
+#include "math_utils.h"
+#include "random_number.h"
+#include "resource.h"
 #include "soundsystem.h"
+#include "spawnpoint.h"
+#include "team.h"
+#include "text_file_writer.h"
+#include "text_stream_readers.h"
+#include "virii.h"
 
 AntHill::AntHill()
   : Building(),
@@ -42,7 +34,7 @@ AntHill::AntHill()
 {
   m_type = TypeAntHill;
 
-  SetShape(g_app->m_resource->GetShape("anthill.shp"));
+  Building::SetShape(g_app->m_resource->GetShape("anthill.shp"));
 }
 
 AntHill::~AntHill() { m_objectives.EmptyAndDelete(); }

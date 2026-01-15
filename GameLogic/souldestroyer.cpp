@@ -495,44 +495,6 @@ void SoulDestroyer::RenderShapes(double _predictionTime)
   glDisable(GL_NORMALIZE);
 }
 
-void SoulDestroyer::RenderShapesForPixelEffect(double _predictionTime)
-{
-  Vector3 predictedPos = m_pos + m_vel * _predictionTime;
-  Vector3 predictedFront = m_front;
-  Vector3 predictedUp = m_up;
-  Vector3 predictedRight = predictedUp ^ predictedFront;
-  predictedFront = predictedRight ^ predictedUp;
-  Matrix34 mat(predictedFront, predictedUp, predictedPos);
-
-  g_app->m_renderer->MarkUsedCells(s_shapeHead[m_id.GetTeamId()], mat);
-
-  for (int i = 1; i < m_positionHistory.Size(); i += 1)
-  {
-    Vector3 pos1 = *m_positionHistory.GetPointer(i);
-    Vector3 pos2 = *m_positionHistory.GetPointer(i - 1);
-
-    Vector3 pos = pos1 + (pos2 - pos1);
-    Vector3 front = (pos2 - pos1).Normalise();
-    Vector3 right = front ^ g_upVector;
-    Vector3 up = right ^ front;
-    Vector3 vel = (pos2 - pos1) / SERVER_ADVANCE_PERIOD;
-    pos += vel * _predictionTime;
-
-    double scale = 1.0 - (static_cast<double>(i) / static_cast<double>(m_positionHistory.Size()));
-    scale *= 1.5;
-    if (i == m_positionHistory.Size() - 1)
-      scale = 0.8;
-    scale = max(scale, 0.5);
-
-    Matrix34 tailMat(front, up, pos);
-    tailMat.u *= scale;
-    tailMat.r *= scale;
-    tailMat.f *= scale;
-
-    g_app->m_renderer->MarkUsedCells(s_shapeTail[m_id.GetTeamId()], tailMat);
-  }
-}
-
 void SoulDestroyer::Render(double _predictionTime)
 {
   _predictionTime -= SERVER_ADVANCE_PERIOD;
@@ -632,35 +594,17 @@ void SoulDestroyer::RenderSpirit(const Vector3& _pos, double _alpha)
   double size = spiritInnerSize / sqrt(sqrt(distToParticle));
   glColor4ub(colour.r, colour.g, colour.b, innerAlpha);
 
-  //glBegin( GL_QUADS );
   glVertex3dv((pos - g_app->m_camera->GetUp() * size).GetData());
   glVertex3dv((pos + g_app->m_camera->GetRight() * size).GetData());
   glVertex3dv((pos + g_app->m_camera->GetUp() * size).GetData());
   glVertex3dv((pos - g_app->m_camera->GetRight() * size).GetData());
-  //glEnd();    
 
   size = spiritOuterSize / sqrt(sqrt(distToParticle));
   glColor4ub(colour.r, colour.g, colour.b, outerAlpha);
-  //glBegin( GL_QUADS );
   glVertex3dv((pos - g_app->m_camera->GetUp() * size).GetData());
   glVertex3dv((pos + g_app->m_camera->GetRight() * size).GetData());
   glVertex3dv((pos + g_app->m_camera->GetUp() * size).GetData());
   glVertex3dv((pos - g_app->m_camera->GetRight() * size).GetData());
-  //glEnd();    
-}
-
-bool SoulDestroyer::RenderPixelEffect(double _predictionTime)
-{
-  _predictionTime -= SERVER_ADVANCE_PERIOD;
-
-  if (!m_dead)
-  {
-    RenderShapes(_predictionTime);
-    RenderShapesForPixelEffect(_predictionTime);
-    return true;
-  }
-
-  return false;
 }
 
 void SoulDestroyer::SetWaypoint(const Vector3 _waypoint) { m_targetPos = _waypoint; }

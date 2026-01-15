@@ -1,12 +1,9 @@
 #ifndef _included_unit_h
 #define _included_unit_h
 
+#include "ai.h"
 #include "slice_darray.h"
 #include "vector3.h"
-
-#include "entity.h"
-
-class AI;
 
 class Unit
 {

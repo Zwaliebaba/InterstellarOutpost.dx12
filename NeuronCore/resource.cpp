@@ -572,9 +572,6 @@ void Resource::RegenerateOpenGlState()
     m_shapes[i]->BuildDisplayList();
   }
 
-  // Tell the renderer (for the pixel effect texture)
-  g_app->m_renderer->BuildOpenGlState();
-
   // Tell the location
   if (g_app->m_location)
     g_app->m_location->RegenerateOpenGlState();
@@ -589,7 +586,7 @@ char* Resource::GenerateName()
 {
   int digits = log10f(m_nameSeed) + 1;
   auto name = new char [digits + 1];
-  snprintf(name, digits + 1, "%d", m_nameSeed);
+  _snprintf(name, digits + 1, "%d", m_nameSeed);
   m_nameSeed++;
 
   return name;

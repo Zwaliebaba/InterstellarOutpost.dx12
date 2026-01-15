@@ -5,13 +5,10 @@
 #include "resource.h"
 #include "profiler.h"
 #include "hi_res_time.h"
-
 #include "binary_stream_readers.h"
 #include "shape.h"
 #include "text_renderer.h"
-
 #include "eclipse.h"
-
 #include "app.h"
 #include "global_world.h"
 #include "main.h"
@@ -25,21 +22,14 @@
 #include "unit.h"
 #include "camera.h"
 #include "location_input.h"
-#include "entity_grid.h"
 #include "multiwinia.h"
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-#include "sepulveda.h"
-#endif
 #include "particle_system.h"
 #include "level_file.h"
 #include "markersystem.h"
 #include "soundsystem.h"
-
 #include "armour.h"
 #include "radardish.h"
-#include "insertion_squad.h"
 #include "officer.h"
-#include "darwinian.h"
 #include "gunturret.h"
 
 GameCursor::GameCursor()
@@ -86,7 +76,7 @@ GameCursor::GameCursor()
   m_cursorEnter->SetColour(RGBAColour(255, 255, 255, 255));
   m_cursorEnter->SetSize(50.0f);
 
-  m_cursorMissile = NULL;
+  m_cursorMissile = nullptr;
 
   //
   // Load selection arrow graphic
@@ -489,12 +479,11 @@ void GameCursor::RenderSelectedTaskIcon(Task* task)
 
     if (task->m_type == GlobalResearch::TypeGunTurret || task->m_type == GlobalResearch::TypeAntsNest)
     {
-      Shape* shape = NULL;
+      Shape* shape = nullptr;
       if (task->m_type == GlobalResearch::TypeGunTurret)
         shape = g_app->m_resource->GetShape("battlecannonturret.shp");
-      else
-        if (task->m_type == GlobalResearch::TypeAntsNest)
-          shape = g_app->m_resource->GetShape("anthill.shp");
+      else if (task->m_type == GlobalResearch::TypeAntsNest)
+        shape = g_app->m_resource->GetShape("anthill.shp");
 
       if (shape)
       {
@@ -577,7 +566,7 @@ bool GameCursor::RenderCrosshair()
 
   if (building && building->m_type == Building::TypeGunTurret)
   {
-    GunTurret* turret = static_cast<GunTurret*>(building);
+    auto turret = static_cast<GunTurret*>(building);
 
     if (turret->m_actualTargetPos != g_zeroVector)
     {
@@ -778,7 +767,7 @@ void GameCursor::RenderMultiwinia()
         g_app->m_location->m_routingSystem.RenderRouteLine(ent->m_pos, static_cast<Armour*>(ent)->m_wayPoint, 0.5f);
       else if (ent->m_type == Entity::TypeOfficer)
       {
-        Officer* officer = static_cast<Officer*>(ent);
+        auto officer = static_cast<Officer*>(ent);
 
         if (officer->IsInFormationMode() && myTeam->GetMyEntity() != officer && officer->m_state == Officer::StateToWaypoint)
         {
@@ -813,8 +802,8 @@ void GameCursor::RenderMultiwinia()
         skipSelectionEffect = true;
     }
 
-    Unit* u = NULL;
-    Entity* e = NULL;
+    Unit* u = nullptr;
+    Entity* e = nullptr;
     bool check = false;
 
     if ((u = g_app->m_location->GetUnit(selectedId)) && u->m_troopType == Entity::TypeInsertionSquadie)
@@ -829,7 +818,7 @@ void GameCursor::RenderMultiwinia()
         Building* b = g_app->m_location->m_buildings[i];
         if (b && b->m_type == Building::TypeRadarDish)
         {
-          RadarDish* rd = static_cast<RadarDish*>(b);
+          auto rd = static_cast<RadarDish*>(b);
           for (int j = 0; check && j < rd->m_inTransit.Size(); j++)
           {
             if (rd->m_inTransit.ValidIndex(j))
@@ -890,7 +879,7 @@ void GameCursor::RenderMultiwinia()
     {
       Vector3 decentMousePos = g_app->m_userInput->GetMousePos3d();
 
-      Officer* officer = static_cast<Officer*>(selected);
+      auto officer = static_cast<Officer*>(selected);
       if (m_objUnderMouse != officer->m_id)
       {
         if (officer->IsFormationToggle(decentMousePos))
@@ -1250,7 +1239,7 @@ void GameCursor::Render()
     else if (g_app->m_location)
     {
       // We are at a location
-      Task* task = g_app->m_location->GetMyTaskManager() ? g_app->m_location->GetMyTaskManager()->GetCurrentTask() : NULL;
+      Task* task = g_app->m_location->GetMyTaskManager() ? g_app->m_location->GetMyTaskManager()->GetCurrentTask() : nullptr;
 
       WorldObjectId selectedId;
       Vector3 selectedWorldPos;
@@ -1344,7 +1333,7 @@ void GameCursor::Render()
         }
         else if (task->m_type == GlobalResearch::TypeGunTurret || task->m_type == GlobalResearch::TypeAntsNest)
         {
-          Shape* shape = NULL;
+          Shape* shape = nullptr;
           if (task->m_type == GlobalResearch::TypeGunTurret)
             shape = g_app->m_resource->GetShape("battlecannonturret.shp");
           else if (task->m_type == GlobalResearch::TypeAntsNest)
@@ -1424,7 +1413,7 @@ void GameCursor::Render()
           {
             if (e->m_type == Entity::TypeArmour)
             {
-              Armour* a = static_cast<Armour*>(e);
+              auto a = static_cast<Armour*>(e);
               if (a->GetNumPassengers() < a->Capacity())
               {
                 float posX, posY;
@@ -1462,7 +1451,7 @@ void GameCursor::Render()
             if (building && building->m_type == Building::TypeRadarDish)
             {
               // Squadies/officer trying to get into a teleport
-              RadarDish* dish = static_cast<RadarDish*>(building);
+              auto dish = static_cast<RadarDish*>(building);
               if (dish->Connected())
               {
                 Vector3 entrancePos, entranceFront;
@@ -1651,7 +1640,7 @@ void GameCursor::Render()
       Entity* selected = myTeam->GetMyEntity();
       if (selected && selected->m_type == Entity::TypeOfficer)
       {
-        Officer* officer = static_cast<Officer*>(selected);
+        auto officer = static_cast<Officer*>(selected);
 
         if (!g_app->IsSinglePlayer() && officer->IsFormationToggle(myTeam->m_currentMousePos))
         {

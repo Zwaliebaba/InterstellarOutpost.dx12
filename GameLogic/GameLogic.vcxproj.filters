@@ -434,9 +434,6 @@
     <ClInclude Include="PlayGameButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>
-    <ClInclude Include="PrevHelpButton.h">
-      <Filter>GameMenu</Filter>
-    </ClInclude>
     <ClInclude Include="PrologueButton.h">
       <Filter>GameMenu</Filter>
     </ClInclude>

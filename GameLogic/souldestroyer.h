@@ -39,9 +39,7 @@ class SoulDestroyer : public Entity
     bool GetTrailPosition(Vector3& _pos, Vector3& _vel);
 
     void RenderShapes(double _predictionTime);
-    void RenderShapesForPixelEffect(double _predictionTime);
     void RenderSpirit(const Vector3& _pos, double _alpha);
-    bool RenderPixelEffect(double _predictionTime) override;
 
     void Panic(double _time);
 

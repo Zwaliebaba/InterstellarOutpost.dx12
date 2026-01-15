@@ -14,23 +14,22 @@
 #include "text_stream_readers.h"
 
 MapFile::MapFile()
-    : m_levelDataLength(0),
-      m_levelData(NULL),
-      m_filename(NULL),
-      m_landscapeTextureFilename(NULL),
-      m_thumbnailTextureFilename(NULL),
-      m_wavesTextureFilename(NULL),
-      m_waterTextureFilename(NULL)
-{}
+  : m_levelDataLength(0),
+    m_levelData(nullptr),
+    m_filename(nullptr),
+    m_landscapeTextureFilename(nullptr),
+    m_thumbnailTextureFilename(nullptr),
+    m_wavesTextureFilename(nullptr),
+    m_waterTextureFilename(nullptr) {}
 
 MapFile::MapFile(char* _filename, bool _loadTextures)
-    : m_levelDataLength(0),
-      m_levelData(NULL),
-      m_filename(NULL),
-      m_landscapeTextureFilename(NULL),
-      m_thumbnailTextureFilename(NULL),
-      m_wavesTextureFilename(NULL),
-      m_waterTextureFilename(NULL)
+  : m_levelDataLength(0),
+    m_levelData(nullptr),
+    m_filename(nullptr),
+    m_landscapeTextureFilename(nullptr),
+    m_thumbnailTextureFilename(nullptr),
+    m_wavesTextureFilename(nullptr),
+    m_waterTextureFilename(nullptr)
 {
 
   m_filename = _strdup(_filename);
@@ -49,12 +48,12 @@ MapFile::MapFile(char* _filename, bool _loadTextures)
   auto data = new char[length];
   input.read(data, length);
 
-  Directory* directory = new Directory();
+  auto directory = new Directory();
   directory->Read(data, length);
 
   input.close();
 
-  char* dirData = static_cast<char*>(directory->GetDataVoid(MAPFILE_MAPDATA, &m_levelDataLength));
+  auto dirData = static_cast<char*>(directory->GetDataVoid(MAPFILE_MAPDATA, &m_levelDataLength));
   m_levelData = new char[m_levelDataLength];
   memcpy(m_levelData, dirData, m_levelDataLength);
 
@@ -67,18 +66,12 @@ MapFile::MapFile(char* _filename, bool _loadTextures)
 
 MapFile::~MapFile()
 {
-  if (m_filename)
-    SAFE_DELETE(m_filename);
-  if (m_levelData)
-    SAFE_DELETE(m_levelData);
-  if (m_landscapeTextureFilename)
-    SAFE_DELETE(m_landscapeTextureFilename);
-  if (m_wavesTextureFilename)
-    SAFE_DELETE(m_wavesTextureFilename);
-  if (m_waterTextureFilename)
-    SAFE_DELETE(m_waterTextureFilename);
-  if (m_thumbnailTextureFilename)
-    SAFE_DELETE(m_thumbnailTextureFilename);
+  if (m_filename) SAFE_DELETE(m_filename);
+  if (m_levelData) SAFE_DELETE(m_levelData);
+  if (m_landscapeTextureFilename) SAFE_DELETE(m_landscapeTextureFilename);
+  if (m_wavesTextureFilename) SAFE_DELETE(m_wavesTextureFilename);
+  if (m_waterTextureFilename) SAFE_DELETE(m_waterTextureFilename);
+  if (m_thumbnailTextureFilename) SAFE_DELETE(m_thumbnailTextureFilename);
 }
 
 TextReader* MapFile::GetTextReader() { return new TextDataReader(m_levelData, m_levelDataLength, m_filename); }
@@ -89,10 +82,10 @@ void MapFile::Save(char* _filename)
   m_filename[strlen(m_filename) - 4] = '\0';
   sprintf(m_filename, "%s.mwm", m_filename);
 
-  TextMemoryWriter* writer = new TextMemoryWriter();
+  auto writer = new TextMemoryWriter();
   g_app->m_location->m_levelFile->Save(writer);
 
-  Directory* directory = new Directory();
+  auto directory = new Directory();
   directory->SetName("NewMap");
 
   m_levelDataLength = writer->GetStream()->str().size();
@@ -202,10 +195,10 @@ bool MapFile::LoadTexture(Directory* _directory, char* _texName, int _texNum, ch
     if (width < 0 || height < 0)
       return true;
 
-    BitmapRGBA* bitmap = new BitmapRGBA(width, height);
+    auto bitmap = new BitmapRGBA(width, height);
     int size = 0;
 
-    RGBAColour* pixels = static_cast<RGBAColour*>(_directory->GetDataVoid(_texName, &size));
+    auto pixels = static_cast<RGBAColour*>(_directory->GetDataVoid(_texName, &size));
     memcpy(bitmap->m_pixels, pixels, size);
     // for( int i = 0; i < height * width; ++i )
     {

@@ -298,6 +298,7 @@ void glTexParameterf ( GLenum target, GLenum pname, GLfloat param );
 void glTexCoord2i (GLint s, GLint t);
 void glTexCoord2f ( GLfloat s, GLfloat t );
 void glGenTextures (GLsizei n, GLuint *textures);
+GLuint glGenTextures(LPDIRECT3DTEXTURE9 _texture);
 void glDeleteTextures (GLsizei n, const GLuint *textures);
 void glCopyTexImage2D (GLenum target, GLint level, GLenum internalFormat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
 void glReadPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels);

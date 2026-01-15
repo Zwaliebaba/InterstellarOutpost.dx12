@@ -2,7 +2,6 @@
 #include "matrix34.h"
 #include "shape.h"
 #include "math_utils.h"
-
 #include "random_number.h"
 #include "sporegenerator.h"
 #include "egg.h"
@@ -14,6 +13,7 @@
 #include "camera.h"
 #include "team.h"
 #include "soundsystem.h"
+#include "spirit.h"
 
 #define SPOREGENERATOR_HOVERHEIGHT          100.0
 #define SPOREGENERATOR_EGGLAYHEIGHT         20.0
@@ -421,68 +421,6 @@ void SporeGenerator::Render(double _predictionTime)
 }
 
 bool SporeGenerator::IsInView() { return g_app->m_camera->SphereInViewFrustum(m_pos + m_centrePos, m_radius); }
-
-bool SporeGenerator::RenderPixelEffect(double _predictionTime)
-{
-  Render(_predictionTime);
-
-  auto entityFront = Vector3(0, 0, 1);
-  Vector3 entityUp = g_upVector;
-  Vector3 predictedPos = m_pos + m_vel * _predictionTime;
-
-  //
-  // Shape
-
-  Matrix34 mat(entityFront, entityUp, predictedPos);
-  g_app->m_renderer->MarkUsedCells(m_shape, mat);
-
-  //
-  // Tails
-
-  int numTailParts = 3;
-  static Vector3 s_vel;
-  s_vel = s_vel * 0.95 + m_vel * 0.05;
-
-  for (int i = 0; i < SPOREGENERATOR_NUMTAILS; ++i)
-  {
-    Vector3 prevTailPos = m_tail[i]->GetWorldMatrix(mat).pos;
-    Vector3 prevTailDir = (prevTailPos - predictedPos);
-    prevTailDir.HorizontalAndNormalise();
-
-    for (int j = 0; j < numTailParts; ++j)
-    {
-      Vector3 thisTailPos = prevTailPos + prevTailDir * 15.0;
-      prevTailDir = (thisTailPos - prevTailPos);
-      prevTailDir.HorizontalAndNormalise();
-
-      double timeIndex = g_gameTime + i + j + m_id.GetUniqueId() * 10;
-      thisTailPos += Vector3(sin(timeIndex) * 10.0, sin(timeIndex) * 10.0, sin(timeIndex) * 10.0);
-
-      Vector3 vel = s_vel;
-      vel.SetLength(10.0 * static_cast<double>(j) / static_cast<double>(numTailParts));
-      thisTailPos += vel;
-      thisTailPos.y -= 10.0 * static_cast<double>(j) / static_cast<double>(numTailParts);
-
-      if (m_state == StatePanic)
-      {
-        double panicFraction = 5.0;
-        thisTailPos += Vector3(cos(g_gameTime * panicFraction + i + j) * 5.0, cos(g_gameTime * panicFraction + i + j) * 5.0,
-                               cos(g_gameTime * panicFraction + i + j) * 5.0);
-      }
-
-      double size = 1.0 - static_cast<double>(j) / static_cast<double>(numTailParts);
-      size *= 2.0;
-      size += sin(g_gameTime + i + j) * 0.3;
-
-      Vector3 pos = (prevTailPos + thisTailPos) * 0.5;
-      Vector3 diff = prevTailPos - thisTailPos;
-      g_app->m_renderer->RasteriseSphere(pos, diff.Mag() * 0.5);
-      prevTailPos = thisTailPos;
-    }
-  }
-
-  return true;
-}
 
 void SporeGenerator::ListSoundEvents(LList<char*>* _list)
 {

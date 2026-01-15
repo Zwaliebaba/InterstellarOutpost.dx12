@@ -2,224 +2,217 @@
 #define CAMERA_H
 
 #include "vector3.h"
-
 #include "entity.h"
+#include "level_file.h"
 #include "worldobject.h"
-
-#include <vector>
-
-
-class Building;
-class Teleport;
-class CameraAnimation;
-
 
 class Camera
 {
-public:
+  public:
     enum Mode
     {
-		ModeSphereWorld = 1,
-        ModeFreeMovement = 2,		// Remember to update the static string table
-        ModeBuildingFocus = 3,		// at the end of camera.cpp when you update this
-        ModeEntityTrack = 4,
-        ModeRadarAim = 5,
-        ModeFirstPerson = 6,
-		ModeMoveToTarget = 7,
-		ModeDoNothing = 8,
-		ModeEntityFollow = 9,
-        ModeTurretAim = 10,
-        ModeSphereWorldScripted = 11,
-        ModeSphereWorldIntro = 12,
-        ModeSphereWorldOutro = 13,
-        ModeSphereWorldFocus = 14,
-		ModeNumModes
+      ModeSphereWorld = 1,
+      ModeFreeMovement = 2,
+      // Remember to update the static string table
+      ModeBuildingFocus = 3,
+      // at the end of camera.cpp when you update this
+      ModeEntityTrack = 4,
+      ModeRadarAim = 5,
+      ModeFirstPerson = 6,
+      ModeMoveToTarget = 7,
+      ModeDoNothing = 8,
+      ModeEntityFollow = 9,
+      ModeTurretAim = 10,
+      ModeSphereWorldScripted = 11,
+      ModeSphereWorldIntro = 12,
+      ModeSphereWorldOutro = 13,
+      ModeSphereWorldFocus = 14,
+      ModeNumModes
     };
 
-	enum
-	{
-		DebugModeAlways,
-		DebugModeAuto,
-		DebugModeNumStates
-	};
+    enum
+    {
+      DebugModeAlways,
+      DebugModeAuto,
+      DebugModeNumStates
+    };
 
-protected:
-	void AdvanceAnim();
+  protected:
+    void AdvanceAnim();
 
-	void AdvanceComponentZoom();
-	void AdvanceComponentMouseWheelHeight();
+    void AdvanceComponentZoom();
+    void AdvanceComponentMouseWheelHeight();
     void AdvanceDebugMode();
     void AdvanceSphereWorldMode();
-	void AdvanceFreeMovementMode();
+    void AdvanceFreeMovementMode();
     void AdvanceBuildingFocusMode();
     void AdvanceEntityTrackMode();
     void AdvanceRadarAimMode();
     void AdvanceFirstPersonMode();
-	void AdvanceMoveToTargetMode();
-	void AdvanceEntityFollowMode();
+    void AdvanceMoveToTargetMode();
+    void AdvanceEntityFollowMode();
     void AdvanceTurretAimMode();
     void AdvanceSphereWorldScriptedMode();
     void AdvanceSphereWorldIntroMode();
     void AdvanceSphereWorldOutroMode();
     void AdvanceSphereWorldFocusMode();
 
-	float DistanceToBlockage(Vector3 const &_dir, float _maxDist);
+    float DistanceToBlockage(const Vector3& _dir, float _maxDist);
 
-    bool GetEntityToTrack( WorldObjectId &selection );
-	void AdvanceAutomaticTracking();
-    void RotateTowardsEntity( Entity *entity );
+    bool GetEntityToTrack(WorldObjectId& selection);
+    void AdvanceAutomaticTracking();
+    void RotateTowardsEntity(Entity* entity);
 
-  bool AdvanceCameraMoveBehind( Vector3 &cameraTarget );
+    bool AdvanceCameraMoveBehind(Vector3& cameraTarget);
 
-    void UpdateControlVector();		// updates the vector used by units in direct control for the purposes of determining directions
+    void UpdateControlVector(); // updates the vector used by units in direct control for the purposes of determining directions
 
-	bool DoesLocationDataExist();
+    bool DoesLocationDataExist();
 
-public:
-	Vector3 m_pos;
-	Vector3 m_front;
-	Vector3 m_up;
-    Vector3 m_targetPos; 
-	float m_targetPosOffset; 
-	float m_targettingFOVAngle;
-	float m_camEntDiffAngle;
+  public:
+    Vector3 m_pos;
+    Vector3 m_front;
+    Vector3 m_up;
+    Vector3 m_targetPos;
+    float m_targetPosOffset;
+    float m_targettingFOVAngle;
+    float m_camEntDiffAngle;
 
-	Entity			*m_targettingEntity;
-  Vector3			m_targetVector;
-	Vector3			m_wantedTargetVector;
+    Entity* m_targettingEntity;
+    Vector3 m_targetVector;
+    Vector3 m_wantedTargetVector;
 
-	Entity *m_trackingEntity;	// The entity we are tracking
-	bool	m_camLookAround;
+    Entity* m_trackingEntity; // The entity we are tracking
+    bool m_camLookAround;
 
-private:
-    float   m_fov;
-	float	m_cosFov;			// Updated once per frame from m_fov in SetupProjectionMatrix
-	float   m_maxFovRadians;    // Updated once per frame from m_fov in SetupProjectionMatrix
-    float   m_height;			// Distance above ground (in metres)
+  private:
+    float m_fov;
+    float m_cosFov; // Updated once per frame from m_fov in SetupProjectionMatrix
+    float m_maxFovRadians; // Updated once per frame from m_fov in SetupProjectionMatrix
+    float m_height; // Distance above ground (in metres)
     Vector3 m_vel;
 
     Vector3 m_targetFront;
     Vector3 m_targetUp;
-    float   m_targetFov;
-	Vector3 m_cameraTarget;		// Target Position of camera for automatic entity tracking
+    float m_targetFov;
+    Vector3 m_cameraTarget; // Target Position of camera for automatic entity tracking
 
-	Vector3 m_startPos;			// Camera pos and orientation at the start of a "MoveToTarget"
-	Vector3 m_startFront;
-  double  m_startTime;
-	float	m_moveDuration;
+    Vector3 m_startPos; // Camera pos and orientation at the start of a "MoveToTarget"
+    Vector3 m_startFront;
+    double m_startTime;
+    float m_moveDuration;
 
-	float	m_distFromEntity;	// Used in EntityFollowMode and MicroUnitMode
+    float m_distFromEntity; // Used in EntityFollowMode and MicroUnitMode
 
-  int		m_mode;
-	int		m_debugMode;
-	int		m_framesInThisMode;
-    
-    WorldObjectId m_objectId;		// WorldObjectId of creature to track
+    int m_mode;
+    int m_debugMode;
+    int m_framesInThisMode;
+
+    WorldObjectId m_objectId; // WorldObjectId of creature to track
     float m_trackRange;
     float m_trackHeight;
     double m_trackTimer;
-    Vector3 m_trackVector;          // Used to rotate around tracking object
+    Vector3 m_trackVector; // Used to rotate around tracking object
 
-	CameraAnimation *m_anim;
-	int m_animCurrentNode;
-	double m_animNodeStartTime;
-	int m_modeBeforeAnim;
-	Vector3 m_posBeforeAnim;
-	Vector3 m_upBeforeAnim;
-	Vector3 m_frontBeforeAnim;
+    CameraAnimation* m_anim;
+    int m_animCurrentNode;
+    double m_animNodeStartTime;
+    int m_modeBeforeAnim;
+    Vector3 m_posBeforeAnim;
+    Vector3 m_upBeforeAnim;
+    Vector3 m_frontBeforeAnim;
 
-	Vector3			m_currentEntityTrackPos;
-	Vector3			m_lastEntityTrackPos;
-	Vector3			m_wantedPos;
-	WorldObjectId	m_lastSquadieId;
-	WorldObjectId	m_trackingEntityId;
-	int				m_trackingCameraDist;
+    Vector3 m_currentEntityTrackPos;
+    Vector3 m_lastEntityTrackPos;
+    Vector3 m_wantedPos;
+    WorldObjectId m_lastSquadieId;
+    WorldObjectId m_trackingEntityId;
+    int m_trackingCameraDist;
 
-  float   m_cameraShake;
+    float m_cameraShake;
 
-    bool    m_entityTrack;         // the current state of automatic entity tracking
-	bool	m_resettingCameraPos;
-	Vector3	m_controlVector;			// previous right value of the camera, if the unit is not directly below
-	bool	m_skipDirectionCalculation;
+    bool m_entityTrack; // the current state of automatic entity tracking
+    bool m_resettingCameraPos;
+    Vector3 m_controlVector; // previous right value of the camera, if the unit is not directly below
+    bool m_skipDirectionCalculation;
 
-	static std::vector<WorldObjectId> s_neighbours;
-    
-public:
-	Camera();
+    static std::vector<WorldObjectId> s_neighbours;
 
-	Vector3 GetPos()    { return m_pos; }
-	Vector3 GetFront()  { return m_front; }
-	Vector3 GetUp()     
-	{ 
-		if( m_up == g_zeroVector )
-		{
-			return g_upVector;
-		}
-		return m_up; 
-	}
-    Vector3 GetRight()  { return m_up ^ m_front; }
-    Vector3 GetVel()    { return m_vel; }
-    float   GetFov();
+  public:
+    Camera();
 
-	void SetupProjectionMatrix		(float _nearPlane, float _farPlane);
-	void SetupModelviewMatrix		();
+    Vector3 GetPos() { return m_pos; }
+    Vector3 GetFront() { return m_front; }
 
-	bool PosInViewFrustum			(Vector3 const &_pos);
-    bool SphereInViewFrustum        (Vector3 const &_centre, float _radius );
+    Vector3 GetUp()
+    {
+      if (m_up == g_zeroVector)
+        return g_upVector;
+      return m_up;
+    }
 
-	void Advance();
+    Vector3 GetRight() { return m_up ^ m_front; }
+    Vector3 GetVel() { return m_vel; }
+    float GetFov();
 
-  void SetDebugMode				(int _mode);
-	void SetNextDebugMode			();
+    void SetupProjectionMatrix(float _nearPlane, float _farPlane);
+    void SetupModelviewMatrix();
 
-	void RequestMode				(int _mode);
-    void RequestBuildingFocusMode   (Building *_building, float _range, float _height);
-    void RequestSphereFocusMode     ();
-    void RequestRadarAimMode        (Building *_building);
-    void RequestEntityTrackMode     (WorldObjectId const &_id);
-    void RequestTurretAimMode       (Building *_building);
+    bool PosInViewFrustum(const Vector3& _pos);
+    bool SphereInViewFrustum(const Vector3& _centre, float _radius);
 
-    void CreateCameraShake          (float _intensity);
+    void Advance();
 
-    bool IsInteractive              ();
-    bool IsInMode                   (int _mode);
+    void SetDebugMode(int _mode);
+    void SetNextDebugMode();
+
+    void RequestMode(int _mode);
+    void RequestBuildingFocusMode(Building* _building, float _range, float _height);
+    void RequestSphereFocusMode();
+    void RequestRadarAimMode(Building* _building);
+    void RequestEntityTrackMode(const WorldObjectId& _id);
+    void RequestTurretAimMode(Building* _building);
+
+    void CreateCameraShake(float _intensity);
+
+    bool IsInteractive();
+    bool IsInMode(int _mode);
 
     // SetTarget() only sets the target data. To make these changes take effect, call either
-	// CutToTarget() or RequestMode(Camera::ModeMoveToTarget), depending on whether you 
-	// want an instant cut or a smooth transition
-	void SetTarget		(Vector3 const &_pos, Vector3 const &_front, Vector3 const &_up=g_upVector);
-	bool SetTarget		(char const *_mountName); // Returns false if mount not found
-    void SetTarget      (Vector3 const &_focusPos, float _distance, float _height );
-	void SetMoveDuration(float _duration);    
-	void CutToTarget	();
-    void SetHeight      (float _height);
-    void SetFOV         (float _fov);
-    void SetTargetFOV   (float _fov);
+    // CutToTarget() or RequestMode(Camera::ModeMoveToTarget), depending on whether you 
+    // want an instant cut or a smooth transition
+    void SetTarget(const Vector3& _pos, const Vector3& _front, const Vector3& _up = g_upVector);
+    bool SetTarget(const char* _mountName); // Returns false if mount not found
+    void SetTarget(const Vector3& _focusPos, float _distance, float _height);
+    void SetMoveDuration(float _duration);
+    void CutToTarget();
+    void SetHeight(float _height);
+    void SetFOV(float _fov);
+    void SetTargetFOV(float _fov);
 
-	void Normalise		(); // Needs to be called reasonably regularly to prevent the front 
-							// and up vectors becoming non-orthogonal
+    void Normalise(); // Needs to be called reasonably regularly to prevent the front 
+    // and up vectors becoming non-orthogonal
 
-    void GetClickRay    (int _x, int _y, Vector3 *_rayStart, Vector3 *_rayDir);
-    void Get2DScreenPos (Vector3 const &_vector, float *_screenX, float *_screenY);
+    void GetClickRay(int _x, int _y, Vector3* _rayStart, Vector3* _rayDir);
+    void Get2DScreenPos(const Vector3& _vector, float* _screenX, float* _screenY);
 
-	void SetBounds		(float _minX, float _maxX, float _minZ, float _maxZ);
+    void SetBounds(float _minX, float _maxX, float _minZ, float _maxZ);
 
-	void PlayAnimation	(CameraAnimation *_anim);
-	void StopAnimation	();
-	bool IsAnimPlaying	();
+    void PlayAnimation(CameraAnimation* _anim);
+    void StopAnimation();
+    bool IsAnimPlaying();
 
-    void SwitchEntityTracking( bool _onOrOff );
-	void UpdateEntityTrackingMode();
+    void SwitchEntityTracking(bool _onOrOff);
+    void UpdateEntityTrackingMode();
 
-	Vector3 GetControlVector();
+    Vector3 GetControlVector();
 
-	//! Mirrors camera by water surface. Do it again to revert the effect.
-	void WaterReflect   ();
+    //! Mirrors camera by water surface. Do it again to revert the effect.
+    void WaterReflect();
 
-  bool TargetEntity	(short _x, short _y);
+    bool TargetEntity(short _x, short _y);
 
-  bool ChatLogVisible ();
+    bool ChatLogVisible();
 };
-
 
 #endif

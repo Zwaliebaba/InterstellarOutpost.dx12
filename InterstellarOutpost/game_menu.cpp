@@ -1,45 +1,30 @@
 #include "pch.h"
-
 #include <fstream>
-
 #include "hi_res_time.h"
 #include "input.h"
 #include "keydefs.h"
 #include "language_table.h"
 #include "resource.h"
-#include "targetcursor.h"
 #include "text_renderer.h"
 #include "text_stream_readers.h"
 #include "binary_stream_readers.h"
 #include "filesys_utils.h"
 #include "preferences.h"
-#include "resource.h"
-#include "filecrc.h"
 #include "math_utils.h"
 #include "soundsystem.h"
-#include "window_manager.h"
-#include "win32_eventhandler.h"
 #include "drop_down_menu.h"
 #include "input_field.h"
-#include "mainmenus.h"
-#include "helpandoptions_windows.h"
 #include "scrollbar.h"
 #include "checkbox.h"
-#include "multiwinia_window.h"
-#include "network_defines.h"
 #include "clienttoserver.h"
 #include "servertoclient.h"
-#include "server.h"
 #include "game_menu.h"
 #include "main.h"
 #include "camera.h"
 #include "app.h"
-#include "global_world.h"
 #include "multiwinia.h"
 #include "renderer.h"
 #include "achievement_tracker.h"
-#include "level_file.h"
-#include "ImageButton.h"
 #include "MapData.h"
 #include "GameMenuWindow.h"
 
@@ -526,7 +511,7 @@ void GameMenu::CreateMapList()
   for (int i = 0; i < levels.size(); ++i)
   {
     char filename[512];
-    snprintf(filename, sizeof(filename), "levels/%s", levels[i].c_str());
+    _snprintf(filename, sizeof(filename), "levels/%s", levels[i].c_str());
     filename[sizeof(filename) - 1] = '\0';
 
     TextReader* file = NULL;

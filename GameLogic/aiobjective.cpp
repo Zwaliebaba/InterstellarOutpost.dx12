@@ -1,5 +1,4 @@
 #include "pch.h"
-
 #include "preferences.h"
 #include "text_file_writer.h"
 #include "text_stream_readers.h"
@@ -7,14 +6,13 @@
 #include "app.h"
 #include "entity_grid.h"
 #include "location.h"
-#include "main.h"
 #include "team.h"
-#include "obstruction_grid.h"
 #include "multiwinia.h"
 #include "aiobjective.h"
 #include "building.h"
 #include "ai.h"
 #include "armour.h"
+#include "gametimer.h"
 #include "rocket.h"
 
 bool AIObjective::s_objectivesInitialised = false;

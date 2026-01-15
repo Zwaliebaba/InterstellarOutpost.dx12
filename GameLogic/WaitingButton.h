@@ -93,22 +93,11 @@ class WaitingButton : public DarwiniaButton
         {
           realY += m_fontSize * 2.0f;
 
-          //@ int gameMode = server->GetDataChar(NET_METASERVER_GAMEMODE);
-          //@ int mapCRC = server->GetDataInt(NET_METASERVER_MAPCRC);
-          //@ int mapIndex = g_app->m_gameMenu->GetMapIndex(gameMode, mapCRC);
-
           char serverIp[256];
           g_app->m_clientToServer->GetServerIp(serverIp);
           int serverPort = g_app->m_clientToServer->GetServerPort();
 
-          //@ const char* mapName = g_app->m_gameMenu->GetMapName(gameMode, mapCRC);
-          //@ if (!mapName)
-          //@   mapName = "Unknown Map";
-
-          char gameModeName[512];
-          //@ GameTypeToCaption(gameMode, gameModeName);
-
-          UnicodeString hostName = "Host"; // UnicodeString(server->GetDataString(NET_METASERVER_SERVERNAME));
+          UnicodeString hostName = "Host"; 
 
           float dataX = realX + 200;
           float fontSize = m_fontSize * 0.5f;

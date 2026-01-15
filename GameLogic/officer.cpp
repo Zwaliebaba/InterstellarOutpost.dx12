@@ -348,14 +348,6 @@ void Officer::RenderFlag(double _predictionTime)
   m_flag.Render(g_app->Multiplayer() ? m_id.GetTeamId() : -1, filename);
 }
 
-bool Officer::RenderPixelEffect(double _predictionTime)
-{
-  if (g_app->Multiplayer())
-    return false;
-
-  return RenderShape(_predictionTime);
-}
-
 void Officer::CalculateBoundingSphere(Vector3& centre, double& radius)
 {
   centre = m_pos + Vector3(0, 4, 0);
@@ -459,8 +451,6 @@ bool Officer::RenderShape(double _predictionTime)
   //    glEnable        (GL_TEXTURE_2D);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   g_app->m_renderer->UnsetObjectLighting();
-
-  g_app->m_renderer->MarkUsedCells(m_shape, mat);
 
   return true;
 }

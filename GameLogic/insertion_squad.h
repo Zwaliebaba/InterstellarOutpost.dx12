@@ -93,7 +93,6 @@ class Squadie : public Entity
     void Attack(const Vector3& _pos) override;
 
     void Render(double _predictionTime) override;
-    bool RenderPixelEffect(double _predictionTime) override;
 
     bool HasSecondaryWeapon();
     void FireSecondaryWeapon(const Vector3& _pos);

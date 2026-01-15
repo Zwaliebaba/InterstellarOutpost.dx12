@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "unicode_text_stream_reader.h"
-#include "directory.h"
 #include "filesys_utils.h"
 #include "text_file_writer.h"
 #include "resource.h"
@@ -2137,7 +2136,7 @@ int LevelFile::CalculeCRC(const char* _mapFilename)
     return mapCRC;
 
   char filename[512];
-  snprintf(filename, sizeof(filename), "levels/%s", _mapFilename);
+  _snprintf(filename, sizeof(filename), "levels/%s", _mapFilename);
   filename[sizeof(filename) - 1] = '\0';
 
   // Determine CRC identifier of map

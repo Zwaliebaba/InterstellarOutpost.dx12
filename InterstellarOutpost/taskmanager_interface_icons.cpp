@@ -73,26 +73,6 @@ TaskManagerInterfaceIcons::TaskManagerInterfaceIcons()
   m_highlightedTaskId = -1;
   SetVisible(false);
 
-  //
-  // Pre-load all the graphics we intend to use for these screens
-  // If we don't do this the interface screens are slow and sluggish first visit
-
-  for (int i = 0; i < GlobalResearch::NumResearchItems; ++i)
-  {
-    char iconFilename[256];
-    sprintf(iconFilename, "icons\\icon_%s.bmp", GlobalResearch::GetTypeName(i));
-    if (g_app->m_resource->DoesTextureExist(iconFilename))
-    {
-      // unsigned int texId = g_app->m_resource->GetTexture( iconFilename, true, false );
-    }
-    char gestureFilename[256];
-    sprintf(gestureFilename, "icons\\gesture_%s.bmp", GlobalResearch::GetTypeName(i));
-    if (g_app->m_resource->DoesTextureExist(gestureFilename))
-    {
-      // unsigned int texId = g_app->m_resource->GetTexture( gestureFilename, true, false );
-    }
-  }
-
   g_app->m_resource->GetTexture("textures\\interface_grey.bmp", true, false);
   g_app->m_resource->GetTexture("textures\\interface_red.bmp", true, false);
   g_app->m_resource->GetTexture("icons\\gestureguide.bmp", true, false);

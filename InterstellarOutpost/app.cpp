@@ -1,19 +1,13 @@
 #include "pch.h"
 #include "unicode_text_stream_reader.h"
 #include "clienttoserver.h"
-#include "hi_res_time.h"
 #include "language_table.h"
 #include "preferences.h"
 #include "resource.h"
-#include "profiler.h"
 #include "system_info.h"
 #include "text_renderer.h"
 #include "filesys_utils.h"
-#include "bitmap.h"
-#include "text_file_writer.h"
 #include "prefs_other_window.h"
-#include "window_manager.h"
-#include "sound_stream_decoder.h"
 #include "soundsystem.h"
 #include "sample_cache.h"
 #include "net_lib.h"
@@ -46,30 +40,30 @@
 
 void SetPreferenceOverrides(); // See main.cpp
 
-App* g_app = NULL;
+App* g_app = nullptr;
 
 App::App()
-  : m_userInput(NULL),
-    m_resource(NULL),
-    m_soundSystem(NULL),
-    m_particleSystem(NULL),
-    m_langTable(NULL),
-    m_globalWorld(NULL),
-    m_location(NULL),
+  : m_userInput(nullptr),
+    m_resource(nullptr),
+    m_soundSystem(nullptr),
+    m_particleSystem(nullptr),
+    m_langTable(nullptr),
+    m_globalWorld(nullptr),
+    m_location(nullptr),
     m_locationId(-1),
-    m_camera(NULL),
-    m_server(NULL),
-    m_clientToServer(NULL),
+    m_camera(nullptr),
+    m_server(nullptr),
+    m_clientToServer(nullptr),
     m_mainThreadId(NetGetCurrentThreadId()),
-    m_renderer(NULL),
-    m_locationInput(NULL),
-    m_taskManagerInterface(NULL),
-    m_script(NULL),
-    m_testHarness(NULL),
-    m_startSequence(NULL),
-    m_gameMenu(NULL),
-    m_multiwinia(NULL),
-    m_shamanInterface(NULL),
+    m_renderer(nullptr),
+    m_locationInput(nullptr),
+    m_taskManagerInterface(nullptr),
+    m_script(nullptr),
+    m_testHarness(nullptr),
+    m_startSequence(nullptr),
+    m_gameMenu(nullptr),
+    m_multiwinia(nullptr),
+    m_shamanInterface(nullptr),
     m_negativeRenderer(false),
     m_difficultyLevel(0),
     m_largeMenus(false),
@@ -89,7 +83,7 @@ App::App()
     m_requireSoundsLoaded(false),
     m_doMenuTransition(false),
     m_soundsWorkQueue(new WorkQueue),
-    m_oldLangTable(NULL)
+    m_oldLangTable(nullptr)
 {
   g_app = this;
 
@@ -166,7 +160,7 @@ bool App::LoadProfile()
     if (m_globalWorld)
     {
       delete m_globalWorld;
-      m_globalWorld = NULL;
+      m_globalWorld = nullptr;
     }
 
     m_globalWorld = new GlobalWorld();
@@ -189,7 +183,7 @@ bool App::LoadProfile()
     if (m_globalWorld)
     {
       delete m_globalWorld;
-      m_globalWorld = NULL;
+      m_globalWorld = nullptr;
     }
 
     m_globalWorld = new GlobalWorld();
@@ -277,7 +271,7 @@ void App::ResetLevel(bool _global)
       if (m_globalWorld)
       {
         delete m_globalWorld;
-        m_globalWorld = NULL;
+        m_globalWorld = nullptr;
       }
 
       m_globalWorld = new GlobalWorld();
@@ -337,7 +331,7 @@ HRESULT App::StartMultiPlayerServer()
 {
   DebugTrace("Starting multi-player server.\n");
   m_multiwinia->m_aiType = Multiwinia::AITypeStandard;
-  g_app->StartNetwork(true, NULL, NULL);
+  g_app->StartNetwork(true, nullptr, NULL);
   return 0; // = S_OK = success
 }
 
@@ -360,14 +354,14 @@ void App::ShutdownCurrentGame()
 
   delete m_location;
 
-  m_location = NULL;
+  m_location = nullptr;
   m_locationId = -1;
 
   delete m_locationInput;
-  m_locationInput = NULL;
+  m_locationInput = nullptr;
 
   delete m_server;
-  m_server = NULL;
+  m_server = nullptr;
 
   m_multiwinia->Reset();
 
@@ -402,8 +396,7 @@ void App::InitLanguage()
   languagePreference.push_back(GetFirstAvailableLanguage());
 
   ASSERT_TEXT(languagePreference.end() != std::find_if(languagePreference.begin(), languagePreference.end(),
-                                                       [this](const std::string& lang) { return this->TrySetLanguage(lang); }),
-              "Failed to load language file");
+                [this](const std::string& lang) { return this->TrySetLanguage(lang); }), "Failed to load language file");
 }
 
 void App::SetLanguage(const char* _language, bool _test)
@@ -473,11 +466,11 @@ void App::SetLanguage(const char* _language, bool _test)
     newLangTable->RebuildTables();
 
   // Delete the old table, if it exists (which it doesn't when Multiwinia is first run)
-  if (m_langTable != NULL)
+  if (m_langTable != nullptr)
   {
     m_oldLangTable = m_langTable;
-    Method<App>* m = new Method<App>(&App::DeleteOldLangTable, this);
-    DelayedJob* dJob = new DelayedJob(m, 5);
+    auto m = new Method<App>(&App::DeleteOldLangTable, this);
+    auto dJob = new DelayedJob(m, 5);
     AddDelayedJob(dJob);
   }
 
@@ -506,8 +499,8 @@ const char* App::GetProfileDirectory() { return ""; }
 
 const char* App::GetPreferencesPath()
 {
-  static char* path = NULL;
-  if (path == NULL)
+  static char* path = nullptr;
+  if (path == nullptr)
   {
     const char* profileDir = GetProfileDirectory();
     path = new char[strlen(profileDir) + 32];
@@ -519,7 +512,7 @@ const char* App::GetPreferencesPath()
 
 const char* App::GetMapDirectory()
 {
-  static char* directory = NULL;
+  static char* directory = nullptr;
   if (!directory)
   {
     const char* profileDir = GetProfileDirectory();
@@ -611,9 +604,7 @@ int App::GetMaxNumberofPlayers()
       {
         MapData* m = maps[i];
         if (stricmp(g_app->m_requestedMap, m->m_fileName) == 0)
-        {
           return m->m_numPlayers;
-        }
       }
     }
   }
@@ -626,7 +617,7 @@ bool App::UseChristmasMode()
   // Last 2 weeks in December only
   // Also allow user to disable if he wishes
 
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
   tm* theTime = localtime(&now);
 
 #ifdef CHRISTMAS_DEMO
@@ -712,9 +703,9 @@ void App::LoadSounds()
 
 void App::DeleteOldLangTable()
 {
-  if (m_oldLangTable != NULL)
+  if (m_oldLangTable != nullptr)
   {
     delete m_oldLangTable;
-    m_oldLangTable = NULL;
+    m_oldLangTable = nullptr;
   }
 }

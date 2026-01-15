@@ -127,8 +127,6 @@ void Meteor::Render(double _predictionTime)
     glEnable(GL_TEXTURE_2D);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     g_app->m_renderer->UnsetObjectLighting();
-
-    g_app->m_renderer->MarkUsedCells(m_shape, mat);
   }
 
   glEnable(GL_TEXTURE_2D);

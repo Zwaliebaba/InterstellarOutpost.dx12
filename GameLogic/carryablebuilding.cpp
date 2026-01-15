@@ -1,23 +1,14 @@
 #include "pch.h"
 #include "resource.h"
 #include "shape.h"
-
 #include "input.h"
-#include "control_bindings.h"
-#include "text_renderer.h"
-
 #include "soundsystem.h"
-
 #include "carryablebuilding.h"
 #include "darwinian.h"
-
 #include "app.h"
 #include "location.h"
 #include "entity_grid.h"
-#include "main.h"
 #include "team.h"
-#include "user_input.h"
-#include "multiwinia.h"
 
 CarryableBuilding::CarryableBuilding()
   : Building(),

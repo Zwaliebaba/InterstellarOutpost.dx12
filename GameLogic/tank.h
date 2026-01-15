@@ -46,7 +46,6 @@ class Tank : public Entity
     void Begin() override;
     bool Advance(Unit* _unit) override;
     void Render(double _predictionTime) override;
-    bool RenderPixelEffect(double _predictionTime) override;
 
     bool ChangeHealth(int _amount, int _damageType = DamageTypeUnresistable) override;
 

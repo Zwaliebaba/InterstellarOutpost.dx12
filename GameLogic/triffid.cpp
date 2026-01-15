@@ -720,21 +720,12 @@ void TriffidEgg::Render(double _predictionTime)
   g_app->m_renderer->UnsetObjectLighting();
   glDisable(GL_NORMALIZE);
 
-  g_app->m_renderer->MarkUsedCells(m_shape, transform);
-
   //
   // Render our shadow
 
   BeginRenderShadow();
   RenderShadow(predictedPos, size * 10.0);
   EndRenderShadow();
-}
-
-bool TriffidEgg::RenderPixelEffect(double _predictionTime)
-{
-  Render(_predictionTime);
-
-  return true;
 }
 
 void TriffidEgg::ListSoundEvents(LList<char*>* _list)

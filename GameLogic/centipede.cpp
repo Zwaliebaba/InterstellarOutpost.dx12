@@ -751,28 +751,3 @@ void Centipede::Render(double _predictionTime)
 }
 
 bool Centipede::IsInView() { return g_app->m_camera->SphereInViewFrustum(m_pos + m_centrePos, m_radius); }
-
-bool Centipede::RenderPixelEffect(double _predictionTime)
-{
-  Render(_predictionTime);
-
-  Vector3 predictedPos = m_pos + m_vel * _predictionTime;
-  predictedPos.y = g_app->m_location->m_landscape.m_heightMap->GetValue(predictedPos.x, predictedPos.z);
-
-  if (!m_dead && m_linked)
-  {
-    Vector3 predictedFront = m_front;
-    Vector3 predictedUp = g_app->m_location->m_landscape.m_normalMap->GetValue(predictedPos.x, predictedPos.z);
-    Vector3 predictedRight = predictedUp ^ predictedFront;
-    predictedFront = predictedRight ^ predictedUp;
-
-    Matrix34 mat(predictedFront, predictedUp, predictedPos);
-    mat.f *= m_size;
-    mat.u *= m_size;
-    mat.r *= m_size;
-
-    g_app->m_renderer->MarkUsedCells(m_shape, mat);
-  }
-
-  return true;
-}

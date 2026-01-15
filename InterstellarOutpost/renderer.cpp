@@ -99,7 +99,7 @@ void Renderer::Initialise()
   if (!success)
   {
     char caption[512];
-    snprintf(caption, sizeof(caption),
+    _snprintf(caption, sizeof(caption),
              "Failed to set requested screen resolution of\n" "%d x %d, %d bit colour, %s\n" "%d refresh rate, %d bit z depth", m_screenW,
              m_screenH, colourDepth, windowed ? "windowed" : "fullscreen", refreshRate, zDepth);
     DebugTrace("Failed to set requested screen resolution of %d x %d, %d bit colour, %s, %d refresh rate, %d bit z depth", m_screenW,
@@ -154,18 +154,14 @@ void Renderer::Initialise()
   g_prefsManager->Save();
 
   InitialiseOGLExtensions();
-  BuildOpenGlState();
 }
 
-void Renderer::Restart() { BuildOpenGlState(); }
-
-void Renderer::BuildOpenGlState() { glGenTextures(1, &m_pixelEffectTexId); }
+void Renderer::Restart() { }
 
 void Renderer::Render()
 {
 
   START_PROFILE("Render");
-  CHECK_OPENGL_STATE();
   if (g_profiler)
     g_profiler->RenderStarted();
 
@@ -173,7 +169,6 @@ void Renderer::Render()
 
   if (g_profiler)
     g_profiler->RenderEnded();
-  CHECK_OPENGL_STATE();
   END_PROFILE("Render");
 }
 
@@ -347,14 +342,6 @@ void Renderer::RenderFrame(bool withFlip)
       g_editorFont.DrawText2DRight(m_screenW - 10, m_screenH - 40, DEF_FONT_SIZE, "FPS: %d   DWs: %d", m_fps, Entity::s_entityPopulation);
     else
       g_editorFont.DrawText2DRight(m_screenW - 10, m_screenH - 40, DEF_FONT_SIZE, "FPS: %d", m_fps);
-  }
-
-  if (!g_app->m_hideInterface)
-  {
-    bool showVersion = true;
-
-    if (showVersion)
-      g_editorFont.DrawText2DRight(m_screenW - 10, m_screenH - 20, DEF_FONT_SIZE, DARWINIA_VERSION_STRING);
   }
 
   g_gameTimer.DebugRender();
@@ -786,391 +773,6 @@ void Renderer::UnsetObjectLighting() const
   glDisable(GL_LIGHT1);
 }
 
-void Renderer::PreRenderPixelEffect()
-{
-  START_PROFILE("Pixel Pre-render");
-
-  UpdateTotalMatrix();
-
-  // 
-  // Reset pixel effect grid cell distances to infinity
-
-  for (int y = 0; y < PIXEL_EFFECT_GRID_RES; ++y)
-  {
-    for (int x = 0; x < PIXEL_EFFECT_GRID_RES; ++x)
-      m_pixelEffectGrid[y][x] = 1e9;
-  }
-
-  //
-  // Blend our old glow texture into place
-
-  START_PROFILE("blend old");
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, m_pixelEffectTexId);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-  glEnable(GL_BLEND);
-  glDepthMask(false);
-
-  g_editorFont.BeginText2D();
-
-  float upSpeed = 2.0f;
-  glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-  glDisable(GL_TEXTURE_2D); // *
-  glEnable(GL_BLEND);
-  //glDisable( GL_BLEND ); // *
-  glDisable(GL_CULL_FACE); // *
-  //glBegin( GL_QUADS );
-  //    glTexCoord2f( 0.0f, 1.0f );     glVertex2f( 0, m_screenH-upSpeed );
-  //    glTexCoord2f( 1.0f, 1.0f );     glVertex2f( m_pixelSize, m_screenH-upSpeed);
-  //    glTexCoord2f( 1.0f, 0.0f );     glVertex2f( m_pixelSize, m_screenH - m_pixelSize -upSpeed );
-  //    glTexCoord2f( 0.0f, 0.0f );     glVertex2f( 0, m_screenH - m_pixelSize - upSpeed);
-  //glEnd();
-  g_editorFont.EndText2D();
-  glEnable(GL_TEXTURE_2D); // *
-  END_PROFILE("blend old");
-
-  //glDisable           (GL_TEXTURE_2D);
-
-  //
-  // Draw all pixelated objects to the screen
-  // Find the nearest pixelated object and update m_pixelSize at the end
-
-  START_PROFILE("Draw pixelated");
-  glViewport(0, 0, m_pixelSize, m_pixelSize);
-  float nearest = 99999.9f;
-
-  float cutoff = 1000.0f;
-  Vector3 camPos = g_app->m_camera->GetPos();
-
-  for (int t = 0; t < NUM_TEAMS; ++t)
-  {
-    if (g_app->m_location->m_teams[t]->m_teamType != TeamTypeUnused)
-    {
-      for (int i = 0; i < g_app->m_location->m_teams[t]->m_units.Size(); ++i)
-      {
-        if (g_app->m_location->m_teams[t]->m_units.ValidIndex(i))
-        {
-          Unit* unit = g_app->m_location->m_teams[t]->m_units[i];
-          if (unit->m_troopType == Entity::TypeInsertionSquadie || unit->m_troopType == Entity::TypeCentipede)
-          {
-            if (unit->IsInView())
-            {
-              float distance = (unit->m_centrePos - camPos).Mag();
-              if (distance < cutoff)
-              {
-                for (int j = 0; j < unit->m_entities.Size(); ++j)
-                {
-                  if (unit->m_entities.ValidIndex(j))
-                  {
-                    Entity* entity = unit->m_entities[j];
-                    if (!entity)
-                      continue;
-
-                    bool rendered = false;
-                    if (j <= unit->m_entities.GetLastUpdated())
-                      rendered = entity->RenderPixelEffect(g_predictionTime);
-                    else
-                      rendered = entity->RenderPixelEffect(g_predictionTime + SERVER_ADVANCE_PERIOD);
-                    if (rendered)
-                    {
-                      float distance = (entity->m_pos - g_app->m_camera->GetPos()).Mag();
-                      if (distance < nearest)
-                        nearest = distance;
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-
-      for (int i = 0; i < g_app->m_location->m_teams[t]->m_others.Size(); ++i)
-      {
-        if (g_app->m_location->m_teams[t]->m_others.ValidIndex(i))
-        {
-          Entity* entity = g_app->m_location->m_teams[t]->m_others[i];
-          if (entity->IsInView())
-          {
-            float distance = (entity->m_pos - camPos).Mag();
-            if (distance < cutoff)
-            {
-              bool rendered = false;
-              if (i <= g_app->m_location->m_teams[t]->m_others.GetLastUpdated())
-                rendered = entity->RenderPixelEffect(g_predictionTime);
-              else
-                rendered = entity->RenderPixelEffect(g_predictionTime + SERVER_ADVANCE_PERIOD);
-              if (rendered)
-              {
-                float distance = (entity->m_pos - g_app->m_camera->GetPos()).Mag();
-                if (distance < nearest)
-                  nearest = distance;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  for (int i = 0; i < g_app->m_location->m_buildings.Size(); ++i)
-  {
-    if (g_app->m_location->m_buildings.ValidIndex(i))
-    {
-      Building* building = g_app->m_location->m_buildings[i];
-      float distance = (building->m_centrePos - camPos).Mag();
-      if (distance < cutoff)
-      {
-        bool rendered = building->RenderPixelEffect(g_predictionTime);
-        if (rendered)
-        {
-          float distance = (building->m_pos - g_app->m_camera->GetPos()).Mag();
-          if (distance < nearest)
-            nearest = distance;
-        }
-      }
-    }
-  }
-
-  END_PROFILE("Draw pixelated");
-  glViewport(0, 0, m_screenW, m_screenH);
-
-  //
-  // Copy the screen to a texture
-
-  START_PROFILE("Gen new texture");
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, m_pixelEffectTexId);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, m_pixelSize, m_pixelSize, 0);
-
-  glDisable(GL_TEXTURE_2D);
-  glDisable(GL_BLEND);
-  glEnable(GL_CULL_FACE);
-  END_PROFILE("Gen new texture");
-
-  glDepthMask(true);
-
-  CHECK_OPENGL_STATE();
-
-  //
-  // Update pixel size
-
-  //if      ( nearest < 30 )        m_pixelSize = 128;    
-  //else if ( nearest < 200 )       m_pixelSize = 256;
-  //else                            m_pixelSize = 512;
-
-  END_PROFILE("Pixel Pre-render");
-}
-
-#ifdef USE_DIRECT3D
-inline float d3dOneMinus(float _x) { return 1.0f - _x; }
-#else
-#define d3dOneMinus( _x ) _x
-#endif
-
-void Renderer::PaintPixels()
-{
-#if USE_PIXEL_EFFECT_GRID_OPTIMISATION
-  const double aspectRatio = static_cast<double>(m_screenW) / static_cast<double>(m_screenH);
-  double zoomCorrection = 0.000037 * static_cast<double>(g_app->m_camera->GetFov());
-  double scale = (0.017 + zoomCorrection) * static_cast<double>(g_app->m_camera->GetFov());
-
-  const double step = scale * aspectRatio / static_cast<double>(PIXEL_EFFECT_GRID_RES);
-  const double xOffset = scale * (-0.5 * aspectRatio);
-  const double yOffset = scale * -0.5;
-  float gridToTexture = 1.0f / static_cast<float>(PIXEL_EFFECT_GRID_RES);
-  float gridToTextureY = gridToTexture * (static_cast<float>(m_screenW) / static_cast<float>(m_screenH));
-  float distance = 1.0f;
-  const double cellsUsed = static_cast<double>(PIXEL_EFFECT_GRID_RES) / aspectRatio;
-  const int cellsToSkip = PIXEL_EFFECT_GRID_RES - ceil(cellsUsed);
-
-  const int yGridRes = PIXEL_EFFECT_GRID_RES - cellsToSkip;
-  glBegin(GL_QUADS);
-  for (int y = 0; y < yGridRes; ++y)
-  {
-    double y1 = static_cast<double>(y) * step + yOffset;
-    double y2 = y1 + step;
-    float ty = gridToTextureY * static_cast<float>(y);
-
-    for (int x = 0; x < PIXEL_EFFECT_GRID_RES; ++x)
-    {
-      if (m_pixelEffectGrid[x][y] < 1e9)
-      {
-        distance = m_pixelEffectGrid[x][y];
-        if (distance < m_nearPlane)
-          distance = m_nearPlane + 0.1;
-        double x1 = static_cast<double>(x) * step + xOffset;
-        double x2 = x1 + step;
-        x1 *= distance;
-        x2 *= distance;
-        double y1a = y1 * distance;
-        double y2a = y2 * distance;
-        float tx = static_cast<float>(x) * gridToTexture;
-
-        // Direct3D renders the texture upside down for some reason, so we flip the 
-        // texture coordinates here.
-
-        glTexCoord2f(tx, d3dOneMinus(ty));
-        glVertex3d(x1, y1a, -distance);
-
-        glTexCoord2f(tx + gridToTexture, d3dOneMinus(ty));
-        glVertex3d(x2, y1a, -distance);
-
-        glTexCoord2f(tx + gridToTexture, d3dOneMinus(ty + gridToTextureY));
-        glVertex3d(x2, y2a, -distance);
-
-        glTexCoord2f(tx, d3dOneMinus(ty + gridToTextureY));
-        glVertex3d(x1, y2a, -distance);
-      }
-    }
-  }
-  glEnd();
-#else
-  glBegin(GL_QUADS); glTexCoord2i(0, 0); glVertex2i(0, 0); glTexCoord2i(1, 0); glVertex2i(m_screenW, 0); glTexCoord2i(1, 1);
-  glVertex2i(m_screenW, m_screenH); glTexCoord2i(0, 1); glVertex2i(0, m_screenH); glEnd();
-#endif
-}
-
-void Renderer::ApplyPixelEffect()
-{
-  //SetupMatricesFor2D	();
-  //glDisable			(GL_DEPTH_TEST);
-  //glDisable           (GL_CULL_FACE);
-  //glEnable            (GL_BLEND);
-
-  //glEnable            (GL_TEXTURE_2D);
-  //glBindTexture       (GL_TEXTURE_2D, m_pixelEffectTexId );
-  //glTexParameteri	    (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
-  //glTexParameteri	    (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
-
-  //glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
-
-  //glBegin( GL_QUADS );
-  //    glBegin( GL_QUADS );
-  //    glTexCoord2i(0,0);          glVertex2i( 0, 0 );
-  //    glTexCoord2i(1,0);          glVertex2i( m_screenW/4, 0 );
-  //    glTexCoord2i(1,1);          glVertex2i( m_screenW/4, m_screenH/4 );
-  //    glTexCoord2i(0,1);          glVertex2i( 0, m_screenH/4 );
-  //    glEnd();
-  //glEnd();
-
-  //glDisable           (GL_TEXTURE_2D);
-  //glEnable            (GL_DEPTH_TEST);
-
-  //return;
-
-  START_PROFILE("Pixel Apply");
-
-  CHECK_OPENGL_STATE();
-
-  glEnable(GL_BLEND);
-  glDisable(GL_CULL_FACE);
-  glDepthMask(false);
-
-#if USE_PIXEL_EFFECT_GRID_OPTIMISATION
-  glEnable(GL_DEPTH_TEST);
-  SetupProjMatrixFor3D();
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-#else
-  SetupMatricesFor2D(); glDisable(GL_DEPTH_TEST);
-#endif
-
-  // Render debug information showing which cells are "dirty"
-  if constexpr (false)
-  {
-    glColor4f(1.0f, 0.0f, 1.0f, 0.5f);
-    PaintPixels();
-  }
-
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, m_pixelEffectTexId);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-
-  // Additive blocky
-  START_PROFILE("pass 1");
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-  glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-  PaintPixels();
-  END_PROFILE("pass 1");
-
-  // Subtractive smooth
-  START_PROFILE("pass 2");
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
-  glColor4f(1.0f, 1.0f, 1.0f, 0.0f);
-  PaintPixels();
-  END_PROFILE("pass 2");
-
-  // Subtractive smooth
-  START_PROFILE("pass 3");
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
-  glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
-  PaintPixels();
-  END_PROFILE("pass 3");
-
-  // Additive smooth
-  START_PROFILE("pass 4");
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-  glColor4f(1.0f, 1.0f, 1.0f, 0.9f);
-  PaintPixels();
-  END_PROFILE("pass 4");
-
-  glDisable(GL_TEXTURE_2D);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  glEnable(GL_DEPTH_TEST); //FIXME
-  glDepthMask(true);
-  glEnable(GL_CULL_FACE);
-  glDisable(GL_BLEND);
-
-  if constexpr (false)
-  {
-    g_editorFont.BeginText2D();
-    double aspectRatio = static_cast<double>(m_screenW) / static_cast<double>(m_screenH);
-    const int yCellsUsed = static_cast<int>((double)PIXEL_EFFECT_GRID_RES / aspectRatio);
-    const float scaleX = m_screenW / static_cast<float>(PIXEL_EFFECT_GRID_RES);
-    const float scaleY = m_screenH / yCellsUsed;
-    const float offsetX = scaleX / 2.0f;
-    const float offsetY = scaleY / 2.0f;
-    for (int y = 0; y < yCellsUsed; ++y)
-    {
-      for (int x = 0; x < PIXEL_EFFECT_GRID_RES; ++x)
-      {
-        int blah = yCellsUsed - y - 1;
-        const float dist = m_pixelEffectGrid[x][blah];
-        if (dist < 1e9)
-        {
-          g_editorFont.DrawText2DCentre(static_cast<float>(x) * scaleX + offsetX, static_cast<float>(y) * scaleY + offsetY, 12, "%.0f",
-                                        dist);
-        }
-      }
-    }
-    g_editorFont.EndText2D();
-  }
-
-  CHECK_OPENGL_STATE();
-
-  END_PROFILE("Pixel Apply");
-}
-
 void Renderer::UpdateTotalMatrix()
 {
   double m[16];
@@ -1189,8 +791,8 @@ void Renderer::UpdateTotalMatrix()
   DEBUG_ASSERT(p[4] == 0.0);
   DEBUG_ASSERT(p[6] == 0.0);
   DEBUG_ASSERT(p[7] == 0.0);
-    DEBUG_ASSERT(p[8] == 0.0);
-    DEBUG_ASSERT(p[9] == 0.0);
+  DEBUG_ASSERT(p[8] == 0.0);
+  DEBUG_ASSERT(p[9] == 0.0);
   DEBUG_ASSERT(p[12] == 0.0);
   DEBUG_ASSERT(p[13] == 0.0);
   DEBUG_ASSERT(p[15] == 0.0);
@@ -1245,72 +847,6 @@ void Renderer::Get2DScreenPos(const Vector3& v, Vector3* _out)
 }
 
 const double* Renderer::GetTotalMatrix() { return m_totalMatrix; }
-
-void Renderer::RasteriseSphere(const Vector3& _pos, float _radius)
-{
-  const float screenToGridFactor = static_cast<float>(PIXEL_EFFECT_GRID_RES) / static_cast<float>(m_screenW);
-  Camera* cam = g_app->m_camera;
-  Vector3 centre;
-  Vector3 topLeft;
-  Vector3 bottomRight;
-  const Vector3 camUpRight = (cam->GetRight() + cam->GetUp()) * _radius;
-  Get2DScreenPos(_pos, &centre);
-  Get2DScreenPos(_pos + camUpRight, &topLeft);
-  Get2DScreenPos(_pos - camUpRight, &bottomRight);
-
-  int x1 = floor(topLeft.x * screenToGridFactor);
-  int x2 = ceilf(bottomRight.x * screenToGridFactor);
-  int y1 = floor(bottomRight.y * screenToGridFactor);
-  int y2 = ceilf(topLeft.y * screenToGridFactor);
-
-  Clamp(x1, 0, PIXEL_EFFECT_GRID_RES);
-  Clamp(x2, 0, PIXEL_EFFECT_GRID_RES);
-  Clamp(y1, 0, PIXEL_EFFECT_GRID_RES);
-  Clamp(y2, 0, PIXEL_EFFECT_GRID_RES);
-
-  const float nearestZ = centre.z - _radius;
-
-  for (int y = y1; y < y2; ++y)
-  {
-    for (int x = x1; x < x2; ++x)
-    {
-      if (nearestZ < m_pixelEffectGrid[x][y])
-        m_pixelEffectGrid[x][y] = nearestZ;
-    }
-  }
-}
-
-void Renderer::MarkUsedCells(const ShapeFragment* _frag, const Matrix34& _transform)
-{
-#if USE_PIXEL_EFFECT_GRID_OPTIMISATION
-  Matrix34 total = _frag->m_transform * _transform;
-  Vector3 worldPos = _frag->m_centre * total;
-
-  // Return early if this shape fragment isn't on the screen
-  {
-    if (!g_app->m_camera->SphereInViewFrustum(worldPos, _frag->m_radius))
-      return;
-  }
-
-  if (_frag->m_radius > 0.0f)
-    RasteriseSphere(worldPos, _frag->m_radius);
-
-  // Recurse into all child fragments
-  int numChildren = _frag->m_childFragments.Size();
-  for (int i = 0; i < numChildren; ++i)
-  {
-    const ShapeFragment* child = _frag->m_childFragments.GetData(i);
-    MarkUsedCells(child, total);
-  }
-#endif // USE_PIXEL_EFFECT_GRID_OPTIMISATION
-}
-
-void Renderer::MarkUsedCells(const Shape* _shape, const Matrix34& _transform)
-{
-  START_PROFILE("MarkUsedCells");
-  MarkUsedCells(_shape->m_rootFragment, _transform);
-  END_PROFILE("MarkUsedCells");
-}
 
 void Renderer::Clip(int _x, int _y, int _w, int _h)
 {
@@ -1486,13 +1022,13 @@ void Renderer::RenderMenuTransition(float _f)
   glColor4f(1.0f, 1.0f, 1.0f, max(0.0f, 1.0f - fraction * 0.2f));
 
   glBegin(GL_QUADS);
-  glTexCoord2f(0, d3dOneMinus(m_texCoordH));
+  glTexCoord2f(0, m_texCoordH);
   glVertex2f(left, top);
-  glTexCoord2f(m_texCoordW, d3dOneMinus(m_texCoordH));
+  glTexCoord2f(m_texCoordW, m_texCoordH);
   glVertex2f(right, top);
-  glTexCoord2f(m_texCoordW, d3dOneMinus(0));
+  glTexCoord2f(m_texCoordW, 0);
   glVertex2f(right, bottom);
-  glTexCoord2f(0, d3dOneMinus(0));
+  glTexCoord2f(0, 0);
   glVertex2f(left, bottom);
   glEnd();
 

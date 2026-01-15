@@ -41,7 +41,7 @@ void InputManager::parseInputPrefs( TextReader &reader, bool replace )
 	// a number of spurious error messages.
 #if defined(TARGET_OS_MACOSX) || defined(TARGET_DEBUG) 
 	char fullFileName[512];
-	snprintf( fullFileName, sizeof(fullFileName), "%sinputprefs_debug.txt", g_app->GetProfileDirectory() );
+	_snprintf( fullFileName, sizeof(fullFileName), "%sinputprefs_debug.txt", g_app->GetProfileDirectory() );
 	fullFileName[ sizeof(fullFileName) - 1 ] = '\0';
 	ofstream derr( fullFileName );
 #else

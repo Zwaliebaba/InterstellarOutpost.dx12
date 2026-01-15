@@ -21,6 +21,7 @@
 #include "global_world.h"
 #include "script.h"
 #include "entity_grid.h"
+#include "gametimer.h"
 #include "renderer.h"
 #include "multiwinia.h"
 #include "soundsystem.h"

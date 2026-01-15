@@ -696,25 +696,6 @@ void Spider::Render(double _predictionTime)
   g_app->m_renderer->UnsetObjectLighting();
 }
 
-bool Spider::RenderPixelEffect(double _predictionTime)
-{
-  Render(_predictionTime);
-
-  Vector3 predictedMovement = _predictionTime * m_vel;
-  Vector3 predictedPos = m_pos + predictedMovement;
-  Vector3 up = g_app->m_location->m_landscape.m_normalMap->GetValue(m_pos.x, m_pos.z);
-  Vector3 right = m_up ^ m_front;
-  Vector3 front = right ^ up;
-
-  Matrix34 mat(front, up, predictedPos);
-  g_app->m_renderer->MarkUsedCells(m_shape, mat);
-
-  for (int i = 0; i < SPIDER_NUM_LEGS; ++i)
-    m_legs[i]->RenderPixelEffect(_predictionTime, predictedMovement);
-
-  return true;
-}
-
 bool Spider::IsInView() { return g_app->m_camera->SphereInViewFrustum(m_pos + m_centrePos, m_radius); }
 
 void Spider::ListSoundEvents(LList<char*>* _list)

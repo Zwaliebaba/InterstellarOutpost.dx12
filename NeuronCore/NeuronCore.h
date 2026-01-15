@@ -137,7 +137,7 @@ using namespace Neuron;
 
 #define TEXTURE_EXTENSION "bmp"
 
-#define snprintf _snprintf
+#include "gametimer.h"
 
 // Visual studio 2005 insists that we use the underscored versions
 #define stricmp _stricmp

@@ -38,6 +38,7 @@
 #include "GameMenuWindow.h"
 #include "achievement_tracker.h"
 #include "eclipse.h"
+#include "gametimer.h"
 
 //#define NETWORKQUALITY_TESTING
 
@@ -795,7 +796,7 @@ void ClientToServer::SendTeamScores(int _winnerId)
 
 void ClientToServer::RequestTeam(int _teamType, int _desiredId)
 {
-  DebugTrace("CLIENT : Requesting Team (Type = %d)...\n", _teamType);
+  DebugTrace("CLIENT : Requesting Team (Type = {})...\n", _teamType);
 
   auto letter = new Directory();
 
@@ -1685,7 +1686,7 @@ void ClientToServer::GetSyncFileName(const char* _prefix, char* _syncFilename, i
   char date[256];
 
   strftime(date, sizeof(date), "%Y-%m-%d--%H-%M-%S", current);
-  snprintf(_syncFilename, _bufSize, "%s%s-%s-client%d-team%d.txt", g_app->GetProfileDirectory(), _prefix, date, m_clientId,
+  _snprintf(_syncFilename, _bufSize, "%s%s-%s-client%d-team%d.txt", g_app->GetProfileDirectory(), _prefix, date, m_clientId,
            g_app->m_globalWorld->m_myTeamId);
 
   _syncFilename[_bufSize - 1] = '\0';
@@ -1766,23 +1767,13 @@ bool ClientToServer::ProcessServerLetters(Directory* letter)
 
       else
         gmw->m_newPage = GameMenuWindow::PageMain;
-
-#ifdef TESTBED_ENABLED
-      // We got booted out from the game so set the testbed back to main menu
-      if (g_app->GetTestBedMode() == TESTBED_ON)
-      {
-        //g_app->TestBedLogWrite("Client got a disconnected\n");
-
-        g_app->SetTestBedState(TESTBED_MAINMENU);
-      }
-#endif
     }
     return true;
   }
   if (strcmp(cmd, NET_DARWINIA_CLIENTGOODBYE) == 0)
   {
     int clientId = letter->GetDataInt(NET_DARWINIA_CLIENTID);
-    DebugTrace("CLIENT : Client %d left the game\n", clientId);
+    DebugTrace("CLIENT : Client {} left the game\n", clientId);
 
     if (g_app->m_multiwinia)
     {
@@ -1792,7 +1783,6 @@ bool ClientToServer::ProcessServerLetters(Directory* letter)
         m_bSpectator = false;
     }
 
-    //g_app->m_location->RemoveTeam( letter->m_teamId );
     SetSyncState(clientId, true);
     return true;
   }
@@ -1801,11 +1791,10 @@ bool ClientToServer::ProcessServerLetters(Directory* letter)
     int clientId = letter->GetDataInt(NET_DARWINIA_CLIENTID);
     int iSpectator = letter->GetDataInt(NET_DARWINIA_MAKE_SPECTATOR);
 
-    DebugTrace("CLIENT : Received ClientID of %d\n", clientId);
+    DebugTrace("CLIENT : Received ClientID of {}\n", clientId);
 
     if (m_clientId != -1)
     {
-      //ASSERT( m_clientId == clientId );
       ClientLeave();
       auto gmw = static_cast<GameMenuWindow*>(EclGetWindow("multiwinia_mainmenu_title"));
       if (gmw)
@@ -1829,8 +1818,6 @@ bool ClientToServer::ProcessServerLetters(Directory* letter)
 
         if (gmw)
         {
-
-          //gmw->m_newPage = GameMenuWindow::PageJoinGame;
           gmw->CreateErrorDialogue(LANGUAGEPHRASE("multiwinia_error_serverfull"), GameMenuWindow::PageJoinGame);
 
           return true;
@@ -1844,12 +1831,12 @@ bool ClientToServer::ProcessServerLetters(Directory* letter)
     {
       char* serverVersion = letter->GetDataString(NET_DARWINIA_VERSION);
       strcpy(m_serverVersion, serverVersion);
-      DebugTrace("CLIENT : Server version is %s\n", serverVersion);
+      DebugTrace("CLIENT : Server version is {}\n", serverVersion);
     }
 
     int randomSeed = letter->GetDataInt(NET_DARWINIA_RANDSEED);
 
-    DebugTrace(" CLIENT : Setting sync rand seed to %d\n", randomSeed);
+    DebugTrace(" CLIENT : Setting sync rand seed to {}\n", randomSeed);
 
     syncrandseed(randomSeed);
 

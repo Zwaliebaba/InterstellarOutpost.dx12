@@ -1,19 +1,13 @@
 #include "pch.h"
-
-#include <float.h>
-
-#include "hi_res_time.h"
-#include "math_utils.h"
-#include "resource.h"
-#include "profiler.h"
-
-#include "random_number.h"
-
+#include "global_internet.h"
 #include "app.h"
 #include "camera.h"
-#include "global_internet.h"
 #include "global_world.h"
+#include "hi_res_time.h"
 #include "main.h"
+#include "profiler.h"
+#include "random_number.h"
+#include "resource.h"
 
 
 #define DISPLAY_LIST_NAME_LINKS "GlobalInternetLinks"

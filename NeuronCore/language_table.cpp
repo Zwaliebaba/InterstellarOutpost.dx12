@@ -17,7 +17,7 @@
 #include "input.h"
 
 #ifdef TARGET_MSVC
-	#define snprintf _snprintf
+	#define _snprintf _snprintf
 #endif
 
 #ifndef SEPULVEDA_MAX_PHRASE_LENGTH

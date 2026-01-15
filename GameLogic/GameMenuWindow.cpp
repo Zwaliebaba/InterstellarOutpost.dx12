@@ -422,9 +422,6 @@ void GameMenuWindow::Update()
   case PageWaitForGameToStart:
     break;
   }
-
-  if (m_currentPage != m_newPage)
-    ;
 }
 
 void GameMenuWindow::CreateErrorDialogue(UnicodeString _error, int _backPage)

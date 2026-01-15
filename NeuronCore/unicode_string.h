@@ -1,17 +1,6 @@
 #ifndef INCLUDE_UNICODESTRING__H
 #define INCLUDE_UNICODESTRING__H
 
-#include <stdio.h>
-#include <wchar.h>
-
-#ifdef TARGET_OS_MACOSX
-	typedef wchar_t WCHAR;
-	#if __BIG_ENDIAN__
-		#define kUTF32Encoding kCFStringEncodingUTF32BE
-	#elif __LITTLE_ENDIAN__
-		#define kUTF32Encoding kCFStringEncodingUTF32LE
-	#endif
-#endif
 
 //*****************************************************************************
 // Class UnicodeString

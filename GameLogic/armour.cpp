@@ -2,15 +2,9 @@
 #include "resource.h"
 #include "matrix34.h"
 #include "shape.h"
-#include "hi_res_time.h"
 #include "math_utils.h"
-
-#include "text_renderer.h"
 #include "random_number.h"
-
 #include "input.h"
-#include "input_types.h"
-
 #include "ai.h"
 #include "armour.h"
 #include "darwinian.h"
@@ -18,9 +12,7 @@
 #include "aiobjective.h"
 #include "multiwiniazone.h"
 #include "laserfence.h"
-
 #include "soundsystem.h"
-
 #include "app.h"
 #include "renderer.h"
 #include "location.h"
@@ -28,11 +20,9 @@
 #include "particle_system.h"
 #include "explosion.h"
 #include "camera.h"
+#include "gametimer.h"
 #include "global_world.h"
 #include "obstruction_grid.h"
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-#include "sepulveda.h"
-#endif
 #include "team.h"
 #include "entity_grid.h"
 #include "multiwinia.h"

@@ -966,6 +966,15 @@
     <Image Include="Assets\Icons\menu_advanced.bmp" />
     <Image Include="Assets\Icons\menu_basic.bmp" />
     <Image Include="Assets\Icons\menu_intermediate.bmp" />
+    <Image Include="Assets\Icons\mode_assault.bmp" />
+    <Image Include="Assets\Icons\mode_blitzkrieg.bmp" />
+    <Image Include="Assets\Icons\mode_campaign.bmp" />
+    <Image Include="Assets\Icons\mode_capturethestatue.bmp" />
+    <Image Include="Assets\Icons\mode_domination.bmp" />
+    <Image Include="Assets\Icons\mode_kingofthehill.bmp" />
+    <Image Include="Assets\Icons\mode_prologue.bmp" />
+    <Image Include="Assets\Icons\mode_rocketriot.bmp" />
+    <Image Include="Assets\Icons\mode_tankbattle.bmp" />
     <Image Include="Assets\Icons\mouse_3dposition.bmp" />
     <Image Include="Assets\Icons\mouse_disabled.bmp" />
     <Image Include="Assets\Icons\mouse_enter.bmp" />

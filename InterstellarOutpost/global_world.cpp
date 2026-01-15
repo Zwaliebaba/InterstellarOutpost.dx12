@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "unicode_text_stream_reader.h"
-
 #include "language_table.h"
 #include "filesys_utils.h"
 #include "text_file_writer.h"
@@ -10,7 +9,6 @@
 #include "profiler.h"
 #include "resource.h"
 #include "shape.h"
-#include "sphere_renderer.h"
 #include "string_utils.h"
 #include "text_renderer.h"
 #include "text_stream_readers.h"
@@ -27,17 +25,9 @@
 #include "main.h"
 #include "renderer.h"
 #include "script.h"
-#include "user_input.h"
 #include "taskmanager_interface.h"
 #include "building.h"
 #include "trunkport.h"
-#include "window_manager.h"
-#include "preferences.h"
-#include "preference_names.h"
-
-// ****************************************************************************
-// Class GlobalLocation
-// ****************************************************************************
 
 GlobalLocation::GlobalLocation()
   : m_id(-1),

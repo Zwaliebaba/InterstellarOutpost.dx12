@@ -2,8 +2,6 @@
 #include "resource.h"
 #include "profiler.h"
 #include "targetcursor.h"
-
-#include "shape.h"
 #include "app.h"
 #include "renderer.h"
 #include "camera.h"

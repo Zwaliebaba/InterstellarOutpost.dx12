@@ -9,7 +9,7 @@
 #include "location.h"
 #include "team.h"
 #include "entity_grid.h"
-#include "main.h"
+#include "gametimer.h"
 #include "global_world.h"
 
 SafeArea::SafeArea()

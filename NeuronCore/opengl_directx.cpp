@@ -1028,8 +1028,6 @@ void glVertex3f_impl(GLfloat x, GLfloat y, GLfloat z)
 
 void glGenTextures(GLsizei n, GLuint* textures)
 {
-  GL_TRACE_IMP(" glGenTextures(%d, (float *)%p)", n, textures)
-
   // We start off with a NULL pointer for the texture
   // This will be replaced with an actual pointer
   // by a call to glTexImage2D (or gluBuild2DMipmaps)
@@ -1039,6 +1037,13 @@ void glGenTextures(GLsizei n, GLuint* textures)
     textures[i] = s_textureIds.size();
     s_textureIds.push_back(nullptr);
   }
+}
+
+GLuint glGenTextures(LPDIRECT3DTEXTURE9 _texture)
+{
+  const auto val = s_textureIds.size();
+  s_textureIds.emplace_back(_texture);
+  return static_cast<GLuint>(val);
 }
 
 void glBindTexture(GLenum target, GLuint texture)

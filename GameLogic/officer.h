@@ -1,4 +1,3 @@
-
 #ifndef _included_officer_h
 #define _included_officer_h
 
@@ -10,168 +9,157 @@
 #define OFFICER_ATTACKRANGE     10.0
 #define OFFICER_ABSORBRANGE     10.0
 
-
 class OfficerFormation
 {
-public:
-    int   m_entityUniqueId;
+  public:
+    int m_entityUniqueId;
     double m_timer;
 };
 
-
 class Officer : public Entity
 {
-public:
+  public:
     enum
     {
-        StateIdle,
-        StateToWaypoint,
-        StateGivingOrders
+      StateIdle,
+      StateToWaypoint,
+      StateGivingOrders
     };
 
     enum
     {
-        OrderNone,
-        OrderPrepareGoto,
-        OrderGoto,
-        OrderFollow,
-        NumOrderTypes
+      OrderNone,
+      OrderPrepareGoto,
+      OrderGoto,
+      OrderFollow,
+      NumOrderTypes
     };
 
-    int         m_state;
-    Vector3     m_wayPoint;
-    int         m_wayPointTeleportId;           // Id of teleport we wish to walk into
+    int m_state;
+    Vector3 m_wayPoint;
+    int m_wayPointTeleportId; // Id of teleport we wish to walk into
 
-    Vector3     m_targetFront;                  // used by the ai in formation mode
+    Vector3 m_targetFront; // used by the ai in formation mode
 
-    int         m_shield;
-    bool        m_demoted;
-    bool        m_absorb;
-    double       m_absorbTimer;
-    bool        m_noFormations;
-    
-    int         m_orders;
-    Vector3     m_orderPosition;                // Position in the world
-    int         m_ordersBuildingId;             // Id of target building eg Teleport
-    int         m_orderRouteId;
-    double       m_lastOrdersSet;
-    double       m_lastOrderCreated;
+    int m_shield;
+    bool m_demoted;
+    bool m_absorb;
+    double m_absorbTimer;
+    bool m_noFormations;
 
-    bool        m_formation;
-    DArray      <OfficerFormation> m_formationEntities;
-    bool        m_formationAngleSet;
+    int m_orders;
+    Vector3 m_orderPosition; // Position in the world
+    int m_ordersBuildingId; // Id of target building eg Teleport
+    int m_orderRouteId;
+    double m_lastOrdersSet;
+    double m_lastOrderCreated;
 
-    ShapeMarker *m_flagMarker;
-    Flag        m_flag;
-    
-protected:
-    bool AdvanceIdle                ();
-    bool AdvanceToWaypoint          ();
-    bool AdvanceGivingOrders        ();
-    bool AdvanceToTargetPosition    ();        
+    bool m_formation;
+    DArray<OfficerFormation> m_formationEntities;
+    bool m_formationAngleSet;
+
+    ShapeMarker* m_flagMarker;
+    Flag m_flag;
+
+  protected:
+    bool AdvanceIdle();
+    bool AdvanceToWaypoint();
+    bool AdvanceGivingOrders();
+    bool AdvanceToTargetPosition();
     bool AdvanceToTargetPositionInFormation();
-    bool SearchForRandomPosition    ();
-    
+    bool SearchForRandomPosition();
+
     void Absorb();
 
-    void RenderShield       ( double _predictionTime );
-    void RenderSpirit       ( Vector3 const &_pos );
+    void RenderShield(double _predictionTime);
+    void RenderSpirit(const Vector3& _pos);
 
-public:
+  public:
     Officer();
-    ~Officer();
+    ~Officer() override;
 
-    void Begin              ();
-    void Render		        ( double _predictionTime );
-    bool RenderShape        ( double _predictionTime );
-    bool RenderPixelEffect  ( double _predictionTime );
-    void RenderFlag         ( double _predictionTime );    
+    void Begin() override;
+    void Render(double _predictionTime) override;
+    bool RenderShape(double _predictionTime);
+    void RenderFlag(double _predictionTime);
 
-    bool Advance            ( Unit *_unit );
+    bool Advance(Unit* _unit) override;
 
-    void RunAI( AI *_ai );
+    void RunAI(AI* _ai) override;
 
-    bool ChangeHealth( int _amount, int _damageType = DamageTypeUnresistable );
+    bool ChangeHealth(int _amount, int _damageType = DamageTypeUnresistable) override;
 
-    void SetWaypoint    ( Vector3 const &_wayPoint );
-    void SetOrders      ( Vector3 const &_orders, bool directRoute=false );
+    void SetWaypoint(const Vector3& _wayPoint);
+    void SetOrders(const Vector3& _orders, bool directRoute = false);
 
-    bool IsFormationToggle( Vector3 const &mousePos );
-    void SetFormation   ( Vector3 const &targetPos );
+    bool IsFormationToggle(const Vector3& mousePos);
+    void SetFormation(const Vector3& targetPos);
 
-    void SetNextMode     ();
-    void SetPreviousMode ();
+    void SetNextMode();
+    void SetPreviousMode();
 
-	void CancelOrders	 ();
-	void SetFollowMode	 ();
+    void CancelOrders();
+    void SetFollowMode();
 
-    bool IsSelectable       ();
+    bool IsSelectable() override;
 
-    int     GetFormationIndex( int _uniqueId );
-    Vector3 GetFormationPosition( int _uniqueId );
-    static Vector3 GetFormationPositionFromIndex( Vector3 const &pos, int positionIndex, Vector3 const &front, int numEntities );
+    int GetFormationIndex(int _uniqueId);
+    Vector3 GetFormationPosition(int _uniqueId);
+    static Vector3 GetFormationPositionFromIndex(const Vector3& pos, int positionIndex, const Vector3& front, int numEntities);
 
-    bool    FormationFull();
-    bool    IsInFormationMode();
-    bool    IsInFormation( int _uniqueId );
-    void    RegisterWithFormation( int _uniqueId );
+    bool FormationFull();
+    bool IsInFormationMode();
+    bool IsInFormation(int _uniqueId);
+    void RegisterWithFormation(int _uniqueId);
 
-	bool	IsThereATeleportClose(Vector3 const &_orders);
+    bool IsThereATeleportClose(const Vector3& _orders);
 
     void CancelOrderSounds();
-    void ListSoundEvents( LList<char *> *_list );
+    void ListSoundEvents(LList<char*>* _list) override;
 
-    void    CalculateBoundingSphere( Vector3 &centre, double &radius );
-    char            *LogState( char *_message = NULL );
+    void CalculateBoundingSphere(Vector3& centre, double& radius);
+    char* LogState(char* _message = nullptr) override;
 };
-
 
 class OfficerOrders : public WorldObject
 {
-public:
-    Vector3     m_wayPoint;
-    double       m_arrivedTimer;
-    
-public:
+  public:
+    Vector3 m_wayPoint;
+    double m_arrivedTimer;
+
     OfficerOrders();
 
-    bool Advance();
-    void Render( double _time );    
+    bool Advance() override;
+    void Render(double _time) override;
 };
-
-
 
 class MultiwiniaOfficerOrders : public WorldObject
 {
-public:
-    Vector3     m_wayPoint;
-    int         m_routeId;
-    int         m_routeWayPointId;
-    double       m_arrivedTimer;
-    double       m_dropArrowTimer;
+  public:
+    Vector3 m_wayPoint;
+    int m_routeId;
+    int m_routeWayPointId;
+    double m_arrivedTimer;
+    double m_dropArrowTimer;
 
-public:
     MultiwiniaOfficerOrders();
 
-    bool Advance();
+    bool Advance() override;
     void FollowRoute();
-    void Render( double _time );    
+    void Render(double _time) override;
 };
-
 
 class OfficerOrderTrail : public WorldObject
 {
-public:
-    double   m_birthTime;
+  public:
+    double m_birthTime;
     Vector3 m_front;
     Vector3 m_right;
 
-public:
     OfficerOrderTrail();
 
-    bool Advance();
-    void Render( double _time );
+    bool Advance() override;
+    void Render(double _time) override;
 };
-
 
 #endif

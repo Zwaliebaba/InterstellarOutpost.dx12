@@ -1,7 +1,4 @@
 #include "pch.h"
-
-#include <float.h>
-
 #include "2d_surface_map.h"
 #include "binary_stream_readers.h"
 #include "bitmap.h"

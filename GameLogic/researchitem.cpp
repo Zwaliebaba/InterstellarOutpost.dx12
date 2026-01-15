@@ -281,14 +281,6 @@ void ResearchItem::RenderAlphas(double _predictionTime)
 
 }
 
-bool ResearchItem::RenderPixelEffect(double _predictionTime)
-{
-  //	Matrix34 mat(m_front, m_up, m_pos);
-  //	m_shape->Render(0.0, mat);
-  //	g_app->m_renderer->MarkUsedCells(m_shape, mat);
-  return false;
-}
-
 void ResearchItem::Read(TextReader* _in, bool _dynamic)
 {
   Building::Read(_in, _dynamic);

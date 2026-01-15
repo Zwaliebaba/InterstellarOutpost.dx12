@@ -8,7 +8,6 @@
 #include "camera.h"
 #include "location.h"
 #include "main.h"
-#include "renderer.h"
 
 EntityLeg::EntityLeg(int _legNum, Entity* _parent, const char* _shapeNameUpper, const char* _shapeNameLower, const char* _rootMarkerName)
   : m_legNum(_legNum),
@@ -74,12 +73,6 @@ double EntityLeg::CalcFootsDesireToMove(double _targetHoverHeight)
   deltaHoriNorm.HorizontalAndNormalise();
 
   double scoreDueToDirection = 1.0;
-  //	if (m_parent->m_vel.Mag() > 0.1)
-  //	{
-  //		Vector3 velHoriNorm = m_parent->m_vel; 
-  //		velHoriNorm.HorizontalAndNormalise();
-  //		scoreDueToDirection = -(deltaHoriNorm * velHoriNorm);
-  //	}
   double scoreDueToDist = delta.Mag();
   double score = scoreDueToDirection * scoreDueToDist;
 
@@ -172,10 +165,6 @@ bool EntityLeg::Advance()
 
 void EntityLeg::AdvanceSpiderPounce(double _fractionComplete)
 {
-  /*#ifdef USE_DIRECT3D
-    Vector3 oldPos = m_foot.m_pos;
-  #endif*/
-
   Vector3 offset = m_foot.m_bodyToFoot;
   if (_fractionComplete < 0.5)
     offset *= 1.0 - _fractionComplete;
@@ -184,24 +173,6 @@ void EntityLeg::AdvanceSpiderPounce(double _fractionComplete)
   m_foot.m_pos = m_parent->m_pos - offset + m_parent->m_vel * _fractionComplete * 0.05;
   m_foot.m_lastGroundPos = m_foot.m_pos;
   m_foot.m_targetPos = m_foot.m_pos;
-
-  /*#ifdef USE_DIRECT3D
-    Vector3 newPos = m_foot.m_pos;
-    if(g_deformEffect
-      //&& m_parent->m_type==Entity::TypeSpider // always ok
-      // && !m_parent->m_onGround  hmm, still on the ground, even when jumping
-      // && m_foot.m_state==EntityFoot::Pouncing  hmm, never pouncing, even when jumping
-      //&& ((Spider*)m_parent)->m_state==Spider::StatePouncing  hmm, never pouncing, even when jumping
-      && newPos!=oldPos
-      && (newPos-g_app->m_camera->GetPos()).Mag()<200
-      && g_app->m_camera->PosInViewFrustum(newPos))
-    {
-      double dist = (newPos-oldPos).Mag();
-      unsigned steps = (int)(dist);
-      for(unsigned i=0;i<steps;i++)
-        g_deformEffect->AddTearingSpider(newPos+(oldPos-newPos)*(i/(double)steps),0.1);
-    }
-  #endif*/
 }
 
 void EntityLeg::Render(double _predictionTime, const Vector3& _predictedMovement)
@@ -225,7 +196,6 @@ void EntityLeg::Render(double _predictionTime, const Vector3& _predictedMovement
 
   case EntityFoot::Pouncing:
     footPos = m_foot.m_pos + _predictedMovement;
-    //footPos = predictedPos - m_foot.m_bodyToFoot;
     break;
   }
 
@@ -236,8 +206,6 @@ void EntityLeg::Render(double _predictionTime, const Vector3& _predictedMovement
     Vector3 front(up ^ g_upVector);
     Matrix34 mat(front, up, footPos);
     m_shapeLower->Render(_predictionTime, mat);
-
-    //RenderArrow( kneePos, footPos, 1.0 );
   }
 
   {
@@ -245,50 +213,5 @@ void EntityLeg::Render(double _predictionTime, const Vector3& _predictedMovement
     Vector3 front(up ^ g_upVector);
     Matrix34 mat(front, up, kneePos);
     m_shapeUpper->Render(_predictionTime, mat);
-
-    //RenderArrow( rootPos, kneePos, 1.0 );
   }
-}
-
-bool EntityLeg::RenderPixelEffect(double _predictionTime, const Vector3& _predictedMovement)
-{
-  Vector3 predictedPos = m_parent->m_pos + _predictedMovement;
-  Vector3 rootPos(_predictedMovement + GetLegRootPos());
-  Vector3 footPos;
-
-  switch (m_foot.m_state)
-  {
-  case EntityFoot::OnGround:
-    footPos = m_foot.m_pos;
-    break;
-
-  case EntityFoot::Swinging:
-  {
-    double fractionComplete = RampUpAndDown(m_foot.m_leftGroundTimeStamp, m_legSwingDuration, g_gameTime);
-    footPos = GetIdealSwingingFootPos(fractionComplete);
-    break;
-  }
-
-  case EntityFoot::Pouncing:
-    footPos = m_foot.m_pos + _predictedMovement; // - m_foot.m_bodyToFoot;
-    break;
-  }
-
-  Vector3 kneePos = CalcKneePos(footPos, rootPos, predictedPos);
-
-  {
-    Vector3 up((kneePos - footPos).Normalise());
-    Vector3 front(up ^ Vector3(1, 0, 0).Normalise());
-    Matrix34 mat(front, up, footPos);
-    g_app->m_renderer->MarkUsedCells(m_shapeLower, mat);
-  }
-
-  {
-    Vector3 up((rootPos - kneePos).Normalise());
-    Vector3 front(up ^ Vector3(1, 0, 0).Normalise());
-    Matrix34 mat(front, up, kneePos);
-    g_app->m_renderer->MarkUsedCells(m_shapeUpper, mat);
-  }
-
-  return true;
 }

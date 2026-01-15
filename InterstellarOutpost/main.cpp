@@ -15,7 +15,6 @@
 #include "resource.h"
 #include "text_stream_readers.h"
 #include "language_table.h"
-#include "random_number.h"
 #include "filesys_utils.h"
 #include "win32_eventhandler.h"
 #include "inputdriver_win32.h"
@@ -26,7 +25,6 @@
 #include "inputdriver_invert.h"
 #include "inputdriver_idle.h"
 #include "inputdriver_value.h"
-#include "prefs_other_window.h"
 #include "sound_library_2d.h"
 #include "sound_library_3d_software.h"
 #include "sample_cache.h"
@@ -41,7 +39,6 @@
 #include "renderer.h"
 #include "script.h"
 #include "soundsystem.h"
-#include "sample_cache.h"
 #include "taskmanager_interface.h"
 #include "team.h"
 #include "user_input.h"
@@ -53,17 +50,10 @@
 #endif
 #include "loading_screen.h"
 #include "level_file.h"
-#include "entity_grid.h"
 #include "mainmenus.h"
-#include "debugmenu.h"
 #include "clienttoserver.h"
 #include "server.h"
-#include "servertoclientletter.h"
-#include "network_defines.h"
-#include "iframe.h"
-#include "ftp_manager.h"
 #include "gunturret.h"
-#include "darwinian.h"
 #include "achievement_tracker.h"
 
 #define TARGET_FRAME_RATE_INCREMENT 0.25
@@ -554,38 +544,13 @@ void Initialise()
   InitialiseInputManager();
   g_app = new App();
 
-  double start = GetHighResTime();
   ReadInputPreferences();
-  DebugTrace("Inits 12: %f\n", GetHighResTime() - start);
-  start = GetHighResTime();
-
-#if defined(TARGET_OS_VISTA)
-  DoVistaChecks();
-#endif
 
   g_target = new TargetCursor();
   EntityBlueprint::Initialise();
   g_windowManager->HideMousePointer();
 
-  //
-  // Start on a specific level if the prefs file tells us to
-
-  const char* startMap = g_prefsManager->GetString("StartMap");
-  if (startMap)
-  {
-    g_app->m_requestedLocationId = g_app->m_globalWorld->GetLocationId(startMap);
-    GlobalLocation* gloc = g_app->m_globalWorld->GetLocation(g_app->m_requestedLocationId);
-    ASSERT_TEXT(gloc, "Couldn't find location %s", startMap);
-    strcpy(g_app->m_requestedMap, gloc->m_mapFilename);
-    strcpy(g_app->m_requestedMission, gloc->m_missionFilename);
-  }
-
   g_app->m_renderer->SetOpenGLState();
-
-  DebugTrace("Inits 13: %f\n", GetHighResTime() - start);
-  start = GetHighResTime();
-
-  DebugTrace("Initialisation took: %f seconds\n", GetHighResTime() - startInit);
 }
 
 void Finalise()

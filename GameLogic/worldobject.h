@@ -3,10 +3,6 @@
 
 #include "vector3.h"
 
-// ****************************************************************************
-//  Class WorldObjectId
-// ****************************************************************************
-
 #define UNIT_BUILDINGS      -100
 #define UNIT_SPIRITS        -101
 #define UNIT_LASERS         -102
@@ -96,7 +92,6 @@ class WorldObject
 
     virtual bool Advance();
     virtual void Render(double _time);
-    virtual bool RenderPixelEffect(double predictionTime); // Return true if you did anything
 
     virtual char* LogState(char* _message = nullptr);
 };

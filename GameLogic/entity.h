@@ -6,10 +6,9 @@
 #include "unicode_string.h"
 #include "shape.h"
 
-class Unit;
-class InsertionSquad;
 class TeamControls;
 class AI;
+class Unit;
 
 class Entity : public WorldObject
 {

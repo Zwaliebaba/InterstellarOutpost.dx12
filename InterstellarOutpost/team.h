@@ -5,13 +5,12 @@
 #include "llist.h"
 #include "slice_darray.h"
 #include "rgb_colour.h"
-
 #include "worldobject.h"
 #include "entity.h"
+#include "taskmanager.h"
 
 class Unit;
 class InsertionSquad;
-class TaskManager;
 class IFrame;
 class SyncDiff;
 

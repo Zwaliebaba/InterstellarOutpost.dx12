@@ -91,7 +91,6 @@ class TriffidEgg : public Entity
     void Spawn();
     bool Advance(Unit* _unit) override;
     void Render(double _predictionTime) override;
-    bool RenderPixelEffect(double _predictionTime) override;
 
     void ResetTimer();
     void SetTimer(double _time);

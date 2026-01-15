@@ -1,13 +1,6 @@
 #ifndef _included_animatedpanelrenderer_h
 #define _included_animatedpanelrenderer_h
 
-/*
- * AnimatedPanelRenderer
- *
- * Extends AnimatedPanel to provide rendering within Multiwinia
- *
- */
-
 #include "animatedpanel.h"
 
 class AnimatedPanelRenderer : public AnimatedPanel

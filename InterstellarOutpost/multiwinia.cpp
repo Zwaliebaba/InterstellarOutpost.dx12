@@ -15,16 +15,13 @@
 #include "team.h"
 #include "level_file.h"
 #include "location.h"
-#include "main.h"
 #include "global_world.h"
 #include "achievement_tracker.h"
 #include "game_menu.h"
 #include "rocket_status_panel.h"
-#include "MapData.h"
 #include "clienttoserver.h"
 #include "servertoclient.h"
 #include "iframe.h"
-#include "syncdiff.h"
 #include "soundsystem.h"
 #include "multiwiniazone.h"
 #include "rocket.h"
@@ -33,8 +30,8 @@
 #include "trunkport.h"
 #include "pulsebomb.h"
 #include "spawnpoint.h"
-#include "restrictionzone.h"
 #include "GameMenuWindow.h"
+#include "gametimer.h"
 
 DArray<MultiwiniaGameBlueprint*> Multiwinia::s_gameBlueprints;
 
@@ -211,14 +208,12 @@ void Multiwinia::InitialiseTeam(unsigned char _teamId, unsigned char _teamType, 
   if (!m_coopMode && m_gameType != GameTypeAssault)
     team->m_colourId = _teamId;
 
-  DebugTrace("CLIENT : New team created, id %d, type %d\n", _teamId, _teamType);
+  DebugTrace("CLIENT : New team created, id {}, type {}\n", _teamId, _teamType);
 
   if (_teamType == TeamTypeLocalPlayer)
   {
-    DebugTrace("CLIENT : Assigned team %d\n", _teamId);
+    DebugTrace("CLIENT : Assigned team {}\n", _teamId);
     g_app->m_globalWorld->m_myTeamId = _teamId;
-    //		g_target->SetMousePos(g_app->m_renderer->ScreenW(), g_app->m_renderer->ScreenH());
-    //		g_app->m_camera->RequestMode(Camera::ModeFreeMovement);
   }
 
   if (_teamType != TeamTypeCPU)
@@ -227,17 +222,6 @@ void Multiwinia::InitialiseTeam(unsigned char _teamId, unsigned char _teamType, 
   // If the game is already in progress then initialise the team
   if (g_app->m_location && g_app->m_location->m_teamsInitialised)
     g_app->m_location->InitialiseTeam(_teamId);
-
-  /*if( g_app->m_atMainMenu )
-  {
-      GameMenuWindow *gmw = (GameMenuWindow *)EclGetWindow( "multiwinia_mainmenu_title" );
-      if( gmw )
-      {
-          UnicodeString msg("PLAYERJOIN");
-          gmw->NewChatMessage( msg, _clientId );
-      }
-  }*/
-
 }
 
 void Multiwinia::LoadBlueprints()
@@ -245,11 +229,7 @@ void Multiwinia::LoadBlueprints()
   //
   // Load game option blueprints
 
-#ifdef TESTBED_ENABLED
-  const char* filename = "multiwinia-testbed.txt";
-#else
   auto filename = "multiwinia.txt";
-#endif
 
   TextReader* in = g_app->m_resource->GetTextReader(filename);
   ASSERT_TEXT(in && in->IsOpen(), "Couldn't load multiwinia.txt");

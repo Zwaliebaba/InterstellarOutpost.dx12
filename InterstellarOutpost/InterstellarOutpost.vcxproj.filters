@@ -2456,6 +2456,33 @@
     <Image Include="Assets\Textures\cloudyglow.bmp">
       <Filter>Assets\Textures</Filter>
     </Image>
+    <Image Include="Assets\Icons\mode_assault.bmp">
+      <Filter>Assets\Icons</Filter>
+    </Image>
+    <Image Include="Assets\Icons\mode_blitzkrieg.bmp">
+      <Filter>Assets\Icons</Filter>
+    </Image>
+    <Image Include="Assets\Icons\mode_campaign.bmp">
+      <Filter>Assets\Icons</Filter>
+    </Image>
+    <Image Include="Assets\Icons\mode_capturethestatue.bmp">
+      <Filter>Assets\Icons</Filter>
+    </Image>
+    <Image Include="Assets\Icons\mode_domination.bmp">
+      <Filter>Assets\Icons</Filter>
+    </Image>
+    <Image Include="Assets\Icons\mode_kingofthehill.bmp">
+      <Filter>Assets\Icons</Filter>
+    </Image>
+    <Image Include="Assets\Icons\mode_prologue.bmp">
+      <Filter>Assets\Icons</Filter>
+    </Image>
+    <Image Include="Assets\Icons\mode_rocketriot.bmp">
+      <Filter>Assets\Icons</Filter>
+    </Image>
+    <Image Include="Assets\Icons\mode_tankbattle.bmp">
+      <Filter>Assets\Icons</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Media Include="Assets\Sounds\ablaster.wav">

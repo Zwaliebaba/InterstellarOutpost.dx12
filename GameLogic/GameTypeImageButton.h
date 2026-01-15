@@ -14,17 +14,17 @@ class GameTypeImageButton : public DarwiniaButton
       char filename[256];
       if (Multiwinia::s_gameBlueprints.ValidIndex(gameType))
       {
-        sprintf(filename, "mwhelp/mode_%s." TEXTURE_EXTENSION, Multiwinia::s_gameBlueprints[gameType]->m_name);
+        sprintf(filename, "Icons\\mode_%s." TEXTURE_EXTENSION, Multiwinia::s_gameBlueprints[gameType]->m_name);
         strlwr(filename);
       }
       else if (gameType == GAMETYPE_PROLOGUE)
       {
-        sprintf(filename, "mwhelp/mode_prologue." TEXTURE_EXTENSION);
+        sprintf(filename, "Icons\\mode_prologue." TEXTURE_EXTENSION);
         strlwr(filename);
       }
       else if (gameType == GAMETYPE_CAMPAIGN)
       {
-        sprintf(filename, "mwhelp/mode_campaign." TEXTURE_EXTENSION);
+        sprintf(filename, "Icons\\mode_campaign." TEXTURE_EXTENSION);
         strlwr(filename);
       }
       else

@@ -9,6 +9,7 @@
 #include "app.h"
 #include "location.h"
 #include "camera.h"
+#include "gametimer.h"
 #include "main.h"
 #include "team.h"
 #include "global_world.h"
