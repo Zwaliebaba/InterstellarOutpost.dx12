@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "text_file_writer.h"
 #include "resource.h"
 #include "shape.h"
 #include "text_stream_readers.h"
@@ -291,23 +290,6 @@ void FenceSwitch::Read(TextReader* _in, bool _dynamic)
 
   if (m_switchValue == -1)
     m_switchValue = m_linkedBuildingId;
-}
-
-// *** Write
-void FenceSwitch::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%-8d", m_linkedBuildingId);
-  _out->printf("%-8d", m_linkedBuildingId2);
-  _out->printf("%-8d", m_switchValue);
-
-  _out->printf("%-3d", m_lockable);
-
-  _out->printf("%s  ", m_script);
-
-  int locked = m_locked ? 1 : 0;
-  _out->printf("%-3d", locked);
 }
 
 void FenceSwitch::Switch()

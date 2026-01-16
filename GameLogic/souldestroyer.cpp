@@ -3,7 +3,6 @@
 #include "matrix34.h"
 #include "shape.h"
 #include "math_utils.h"
-
 #include "hi_res_time.h"
 #include "random_number.h"
 #include "app.h"
@@ -13,7 +12,6 @@
 #include "globals.h"
 #include "location.h"
 #include "team.h"
-#include "main.h"
 #include "renderer.h"
 #include "soundsystem.h"
 #include "souldestroyer.h"
@@ -436,14 +434,6 @@ bool SoulDestroyer::AdvanceToTargetPosition()
   m_up = right ^ m_front;
 
   return (m_pos - m_targetPos).Mag() < 40.0;
-}
-
-void SoulDestroyer::ListSoundEvents(LList<char*>* _list)
-{
-  Entity::ListSoundEvents(_list);
-
-  _list->PutData("EnemySighted");
-  _list->PutData("Panic");
 }
 
 void SoulDestroyer::RenderShapes(double _predictionTime)

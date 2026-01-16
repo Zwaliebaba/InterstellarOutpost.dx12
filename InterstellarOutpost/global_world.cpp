@@ -2,7 +2,6 @@
 #include "unicode_text_stream_reader.h"
 #include "language_table.h"
 #include "filesys_utils.h"
-#include "text_file_writer.h"
 #include "input.h"
 #include "targetcursor.h"
 #include "math_utils.h"
@@ -155,30 +154,6 @@ bool GlobalEventCondition::Evaluate()
   return false;
 }
 
-void GlobalEventCondition::Save(TextWriter* _out)
-{
-  _out->printf("%s ", GetTypeName(m_type));
-
-  switch (m_type)
-  {
-  case AlwaysTrue:
-    break;
-
-  case BuildingOnline:
-  case BuildingOffline:
-    _out->printf(":%s,%d ", g_app->m_globalWorld->GetLocationName(m_locationId), m_id);
-    break;
-
-  case ResearchOwned:
-    _out->printf(":%s ", GlobalResearch::GetTypeName(m_id));
-    break;
-
-  case DebugKey:
-    _out->printf(":%d ", m_id);
-    break;
-  }
-}
-
 // ****************************************************************************
 // Class GlobalEventAction
 // ****************************************************************************
@@ -220,63 +195,8 @@ void GlobalEventAction::Read(TextReader* _in)
     DEBUG_ASSERT(false);
 }
 
-void GlobalEventAction::Write(TextWriter* _out)
-{
-  _out->printf("\t\tAction %-10s ", GetTypeName(m_type));
-
-  char* locationName = g_app->m_globalWorld->GetLocationName(m_locationId);
-
-  switch (m_type)
-  {
-  case SetMission:
-    _out->printf("%s %s", locationName, m_filename);
-    break;
-  case RunScript:
-    _out->printf("%s", m_filename);
-    break;
-  case MakeAvailable:
-    _out->printf("%s", locationName);
-    break;
-
-  default:
-    DEBUG_ASSERT(false);
-  }
-
-  _out->printf("\n");
-}
-
 void GlobalEventAction::Execute()
 {
-#ifdef TEST_HARNESS_ENABLED
-  switch (m_type)
-  {
-  case SetMission:
-  {
-    if (g_app->m_testHarness)
-    {
-      fprintf(g_app->m_testHarness->m_out, "%sSetting Mission: %s in location %s\n", g_app->m_testHarness->m_indent, m_filename,
-              g_app->m_globalWorld->GetLocationName(m_locationId));
-    }
-    break;
-  }
-  case RunScript:
-    if (g_app->m_testHarness)
-    {
-      fprintf(g_app->m_testHarness->m_out, "%sRunning script: %s\n", g_app->m_testHarness->m_indent, m_filename);
-    }
-    break;
-  case MakeAvailable:
-    if (g_app->m_testHarness)
-    {
-      fprintf(g_app->m_testHarness->m_out, "%sMaking location available: %s\n", g_app->m_testHarness->m_indent,
-              g_app->m_globalWorld->GetLocationName(m_locationId));
-    }
-    break;
-  default:
-    break;
-  }
-#endif // TEST_HARNESS_ENABLED
-
   switch (m_type)
   {
   case SetMission:
@@ -426,27 +346,6 @@ void GlobalEvent::Read(TextReader* _in)
       m_actions.PutData(action);
     }
   }
-}
-
-void GlobalEvent::Write(TextWriter* _out)
-{
-  _out->printf("\tEvent ");
-
-  for (int i = 0; i < m_conditions.Size(); ++i)
-  {
-    GlobalEventCondition* gec = m_conditions[i];
-    gec->Save(_out);
-  }
-
-  _out->printf("\n");
-
-  for (int i = 0; i < m_actions.Size(); ++i)
-  {
-    GlobalEventAction* gea = m_actions[i];
-    gea->Write(_out);
-  }
-
-  _out->printf("\t\tEnd\n");
 }
 
 // ****************************************************************************
@@ -611,18 +510,6 @@ int GlobalResearch::CurrentLevel(int _type)
   DEBUG_ASSERT(_type >= 0 && _type < NumResearchItems);
 
   return m_researchLevel[_type];
-}
-
-void GlobalResearch::Write(TextWriter* _out)
-{
-  _out->printf("Research_StartDefinition\n");
-
-  for (int i = 0; i < NumResearchItems; ++i)
-    _out->printf("\tResearch %s %d %d\n", GetTypeName(i), CurrentProgress(i), CurrentLevel(i));
-
-  _out->printf("\tCurrentResearch %s\n", GetTypeName(m_currentResearch));
-  _out->printf("\tCurrentPoints %d\n", m_researchPoints);
-  _out->printf("Research_EndDefinition\n\n");
 }
 
 void GlobalResearch::Read(TextReader* _in)
@@ -1511,51 +1398,6 @@ void GlobalWorld::AddBuilding(GlobalBuilding* building)
   m_buildings.PutData(building);
 }
 
-void GlobalWorld::WriteLocations(TextWriter* _out)
-{
-  _out->printf("Locations_StartDefinition\n");
-  _out->printf("\t# Id  Avail                   mapFile                    missionFile\n");
-  _out->printf("\t# ==================================================================\n");
-
-  for (int i = 0; i < m_locations.Size(); ++i)
-  {
-    GlobalLocation* location = m_locations[i];
-    _out->printf("\t%4d %4d %30s %40s\n", location->m_id, static_cast<int>(location->m_available), location->m_mapFilename,
-                 location->m_missionFilename);
-  }
-
-  _out->printf("Locations_EndDefinition\n\n");
-}
-
-void GlobalWorld::WriteBuildings(TextWriter* _out)
-{
-  _out->printf("Buildings_StartDefinition\n");
-  _out->printf("\t# Id  teamId  locId   type   link  online\n");
-  _out->printf("\t# =======================================\n");
-
-  for (int i = 0; i < m_buildings.Size(); ++i)
-  {
-    GlobalBuilding* building = m_buildings[i];
-    _out->printf("\t%4d %4d %6d %6d %6d %6d\n", building->m_id, building->m_teamId, building->m_locationId, building->m_type,
-                 building->m_link, building->m_online);
-  }
-
-  _out->printf("Buildings_EndDefinition\n\n");
-}
-
-void GlobalWorld::WriteEvents(TextWriter* _out)
-{
-  _out->printf("Events_StartDefinition\n");
-
-  for (int i = 0; i < m_events.Size(); ++i)
-  {
-    GlobalEvent* ge = m_events[i];
-    ge->Write(_out);
-  }
-
-  _out->printf("Events_EndDefinition\n");
-}
-
 void GlobalWorld::ParseLocations(TextReader* _in)
 {
   while (_in->ReadLine())
@@ -1687,8 +1529,6 @@ void GlobalWorld::LoadGame(char* _filename)
         ParseEvents(in);
       else if (stricmp("research_startdefinition", word) == 0)
         m_research->Read(in);
-      else if (stricmp("tutorial_startdefinition", word) == 0)
-        ParseTutorial(in);
       else if (stricmp("leveltimes_startdefinition", word) == 0)
         ParseLevelTimes(in);
       else if (stricmp("squaddiesused_startdefinition", word) == 0)
@@ -1775,49 +1615,6 @@ void GlobalWorld::LoadGame(char* _filename)
   DebugTrace("GlobalWorld Loaded\n");
 }
 
-void GlobalWorld::SaveGame(char* _filename)
-{
-  TextFileWriter* out = NULL;
-  char fullFilename[256];
-
-  if (stricmp(g_app->m_userProfileName, "none") != 0)
-  {
-    sprintf(fullFilename, "%susers/%s/%s", g_app->GetProfileDirectory(), g_app->m_userProfileName, _filename);
-
-#ifdef TARGET_DEBUG
-    out = new TextFileWriter(fullFilename, false);
-#else
-    out = new TextFileWriter(fullFilename, true);
-#endif
-  }
-
-  if (!out)
-    out = g_app->m_resource->GetTextFileWriter(_filename, false);
-
-  WriteLocations(out);
-  WriteBuildings(out);
-  m_research->Write(out);
-  WriteTutorial(out);
-  WriteEvents(out);
-  WriteLevelTimes(out);
-  WriteSquaddiesUsed(out);
-
-  delete out;
-}
-
-void GlobalWorld::WriteSquaddiesUsed(TextWriter* _out) {}
-
-void GlobalWorld::WriteLevelTimes(TextWriter* _out) {}
-
-void GlobalWorld::WriteTutorial(TextWriter* _out)
-{
-#if defined(DEMO2) && defined(USE_SEPULVEDA_HELP_TUTORIAL)
-  int currentChapter = -1; if (g_app->m_tutorial)
-    currentChapter = g_app->m_tutorial->GetCurrentChapter(); _out->printf("Tutorial_StartDefinition\n"); _out->
-    printf("\tCurrentChapter = %d\n", currentChapter); _out->printf("Tutorial_EndDefinition\n\n");
-#endif
-}
-
 void GlobalWorld::ParseLevelTimes(TextReader* _in)
 {
   DebugTrace("Parsing level times\n");
@@ -1868,35 +1665,7 @@ void GlobalWorld::ParseSquaddiesUsed(TextReader* _in)
   DebugTrace("Done parsing squadies used\n");
 }
 
-void GlobalWorld::ParseTutorial(TextReader* _in)
-{
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-  while (_in->ReadLine())
-  {
-    if (!_in->TokenAvailable())
-      continue;
-
-    char* word = _in->GetNextToken();
-
-    if (stricmp(word, "tutorial_enddefinition") == 0) { return; }
-
-    char* temp = _in->GetNextToken();
-    int chapter = atoi(_in->GetNextToken());
-
-    if (g_app->m_tutorial)
-    {
-      if (chapter == -1)
-      {
-        delete g_app->m_tutorial;
-        g_app->m_tutorial = NULL;
-      }
-      else { g_app->m_tutorial->SetChapter(chapter); }
-    }
-  }
-#endif
-}
-
-void GlobalWorld::LoadLocations(char* _filename)
+void GlobalWorld::LoadLocations(const char* _filename)
 {
   TextReader* in = g_app->m_resource->GetTextReader(_filename);
 
@@ -1916,23 +1685,6 @@ void GlobalWorld::LoadLocations(char* _filename)
   }
 
   delete in;
-}
-
-void GlobalWorld::SaveLocations(char* _filename)
-{
-  TextFileWriter* out = g_app->m_resource->GetTextFileWriter(_filename, false);
-
-  out->printf("# ================================\n");
-  out->printf("# id   x        y        z\n");
-  out->printf("# ================================\n\n");
-
-  for (int i = 0; i < m_locations.Size(); ++i)
-  {
-    GlobalLocation* loc = m_locations[i];
-    out->printf("%-6d %-8.2 %-8.2 %-8.2\n", loc->m_id, loc->m_pos.x, loc->m_pos.y, loc->m_pos.z);
-  }
-
-  delete out;
 }
 
 // Find the lowest unused building ID in the current location

@@ -301,7 +301,7 @@ void Multiwinia::GameOptionsChanged()
     m_timeRemaining = timeLimit * 60;
 }
 
-int Multiwinia::GetGameOption(char* _name)
+int Multiwinia::GetGameOption(const char* _name)
 {
   MultiwiniaGameBlueprint* blueprint = s_gameBlueprints[m_gameType];
   for (int i = 0; i < blueprint->m_params.Size(); ++i)

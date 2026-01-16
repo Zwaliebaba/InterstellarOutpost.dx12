@@ -2,14 +2,12 @@
 #include "math_utils.h"
 #include "resource.h"
 #include "shape.h"
-#include "text_file_writer.h"
 #include "text_stream_readers.h"
 #include "wall.h"
 #include "aiobjective.h"
 #include "app.h"
 #include "explosion.h"
 #include "location.h"
-#include "main.h"
 
 #define WALL_LENGTH 100.0
 #define WALL_DEPTH  20.0
@@ -225,8 +223,3 @@ void Wall::Read(TextReader* _in, bool _dynamic)
     m_objectiveLink = atoi(_in->GetNextToken());
 }
 
-void Wall::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-  _out->printf("%4d", m_objectiveLink);
-}

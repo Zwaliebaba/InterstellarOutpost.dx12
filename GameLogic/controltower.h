@@ -1,59 +1,50 @@
-
 #ifndef _included_controltower_h
 #define _included_controltower_h
 
 #include "building.h"
 
-
-class TextWriter;
-
-
 class ControlTower : public Building
 {
-public:    
-    double       m_ownership;                            // 100 = strongly owned, 5 = nearly lost, 0 = neutral
-    
-protected:   
-    static Shape    *s_dishShape;   
-    ShapeMarker     *m_lightPos;
-    ShapeMarker     *m_reprogrammer[3];
-    ShapeMarker     *m_console[3];
-    ShapeMarker     *m_dishPos;
+  public:
+    double m_ownership; // 100 = strongly owned, 5 = nearly lost, 0 = neutral
 
-    Matrix34        m_dishMatrix;
+  protected:
+    static Shape* s_dishShape;
+    ShapeMarker* m_lightPos;
+    ShapeMarker* m_reprogrammer[3];
+    ShapeMarker* m_console[3];
+    ShapeMarker* m_dishPos;
 
-    bool        m_beingReprogrammed[3];                 // One bool for each slot
-    int         m_controlBuildingId;                    // Whom I affect
-    
-    double       m_checkTargetTimer;
+    Matrix34 m_dishMatrix;
 
-public:
+    bool m_beingReprogrammed[3]; // One bool for each slot
+    int m_controlBuildingId; // Whom I affect
+
+    double m_checkTargetTimer;
+
+  public:
     ControlTower();
 
-    void Initialise( Building *_template );
+    void Initialise(Building* _template) override;
 
-    bool Advance        ();
-    
-    bool IsInView       ();
-    void Render         ( double _predictionTime );
-    void RenderAlphas   ( double _predictionTime );
+    bool Advance() override;
 
-    int  GetAvailablePosition   ( Vector3 &_pos, Vector3 &_front );         // Finds place for reprogrammer
-    void GetConsolePosition     ( int _position, Vector3 &_pos );
-        
-    void BeginReprogram         ( int _position );
-    bool Reprogram              ( int _teamId );                            // Returns true if job completed
-    void EndReprogram           ( int _position );
+    bool IsInView() override;
+    void Render(double _predictionTime) override;
+    void RenderAlphas(double _predictionTime) override;
 
-    void ListSoundEvents        ( LList<char *> *_list );
+    int GetAvailablePosition(Vector3& _pos, Vector3& _front); // Finds place for reprogrammer
+    void GetConsolePosition(int _position, Vector3& _pos);
 
-    void Read   ( TextReader *_in, bool _dynamic );
-    void Write  ( TextWriter *_out );
+    void BeginReprogram(int _position);
+    bool Reprogram(int _teamId); // Returns true if job completed
+    void EndReprogram(int _position);
 
-    int  GetBuildingLink();                 
-    void SetBuildingLink( int _buildingId );
+    void Read(TextReader* _in, bool _dynamic) override;
+
+    int GetBuildingLink() override;
+    void SetBuildingLink(int _buildingId) override;
 
 };
-
 
 #endif

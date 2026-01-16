@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "text_file_writer.h"
 #include "text_stream_readers.h"
 #include "restrictionzone.h"
 #include "app.h"
@@ -47,13 +46,6 @@ void RestrictionZone::Read(TextReader* _in, bool _dynamic)
   m_size = atof(_in->GetNextToken());
   if (_in->TokenAvailable())
     m_blockPowerups = atoi(_in->GetNextToken());
-}
-
-void RestrictionZone::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-  _out->printf("%-2.2f", m_size);
-  _out->printf("%5d", m_blockPowerups);
 }
 
 bool RestrictionZone::IsRestricted(Vector3 _pos, bool _powerups)

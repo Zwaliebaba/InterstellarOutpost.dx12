@@ -30,8 +30,6 @@ class ReceiverBuilding : public Building
     virtual Vector3 GetSpiritLocation();
     virtual void TriggerSpirit(double _initValue);
 
-    void ListSoundEvents(LList<char*>* _list) override;
-
     static SpiritProcessor* GetSpiritProcessor();
 
     static void BeginRenderUnprocessedSpirits();
@@ -41,7 +39,6 @@ class ReceiverBuilding : public Building
     static void EndRenderUnprocessedSpirits();
 
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 
     int GetBuildingLink() override;
     void SetBuildingLink(int _buildingId) override;

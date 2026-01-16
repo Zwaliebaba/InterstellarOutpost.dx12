@@ -45,8 +45,6 @@ class SporeGenerator : public Entity
 
     bool IsInView() override;
     void Render(double _predictionTime) override;
-
-    void ListSoundEvents(LList<char*>* _list) override;
 };
 
 #endif

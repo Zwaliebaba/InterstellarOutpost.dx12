@@ -286,13 +286,6 @@ bool SpaceInvader::ChangeHealth(int _amount, int _damageType)
   return true;
 }
 
-void SpaceInvader::ListSoundEvents(LList<char*>* _list)
-{
-  Entity::ListSoundEvents(_list);
-
-  _list->PutData("DropGrenade");
-}
-
 void SpaceInvader::Render(double _predictionTime)
 {
   Vector3 predictedPos = m_pos + m_vel * _predictionTime;

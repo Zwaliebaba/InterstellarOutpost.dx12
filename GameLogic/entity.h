@@ -132,8 +132,6 @@ class Entity : public WorldObject
 
     virtual bool IsSelectable();
 
-    virtual void ListSoundEvents(LList<char*>* _list);
-
     static void BeginRenderShadow();
     static void RenderShadow(const Vector3& _pos, double _size);
     static void EndRenderShadow();

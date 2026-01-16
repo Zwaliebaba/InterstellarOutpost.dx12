@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "math_utils.h"
-#include "text_file_writer.h"
 #include "shape.h"
 #include "resource.h"
 #include "text_stream_readers.h"
@@ -489,15 +488,6 @@ void LaserFence::Read(TextReader* _in, bool _dynamic)
     m_mode = atof(_in->GetNextToken());
 }
 
-void LaserFence::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%-8d", m_nextLaserFenceId);
-  _out->printf("%-6.2f", m_scale);
-  _out->printf("%d", m_mode);
-}
-
 int LaserFence::GetBuildingLink() { return m_nextLaserFenceId; }
 
 void LaserFence::SetBuildingLink(int _buildingId) { m_nextLaserFenceId = _buildingId; }
@@ -600,14 +590,6 @@ bool LaserFence::DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, do
 bool LaserFence::DoesShapeHit(Shape* _shape, Matrix34 _transform)
 {
   return DoesSphereHit(_transform.pos, _shape->m_rootFragment->m_radius);
-}
-
-void LaserFence::ListSoundEvents(LList<char*>* _list)
-{
-  Building::ListSoundEvents(_list);
-
-  _list->PutData("Spark");
-  _list->PutData("Electrocute");
 }
 
 Vector3 LaserFence::GetTopPosition()

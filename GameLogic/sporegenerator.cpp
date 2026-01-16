@@ -421,10 +421,3 @@ void SporeGenerator::Render(double _predictionTime)
 }
 
 bool SporeGenerator::IsInView() { return g_app->m_camera->SphereInViewFrustum(m_pos + m_centrePos, m_radius); }
-
-void SporeGenerator::ListSoundEvents(LList<char*>* _list)
-{
-  Entity::ListSoundEvents(_list);
-
-  _list->PutData("LayEgg");
-}

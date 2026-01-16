@@ -54,8 +54,6 @@ class Triffid : public Building
 
     void Damage(double _damage) override;
 
-    void ListSoundEvents(LList<char*>* _list) override;
-
     bool DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, double _rayLen = 1e10, Vector3* _pos = nullptr,
                     Vector3* _norm = nullptr) override;
 
@@ -63,7 +61,6 @@ class Triffid : public Building
     static void GetSpawnNameTranslated(int _spawnType, UnicodeString& _dest);
 
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 };
 
 // Triffid Egg
@@ -94,8 +91,6 @@ class TriffidEgg : public Entity
 
     void ResetTimer();
     void SetTimer(double _time);
-
-    void ListSoundEvents(LList<char*>* _list) override;
 };
 
 #endif

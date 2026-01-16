@@ -51,9 +51,6 @@ class SpaceInvader : public Entity
     bool Advance(Unit* _unit) override;
     bool ChangeHealth(int _amount, int _damageType = DamageTypeUnresistable) override;
     void Render(double _predictionTime) override;
-
-    void ListSoundEvents(LList<char*>* _list) override;
-
 };
 
 #endif

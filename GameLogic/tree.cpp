@@ -1,25 +1,16 @@
 #include "pch.h"
-
-
-#include "text_file_writer.h"
 #include "math_utils.h"
-#include "profiler.h"
 #include "resource.h"
 #include "text_stream_readers.h"
-
 #include "shape.h"
 #include "hi_res_time.h"
-#include "text_renderer.h"
 #include "preferences.h"
 #include "random_number.h"
-
 #include "tree.h"
 #include "darwinian.h"
 #include "souldestroyer.h"
 #include "anthill.h"
-
 #include "soundsystem.h"
-
 #include "app.h"
 #include "globals.h"
 #include "camera.h"
@@ -962,17 +953,6 @@ void Tree::RenderBranch(Vector3 _from, Vector3 _to, int _iterations, bool _calcR
 
 }
 
-void Tree::ListSoundEvents(LList<char*>* _list)
-{
-  Building::ListSoundEvents(_list);
-
-  _list->PutData("CreateNormal");
-  _list->PutData("CreateEvil");
-  _list->PutData("CreateMagic");
-
-  _list->PutData("Burn");
-}
-
 void Tree::Read(TextReader* _in, bool _dynamic)
 {
   Building::Read(_in, _dynamic);
@@ -995,23 +975,6 @@ void Tree::Read(TextReader* _in, bool _dynamic)
         m_evil = atoi(_in->GetNextToken()) == 1;
     }
   }
-}
-
-void Tree::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%-8.2f", m_height);
-  _out->printf("%-8.2f", m_budsize);
-  _out->printf("%-8.2f", m_pushOut);
-  _out->printf("%-8.2f", m_pushUp);
-  _out->printf("%-8d", m_iterations);
-  _out->printf("%-8d", m_seed);
-  _out->printf("%-12d", m_branchColour);
-  _out->printf("%-12d", m_leafColour);
-  _out->printf("%-8d", m_leafDropRate);
-  _out->printf("%-8d", m_spiritDropRate);
-  _out->printf("%-8d", m_evil ? 1 : 0);
 }
 
 void Tree::SetFireAmount(double _amount) { m_onFire = _amount; }

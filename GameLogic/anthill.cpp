@@ -15,7 +15,6 @@
 #include "soundsystem.h"
 #include "spawnpoint.h"
 #include "team.h"
-#include "text_file_writer.h"
 #include "text_stream_readers.h"
 #include "virii.h"
 
@@ -494,13 +493,6 @@ void AntHill::Burn()
   SpawnAnt(randomWaypoint, WorldObjectId());
 }
 
-void AntHill::ListSoundEvents(LList<char*>* _list)
-{
-  Building::ListSoundEvents(_list);
-
-  _list->PutData("Explode");
-}
-
 void AntHill::Read(TextReader* _in, bool _dynamic)
 {
   Building::Read(_in, _dynamic);
@@ -509,14 +501,8 @@ void AntHill::Read(TextReader* _in, bool _dynamic)
 
   if (m_numAntsInside < 0 || m_numAntsInside > 10000)
   {
-    DebugTrace("Error loading Anthill : Bogus population of %d\n", m_numAntsInside);
+    DebugTrace("Error loading Anthill : Bogus population of {}\n", m_numAntsInside);
     m_numAntsInside = 0;
   }
 }
 
-void AntHill::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%d", m_numAntsInside);
-}

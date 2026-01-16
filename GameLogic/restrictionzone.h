@@ -5,31 +5,28 @@
 
 class RestrictionZone : public Building
 {
-public:
-    double   m_size;
-    int    m_blockPowerups;
+  public:
+    double m_size;
+    int m_blockPowerups;
 
-    static  LList<int>  s_restrictionZones;
-
-public:
+    static LList<int> s_restrictionZones;
 
     RestrictionZone();
-    ~RestrictionZone();
+    ~RestrictionZone() override;
 
-    void Initialise( Building *_template );
+    void Initialise(Building* _template) override;
 
-    bool Advance();
-    void RenderAlphas( double _predictionTime );
+    bool Advance() override;
+    void RenderAlphas(double _predictionTime) override;
 
-    static bool IsRestricted( Vector3 _pos, bool _powerups = false );
+    static bool IsRestricted(Vector3 _pos, bool _powerups = false);
 
-    void Read   ( TextReader *_in, bool _dynamic ); 
-    void Write  ( TextWriter *_out );
+    void Read(TextReader* _in, bool _dynamic) override;
 
-    bool DoesSphereHit          (Vector3 const &_pos, double _radius);
-    bool DoesShapeHit           (Shape *_shape, Matrix34 _transform);
-    bool DoesRayHit             (Vector3 const &_rayStart, Vector3 const &_rayDir, 
-                                 double _rayLen=1e10, Vector3 *_pos=NULL, Vector3 *_norm=NULL);
+    bool DoesSphereHit(const Vector3& _pos, double _radius) override;
+    bool DoesShapeHit(Shape* _shape, Matrix34 _transform) override;
+    bool DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, double _rayLen = 1e10, Vector3* _pos = nullptr,
+                    Vector3* _norm = nullptr) override;
 };
 
 #endif

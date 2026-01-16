@@ -5,8 +5,6 @@
 #include "entity.h"
 #include "spiritstore.h"
 
-class TextWriter;
-
 class Factory : public Building
 {
   public:
@@ -49,7 +47,6 @@ class Factory : public Building
     void RequestUnit(unsigned char _troopType, int _numToCreate);
 
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 };
 
 #endif

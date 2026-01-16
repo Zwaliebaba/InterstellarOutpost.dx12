@@ -94,8 +94,6 @@ class Harvester : public Entity
     char* GetCurrentAction();
 
     bool IsSelectable() override;
-
-    void ListSoundEvents(LList<char*>* _list) override;
 };
 
 #endif

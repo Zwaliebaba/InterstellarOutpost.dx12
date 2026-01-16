@@ -745,17 +745,6 @@ void Entity::GetTypeNameTranslated(int _troopType, UnicodeString& _dest)
     _dest = UnicodeString(typeName);
 }
 
-void Entity::ListSoundEvents(LList<char*>* _list)
-{
-  _list->PutData("Create");
-  _list->PutData("Attack");
-  _list->PutData("LoseHealth");
-  _list->PutData("EnterTeleport");
-  _list->PutData("ExitTeleport");
-  _list->PutData("Die");
-  _list->PutData("Selected");
-}
-
 bool Entity::RayHit(const Vector3& _rayStart, const Vector3& _rayDir)
 {
   if (m_shape)

@@ -1,22 +1,11 @@
 #include "pch.h"
-
-
-#include "text_file_writer.h"
-#include "text_renderer.h"
 #include "text_stream_readers.h"
 #include "language_table.h"
-
 #include "scripttrigger.h"
-
 #include "app.h"
-#include "globals.h"
 #include "location.h"
 #include "entity_grid.h"
 #include "script.h"
-#include "team.h"
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-#include "sepulveda.h"
-#endif
 #include "camera.h"
 #include "gametimer.h"
 
@@ -184,23 +173,4 @@ void ScriptTrigger::Read(TextReader* _in, bool _dynamic)
     m_entityType = SCRIPTRIGGER_RUNCAMVIEW;
   else
     m_entityType = Entity::GetTypeId(entityType);
-}
-
-void ScriptTrigger::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  char entityType[64];
-  if (m_entityType == SCRIPTRIGGER_RUNALWAYS)
-    sprintf(entityType, "always");
-  else if (m_entityType == SCRIPTRIGGER_RUNNEVER)
-    sprintf(entityType, "never");
-  else if (m_entityType == SCRIPTRIGGER_RUNCAMENTER)
-    sprintf(entityType, "camenter");
-  else if (m_entityType == SCRIPTRIGGER_RUNCAMVIEW)
-    sprintf(entityType, "camview");
-  else
-    sprintf(entityType, "%s", Entity::GetTypeName(m_entityType));
-
-  _out->printf("%-6d %-6.2f %s %s", m_linkId, m_range, m_scriptFilename, entityType);
 }

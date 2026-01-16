@@ -104,19 +104,7 @@
     <ClInclude Include="inputdriver_alias.h">
       <Filter>Input</Filter>
     </ClInclude>
-    <ClInclude Include="inputdriver_chord.h">
-      <Filter>Input</Filter>
-    </ClInclude>
-    <ClInclude Include="inputdriver_conjoin.h">
-      <Filter>Input</Filter>
-    </ClInclude>
-    <ClInclude Include="inputdriver_idle.h">
-      <Filter>Input</Filter>
-    </ClInclude>
     <ClInclude Include="inputdriver_invert.h">
-      <Filter>Input</Filter>
-    </ClInclude>
-    <ClInclude Include="inputdriver_prefs.h">
       <Filter>Input</Filter>
     </ClInclude>
     <ClInclude Include="inputdriver_simple.h">
@@ -129,9 +117,6 @@
       <Filter>Input</Filter>
     </ClInclude>
     <ClInclude Include="inputfilter.h">
-      <Filter>Input</Filter>
-    </ClInclude>
-    <ClInclude Include="inputfilter_withdelta.h">
       <Filter>Input</Filter>
     </ClInclude>
     <ClInclude Include="inputfiltermanager.h">
@@ -150,9 +135,6 @@
       <Filter>Input</Filter>
     </ClInclude>
     <ClInclude Include="keynames.h">
-      <Filter>Input</Filter>
-    </ClInclude>
-    <ClInclude Include="movement2d.h">
       <Filter>Input</Filter>
     </ClInclude>
     <ClInclude Include="InputTransform.h">
@@ -195,6 +177,7 @@
     <ClInclude Include="GraphicsCore.h">
       <Filter>Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="movement2d.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -285,19 +268,7 @@
     <ClCompile Include="inputdriver_alias.cpp">
       <Filter>Input</Filter>
     </ClCompile>
-    <ClCompile Include="inputdriver_chord.cpp">
-      <Filter>Input</Filter>
-    </ClCompile>
-    <ClCompile Include="inputdriver_conjoin.cpp">
-      <Filter>Input</Filter>
-    </ClCompile>
-    <ClCompile Include="inputdriver_idle.cpp">
-      <Filter>Input</Filter>
-    </ClCompile>
     <ClCompile Include="inputdriver_invert.cpp">
-      <Filter>Input</Filter>
-    </ClCompile>
-    <ClCompile Include="inputdriver_prefs.cpp">
       <Filter>Input</Filter>
     </ClCompile>
     <ClCompile Include="inputdriver_simple.cpp">
@@ -312,9 +283,6 @@
     <ClCompile Include="inputfilter.cpp">
       <Filter>Input</Filter>
     </ClCompile>
-    <ClCompile Include="inputfilter_withdelta.cpp">
-      <Filter>Input</Filter>
-    </ClCompile>
     <ClCompile Include="inputfiltermanager.cpp">
       <Filter>Input</Filter>
     </ClCompile>
@@ -325,9 +293,6 @@
       <Filter>Input</Filter>
     </ClCompile>
     <ClCompile Include="keynames.cpp">
-      <Filter>Input</Filter>
-    </ClCompile>
-    <ClCompile Include="movement2d.cpp">
       <Filter>Input</Filter>
     </ClCompile>
     <ClCompile Include="InputTransform.cpp">
@@ -351,6 +316,7 @@
     <ClCompile Include="GraphicsCore.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="movement2d.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Project Files">

@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "text_file_writer.h"
 #include "resource.h"
 #include "shape.h"
 #include "math_utils.h"
@@ -369,22 +368,6 @@ void Triffid::Read(TextReader* _in, bool _dynamic)
   }
 }
 
-void Triffid::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%-6.2f %-6.2f %-6.2f %-6.2f %-6.2f ", m_size, m_pitch, m_force, m_variance, m_reloadTime);
-  _out->printf("%d %-8.2f %-8.2f %-6.2f ", m_useTrigger, m_triggerLocation.x, m_triggerLocation.z, m_triggerRadius);
-
-  for (int i = 0; i < NumSpawnTypes; ++i)
-  {
-    if (m_spawn[i])
-      _out->printf("1 ");
-    else
-      _out->printf("0 ");
-  }
-}
-
 char* Triffid::GetSpawnName(int _spawnType)
 {
   static char* names[NumSpawnTypes] = {"SpawnVirii", "SpawnCentipedes", "SpawnSpider", "SpawnSpirits", "SpawnEggs", "SpawnTriffidEggs",
@@ -404,14 +387,6 @@ void Triffid::GetSpawnNameTranslated(int _spawnType, UnicodeString& _dest)
     _dest = LANGUAGEPHRASE(stringId);
   else
     _dest = UnicodeString(spawnName);
-}
-
-void Triffid::ListSoundEvents(LList<char*>* _list)
-{
-  Building::ListSoundEvents(_list);
-
-  _list->PutData("LaunchEgg");
-  _list->PutData("Burn");
 }
 
 
@@ -726,14 +701,6 @@ void TriffidEgg::Render(double _predictionTime)
   BeginRenderShadow();
   RenderShadow(predictedPos, size * 10.0);
   EndRenderShadow();
-}
-
-void TriffidEgg::ListSoundEvents(LList<char*>* _list)
-{
-  Entity::ListSoundEvents(_list);
-
-  _list->PutData("Bounce");
-  _list->PutData("BurstOpen");
 }
 
 void TriffidEgg::ResetTimer() { m_timerSync = GetNetworkTime() + m_life; }

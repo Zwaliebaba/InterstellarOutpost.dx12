@@ -19,7 +19,6 @@ class NewProfileButton : public DarwiniaButton
     g_app->SetProfileName(parent->s_profileName);
     g_app->m_globalWorld->m_loadingNewProfile = true;
     g_app->LoadProfile();
-    g_app->SaveProfile(true, true);
 
     EclRemoveWindow(m_parent->m_name);
     EclRemoveWindow("dialog_newprofile");
@@ -81,7 +80,6 @@ void ResetProfileButton::MouseUp()
   for (int i = 0; i < allFiles.size(); ++i)
     DeleteThisFile(allFiles[i].c_str());
   g_app->LoadProfile();
-  g_app->SaveProfile(true, false);
   EclRemoveWindow(m_parent->m_name);
   EclRemoveWindow("dialog_mainmenu");
 }

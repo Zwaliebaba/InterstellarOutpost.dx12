@@ -112,8 +112,6 @@ class Armour : public Entity
 
     bool IsSelectable() override;
 
-    void ListSoundEvents(LList<char*>* _list) override;
-
     void GetEntrance(Vector3& _exitPos, Vector3& _exitDir);
 
     void RegisterPassenger();

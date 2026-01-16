@@ -1,12 +1,10 @@
 #include "pch.h"
-#include "text_file_writer.h"
 #include "text_stream_readers.h"
 #include "math_utils.h"
 #include "resource.h"
 #include "shape.h"
 #include "random_number.h"
 #include "app.h"
-#include "main.h"
 #include "location.h"
 #include "team.h"
 #include "unit.h"
@@ -179,11 +177,4 @@ void Factory::Read(TextReader* _in, bool _dynamic)
 
   char* word = _in->GetNextToken();
   m_initialCapacity = atoi(word);
-}
-
-void Factory::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%-8d", m_initialCapacity);
 }

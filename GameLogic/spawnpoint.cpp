@@ -1,9 +1,6 @@
 #include "pch.h"
-#include "text_file_writer.h"
 #include "resource.h"
 #include "shape.h"
-
-#include "text_renderer.h"
 #include "profiler.h"
 #include "text_stream_readers.h"
 #include "hi_res_time.h"
@@ -17,7 +14,6 @@
 #include "entity_grid.h"
 #include "team.h"
 #include "global_world.h"
-#include "main.h"
 #include "level_file.h"
 #include "multiwinia.h"
 #include "spawnpoint.h"
@@ -449,18 +445,6 @@ void SpawnBuilding::Read(TextReader* _in, bool _dynamic)
   }
 }
 
-void SpawnBuilding::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  for (int i = 0; i < m_links.Size(); ++i)
-  {
-    SpawnBuildingLink* link = m_links[i];
-    _out->printf("%-6d", link->m_targetBuildingId);
-  }
-}
-
-
 SpawnLink::SpawnLink()
   : SpawnBuilding()
 {
@@ -468,7 +452,6 @@ SpawnLink::SpawnLink()
 
   SetShape(g_app->m_resource->GetShape("spawnlink.shp"));
 }
-
 
 int MasterSpawnPoint::s_masterSpawnPointId = -1;
 
@@ -572,11 +555,11 @@ void MasterSpawnPoint::GetObjectiveCounter(UnicodeString& _dest)
     int numRed = g_app->m_location->m_teams[1]->m_others.NumUsed();
     swprintf(result, sizeof(result) / sizeof(wchar_t), L"%ls : %d", LANGUAGEPHRASE("objective_redpopulation").m_unicodestring, numRed);
   }
-  else { swprintf(result, sizeof(result) / sizeof(wchar_t), L"%ls", LANGUAGEPHRASE("objective_redpopulation").m_unicodestring); }
+  else
+    swprintf(result, sizeof(result) / sizeof(wchar_t), L"%ls", LANGUAGEPHRASE("objective_redpopulation").m_unicodestring);
 
   _dest = UnicodeString(result);
 }
-
 
 SpawnPoint::SpawnPoint()
   : SpawnBuilding(),
@@ -873,9 +856,7 @@ bool SpawnPoint::Advance()
       {
         MasterSpawnPoint* masterSpawn = MasterSpawnPoint::GetMasterSpawnPoint();
         if (masterSpawn)
-        {
           masterSpawn->RequestSpirit(m_id.GetUniqueId());
-        }
 
         double fractionOccupied = static_cast<double>(GetNumPortsOccupied()) / static_cast<double>(GetNumPorts());
 
@@ -1081,15 +1062,6 @@ double SpawnPoint::CalculateHandicap(int _teamId)
   return 1.0;
 }
 
-void SpawnPoint::ListSoundEvents(LList<char*>* _list)
-{
-  SpawnBuilding::ListSoundEvents(_list);
-
-  _list->PutData("TurnOn");
-  _list->PutData("TurnOff");
-}
-
-
 double SpawnPopulationLock::s_overpopulationTimer = 0.0;
 int SpawnPopulationLock::s_overpopulation = 0;
 
@@ -1186,13 +1158,6 @@ void SpawnPopulationLock::Read(TextReader* _in, bool _dynamic)
 
   m_searchRadius = atof(_in->GetNextToken());
   m_maxPopulation = atoi(_in->GetNextToken());
-}
-
-void SpawnPopulationLock::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%-8.2f %-6d", m_searchRadius, m_maxPopulation);
 }
 
 bool SpawnPopulationLock::DoesSphereHit(const Vector3& _pos, double _radius) { return false; }

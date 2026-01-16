@@ -703,15 +703,6 @@ bool Centipede::AdvanceToTargetPosition()
   return (m_pos - m_targetPos).Mag() < 20.0;
 }
 
-void Centipede::ListSoundEvents(LList<char*>* _list)
-{
-  Entity::ListSoundEvents(_list);
-
-  _list->PutData("Panic");
-  _list->PutData("EnemySighted");
-  _list->PutData("Grow");
-}
-
 void Centipede::Render(double _predictionTime)
 {
   Vector3 predictedPos = m_pos + m_vel * _predictionTime;

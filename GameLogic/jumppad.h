@@ -1,34 +1,31 @@
 #ifndef _included_jumppad_h
 #define _included_jumppad_h
 
-#include "llist.h"
-
 #include "building.h"
 
 class JumpPad : public Building
 {
-public:
-    double   m_force;
-    double   m_angle;
+  public:
+    double m_force;
+    double m_angle;
 
-protected:
-    double   m_launchTimer;
+  protected:
+    double m_launchTimer;
 
-public:
-    JumpPad         ();
-    void Initialise ( Building *_template );
+  public:
+    JumpPad();
+    void Initialise(Building* _template) override;
 
-    bool Advance    ();
-    void Render     ( double _predictionTime );
-    void RenderAlphas( double _predictionTime );
+    bool Advance() override;
+    void Render(double _predictionTime) override;
+    void RenderAlphas(double _predictionTime) override;
 
-    void Read   ( TextReader *_in, bool _dynamic );
-    void Write  ( TextWriter *_out );
+    void Read(TextReader* _in, bool _dynamic) override;
 
-    bool DoesSphereHit      (Vector3 const &_pos, double _radius);
-    bool DoesShapeHit       (Shape *_shape, Matrix34 _transform);
-    bool DoesRayHit         (Vector3 const &_rayStart, Vector3 const &_rayDir, 
-                             double _rayLen=1e10, Vector3 *_pos=NULL, Vector3 *_norm=NULL);
+    bool DoesSphereHit(const Vector3& _pos, double _radius) override;
+    bool DoesShapeHit(Shape* _shape, Matrix34 _transform) override;
+    bool DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, double _rayLen = 1e10, Vector3* _pos = nullptr,
+                    Vector3* _norm = nullptr) override;
 };
 
 #endif

@@ -91,30 +91,31 @@
     <ClInclude Include="btree.h" />
     <ClInclude Include="bytestream.h" />
     <ClInclude Include="darray.h" />
+    <ClInclude Include="DataReader.h" />
+    <ClInclude Include="DataWriter.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="DeviceNotify.h" />
     <ClInclude Include="directory.h" />
-    <ClInclude Include="Event.h" />
-    <ClInclude Include="EventManager.h" />
     <ClInclude Include="fast_darray.h" />
     <ClInclude Include="filecrc.h" />
     <ClInclude Include="FileSys.h" />
     <ClInclude Include="filesys_utils.h" />
     <ClInclude Include="FixedPipeline.h" />
     <ClInclude Include="float_vector3.h" />
+    <ClInclude Include="Hash.h" />
     <ClInclude Include="hash_map_darwin.h" />
     <ClInclude Include="hash_table.h" />
     <ClInclude Include="hi_res_time.h" />
     <ClInclude Include="language_table.h" />
     <ClInclude Include="llist.h" />
     <ClInclude Include="map_utils.h" />
+    <ClInclude Include="MathCommon.h" />
     <ClInclude Include="math_utils.h" />
     <ClInclude Include="matrix33.h" />
     <ClInclude Include="matrix34.h" />
     <ClInclude Include="matrix_cache.h" />
     <ClInclude Include="network_stream.h" />
     <ClInclude Include="net_lib.h" />
-    <ClInclude Include="net_lib_apple.h" />
     <ClInclude Include="net_lib_win32.h" />
     <ClInclude Include="net_mutex.h" />
     <ClInclude Include="net_socket.h" />
@@ -152,17 +153,17 @@
     <ClInclude Include="targetcursor.h" />
     <ClInclude Include="texture.h" />
     <ClInclude Include="texture_uv.h" />
-    <ClInclude Include="text_file_writer.h" />
     <ClInclude Include="text_renderer.h" />
     <ClInclude Include="text_stream_readers.h" />
+    <ClInclude Include="TimerCore.h" />
     <ClInclude Include="unicode_string.h" />
-    <ClInclude Include="unicode_text_file_writer.h" />
     <ClInclude Include="unicode_text_stream_reader.h" />
     <ClInclude Include="user_info.h" />
     <ClInclude Include="vector2.h" />
     <ClInclude Include="vector3.h" />
     <ClInclude Include="window_manager.h" />
     <ClInclude Include="window_manager_directx.h" />
+    <ClInclude Include="WndProcManager.h" />
     <ClInclude Include="work_queue.h" />
   </ItemGroup>
   <ItemGroup>
@@ -170,7 +171,6 @@
     <ClCompile Include="binary_stream_readers.cpp" />
     <ClCompile Include="bitmap.cpp" />
     <ClCompile Include="directory.cpp" />
-    <ClCompile Include="EventManager.cpp" />
     <ClCompile Include="filecrc.cpp" />
     <ClCompile Include="FileSys.cpp" />
     <ClCompile Include="filesys_utils.cpp" />
@@ -218,17 +218,16 @@
     <ClCompile Include="targetcursor.cpp" />
     <ClCompile Include="texture.cpp" />
     <ClCompile Include="texture_uv.cpp" />
-    <ClCompile Include="text_file_writer.cpp" />
     <ClCompile Include="text_renderer.cpp" />
     <ClCompile Include="text_stream_readers.cpp" />
     <ClCompile Include="unicode_string.cpp" />
-    <ClCompile Include="unicode_text_file_writer.cpp" />
     <ClCompile Include="unicode_text_stream_reader.cpp" />
     <ClCompile Include="user_info.cpp" />
     <ClCompile Include="vector2.cpp" />
     <ClCompile Include="vector3.cpp" />
     <ClCompile Include="window_manager.cpp" />
     <ClCompile Include="window_manager_directx.cpp" />
+    <ClCompile Include="WndProcManager.cpp" />
     <ClCompile Include="work_queue.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -3,7 +3,6 @@
 
 #include "building.h"
 
-
 /*
 An AI Objective is used by the AI to track progress through assault levels
 They follow the following rules:
@@ -18,78 +17,74 @@ Gary
 */
 class AIObjective : public Building
 {
-public:
-    int         m_nextObjective;    // the objective which becomes the target once this one has been captured
-    LList<int>  m_objectiveMarkers;
+  public:
+    int m_nextObjective; // the objective which becomes the target once this one has been captured
+    LList<int> m_objectiveMarkers;
 
-    bool        m_active;
-    bool        m_defenseObjective;
-    double      m_timer;
+    bool m_active;
+    bool m_defenseObjective;
+    double m_timer;
 
-    int         m_armourMarker;
+    int m_armourMarker;
 
     static bool s_objectivesInitialised;
 
-public:
     AIObjective();
-    void Initialise( Building *_template) ;
+    void Initialise(Building* _template) override;
 
-    bool Advance();
+    bool Advance() override;
 
     void AdvanceStandard();
     void AdvanceDefensive();
 
-    void RegisterObjectiveMarker( int _markerId, bool _armourMarker = false );
+    void RegisterObjectiveMarker(int _markerId, bool _armourMarker = false);
 
-    void SetBuildingLink( int _buildingId );
-    int  GetBuildingLink();
+    void SetBuildingLink(int _buildingId) override;
+    int GetBuildingLink() override;
 
-    void Read(TextReader *_in, bool _dynamic);
-    void Write( TextWriter *_out );
+    void Read(TextReader* _in, bool _dynamic) override;
 
     static void InitialiseObjectives();
 
-    bool DoesSphereHit          (Vector3 const &_pos, double _radius);
-    bool DoesShapeHit           (Shape *_shape, Matrix34 _transform);
-    bool DoesRayHit             (Vector3 const &_rayStart, Vector3 const &_rayDir, 
-                                 double _rayLen=1e10, Vector3 *_pos=NULL, Vector3 *_norm=NULL);
+    bool DoesSphereHit(const Vector3& _pos, double _radius) override;
+    bool DoesShapeHit(Shape* _shape, Matrix34 _transform) override;
+    bool DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, double _rayLen = 1e10, Vector3* _pos = nullptr,
+                    Vector3* _norm = nullptr) override;
 };
 
 class AIObjectiveMarker : public Building
 {
-public:
-    double   m_scanRange;
-    double   m_timer;
+  public:
+    double m_scanRange;
+    double m_timer;
 
-    bool    m_registered;
-    bool    m_pickupAvailable;
-    bool    m_defenseMarker;
+    bool m_registered;
+    bool m_pickupAvailable;
+    bool m_defenseMarker;
 
-    int     m_objectiveId;
-    int     m_armourObjective;
-    int     m_pickupOnly;
-    int     m_objectiveBuildingId;
-    int     m_defaultTeam;
+    int m_objectiveId;
+    int m_armourObjective;
+    int m_pickupOnly;
+    int m_objectiveBuildingId;
+    int m_defaultTeam;
 
-public:
     AIObjectiveMarker();
-    void Initialise( Building *_template) ;
+    void Initialise(Building* _template) override;
 
-    bool Advance();
+    bool Advance() override;
     void AdvanceStandard();
     void AdvanceDefensive();
     void AdvanceRocketRiot();
 
-    void SetBuildingLink( int _buildingId );
-    int  GetBuildingLink();
+    void SetBuildingLink(int _buildingId) override;
+    int GetBuildingLink() override;
 
-    void Read(TextReader *_in, bool _dynamic);
-    void Write( TextWriter *_out );
+    void Read(TextReader* _in, bool _dynamic) override;
 
-    bool DoesSphereHit          (Vector3 const &_pos, double _radius);
-    bool DoesShapeHit           (Shape *_shape, Matrix34 _transform);
-    bool DoesRayHit             (Vector3 const &_rayStart, Vector3 const &_rayDir, 
-                                 double _rayLen=1e10, Vector3 *_pos=NULL, Vector3 *_norm=NULL);
+    bool DoesSphereHit(const Vector3& _pos, double _radius) override;
+    bool DoesShapeHit(Shape* _shape, Matrix34 _transform) override;
+    bool DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, double _rayLen = 1e10, Vector3* _pos = nullptr,
+                    Vector3* _norm = nullptr) override;
 };
 
 #endif

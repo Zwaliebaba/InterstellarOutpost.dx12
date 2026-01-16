@@ -13,7 +13,6 @@ public:
 	{
 		GameMenuWindow *parent = (GameMenuWindow *)m_parent;
 		g_prefsManager->SetString("PlayerName", parent->m_teamName.Get());
-		g_prefsManager->Save();
 		BackPageButton::MouseUp();
 	}
 };

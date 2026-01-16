@@ -5,7 +5,6 @@
 #include "resource.h"
 #include "shape.h"
 #include "text_stream_readers.h"
-#include "text_file_writer.h"
 #include "app.h"
 #include "camera.h"
 #include "entity_grid.h"
@@ -644,16 +643,6 @@ bool RadarDish::UpdateEntityInTransit(Entity* _entity)
   return false;
 }
 
-void RadarDish::ListSoundEvents(LList<char*>* _list)
-{
-  Building::ListSoundEvents(_list);
-
-  _list->PutData("BeginRotation");
-  _list->PutData("EndRotation");
-  _list->PutData("ConnectionEstablished");
-  _list->PutData("ConnectionLost");
-}
-
 bool RadarDish::DoesSphereHit(const Vector3& _pos, double _radius)
 {
   // This method is overridden for Radar Dish in order to expand the number
@@ -749,15 +738,6 @@ void RadarDish::Read(TextReader* _in, bool _dynamic)
   if (_in->TokenAvailable())
     m_autoConnectAtStart = atoi(_in->GetNextToken());
   while (_in->TokenAvailable()) { m_validLinkList.PutData(atoi(_in->GetNextToken())); }
-}
-
-void RadarDish::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-  _out->printf("%-5d", m_forceConnection);
-  _out->printf("%-5d", m_autoConnectAtStart);
-  for (int i = 0; i < m_validLinkList.Size(); ++i)
-    _out->printf("%-5d", m_validLinkList[i]);
 }
 
 int RadarDish::CountValidLinks() { return m_validLinkList.Size(); }

@@ -140,7 +140,7 @@ public:
 	bool ValidGameOption	( int _optionIndex );
 	void SetGameOption		( int _optionIndex, int _param );
     void SetGameOptions     ( int _gameType, int *_params );
-    int  GetGameOption      ( char *_name );
+    int  GetGameOption      (const char *_name );
 
     void AwardPoints        ( int _teamId, int _points );
     int  GetMaxPointsAvail  ();

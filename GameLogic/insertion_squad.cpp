@@ -1,43 +1,24 @@
 #include "pch.h"
-#include "hi_res_time.h"
 #include "random_number.h"
-
 #include "limits.h"
-
-#include "bitmap.h"
-
 #include "math_utils.h"
 #include "resource.h"
 #include "shape.h"
-
-#include "text_renderer.h"
-#include "rgb_colour.h"
-
 #include "input.h"
-#include "input_types.h"
-
 #include "app.h"
 #include "camera.h"
 #include "explosion.h"
 #include "location.h"
 #include "renderer.h"
 #include "team.h"
-#include "user_input.h"
 #include "taskmanager.h"
 #include "routing_system.h"
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-#include "helpsystem.h"
-#endif
 #include "particle_system.h"
 #include "entity_grid.h"
 #include "obstruction_grid.h"
 #include "main.h"
-#include "gamecursor.h"
-
 #include "global_world.h"
-
 #include "soundsystem.h"
-
 #include "ai.h"
 #include "insertion_squad.h"
 #include "teleport.h"
@@ -886,57 +867,14 @@ void Squadie::FireSecondaryWeapon(const Vector3& _pos)
   }
 }
 
-void Squadie::ListSoundEvents(LList<char*>* _list)
-{
-  Entity::ListSoundEvents(_list);
-
-  _list->PutData("FireLaser");
-  _list->PutData("ThrowGrenade");
-  _list->PutData("FireRocket");
-  _list->PutData("ThrowAirStrike");
-  _list->PutData("ThrowController");
-  _list->PutData("WeaponReturns");
-}
-
 Vector3 Squadie::GetCameraFocusPoint()
 {
-  /*if( g_inputManager->controlEvent( ControlUnitPrimaryFireDirected /* ControlUnitStartSecondaryFireDirected * ) &&
-        g_app->m_camera->IsInMode( Camera::ModeEntityTrack ) )
-  {
-    InputDetails details;
-        g_inputManager->controlEvent( ControlUnitPrimaryFireDirected, details );
-
-    Vector3 t = GetSecondaryWeaponTarget();
-
-    return ( t + m_pos ) / 2;
-  }*/
-
   return Entity::GetCameraFocusPoint();
 }
 
 Vector3 Squadie::GetSecondaryWeaponTarget()
 {
   Vector3 t = m_pos;
-
-  /*InputDetails details;
-    g_inputManager->controlEvent( ControlUnitPrimaryFireDirected, details );
-
-  Vector3 front = (m_pos - g_app->m_camera->GetPos() );
-  front.y = 0.0;
-  front.Normalise();
-  Vector3 right = front;
-  right.RotateAroundY( M_PI / 2.0 );
-
-  double force = ThrowableWeapon::GetMaxForce( g_app->m_globalWorld->m_research->CurrentLevel( GlobalResearch::TypeGrenade ) );
-  double maxRange = ThrowableWeapon::GetApproxMaxRange( force );
-
-    const double rangeFactor = 0.75;
-
-    double rMod = (rangeFactor * maxRange * double(double(details.x)/40.0));
-    double fMod = (rangeFactor * maxRange * double(double(details.y)/40.0));
-  t+= right * - rMod;
-  t+= front * - fMod;
-  t.y = g_app->m_location->m_landscape.m_heightMap->GetValue( t.x, t.z )+5.0;*/
 
   return t;
 }

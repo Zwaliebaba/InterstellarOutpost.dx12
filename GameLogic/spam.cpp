@@ -83,21 +83,8 @@ void Spam::Destroy(double _intensity)
   m_damage = 0.0;
 }
 
-void Spam::ListSoundEvents(LList<char*>* _list)
-{
-  _list->PutData("Attack");
-  _list->PutData("Explode");
-  _list->PutData("CreateResearch");
-}
-
 void Spam::Render(double _predictionTime)
 {
-  //    Vector3 predictedPos = m_pos + m_vel * _predictionTime;
-  //    Vector3 predictedFront = m_front;
-  //    predictedFront.RotateAroundY( _predictionTime );
-  //    Matrix34 mat( predictedFront, g_upVector, predictedPos );
-  //    m_shape->Render( _predictionTime, mat );
-
   Vector3 rotateAround = g_upVector;
   rotateAround.RotateAroundX(g_gameTime * 1.0);
   rotateAround.RotateAroundZ(g_gameTime * 0.7);

@@ -13,7 +13,6 @@
 #include "shape.h"
 #include "soundsystem.h"
 #include "team.h"
-#include "text_file_writer.h"
 
 Incubator::Incubator()
   : Building(),
@@ -255,13 +254,6 @@ void Incubator::Read(TextReader* _in, bool _dynamic)
     m_numStartingSpirits = atoi(_in->GetNextToken());
 }
 
-void Incubator::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%6d", m_numStartingSpirits);
-}
-
 void Incubator::RenderAlphas(double _predictionTime)
 {
   Building::RenderAlphas(_predictionTime);
@@ -326,12 +318,4 @@ void Incubator::RenderAlphas(double _predictionTime)
   glDisable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_CULL_FACE);
-}
-
-void Incubator::ListSoundEvents(LList<char*>* _list)
-{
-  Building::ListSoundEvents(_list);
-
-  _list->PutData("AddSpirit");
-  _list->PutData("SpawnEntity");
 }

@@ -18,7 +18,6 @@
 #include "team.h"
 #include "markersystem.h"
 #include "multiwinia.h"
-#include "particle_system.h"
 #include "soundsystem.h"
 #include "ai.h"
 #include "anthill.h"
@@ -806,16 +805,6 @@ int Crate::RecalculateOwnership(int& _num)
         }
       }
     }
-
-    /*if( teamCount[newTeamId] > 30 )
-    {
-        SetTeamId( newTeamId );
-    }
-    else
-    {
-        SetTeamId( 255 );
-    }*/
-    GetNetworkTime() + 1.0;
 
     return newTeamId;
   }
@@ -2210,26 +2199,6 @@ void Crate::RunTheBeast(const Vector3& _pos)
   portal->SetDetail(1);
 
   g_app->m_location->SetCurrentMessage(LANGUAGEPHRASE("crate_message_thebeast"));
-}
-
-void Crate::ListSoundEvents(LList<char*>* _list)
-{
-  Building::ListSoundEvents(_list);
-
-  _list->PutData("Falling");
-  _list->PutData("Land");
-  _list->PutData("BeginCapture");
-
-  for (int i = 0; i < 5; ++i)
-  {
-    char name[256];
-    sprintf(name, "Capturing_%dpc", i * 20);
-    _list->PutData(_strdup(name));
-  }
-
-  _list->PutData("Captured");
-  _list->PutData("LostCapture");
-  _list->PutData("Expired");
 }
 
 char* Crate::LogState(char* _message)

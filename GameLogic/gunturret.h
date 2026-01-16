@@ -99,8 +99,6 @@ class GunTurret : public Building
 
     bool DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, double _rayLen, Vector3* _pos, Vector3* norm) override;
 
-    void ListSoundEvents(LList<char*>* _list) override;
-
     void SetTarget(Vector3 _target);
     void PrimaryFire();
 
@@ -117,7 +115,6 @@ class GunTurret : public Building
     double GetMaxRange();
 
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 };
 
 class GunTurretTarget : public WorldObject

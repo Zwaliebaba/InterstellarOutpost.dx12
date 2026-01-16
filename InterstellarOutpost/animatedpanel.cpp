@@ -171,44 +171,6 @@ bool AnimatedPanel::CalculateObjectProperties(int objId, float timeIndex, Animat
   return true;
 }
 
-void AnimatedPanel::Write(TextFileWriter* writer)
-{
-  writer->printf("WIDTH      %d\n", m_width);
-  writer->printf("HEIGHT     %d\n", m_height);
-  writer->printf("START      %2.2f\n", m_start);
-  writer->printf("STOP       %2.2f\n", m_stop);
-  writer->printf("\n");
-
-  for (int i = 0; i < m_objects.Size(); ++i)
-  {
-    if (m_objects.ValidIndex(i))
-    {
-      AnimatedPanelObject* obj = m_objects[i];
-
-      writer->printf("BEGIN Object\n");
-
-      for (int j = 0; j < obj->m_keyframes.Size(); ++j)
-      {
-        AnimatedPanelKeyframe* kf = obj->m_keyframes[j];
-
-        writer->printf("\tBEGIN Keyframe\n");
-        writer->printf("\t\tTIMEINDEX       %2.2f\n", kf->m_timeIndex);
-        writer->printf("\t\tIMAGENAME       %s\n", kf->m_imageName);
-        writer->printf("\t\tXPOS            %2.2f\n", kf->m_x);
-        writer->printf("\t\tYPOS            %2.2f\n", kf->m_y);
-        writer->printf("\t\tCOLOUR          %d\n", kf->m_colour);
-        writer->printf("\t\tSCALE           %2.2f\n", kf->m_scale);
-        writer->printf("\t\tANGLE           %2.2f\n", kf->m_angle);
-        writer->printf("\t\tFLIPHORIZ       %d\n", kf->m_flipHoriz);
-        writer->printf("\t\tALPHA           %d\n", kf->m_alpha);
-        writer->printf("\tEND\n");
-      }
-
-      writer->printf("END\n\n");
-    }
-  }
-}
-
 void AnimatedPanel::Read(TextReader* reader)
 {
   while (reader->ReadLine())

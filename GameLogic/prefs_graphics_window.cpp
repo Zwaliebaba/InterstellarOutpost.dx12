@@ -39,8 +39,6 @@ class ApplyGraphicsButton : public GameMenuButton
       g_prefsManager->SetInt(GRAPHICS_ENTITYDETAIL, parent->m_entityDetail);
       g_prefsManager->SetInt(GRAPHICS_CLOUDDETAIL, parent->m_cloudDetail);
 
-      g_prefsManager->Save();
-
       if (g_app->m_location)
       {
         LandscapeDef* def = &g_app->m_location->m_levelFile->m_landscape;

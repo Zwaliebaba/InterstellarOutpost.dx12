@@ -5,7 +5,6 @@
 #include "shape.h"
 #include "random_number.h"
 #include "preferences.h"
-#include "text_renderer.h"
 #include "app.h"
 #include "location.h"
 #include "team.h"
@@ -227,8 +226,10 @@ bool Darwinian::SearchForNewTask()
 
   case StateOperatingPort:
     if (!g_app->Multiplayer())
+    {
       if (!newTargetFound)
         newTargetFound = SearchForThreats();
+    }
     break;
 
   case StateApproachingPort:
@@ -479,7 +480,7 @@ bool Darwinian::Advance(Unit* _unit)
 
   if (amIDead && m_state == StateInsideArmour)
   {
-    auto a = static_cast<Armour*>(g_app->m_location->GetEntitySafe(m_armourId, Entity::TypeArmour));
+    auto a = static_cast<Armour*>(g_app->m_location->GetEntitySafe(m_armourId, TypeArmour));
     if (a)
       a->RemovePassenger();
   }
@@ -598,7 +599,7 @@ bool Darwinian::AdvanceIdle()
 
         if (officerId.IsValid() && distance > 100 && distance < 500)
         {
-          auto officer = static_cast<Officer*>(g_app->m_location->GetEntitySafe(officerId, Entity::TypeOfficer));
+          auto officer = static_cast<Officer*>(g_app->m_location->GetEntitySafe(officerId, TypeOfficer));
           m_wayPoint = officer->m_pos;
           newTargetFound = true;
         }
@@ -792,7 +793,7 @@ bool Darwinian::AdvanceCarryingBuilding()
     double distance = (targetPos - m_pos).Mag();
     double max = 20.0;
     max *= g_gameTimer.GetGameSpeed();
-    max *= (static_cast<double>(m_stats[Entity::StatSpeed]) / EntityBlueprint::GetStat(TypeDarwinian, StatSpeed));
+    max *= (static_cast<double>(m_stats[StatSpeed]) / EntityBlueprint::GetStat(TypeDarwinian, StatSpeed));
     if (distance < max)
       lifting = true;
   }
@@ -808,7 +809,7 @@ bool Darwinian::AdvanceCarryingBuilding()
 
     if (g_lastProcessedSequenceId % soundFrequency == 0)
       g_app->m_soundSystem->TriggerEntityEvent(this, "LiftBuilding");
-    else if (g_lastProcessedSequenceId % soundFrequency == static_cast<int>(soundFrequency / 2))
+    else if (g_lastProcessedSequenceId % soundFrequency == soundFrequency / 2)
       g_app->m_soundSystem->TriggerEntityEvent(this, "GivenOrdersFromPlayer");
   }
 
@@ -3185,7 +3186,8 @@ Vector3 Darwinian::PushFromObstructions(const Vector3& pos, bool killem)
           }
           else if (building->DoesSphereHit(result, closest))
           {
-            auto nextFence = static_cast<LaserFence*>(g_app->m_location->GetBuilding(((LaserFence*)building)->GetBuildingLink()));
+            auto nextFence = static_cast<LaserFence*>(g_app->m_location->
+                                                             GetBuilding(static_cast<LaserFence*>(building)->GetBuildingLink()));
             Vector3 pushForce = (building->m_centrePos - result).SetLength(1.0);
             if (nextFence)
             {
@@ -3358,7 +3360,7 @@ bool Darwinian::AdvanceInWater()
 
 bool Darwinian::AdvanceSacraficing()
 {
-  auto shaman = static_cast<Shaman*>(g_app->m_location->GetEntitySafe(m_shamanId, Entity::TypeShaman));
+  auto shaman = static_cast<Shaman*>(g_app->m_location->GetEntitySafe(m_shamanId, TypeShaman));
   if (!shaman || shaman->m_paralyzed || shaman->m_dead)
   {
     if (m_burning)
@@ -3782,7 +3784,8 @@ void Darwinian::Abduct(WorldObjectId _shipId)
 
 bool Darwinian::IsInvincible(bool _againstExplosions)
 {
-  if (_againstExplosions) { return (m_state == StateInsideArmour || m_state == StateBeingSacraficed); }
+  if (_againstExplosions)
+    return (m_state == StateInsideArmour || m_state == StateBeingSacraficed);
   return (m_boosterTaskId != -1 || m_state == StateInsideArmour || m_state == StateBeingSacraficed);
 }
 
@@ -4650,7 +4653,7 @@ void Darwinian::GiveHotFeet(int _taskId)
   if (m_state == StateInsideArmour)
     return;
   m_hotFeetTaskId = _taskId;
-  double currentSpeedRatio = static_cast<double>(m_stats[Entity::StatSpeed]) / EntityBlueprint::GetStat(TypeDarwinian, StatSpeed);
+  double currentSpeedRatio = static_cast<double>(m_stats[StatSpeed]) / EntityBlueprint::GetStat(TypeDarwinian, StatSpeed);
   if (currentSpeedRatio < 3.5)
     m_stats[StatSpeed] *= 2.0;
 
@@ -4703,7 +4706,7 @@ void Darwinian::GiveRage(int _taskId)
   if (m_state == StateInsideArmour)
     return;
   m_rageTaskId = _taskId;
-  double currentSpeedRatio = static_cast<double>(m_stats[Entity::StatSpeed]) / EntityBlueprint::GetStat(TypeDarwinian, StatSpeed);
+  double currentSpeedRatio = static_cast<double>(m_stats[StatSpeed]) / EntityBlueprint::GetStat(TypeDarwinian, StatSpeed);
   if (currentSpeedRatio < 3.0)
     m_stats[StatSpeed] *= 1.5;
 
@@ -4752,23 +4755,6 @@ char* Darwinian::LogState(char* _message)
 
   return s_result;
 }
-
-void Darwinian::ListSoundEvents(LList<char*>* _list)
-{
-  Entity::ListSoundEvents(_list);
-
-  _list->PutData("SeenThreatAttack");
-  _list->PutData("SeenThreatAttackHorn");
-  _list->PutData("SeenThreatRunAway");
-  _list->PutData("TakenControl");
-  _list->PutData("EscapedControl");
-  _list->PutData("GivenOrders");
-  _list->PutData("GivenOrdersFromPlayer");
-  _list->PutData("VictoryJump");
-  _list->PutData("OnFire");
-  _list->PutData("LiftBuilding");
-}
-
 
 BoxKite::BoxKite()
   : WorldObject(),

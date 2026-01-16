@@ -1,12 +1,9 @@
 #include "pch.h"
 #include "hi_res_time.h"
 #include "resource.h"
-#include "text_renderer.h"
 #include "text_stream_readers.h"
 #include "language_table.h"
 #include "filesys_utils.h"
-#include "preferences.h"
-#include "window_manager.h"
 #include "app.h"
 #include "camera.h"
 #include "global_world.h"
@@ -17,12 +14,11 @@
 #include "script.h"
 #include "taskmanager_interface.h"
 #include "soundsystem.h"
-#include "constructionyard.h"
 #include "goddish.h"
 #include "rocket.h"
 
 Script::Script()
-  : m_in(NULL),
+  : m_in(nullptr),
     m_waitUntil(-1.0),
     m_waitForSpeech(false),
     m_waitForCamera(false),
@@ -37,7 +33,7 @@ bool Script::IsRunningScript()
   if (g_app->m_testHarness)
     return false;
 
-  return (m_in != NULL);
+  return (m_in != nullptr);
 }
 
 void Script::RunCommand_CamCut(const char* _mountName)
@@ -244,7 +240,7 @@ void Script::RunCommand_TriggerSound(const char* _event)
   sprintf(eventName, "Music %s", _event);
 
   if (g_app->m_soundSystem->NumInstancesPlaying(WorldObjectId(), eventName) == 0)
-    g_app->m_soundSystem->TriggerOtherEvent(NULL, (char*)_event, SoundSourceBlueprint::TypeMusic);
+    g_app->m_soundSystem->TriggerOtherEvent(nullptr, (char*)_event, SoundSourceBlueprint::TypeMusic);
 }
 
 void Script::RunCommand_StopSound(const char* _event)
@@ -263,15 +259,7 @@ void Script::RunCommand_DemoGesture(const char* _name)
 
 void Script::RunCommand_GiveResearch(const char* _name)
 {
-  if (stricmp(_name, "modsystem") == 0)
-  {
-#ifdef USE_DARWINIA_MOD_SYSTEM
-    g_prefsManager->SetInt("ModSystemEnabled", 1);
-#endif
-    g_prefsManager->Save();
-    g_app->m_taskManagerInterface->SetCurrentMessage(TaskManagerInterface::MessageResearch, 999, 4.0);
-  }
-  else if (stricmp(_name, "accessallareas") == 0)
+  if (stricmp(_name, "accessallareas") == 0)
   {
     char folderName[512];
     sprintf(folderName, "%susers/", g_app->GetProfileDirectory());
@@ -332,13 +320,13 @@ GodDish* GetGodDish()
       Building* building = g_app->m_location->m_buildings[i];
       if (building && building->m_type == Building::TypeGodDish)
       {
-        GodDish* dish = static_cast<GodDish*>(building);
+        auto dish = static_cast<GodDish*>(building);
         return dish;
       }
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 void Script::RunCommand_GodDishActivate()
@@ -376,20 +364,15 @@ void Script::RunCommand_SpamTrigger()
     dish->TriggerSpam();
 }
 
-void Script::RunCommand_PurityControl()
-{
-
-}
+void Script::RunCommand_PurityControl() {}
 
 void Script::RunCommand_ShowDarwinLogo()
 {
   g_app->m_renderer->m_renderDarwinLogo = GetHighResTime();
-  g_app->m_soundSystem->TriggerOtherEvent(NULL, "ShowLogo", SoundSourceBlueprint::TypeInterface);
+  g_app->m_soundSystem->TriggerOtherEvent(nullptr, "ShowLogo", SoundSourceBlueprint::TypeInterface);
 }
 
-void Script::RunCommand_ShowDemoEndSequence()
-{
-}
+void Script::RunCommand_ShowDemoEndSequence() {}
 
 void Script::RunCommand_PermitEscape() { m_permitEscape = true; }
 
@@ -465,7 +448,7 @@ void Script::Advance()
     {
       // Quick exit the entire cutscene
       delete m_in;
-      m_in = NULL;
+      m_in = nullptr;
 #ifdef USE_SEPULVEDA_HELP_TUTORIAL
       g_app->m_sepulveda->ShutUp();
 #endif
@@ -496,7 +479,7 @@ void Script::Advance()
 
   if (m_waitForRocket)
   {
-    EscapeRocket* rocket = static_cast<EscapeRocket*>(g_app->m_location->GetBuilding(m_rocketId));
+    auto rocket = static_cast<EscapeRocket*>(g_app->m_location->GetBuilding(m_rocketId));
     if (!rocket || rocket->m_type != Building::TypeEscapeRocket)
     {
       m_waitForRocket = false;
@@ -531,7 +514,7 @@ void Script::Advance()
     else
     {
       delete m_in;
-      m_in = NULL;
+      m_in = nullptr;
       m_permitEscape = false;
     }
   }
@@ -543,7 +526,7 @@ void Script::AdvanceScript()
     return;
 
   int opCode = GetOpCode(m_in->GetNextToken());
-  char* nextWord = NULL;
+  char* nextWord = nullptr;
   float nextFloat = 0.0;
   if (m_in->TokenAvailable())
   {
@@ -739,8 +722,7 @@ void Script::AdvanceScript()
     break;
   }
 
-  default:
-    DEBUG_ASSERT(false);
+  default: DEBUG_ASSERT(false);
     break;
   }
 }

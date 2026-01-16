@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "text_file_writer.h"
 #include "matrix34.h"
 #include "resource.h"
 #include "shape.h"
@@ -207,7 +206,6 @@ bool ControlTower::Reprogram(int _teamId)
             g_app->m_globalWorld->EvaluateEvents();
           }
 
-          g_app->SaveProfile(true, true);
           return true;
         }
       }
@@ -421,21 +419,12 @@ void ControlTower::RenderAlphas(double _predictionTime)
   }
 }
 
-void ControlTower::ListSoundEvents(LList<char*>* _list) { Building::ListSoundEvents(_list); }
-
 void ControlTower::Read(TextReader* _in, bool _dynamic)
 {
   Building::Read(_in, _dynamic);
 
   char* word = _in->GetNextToken();
   m_controlBuildingId = atoi(word);
-}
-
-void ControlTower::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%6d", m_controlBuildingId);
 }
 
 int ControlTower::GetBuildingLink() { return m_controlBuildingId; }

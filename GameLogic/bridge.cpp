@@ -8,7 +8,6 @@
 #include "resource.h"
 #include "shape.h"
 #include "team.h"
-#include "text_file_writer.h"
 #include "text_stream_readers.h"
 
 Bridge::Bridge()
@@ -139,14 +138,6 @@ void Bridge::Read(TextReader* _in, bool _dynamic)
   word = _in->GetNextToken();
   m_bridgeType = atoi(word);
   SetBridgeType(m_bridgeType);
-}
-
-void Bridge::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%-8d", m_nextBridgeId);
-  _out->printf("%-8d", m_bridgeType);
 }
 
 bool Bridge::ReadyToSend()

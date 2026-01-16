@@ -1,7 +1,4 @@
 #include "pch.h"
-#include "input.h"
-#include "3d_sprite.h"
-#include "bitmap.h"
 #include "hi_res_time.h"
 #include "eventhandler.h"
 #include "math_utils.h"
@@ -12,9 +9,6 @@
 #include "text_renderer.h"
 #include "window_manager.h"
 #include "language_table.h"
-#include "user_info.h"
-#include "resource.h"
-
 #include "app.h"
 #include "camera.h"
 #include "explosion.h"
@@ -25,8 +19,6 @@
 #include "particle_system.h"
 #include "renderer.h"
 #include "taskmanager_interface.h"
-#include "team.h"
-#include "unit.h"
 #include "user_input.h"
 #include "gamecursor.h"
 #include "startsequence.h"
@@ -38,9 +30,6 @@
 #include "eclipse.h"
 #include "clienttoserver.h"
 #include "message_dialog.h"
-#include "insertion_squad.h"
-#include "virii.h"
-#include "engineer.h"
 
 #define USE_PIXEL_EFFECT_GRID_OPTIMISATION	1
 
@@ -151,7 +140,6 @@ void Renderer::Initialise()
   g_prefsManager->SetInt("ScreenRefresh", refreshRate);
   g_prefsManager->SetInt("WaitVerticalRetrace", waitVRT ? 1 : 0);
   g_prefsManager->SetInt("ScreenOverscan", overscan);
-  g_prefsManager->Save();
 
   InitialiseOGLExtensions();
 }

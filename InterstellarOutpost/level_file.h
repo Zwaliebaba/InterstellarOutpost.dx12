@@ -15,7 +15,6 @@ class Building;
 class TextReader;
 class Route;
 class GlobalEventCondition;
-class TextWriter;
 
 class CameraMount
 {
@@ -189,21 +188,6 @@ class LevelFile
 
   void GenerateAutomaticObjectives();
 
-  void WriteCameraMounts(TextWriter* _out);
-  void WriteCameraAnims(TextWriter* _out);
-  void WriteBuildings(TextWriter* _out, bool _dynamic);
-  void WriteInstantUnits(TextWriter* _out);
-  void WriteLights(TextWriter* _out);
-  void WriteLandscapeData(TextWriter* _out);
-  void WriteLandscapeTiles(TextWriter* _out);
-  void WriteLandFlattenAreas(TextWriter* _out);
-  void WriteRoutes(TextWriter* _out);
-  void WritePrimaryObjectives(TextWriter* _out);
-  void WriteRunningPrograms(TextWriter* _out);
-  void WriteDifficulty(TextWriter* _out);
-  void WriteMultiwiniaOptions(TextWriter* _out);
-  void WriteLeaderboardStats(TextWriter* _out);
-
   public:
     enum // level options
     {
@@ -305,11 +289,6 @@ class LevelFile
     LevelFile();
     LevelFile(const char* _missionFilename, const char* _mapFilename, bool _textFileLevel = true);
     ~LevelFile();
-
-    void Save();
-    void Save(TextWriter* _out);
-    void SaveMapFile(TextWriter* _out);
-    void SaveMissionFile(const char* _filename);
 
     Building* GetBuilding(int _id);
     CameraMount* GetCameraMount(const char* _name);

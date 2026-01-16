@@ -6,11 +6,10 @@
 #include "globals.h"
 
 #define VIRII_MAXSEARCHRANGE    60.0
-#define VIRII_MINSEARCHRANGE    30.0 
+#define VIRII_MINSEARCHRANGE    30.0
 #define VIRII_TAILLENGTH        175.0
 
 #define VIRII_POPULATIONLIMIT   250
-
 
 class ViriiHistory;
 
@@ -18,20 +17,17 @@ class ViriiHistory;
 // Class ViriiUnit
 //*****************************************************************************
 
-
 class ViriiUnit : public Unit
 {
-public:
+  public:
     bool m_enemiesFound;
     bool m_cameraClose;
-    
-public:
-    ViriiUnit(int teamId, int unitId, int numEntities, Vector3 const &_pos);
 
-    bool Advance( int _slice );
-    void Render( double _predictionTime );    
+    ViriiUnit(int teamId, int unitId, int numEntities, const Vector3& _pos);
+
+    bool Advance(int _slice) override;
+    void Render(double _predictionTime) override;
 };
-
 
 //*****************************************************************************
 // Class Virii
@@ -39,65 +35,62 @@ public:
 
 class Virii : public Entity
 {
-public:
+  public:
     enum
     {
-        StateIdle,
-        StateAttacking,
-        StateToSpirit,
-        StateToEgg
+      StateIdle,
+      StateAttacking,
+      StateToSpirit,
+      StateToEgg
     };
-    int                 m_state;
-    
-    double               m_hoverHeight;
-    double               m_retargetTimer;           
-    WorldObjectId	    m_enemyId;                  
-    WorldObjectId		m_eggId;
-    int                 m_spiritId;  
-    Vector3             m_wayPoint;
-    double               m_historyTimer;
 
-    Vector3             m_prevPos;
-    double               m_prevPosTimer;
+    int m_state;
 
-    static int          s_viriiPopulation[NUM_TEAMS];
-            
-protected:
-    
+    double m_hoverHeight;
+    double m_retargetTimer;
+    WorldObjectId m_enemyId;
+    WorldObjectId m_eggId;
+    int m_spiritId;
+    Vector3 m_wayPoint;
+    double m_historyTimer;
+
+    Vector3 m_prevPos;
+    double m_prevPosTimer;
+
+    static int s_viriiPopulation[NUM_TEAMS];
+
+  protected:
     bool SearchForEnemies();
     bool SearchForSpirits();
     bool SearchForEggs();
     bool SearchForIdleDirection();
 
-    WorldObjectId  FindNearbyEgg        ( int _spiritId, double _autoAccept=99999.9 );
-    WorldObjectId  FindNearbyEgg        ( Vector3 const &_pos );
-    
-    bool    AdvanceToTargetPos          ( Vector3 const &_pos ); // returns have-I-Arrived?    
-    void    RecordHistoryPosition       ( bool _required );      // if !_required this is simply to make it smoother
-    Vector3 AdvanceDeadPositionVector   ( int _index, Vector3 const &_pos, double _time );
+    WorldObjectId FindNearbyEgg(int _spiritId, double _autoAccept = 99999.9);
+    WorldObjectId FindNearbyEgg(const Vector3& _pos);
 
-    LList <ViriiHistory *> m_positionHistory;          
+    bool AdvanceToTargetPos(const Vector3& _pos); // returns have-I-Arrived?    
+    void RecordHistoryPosition(bool _required); // if !_required this is simply to make it smoother
+    Vector3 AdvanceDeadPositionVector(int _index, const Vector3& _pos, double _time);
 
-public:
+    LList<ViriiHistory*> m_positionHistory;
+
+  public:
     Virii();
-    ~Virii();
+    ~Virii() override;
 
-    void Begin();
+    void Begin() override;
 
-    bool Advance            ( Unit *_unit );
-    bool AdvanceIdle        ();
-    bool AdvanceAttacking   ();
-    bool AdvanceToSpirit    ();
-    bool AdvanceToEgg       ();
-    bool AdvanceDead        ();
+    bool Advance(Unit* _unit) override;
+    bool AdvanceIdle();
+    bool AdvanceAttacking();
+    bool AdvanceToSpirit();
+    bool AdvanceToEgg();
+    bool AdvanceDead();
 
-    bool IsInView           ();
+    bool IsInView() override;
 
-    void Render             ( double predictionTime, int teamId, int _detail );
-
-    void ListSoundEvents    ( LList<char *> *_list );
+    void Render(double predictionTime, int teamId, int _detail);
 };
-
 
 //*****************************************************************************
 // Class ViriiHistory
@@ -105,14 +98,13 @@ public:
 
 class ViriiHistory
 {
-public:
-    Vector3     m_pos;                                  // Position in world
-    Vector3     m_right;                                // Right vector (front is to next point, up is land normal)
-    Vector3     m_glowDiff;                             // Diff to previous history point, sized for glow effect
-    double       m_distance;                             // Distance to previous history point
-    bool        m_required;                             // True means this is an absolute history position (eg direction change)
-                                                        // false means its just to smooth out the path (eg height change)
+  public:
+    Vector3 m_pos; // Position in world
+    Vector3 m_right; // Right vector (front is to next point, up is land normal)
+    Vector3 m_glowDiff; // Diff to previous history point, sized for glow effect
+    double m_distance; // Distance to previous history point
+    bool m_required; // True means this is an absolute history position (eg direction change)
+    // false means its just to smooth out the path (eg height change)
 };
-
 
 #endif

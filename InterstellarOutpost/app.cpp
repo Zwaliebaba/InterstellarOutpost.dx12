@@ -16,7 +16,6 @@
 #include "global_world.h"
 #include "location.h"
 #include "location_input.h"
-#include "main.h"
 #include "particle_system.h"
 #include "renderer.h"
 #include "script.h"
@@ -145,7 +144,6 @@ void App::SetProfileName(const char* _profileName)
   if (stricmp(_profileName, "AttractMode") != 0)
   {
     g_prefsManager->SetString("UserProfile", m_userProfileName);
-    g_prefsManager->Save();
   }
 }
 
@@ -193,51 +191,6 @@ bool App::LoadProfile()
   }
 
   return true;
-}
-
-bool App::SaveProfile(bool _global, bool _local)
-{
-  bool canWrite = true;
-
-  char folderName[512];
-  sprintf(folderName, "%susers/", GetProfileDirectory());
-  bool success = CreateDirectory(folderName);
-  if (!success)
-  {
-    DebugTrace("failed to create folder %s\n", folderName);
-    return false;
-  }
-
-  sprintf(folderName, "%susers/%s", GetProfileDirectory(), m_userProfileName);
-  success = CreateDirectory(folderName);
-  if (!success)
-  {
-    DebugTrace("failed to create folder %s\n", folderName);
-    return false;
-  }
-
-  if (canWrite && _global)
-    m_globalWorld->SaveGame(m_gameDataFile);
-
-  bool returnVal = true;
-
-  if (canWrite && _local && g_app->m_location)
-  {
-    if (m_levelReset)
-    {
-      m_levelReset = false;
-      returnVal = false;
-    }
-    else
-    {
-      g_app->m_location->m_levelFile->GenerateInstantUnits();
-      g_app->m_location->m_levelFile->GenerateDynamicBuildings();
-      char* missionFilename = m_location->m_levelFile->m_missionFilename;
-      m_location->m_levelFile->SaveMissionFile(missionFilename);
-    }
-  }
-
-  return returnVal;
 }
 
 void App::ResetLevel(bool _global)
@@ -337,8 +290,6 @@ HRESULT App::StartMultiPlayerServer()
 
 void App::ShutdownCurrentGame()
 {
-  SaveProfile(false, true);
-
   g_explosionManager.Reset();
 
   if (m_location)
@@ -369,8 +320,6 @@ void App::ShutdownCurrentGame()
   m_globalWorld->EvaluateEvents();
 
   m_userRequestsPause = false;
-
-  SaveProfile(true, false);
 }
 
 std::string App::GetFirstAvailableLanguage()

@@ -5,7 +5,6 @@
 #include "sphere_renderer.h"
 #include "unicode_string.h"
 
-class TextWriter;
 class TextReader;
 class Vector3;
 class Building;
@@ -90,8 +89,6 @@ class GlobalEventCondition
     void SetStringId(char* _stringId);
     void SetCutScene(char* _cutScene);
 
-    void Save(TextWriter* _out);
-
     static char* GetTypeName(int _type);
     static int GetType(const char* _typeName);
 };
@@ -114,7 +111,6 @@ class GlobalEventAction
     GlobalEventAction();
 
     void Read(TextReader* _in);
-    void Write(TextWriter* _file);
     void Execute();
 
     static char* GetTypeName(int _type);
@@ -130,7 +126,6 @@ class GlobalEvent
     GlobalEvent(GlobalEvent& _other); // Copy constructor only used by TestHarness
 
     void Read(TextReader* _in);
-    void Write(TextWriter* _file);
     bool Evaluate();
     bool Execute(); // Returns true when all done
 
@@ -206,7 +201,6 @@ class GlobalResearch
     void GiveResearchPoints(int _numPoints);
     void AdvanceResearch();
 
-    void Write(TextWriter* _out);
     void Read(TextReader* _in);
 
     static char* GetTypeName(int _type);
@@ -267,17 +261,9 @@ class GlobalWorld
     static int s_nextUniqueBuildingId;
 
   protected:
-    void WriteLocations(TextWriter* _out);
-    void WriteBuildings(TextWriter* _out);
-    void WriteEvents(TextWriter* _out);
-    void WriteTutorial(TextWriter* _out);
-    void WriteLevelTimes(TextWriter* _out);
-    void WriteSquaddiesUsed(TextWriter* _out);
-
     void ParseLocations(TextReader* _in);
     void ParseBuildings(TextReader* _in);
     void ParseEvents(TextReader* _in);
-    void ParseTutorial(TextReader* _in);
     void ParseLevelTimes(TextReader* _in);
     void ParseSquaddiesUsed(TextReader* _in);
 
@@ -317,10 +303,8 @@ class GlobalWorld
     void TransferSpirits(int _locationId);
 
     void LoadGame(char* _filename);
-    void SaveGame(char* _filename);
 
-    void LoadLocations(char* _filename);
-    void SaveLocations(char* _filename);
+    void LoadLocations(const char* _filename);
 
     void SetupLights();
     void SetupFog();

@@ -3,8 +3,6 @@
 
 extern const char *s_pageNames[GameMenuWindow::NumPages];
 
-#include "location.h"
-
 class FinishMultiwiniaButton : public BackPageButton
 {
 public:
@@ -57,7 +55,6 @@ public:
         g_prefsManager->SetInt( "FilterShowFullGames", (int)parent->m_showFullGamesFilter );
         g_prefsManager->SetInt( "FilterShowCustomMaps", (int)parent->m_showCustomMapsFilter );
         g_prefsManager->SetInt( "FilterShowPassworded", (int)parent->m_showPasswordedFilter );
-        g_prefsManager->Save();
 
         BackPageButton::MouseUp();
     }

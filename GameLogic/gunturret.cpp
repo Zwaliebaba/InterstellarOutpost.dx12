@@ -3,11 +3,9 @@
 #include "shape.h"
 #include "math_utils.h"
 #include "text_renderer.h"
-
 #include "random_number.h"
 #include "input.h"
 #include "language_table.h"
-#include "text_file_writer.h"
 #include "text_stream_readers.h"
 #include "globals.h"
 #include "app.h"
@@ -15,7 +13,6 @@
 #include "team.h"
 #include "entity_grid.h"
 #include "camera.h"
-#include "user_input.h"
 #include "main.h"
 #include "global_world.h"
 #include "level_file.h"
@@ -1104,19 +1101,6 @@ bool GunTurret::DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, dou
   return false;
 }
 
-void GunTurret::ListSoundEvents(LList<char*>* _list)
-{
-  Building::ListSoundEvents(_list);
-
-  _list->PutData("TargetSighted");
-  _list->PutData("RegisteredKill");
-
-  _list->PutData("FireShell");
-  _list->PutData("FireFlame");
-  _list->PutData("FireRocket");
-  _list->PutData("FireGrenade");
-}
-
 void GunTurret::SetTarget(Vector3 _target) { m_target = _target; }
 
 char* GunTurret::GetTurretTypeName(int _type)
@@ -1175,17 +1159,6 @@ void GunTurret::Read(TextReader* _in, bool _dynamic)
       m_targetForce = atof(_in->GetNextToken());
     }
   }
-}
-
-void GunTurret::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-  _out->printf("%-4d", m_state);
-  _out->printf("%-2.2f ", m_targetPos.x);
-  _out->printf("%-2.2f ", m_targetPos.z);
-  _out->printf("%-2.2f ", m_targetRadius);
-  _out->printf("%-2.2f ", m_targetForce);
-
 }
 
 GunTurretTarget::GunTurretTarget(int _buildingId)

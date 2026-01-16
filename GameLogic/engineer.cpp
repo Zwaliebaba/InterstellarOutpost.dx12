@@ -2,10 +2,8 @@
 #include "math_utils.h"
 #include "resource.h"
 #include "matrix34.h"
-#include "text_renderer.h"
 #include "language_table.h"
 #include "random_number.h"
-#include "input_types.h"
 #include "app.h"
 #include "explosion.h"
 #include "global_world.h"
@@ -14,14 +12,11 @@
 #include "particle_system.h"
 #include "renderer.h"
 #include "team.h"
-#include "user_input.h"
 #include "obstruction_grid.h"
 #include "camera.h"
 #include "main.h"
 #include "markersystem.h"
-
 #include "soundsystem.h"
-
 #include "incubator.h"
 #include "controltower.h"
 #include "engineer.h"
@@ -1256,14 +1251,4 @@ void Engineer::RunAI(AI* _ai)
     if (pos != g_zeroVector)
       SetWaypoint(pos);
   }
-}
-
-void Engineer::ListSoundEvents(LList<char*>* _list)
-{
-  Entity::ListSoundEvents(_list);
-
-  _list->PutData("BeginReprogramming");
-  _list->PutData("EndReprogramming");
-  _list->PutData("ReprogrammingComplete");
-  _list->PutData("DropSpirit");
 }

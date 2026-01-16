@@ -11,7 +11,6 @@
 
 class TextReader;
 class BuildingPort;
-class TextWriter;
 
 class Building : public WorldObject
 {
@@ -166,10 +165,7 @@ class Building : public WorldObject
     virtual bool DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, double _rayLen = 1e10, Vector3* _pos = nullptr,
                             Vector3* _norm = nullptr); // pos/norm will not always be available
 
-    virtual void ListSoundEvents(LList<char*>* _list);
-
     virtual void Read(TextReader* _in, bool _dynamic); // Use these to read/write additional building-specific
-    virtual void Write(TextWriter* _out); // data to the level files
 
     virtual int GetBuildingLink(); // Allows a building to link to another
     virtual void SetBuildingLink(int _buildingId); // eg control towers

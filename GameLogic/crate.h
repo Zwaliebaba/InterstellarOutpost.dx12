@@ -150,7 +150,6 @@ class Crate : public Building
     static char* GetName(int _type);
     static void GetNameTranslated(int _type, UnicodeString& _dest);
 
-    void ListSoundEvents(LList<char*>* _list) override;
     void StopCaptureSounds();
 
     static WorldObjectId RunAirStrike(const Vector3& _pos, int _teamId, bool _special = false);

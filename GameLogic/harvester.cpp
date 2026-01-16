@@ -1,40 +1,27 @@
 #include "pch.h"
-
-#include <math.h>
-
-#include "math_utils.h"
-#include "resource.h"
-#include "matrix34.h"
-#include "shape.h"
-
-#include "text_renderer.h"
-
-#include "language_table.h"
-#include "random_number.h"
-#include "input.h"
-#include "input_types.h"
-
-#include "app.h"
-#include "explosion.h"
-#include "globals.h"
-#include "global_world.h"
-#include "level_file.h"
-#include "location.h"
-#include "particle_system.h"
-#include "renderer.h"
-#include "team.h"
-#include "user_input.h"
-#include "obstruction_grid.h"
-#include "camera.h"
-#include "main.h"
-
-#include "soundsystem.h"
-
-#include "incubator.h"
-#include "engineer.h"
 #include "harvester.h"
-#include "weapons.h"
+#include "app.h"
+#include "camera.h"
+#include "engineer.h"
+#include "explosion.h"
+#include "global_world.h"
+#include "incubator.h"
+#include "input.h"
+#include "language_table.h"
+#include "location.h"
+#include "main.h"
+#include "math_utils.h"
+#include "matrix34.h"
+#include "obstruction_grid.h"
+#include "particle_system.h"
+#include "random_number.h"
+#include "renderer.h"
+#include "resource.h"
+#include "shape.h"
+#include "soundsystem.h"
 #include "spawnpoint.h"
+#include "team.h"
+#include "weapons.h"
 
 #define HARVESTER_COLLECTION_RANGE 75.0f
 
@@ -342,7 +329,7 @@ void Harvester::AdvanceGrenades()
   {
     if (g_app->m_location->m_effects.ValidIndex(m_grenades[i]))
     {
-      Grenade* g = static_cast<Grenade*>(g_app->m_location->m_effects[m_grenades[i]]);
+      auto g = static_cast<Grenade*>(g_app->m_location->m_effects[m_grenades[i]]);
       if (g->m_type != EffectThrowableGrenade)
         continue;
 
@@ -446,7 +433,7 @@ void Harvester::ReleaseGrenades()
     int id = m_grenades[0];
     if (g_app->m_location->m_effects.ValidIndex(id))
     {
-      Grenade* e = static_cast<Grenade*>(g_app->m_location->m_effects[id]);
+      auto e = static_cast<Grenade*>(g_app->m_location->m_effects[id]);
       e->m_collected = false;
       e->ResetForce();
       m_grenades.RemoveData(0);
@@ -666,7 +653,7 @@ bool Harvester::AdvanceHarvesting()
   {
     if (g_app->m_location->m_effects.ValidIndex(i))
     {
-      Grenade* e = static_cast<Grenade*>(g_app->m_location->m_effects[i]);
+      auto e = static_cast<Grenade*>(g_app->m_location->m_effects[i]);
       if (e && e->m_type == EffectThrowableGrenade)
       {
         Vector3 distance = (e->m_pos - m_pos);
@@ -1032,12 +1019,3 @@ char* Harvester::GetCurrentAction()
 }
 
 bool Harvester::IsSelectable() { return true; }
-
-void Harvester::ListSoundEvents(LList<char*>* _list)
-{
-  Entity::ListSoundEvents(_list);
-
-  _list->PutData("BeginReprogramming");
-  _list->PutData("EndReprogramming");
-  _list->PutData("ReprogrammingComplete");
-}

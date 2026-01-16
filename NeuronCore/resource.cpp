@@ -2,19 +2,16 @@
 #include "binary_stream_readers.h"
 #include "bitmap.h"
 #include "filesys_utils.h"
-#include "text_file_writer.h"
 #include "resource.h"
 #include "shape.h"
 #include "text_renderer.h"
 #include "text_stream_readers.h"
-#include "preferences.h"
 #include "runnable.h"
 #include "unicode_text_stream_reader.h"
 #include "sound_stream_decoder.h"
 #include "soundsystem.h"
 #include "app.h"
 #include "location.h"
-#include "renderer.h"
 #include "loading_screen.h"
 
 Resource::Resource()
@@ -590,31 +587,6 @@ char* Resource::GenerateName()
   m_nameSeed++;
 
   return name;
-}
-
-TextFileWriter* Resource::GetTextFileWriter(const char* _filename, bool _encrypt)
-{
-  char fullFilename[256];
-
-  if (m_modName)
-  {
-    sprintf(fullFilename, "%smods/%s/%s", g_app->GetProfileDirectory(), m_modName, _filename);
-
-    char* nextSlash = fullFilename;
-    while (nextSlash = strchr(nextSlash, '/'))
-    {
-      *nextSlash = 0;
-      bool result = CreateDirectory(fullFilename);
-      ASSERT_TEXT(result, "Failed to write to %s", fullFilename);
-      *nextSlash = '/';
-      ++nextSlash;
-    }
-
-    return new TextFileWriter(fullFilename, _encrypt);
-  }
-
-  sprintf(fullFilename, "%s", _filename);
-  return new TextFileWriter(fullFilename, _encrypt);
 }
 
 bool Resource::FileExists(const char* _file)

@@ -181,10 +181,3 @@ void Meteor::Render(double _predictionTime)
   glDisable(GL_TEXTURE_2D);
   glDisable(GL_BLEND);
 }
-
-void Meteor::ListSoundEvents(LList<char*>* _list)
-{
-  Entity::ListSoundEvents(_list);
-
-  _list->PutData("Land");
-}

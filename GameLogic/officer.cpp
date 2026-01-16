@@ -42,16 +42,6 @@ Officer::Officer()
   m_type = TypeOfficer;
   m_state = StateIdle;
   m_orders = OrderNone;
-
-  /*m_shape = g_app->m_resource->GetShape( "darwinian.shp" );
-  ASSERT_TEXT( m_shape, "Shape not found : officer.shp" );
-
-  const char flagMarkerName[] = "MarkerFlag";
-  m_flagMarker = m_shape->m_rootFragment->LookupMarker( flagMarkerName );
-  ASSERT_TEXT( m_flagMarker, "Officer: Can't get Marker(%s) from shape(%s), probably a corrupted file\n", flagMarkerName, m_shape->m_name );
-
-  m_centrePos = m_shape->CalculateCentre(g_identityMatrix34);
-  m_radius = m_shape->CalculateRadius(g_identityMatrix34, m_centrePos);*/
 }
 
 Officer::~Officer()
@@ -1200,17 +1190,6 @@ void Officer::SetWaypoint(const Vector3& _wayPoint)
       }
     }
   }
-}
-
-void Officer::ListSoundEvents(LList<char*>* _list)
-{
-  Entity::ListSoundEvents(_list);
-
-  _list->PutData("SetOrderNone");
-  _list->PutData("SetOrderGoto");
-  _list->PutData("SetOrderFollow");
-  _list->PutData("SetOrderAbsorb");
-  _list->PutData("SetOrderFormation");
 }
 
 void Officer::CancelOrderSounds()

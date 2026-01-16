@@ -20,7 +20,6 @@ class Powerstation : public Building
     void SetBuildingLink(int _buildingId) override;
 
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* out) override;
 };
 
 #endif

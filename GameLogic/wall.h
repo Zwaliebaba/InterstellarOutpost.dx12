@@ -1,43 +1,38 @@
-
 #ifndef _included_wall_h
 #define _included_wall_h
 
 #include "building.h"
 
-
 class Wall : public Building
 {
-protected:
+  protected:
     double m_damage;
     double m_fallSpeed;
     double m_lastDamageTime;
     double m_scale;
 
-    int   m_objectiveLink;
-    bool    m_registered;
-    
-public:
+    int m_objectiveLink;
+    bool m_registered;
+
+  public:
     Wall();
-    void Initialise( Building *_template );
+    void Initialise(Building* _template) override;
 
-    bool Advance    ();
-    void Damage     ( double _damage );
-    void Render     ( double _predictionTime );
+    bool Advance() override;
+    void Damage(double _damage) override;
+    void Render(double _predictionTime) override;
 
-    void SetDetail  ( int _detail );
+    void SetDetail(int _detail) override;
 
-    void SetBuildingLink( int _buildingId );
-    int  GetBuildingLink();
+    void SetBuildingLink(int _buildingId) override;
+    int GetBuildingLink() override;
 
-    bool DoesSphereHit( const Vector3 &_pos, double _radius );
-    bool DoesShapeHit           (Shape *_shape, Matrix34 _transform);
-    bool DoesRayHit             (Vector3 const &_rayStart, Vector3 const &_rayDir, 
-                                 double _rayLen=1e10, Vector3 *_pos=NULL, Vector3 *_norm=NULL);
+    bool DoesSphereHit(const Vector3& _pos, double _radius) override;
+    bool DoesShapeHit(Shape* _shape, Matrix34 _transform) override;
+    bool DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, double _rayLen = 1e10, Vector3* _pos = nullptr,
+                    Vector3* _norm = nullptr) override;
 
-    void Read   ( TextReader *_in, bool _dynamic );     
-    void Write  ( TextWriter *_out );	
-
+    void Read(TextReader* _in, bool _dynamic) override;
 };
-
 
 #endif

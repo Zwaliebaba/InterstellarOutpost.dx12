@@ -1,8 +1,6 @@
 #ifndef INCLUDED_SPIDER_H
 #define INCLUDED_SPIDER_H
 
-#include "vector2.h"
-
 #include "entity.h"
 
 class Unit;
@@ -88,7 +86,6 @@ class Spider : public Entity
     void Render(double _predictionTime) override;
 
     bool IsInView() override;
-    void ListSoundEvents(LList<char*>* _list) override;
 };
 
 #endif

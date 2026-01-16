@@ -2,7 +2,6 @@
 #define _included_soundsliderbutton_h
 
 #include "darwinia_window.h"
-#include "mainmenus.h"
 #include "preferences.h"
 #include "sound_library_3d.h"
 #include "targetcursor.h"
@@ -131,7 +130,6 @@ public:
 	void MouseUp()
 	{
 		g_prefsManager->SetInt("SoundMasterVolume", m_volume*255);
-		g_prefsManager->Save();
 	}
 
 };

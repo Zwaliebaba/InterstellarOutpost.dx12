@@ -92,10 +92,6 @@ class ApplyKeybindingsButton : public DarwiniaButton
 
     TaskManagerInterface::CreateTaskManager();
 
-
-    g_prefsManager->Save();
-    prefsMan.Save();
-
     g_app->m_langTable->RebuildTables();
   }
 };

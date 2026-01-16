@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "resource.h"
-#include "text_file_writer.h"
 #include "text_stream_readers.h"
 #include "text_renderer.h"
 #include "shape.h"
@@ -215,13 +214,6 @@ void FuelBuilding::Read(TextReader* _in, bool _dynamic)
   m_fuelLink = atoi(_in->GetNextToken());
 }
 
-void FuelBuilding::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%6d ", m_fuelLink);
-}
-
 int FuelBuilding::GetBuildingLink() { return m_fuelLink; }
 
 void FuelBuilding::SetBuildingLink(int _buildingId) { m_fuelLink = _buildingId; }
@@ -331,14 +323,6 @@ bool FuelGenerator::Advance()
   return FuelBuilding::Advance();
 }
 
-void FuelGenerator::ListSoundEvents(LList<char*>* _list)
-{
-  FuelBuilding::ListSoundEvents(_list);
-
-  _list->PutData("PumpUp");
-  _list->PutData("PumpDown");
-}
-
 Vector3 FuelGenerator::GetPumpPos()
 {
   Vector3 pumpPos = m_pos;
@@ -409,14 +393,6 @@ bool FuelPipe::Advance()
 
   return FuelBuilding::Advance();
 }
-
-void FuelPipe::ListSoundEvents(LList<char*>* _list)
-{
-  FuelBuilding::ListSoundEvents(_list);
-
-  _list->PutData("PumpFuel");
-}
-
 
 FuelStation::FuelStation()
   : FuelBuilding(),
@@ -553,13 +529,6 @@ bool FuelStation::BoardRocket(WorldObjectId _id)
   }
 
   return false;
-}
-
-void FuelStation::ListSoundEvents(LList<char*>* _list)
-{
-  FuelBuilding::ListSoundEvents(_list);
-
-  _list->PutData("LoadPassenger");
 }
 
 void FuelStation::Render(double _predictionTime) { Building::Render(_predictionTime); }
@@ -781,19 +750,6 @@ EscapeRocket::~EscapeRocket()
     delete m_shape;
     m_shape = nullptr;
   }
-}
-
-void EscapeRocket::ListSoundEvents(LList<char*>* _list)
-{
-  FuelBuilding::ListSoundEvents(_list);
-
-  _list->PutData("Refueling");
-  _list->PutData("Happy");
-  _list->PutData("Unhappy");
-  _list->PutData("Flight");
-  _list->PutData("Malfunction");
-  _list->PutData("Explode");
-  _list->PutData("EngineBurn");
 }
 
 void EscapeRocket::SetupSounds()
@@ -1628,16 +1584,9 @@ void EscapeRocket::Read(TextReader* _in, bool _dynamic)
   m_spawnCompleted = atoi(_in->GetNextToken());
 }
 
-void EscapeRocket::Write(TextWriter* _out)
+int EscapeRocket::GetStateId(const char* _state)
 {
-  FuelBuilding::Write(_out);
-
-  _out->printf("%6.2f %6d %6d %6d", m_fuel, m_passengers, m_spawnBuildingId, static_cast<int>(m_spawnCompleted));
-}
-
-int EscapeRocket::GetStateId(char* _state)
-{
-  static char* stateNames[] = {"Refueling", "Loading", "Ignition", "Ready", "Countdown", "Exploding", "Flight"};
+  static const char* stateNames[] = {"Refueling", "Loading", "Ignition", "Ready", "Countdown", "Exploding", "Flight"};
 
   for (int i = 0; i < NumStates; ++i)
   {

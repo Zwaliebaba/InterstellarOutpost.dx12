@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "text_file_writer.h"
 #include "text_stream_readers.h"
 #include "math_utils.h"
 #include "text_renderer.h"
@@ -101,11 +100,3 @@ void SafeArea::Read(TextReader* _in, bool _dynamic)
   m_entityTypeRequired = atoi(_in->GetNextToken());
 }
 
-void SafeArea::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%-6.2f", m_size);
-  _out->printf(" %d", m_entitiesRequired);
-  _out->printf(" %d", m_entityTypeRequired);
-}

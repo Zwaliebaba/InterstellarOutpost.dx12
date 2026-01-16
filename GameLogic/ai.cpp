@@ -1,6 +1,4 @@
 #include "pch.h"
-
-#include "text_file_writer.h"
 #include "math_utils.h"
 #include "resource.h"
 #include "text_renderer.h"
@@ -2721,15 +2719,6 @@ void AITarget::Read(TextReader* _in, bool _dynamic)
   }
 }
 
-void AITarget::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-  _out->printf("%-6d", m_linkId);
-  _out->printf("%-1.2f ", m_priorityModifier);
-  _out->printf("%-6d", m_checkCliffs);
-}
-
-
 AISpawnPoint::AISpawnPoint()
   : Building(),
     m_timer(0.0),
@@ -2905,13 +2894,6 @@ void AISpawnPoint::Read(TextReader* _in, bool _dynamic)
     if (_in->TokenAvailable())
       m_routeId = atoi(_in->GetNextToken());
   }
-}
-
-void AISpawnPoint::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%-6d %-6d %-6d %-6d %-6d %-6d", m_activatorId, m_entityType, m_count, m_period, m_spawnLimit, m_routeId);
 }
 
 bool AISpawnPoint::DoesSphereHit(const Vector3& _pos, double _radius) { return false; }

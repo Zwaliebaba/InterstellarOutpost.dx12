@@ -71,7 +71,6 @@ void PlayerNameString::Set(const UnicodeString& _x)
     name = m_name;
 
   g_prefsManager->SetString("PlayerName", name);
-  g_prefsManager->Save();
 
   ClientToServer* cToS = g_app->m_clientToServer;
   if (cToS)

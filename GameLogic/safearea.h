@@ -26,7 +26,6 @@ class SafeArea : public Building
     void GetObjectiveCounter(UnicodeString& _dest) override;
 
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 };
 
 #endif

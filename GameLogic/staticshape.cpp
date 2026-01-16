@@ -1,20 +1,12 @@
 #include "pch.h"
-
-#include "text_file_writer.h"
 #include "resource.h"
 #include "text_stream_readers.h"
 #include "shape.h"
-
 #include "language_table.h"
-
 #include "staticshape.h"
-
 #include "app.h"
 #include "location.h"
 #include "camera.h"
-#ifdef USE_SEPULVEDA_HELP_TUTORIAL
-#include "sepulveda.h"
-#endif
 
 StaticShape::StaticShape()
   : Building(),
@@ -140,10 +132,3 @@ void StaticShape::Read(TextReader* _in, bool _dynamic)
   SetShapeName(_in->GetNextToken());
 }
 
-void StaticShape::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%6.2f  ", m_scale);
-  _out->printf("%s  ", m_shapeName);
-}

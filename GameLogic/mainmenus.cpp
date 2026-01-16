@@ -1,14 +1,12 @@
 #include "pch.h"
 #include "preferences.h"
 #include "text_renderer.h"
-#include "window_manager.h"
 #include "language_table.h"
 #include "targetcursor.h"
 #include "mainmenus.h"
 #include "prefs_screen_window.h"
 #include "prefs_graphics_window.h"
 #include "prefs_sound_window.h"
-#include "prefs_keybindings_window.h"
 #include "prefs_other_window.h"
 #include "userprofile_window.h"
 #include "multiwinia_window.h"
@@ -277,9 +275,6 @@ class ModsButton : public GameMenuButton
     {
       if (!EclGetWindow("dialog_mods"))
       {
-#ifdef USE_DARWINIA_MOD_SYSTEM
-        EclRegisterWindow(new ModsWindow(), m_parent);
-#endif
       }
     }
 };

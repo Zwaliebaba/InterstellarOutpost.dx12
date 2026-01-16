@@ -203,9 +203,6 @@
     <ClCompile Include="library.cpp">
       <Filter>WorldObjects</Filter>
     </ClCompile>
-    <ClCompile Include="lightning.cpp">
-      <Filter>WorldObjects</Filter>
-    </ClCompile>
     <ClCompile Include="meteor.cpp">
       <Filter>WorldObjects</Filter>
     </ClCompile>
@@ -255,9 +252,6 @@
       <Filter>WorldObjects</Filter>
     </ClCompile>
     <ClCompile Include="smokemarker.cpp">
-      <Filter>WorldObjects</Filter>
-    </ClCompile>
-    <ClCompile Include="snow.cpp">
       <Filter>WorldObjects</Filter>
     </ClCompile>
     <ClCompile Include="souldestroyer.cpp">
@@ -333,6 +327,12 @@
       <Filter>WorldObjects</Filter>
     </ClCompile>
     <ClCompile Include="worldobject.cpp">
+      <Filter>WorldObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="snow.cpp">
+      <Filter>WorldObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="lightning.cpp">
       <Filter>WorldObjects</Filter>
     </ClCompile>
   </ItemGroup>
@@ -650,9 +650,6 @@
     <ClInclude Include="library.h">
       <Filter>WorldObjects</Filter>
     </ClInclude>
-    <ClInclude Include="lightning.h">
-      <Filter>WorldObjects</Filter>
-    </ClInclude>
     <ClInclude Include="meteor.h">
       <Filter>WorldObjects</Filter>
     </ClInclude>
@@ -702,9 +699,6 @@
       <Filter>WorldObjects</Filter>
     </ClInclude>
     <ClInclude Include="smokemarker.h">
-      <Filter>WorldObjects</Filter>
-    </ClInclude>
-    <ClInclude Include="snow.h">
       <Filter>WorldObjects</Filter>
     </ClInclude>
     <ClInclude Include="souldestroyer.h">
@@ -784,6 +778,12 @@
     </ClInclude>
     <ClInclude Include="soundsliderbutton.h">
       <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="snow.h">
+      <Filter>WorldObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="lightning.h">
+      <Filter>WorldObjects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

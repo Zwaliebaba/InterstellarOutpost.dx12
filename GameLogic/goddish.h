@@ -1,35 +1,29 @@
-
 #ifndef _included_goddish_h
 #define _included_goddish_h
 
 #include "building.h"
 
-
 class GodDish : public Building
 {
-public:
-    bool    m_activated;
-    double   m_timer;
-
   public:
+    bool m_activated;
+    double m_timer;
+
     GodDish();
 
-    void Initialise( Building *_template );
+    void Initialise(Building* _template) override;
 
-    bool Advance        ();
-    void Render         ( double _predictionTime );
-    void RenderAlphas   ( double _predictionTime );
+    bool Advance() override;
+    void Render(double _predictionTime) override;
+    void RenderAlphas(double _predictionTime) override;
 
-    bool IsInView       ();
+    bool IsInView() override;
 
     void Activate();
     void DeActivate();
-    void SpawnSpam( bool _isResearch );
+    void SpawnSpam(bool _isResearch);
 
     void TriggerSpam();
-
-    void ListSoundEvents( LList<char *> *_list );
 };
-
 
 #endif

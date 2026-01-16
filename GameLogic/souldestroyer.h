@@ -54,8 +54,6 @@ class SoulDestroyer : public Entity
 
     void Attack(const Vector3& _pos) override;
 
-    void ListSoundEvents(LList<char*>* _list) override;
-
     void SetWaypoint(Vector3 _waypoint) override;
 };
 

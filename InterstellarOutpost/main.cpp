@@ -18,12 +18,8 @@
 #include "filesys_utils.h"
 #include "win32_eventhandler.h"
 #include "inputdriver_win32.h"
-#include "inputdriver_prefs.h"
 #include "inputdriver_alias.h"
-#include "inputdriver_conjoin.h"
-#include "inputdriver_chord.h"
 #include "inputdriver_invert.h"
-#include "inputdriver_idle.h"
 #include "inputdriver_value.h"
 #include "sound_library_2d.h"
 #include "sound_library_3d_software.h"
@@ -479,12 +475,8 @@ void SetPreferenceOverrides()
 void InitialiseInputManager()
 {
   g_inputManager = new InputManager;
-  g_inputManager->addDriver(new ConjoinInputDriver());
-  g_inputManager->addDriver(new ChordInputDriver());
   g_inputManager->addDriver(new InvertInputDriver());
-  g_inputManager->addDriver(new IdleInputDriver());
   g_inputManager->addDriver(new W32InputDriver()); 
-  g_inputManager->addDriver(new PrefsInputDriver());
   g_inputManager->addDriver(new ValueInputDriver());
   g_inputManager->addDriver(new AliasInputDriver());
 }

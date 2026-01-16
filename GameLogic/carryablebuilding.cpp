@@ -405,15 +405,6 @@ void CarryableBuilding::Render(double _predictionTime)
   }
 }
 
-void CarryableBuilding::ListSoundEvents(LList<char*>* _list)
-{
-  Building::ListSoundEvents(_list);
-
-  _list->PutData("Lift");
-  _list->PutData("Carry");
-  _list->PutData("Drop");
-}
-
 bool CarryableBuilding::DoesSphereHit(const Vector3& _pos, double _radius) { return false; }
 
 bool CarryableBuilding::DoesShapeHit(Shape* _shape, Matrix34 _transform) { return false; }

@@ -29,7 +29,6 @@ class ResearchItem : public Building
     bool Reprogram();
 
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 
     void GetEndPositions(Vector3& _end1, Vector3& _end2);
 
@@ -38,8 +37,6 @@ class ResearchItem : public Building
     bool DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, double _rayLen, Vector3* _pos, Vector3* norm) override;
 
     bool IsInView() override;
-
-    void ListSoundEvents(LList<char*>* _list) override;
 };
 
 #endif

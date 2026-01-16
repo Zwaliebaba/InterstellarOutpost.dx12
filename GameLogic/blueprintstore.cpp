@@ -2,7 +2,6 @@
 #include "resource.h"
 #include "shape.h"
 #include "text_stream_readers.h"
-#include "text_file_writer.h"
 #include "text_renderer.h"
 #include "language_table.h"
 #include "blueprintstore.h"
@@ -153,13 +152,6 @@ void BlueprintBuilding::Read(TextReader* _in, bool _dynamic)
   Building::Read(_in, _dynamic);
 
   m_buildingLink = atoi(_in->GetNextToken());
-}
-
-void BlueprintBuilding::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%-8d", m_buildingLink);
 }
 
 int BlueprintBuilding::GetBuildingLink() { return m_buildingLink; }
@@ -509,13 +501,6 @@ void BlueprintConsole::Read(TextReader* _in, bool _dynamic)
   m_segment = atoi(_in->GetNextToken());
 }
 
-void BlueprintConsole::Write(TextWriter* _out)
-{
-  BlueprintBuilding::Write(_out);
-
-  _out->printf("%-8d", m_segment);
-}
-
 bool BlueprintConsole::Advance()
 {
   RecalculateOwnership();
@@ -648,9 +633,3 @@ void BlueprintRelay::Read(TextReader* _in, bool _dynamic)
   m_altitude = atof(_in->GetNextToken());
 }
 
-void BlueprintRelay::Write(TextWriter* _out)
-{
-  BlueprintBuilding::Write(_out);
-
-  _out->printf("%-2.2f", m_altitude);
-}

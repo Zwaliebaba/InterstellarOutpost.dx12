@@ -1,6 +1,4 @@
 #include "pch.h"
-
-#include "text_file_writer.h"
 #include "text_stream_readers.h"
 #include "math_utils.h"
 #include "text_renderer.h"
@@ -17,7 +15,6 @@
 #include "app.h"
 #include "team.h"
 #include "entity_grid.h"
-#include "main.h"
 #include "global_world.h"
 #include "camera.h"
 #include "multiwinia.h"
@@ -816,19 +813,3 @@ void MultiwiniaZone::Read(TextReader* _in, bool _dynamic)
   while (_in->TokenAvailable()) { m_blitzkriegLinks.PutData(atoi(_in->GetNextToken())); }
 }
 
-void MultiwiniaZone::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%-6.2f", m_size);
-
-  for (int i = 0; i < m_blitzkriegLinks.Size(); ++i)
-    _out->printf("   %d", m_blitzkriegLinks[i]);
-}
-
-void MultiwiniaZone::ListSoundEvents(LList<char*>* _list)
-{
-  Building::ListSoundEvents(_list);
-
-  _list->PutData("CaptureStatue");
-}

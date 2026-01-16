@@ -39,45 +39,11 @@ class BenchMark;
 class AchievementTracker;
 class WorkQueue;
 class DelayedJob;
-class TextFileWriter;
 class TextReader;
 class EntityGrid;
 class Team;
 
 #include "llist.h"
-
-#ifdef TESTBED_ENABLED
-typedef enum TESTBED_MODE
-{
-  TESTBED_ON,
-  TESTBED_OFF,
-};typedef enum TESTBED_TYPE
-{
-  TESTBED_CLIENT,
-  TESTBED_SERVER,
-};typedef enum TESTBED_STATE
-{
-  TESTBED_MAINMENU,
-  TESTBED_HOST_GAME,
-  TESTBED_JOIN_GAME,
-  TESTBED_PICK_SERVER,
-  TESTBED_WAIT_FOR_CLIENT_ID,
-  TESTBED_SELECT_GAME,
-  TESTBED_SELECT_MAP,
-  TESTBED_SETGAMEOPTIONSDELAY,
-  TESTBED_SETGAMEOPTIONS,
-  TESTBED_WAITFORGAMEOPTIONS,
-  TESTBED_WAIT_FOR_MAP,
-  TESTBED_WAIT_FOR_CLIENTS,
-  TESTBED_PLAY,
-  TESTBED_IDLE,
-  TESTBED_GAME_OVER_DELAY,
-  TESTBED_MAKE_CLIENT_SPECTATOR,
-  TESTBED_SEQUENCEID_DELAY,
-  TESTBED_BUILD_GAME_ENTRIES,
-};
-
-#endif
 
 class App
 {
@@ -223,7 +189,6 @@ class App
 
     void SetProfileName(const char* _profileName);
     bool LoadProfile();
-    bool SaveProfile(bool _global, bool _local);
     void ResetLevel(bool _global);
 
     void HandleDelayedJobs();

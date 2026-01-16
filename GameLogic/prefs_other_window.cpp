@@ -98,8 +98,6 @@ class ApplyOtherButton : public GameMenuButton
         else
           EclRegisterWindow(new LocationWindow());
       }
-
-      g_prefsManager->Save();
     }
 
     void Render(int realX, int realY, bool highlighted, bool clicked) override

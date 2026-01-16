@@ -1,6 +1,4 @@
 #include "pch.h"
-#include "preferences.h"
-#include "text_file_writer.h"
 #include "text_stream_readers.h"
 #include "random_number.h"
 #include "app.h"
@@ -170,12 +168,6 @@ void AIObjective::Read(TextReader* _in, bool _dynamic)
 {
   Building::Read(_in, _dynamic);
   m_nextObjective = atoi(_in->GetNextToken());
-}
-
-void AIObjective::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-  _out->printf("%4d", m_nextObjective);
 }
 
 bool AIObjective::DoesSphereHit(const Vector3& _pos, double _radius) { return false; }
@@ -483,15 +475,6 @@ void AIObjectiveMarker::Read(TextReader* _in, bool _dynamic)
     if (_in->TokenAvailable())
       m_pickupOnly = atoi(_in->GetNextToken());
   }
-}
-
-void AIObjectiveMarker::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-  _out->printf("%2.2f ", m_scanRange);
-  _out->printf("%4d", m_objectiveId);
-  _out->printf("%4d", m_armourObjective);
-  _out->printf("%4d", m_pickupOnly);
 }
 
 bool AIObjectiveMarker::DoesSphereHit(const Vector3& _pos, double _radius) { return false; }

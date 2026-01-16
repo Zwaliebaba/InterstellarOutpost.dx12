@@ -192,8 +192,6 @@ void SetWindowed(bool _isWindowed, bool _isPermanent, bool &_isSwitchingToWindow
 
 	if (!_isPermanent) 
 		g_prefsManager->SetInt( SCREEN_WINDOWED_PREFS_NAME, oldIsWindowedPref );
-	else
-		g_prefsManager->Save(); 
 }
 
 
@@ -226,8 +224,6 @@ public:
         g_prefsManager->SetInt( SCREEN_Z_DEPTH_PREFS_NAME, parent->m_zDepth );
 
 		RestartWindowManagerAndRenderer();
-		
-        g_prefsManager->Save();        
 
         parent->m_resId = g_windowManager->GetResolutionId( g_prefsManager->GetInt(SCREEN_WIDTH_PREFS_NAME),
                                                             g_prefsManager->GetInt(SCREEN_HEIGHT_PREFS_NAME) );

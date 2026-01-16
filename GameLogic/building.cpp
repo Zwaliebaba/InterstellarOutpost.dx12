@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "text_file_writer.h"
 #include "math_utils.h"
 #include "matrix34.h"
 #include "resource.h"
@@ -618,19 +617,6 @@ void Building::Read(TextReader* _in, bool _dynamic)
   m_dynamic = _dynamic;
 }
 
-void Building::Write(TextWriter* _out)
-{
-  _out->printf("\t%-20s", GetTypeName(m_type));
-
-  _out->printf("%-8d", m_id.GetUniqueId());
-  _out->printf("%-8.2f", m_pos.x);
-  _out->printf("%-8.2f", m_pos.z);
-  _out->printf("%-8d", m_id.GetTeamId());
-  _out->printf("%-8.2f", m_front.x);
-  _out->printf("%-8.2f", m_front.z);
-  _out->printf("%-8d", m_isGlobal);
-}
-
 bool Building::BuildingIsBlocked(int _buildingId)
 {
 #ifdef BLOCK_OLD_DARWINIA_OBJECTS
@@ -948,15 +934,6 @@ void Building::GetTypeNameTranslated(int _type, UnicodeString& _dest)
     _dest = LANGUAGEPHRASE(stringId);
   else
     _dest = UnicodeString(typeName);
-}
-
-void Building::ListSoundEvents(LList<char*>* _list)
-{
-  _list->PutData("Create");
-  _list->PutData("Reprogramming"); // Remove me
-  _list->PutData("ReprogramComplete");
-  _list->PutData("ChangeTeam");
-  _list->PutData("Damage");
 }
 
 char* Building::LogState(char* _message)

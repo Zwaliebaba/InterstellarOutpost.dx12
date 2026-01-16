@@ -1,60 +1,57 @@
 #ifndef _included_spaceship_h
 #define _included_spaceship_h
 
-#include "llist.h"
-
 #include "entity.h"
-
 
 class SpaceShip : public Entity
 {
-protected:
-    void AdvanceAbducting( bool _atTarget );
+  protected:
+    void AdvanceAbducting(bool _atTarget);
     void AdvanceDropping();
     void AdvanceEngines();
 
-public:
-    WorldObjectId   m_target;
-    WorldObjectId   m_lastDrop;     // track the last darwinian we dropped so that once they are all landed, we can shut off the beam and leave
+  public:
+    WorldObjectId m_target;
+    WorldObjectId m_lastDrop; // track the last darwinian we dropped so that once they are all landed, we can shut off the beam and leave
 
-    int             m_abductees;
-    int             m_state;
+    int m_abductees;
+    int m_state;
 
-    Vector3         m_waypoint;
+    Vector3 m_waypoint;
 
-    double           m_speed;
-    float           m_abductionTimer;
+    double m_speed;
+    float m_abductionTimer;
 
     enum
     {
-        ShipStateIdle,      // just arrived, we should only be in this state while we decend towards our target
-        ShipStateAbducting, // using our beam to abduct darwinians
-        ShipStateWaiting,
-        ShipStateDropping,  // we've collected our quota of Darwinians, so drop off some Futurewinians 
-        ShipStateLeaving,   // we've dropped off our futurewinians, so lets go away
-        NumStates
+      ShipStateIdle,
+      // just arrived, we should only be in this state while we decend towards our target
+      ShipStateAbducting,
+      // using our beam to abduct darwinians
+      ShipStateWaiting,
+      ShipStateDropping,
+      // we've collected our quota of Darwinians, so drop off some Futurewinians 
+      ShipStateLeaving,
+      // we've dropped off our futurewinians, so lets go away
+      NumStates
     };
 
-public:
     SpaceShip();
 
-    void Begin                  ();
+    void Begin() override;
 
-    bool Advance                ( Unit *_unit );  
-    bool AdvanceToTargetPos     ();
+    bool Advance(Unit* _unit) override;
+    bool AdvanceToTargetPos();
 
-    void Render                 ( double predictionTime );
-    void RenderBeam             ( double _predictionTime );
+    void Render(double predictionTime) override;
+    void RenderBeam(double _predictionTime);
 
-    void SetWaypoint            ( Vector3 const &_wayPoint );
-    bool ChangeHealth           ( int amount, int _damageType = DamageTypeUnresistable );
+    void SetWaypoint(const Vector3& _wayPoint);
+    bool ChangeHealth(int amount, int _damageType = DamageTypeUnresistable) override;
 
-    void FindNewTarget          ();
+    void FindNewTarget();
 
-    void ListSoundEvents        ( LList<char *> *_list );
-
-    void IncreaseAbductees      ();
+    void IncreaseAbductees();
 };
-
 
 #endif

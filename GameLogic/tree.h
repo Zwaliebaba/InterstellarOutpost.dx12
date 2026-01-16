@@ -74,10 +74,7 @@ class Tree : public Building
     bool DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, double _rayLen = 1e10, Vector3* _pos = nullptr,
                     Vector3* _norm = nullptr) override; // pos/norm will not always be available
 
-    void ListSoundEvents(LList<char*>* _list) override;
-
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 
     char* LogState(char* message = nullptr) override;
 

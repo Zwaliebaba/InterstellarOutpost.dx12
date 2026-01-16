@@ -4,50 +4,43 @@
 #include "building.h"
 #include "carryablebuilding.h"
 
-
-
 class ChessBase : public Building
-{    
-public:
+{
+  public:
     double m_width;
     double m_depth;
     double m_sparePoints;
     double m_timer;
-    
-public:
+
     ChessBase();
 
-    void Initialise( Building *_template );
+    void Initialise(Building* _template) override;
 
-    void SpawnPiece( double _scale );
+    void SpawnPiece(double _scale);
 
-    bool Advance();
-    void Render( double _precictionTime );
+    bool Advance() override;
+    void Render(double _precictionTime) override;
 
-    void Read   ( TextReader *_in, bool _dynamic );     
-    void Write  ( TextWriter *_out );    
+    void Read(TextReader* _in, bool _dynamic) override;
 };
-
-
 
 class ChessPiece : public CarryableBuilding
 {
-public:
-    int     m_chessBaseId;
-    double   m_damage;
+  public:
+    int m_chessBaseId;
+    double m_damage;
 
-public:
     ChessPiece();
 
-    void Initialise( Building *_template );
+    void Initialise(Building* _template) override;
 
-    bool Advance();
+    bool Advance() override;
 
-    void ExplodeShape( double _fraction );
+    void ExplodeShape(double _fraction);
 
-    void SetWaypoint( Vector3 const &_waypoint );
-    void HandleCollision( double _force );
-    void HandleSuccess();                                       // we arrived at an enemy's chess base
+    void SetWaypoint(const Vector3& _waypoint);
+    void HandleCollision(double _force) override;
+    void HandleSuccess(); // we arrived at an enemy's chess base
 };
 
 #endif

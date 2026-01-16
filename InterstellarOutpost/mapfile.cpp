@@ -1,16 +1,12 @@
 #include "pch.h"
+#include "mapfile.h"
 #include <fstream>
-#include <sstream>
 #include "app.h"
 #include "bitmap.h"
 #include "directory.h"
-#include "filesys_utils.h"
-#include "level_file.h"
 #include "location.h"
-#include "mapfile.h"
 #include "network_stream.h"
 #include "resource.h"
-#include "text_file_writer.h"
 #include "text_stream_readers.h"
 
 MapFile::MapFile()
@@ -76,98 +72,7 @@ MapFile::~MapFile()
 
 TextReader* MapFile::GetTextReader() { return new TextDataReader(m_levelData, m_levelDataLength, m_filename); }
 
-void MapFile::Save(char* _filename)
-{
-  m_filename = _strdup(_filename);
-  m_filename[strlen(m_filename) - 4] = '\0';
-  sprintf(m_filename, "%s.mwm", m_filename);
-
-  auto writer = new TextMemoryWriter();
-  g_app->m_location->m_levelFile->Save(writer);
-
-  auto directory = new Directory();
-  directory->SetName("NewMap");
-
-  m_levelDataLength = writer->GetStream()->str().size();
-  m_levelData = new char[m_levelDataLength];
-  memcpy(m_levelData, writer->GetStream()->str().data(), m_levelDataLength);
-  directory->CreateData(MAPFILE_MAPDATA, m_levelData, m_levelDataLength);
-
-  SaveTextures(directory);
-
-  if (!IsDirectory(g_app->GetMapDirectory()))
-    CreateDirectory(g_app->GetMapDirectory());
-
-  int length = 0;
-  char* directoryOutput = directory->Write(length);
-
-  std::ofstream output(m_filename, std::ios::binary | std::ios::out);
-  // directory->Write( output );
-  WriteNetworkValue(output, length);
-  output.write(directoryOutput, length);
-  output.close();
-
-  delete directoryOutput;
-  delete directory;
-  delete writer;
-}
-
 bool MapFile::IsSaveRequired(char* _filename) { return true; }
-
-void MapFile::SaveTexture(Directory* _directory, char* _texName, char* _filename, int texNum)
-{
-  const BitmapRGBA* bitmap = g_app->m_resource->GetBitmap(_filename);
-  if (bitmap)
-  {
-    int size = sizeof(RGBAColour) * bitmap->m_height * bitmap->m_width;
-    char filenameIdentifier[512];
-    sprintf(filenameIdentifier, "%sFilename", _texName);
-
-    _directory->CreateData(filenameIdentifier, _filename);
-    _directory->CreateData(_texName, bitmap->m_pixels, size);
-
-    char textureinfo[256];
-    sprintf(textureinfo, "%s%d", MAPFILE_TEXTUREHEIGHT, texNum);
-    _directory->CreateData(textureinfo, bitmap->m_height);
-
-    sprintf(textureinfo, "%s%d", MAPFILE_TEXTUREWIDTH, texNum);
-    _directory->CreateData(textureinfo, bitmap->m_width);
-  }
-}
-
-void MapFile::SaveTextures(Directory* _directory)
-{
-  int num = 1;
-  char filename[512];
-
-  sprintf(filename, "terrain/%s", g_app->m_location->m_levelFile->m_landscapeColourFilename);
-  if (IsSaveRequired(filename))
-  {
-    SaveTexture(_directory, MAPFILE_LANDSCAPETEX, filename, num);
-    num++;
-  }
-
-  sprintf(filename, "terrain/%s", g_app->m_location->m_levelFile->m_wavesColourFilename);
-  if (IsSaveRequired(filename))
-  {
-    SaveTexture(_directory, MAPFILE_WAVESTEX, filename, num);
-    num++;
-  }
-
-  sprintf(filename, "terrain/%s", g_app->m_location->m_levelFile->m_waterColourFilename);
-  if (IsSaveRequired(filename))
-  {
-    SaveTexture(_directory, MAPFILE_WATERTEX, filename, num);
-    num++;
-  }
-
-  if (strcmp(g_app->m_location->m_levelFile->m_thumbnailFilename, "default.bmp") != 0)
-  {
-    sprintf(filename, "%s%s", g_app->GetMapDirectory(), g_app->m_location->m_levelFile->m_thumbnailFilename);
-    SaveTexture(_directory, MAPFILE_THUMBNAIL, filename, num);
-    num++;
-  }
-}
 
 void MapFile::LoadTextures(Directory* _directory)
 {

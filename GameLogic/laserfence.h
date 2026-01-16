@@ -53,7 +53,6 @@ class LaserFence : public Building
     bool IsInView() override;
 
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 
     void Enable();
     void Disable();
@@ -76,8 +75,6 @@ class LaserFence : public Building
     bool DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, double _rayLen = 1e10, Vector3* _pos = nullptr,
                     Vector3* _norm = nullptr) override;
     bool DoesShapeHit(Shape* _shape, Matrix34 _transform) override;
-
-    void ListSoundEvents(LList<char*>* _list) override;
 
     Vector3 GetTopPosition();
 };

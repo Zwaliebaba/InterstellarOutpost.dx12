@@ -1,86 +1,76 @@
 #ifndef INCLUDED_SOUND_PARAMETER
 #define INCLUDED_SOUND_PARAMETER
 
-
-class TextReader;
-class TextFileWriter;
-
-
-//*****************************************************************************
-// Class SoundParameter
-//*****************************************************************************
+#include "text_stream_readers.h"
 
 class SoundParameter
 {
-public:
+  public:
     enum
     {
-        TypeFixedValue,
-        TypeRangedRandom,
-        TypeLinked,
-        NumParameterTypes
+      TypeFixedValue,
+      TypeRangedRandom,
+      TypeLinked,
+      NumParameterTypes
     };
 
     enum
     {
-        LinkedToNothing,
-        LinkedToHeightAboveGround,
-        LinkedToXpos,
-        LinkedToYpos,
-        LinkedToZpos,
-        LinkedToVelocity,
-        LinkedToCameraDistance,
-        NumLinkTypes
+      LinkedToNothing,
+      LinkedToHeightAboveGround,
+      LinkedToXpos,
+      LinkedToYpos,
+      LinkedToZpos,
+      LinkedToVelocity,
+      LinkedToCameraDistance,
+      NumLinkTypes
     };
 
     enum
     {
-        UpdateConstantly,
-        UpdateOnceEveryRestart,
-        NumUpdateTypes
+      UpdateConstantly,
+      UpdateOnceEveryRestart,
+      NumUpdateTypes
     };
 
-    int         m_type;
-    int         m_link;
-    int         m_updateType;
+    int m_type;
+    int m_link;
+    int m_updateType;
 
-    float       m_inputLower;
-    float       m_outputLower;
-    float       m_inputUpper;
-    float       m_outputUpper;
+    float m_inputLower;
+    float m_outputLower;
+    float m_inputUpper;
+    float m_outputUpper;
 
-    float       m_desiredOutput;
+    float m_desiredOutput;
 
-    float       m_smooth;
+    float m_smooth;
 
-    float       m_input;
-    float       m_output;
+    float m_input;
+    float m_output;
 
-public:
     SoundParameter();
-    SoundParameter( float _fixedValue );
+    SoundParameter(float _fixedValue);
 
-    void        Copy( SoundParameter *_copyMe );
+    void Copy(SoundParameter* _copyMe);
 
-    void        Recalculate( float _input=0.0f );
-    float       GetOutput();    
+    void Recalculate(float _input = 0.0f);
+    float GetOutput();
 
-    void        Read    ( TextReader *_in );
-    void        Write   ( TextFileWriter *_file, char *_paramName, int _tabs );
+    void Read(TextReader* _in);
 
-	float		GetSmooth();	// Currently returns sqrt(m_smooth)
+    float GetSmooth(); // Currently returns sqrt(m_smooth)
 
-    bool        IsFixedValue( float _value );
+    bool IsFixedValue(float _value);
 
-    static char *GetParameterTypeName   ( int _type );
-    static int   GetParameterType       ( char *_name );
-    
-    static char *GetLinkName            ( int _type );
-    static int   GetLinkType            ( char *_name );
+    static char* GetParameterTypeName(int _type);
+    static int GetParameterType(char* _name);
 
-    static char *GetUpdateTypeName      ( int _type );
-    static int   GetUpdateType          ( char *_name );
+    static char* GetLinkName(int _type);
+    static int GetLinkType(char* _name);
+
+    static char* GetUpdateTypeName(int _type);
+    static int GetUpdateType(char* _name);
 };
-
 
 #endif

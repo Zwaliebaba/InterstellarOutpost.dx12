@@ -3,7 +3,6 @@
 
 #include "llist.h"
 #include "text_stream_readers.h"
-#include "text_file_writer.h"
 
 class AnimatedPanelObject;
 class AnimatedPanelKeyframe;
@@ -35,7 +34,6 @@ class AnimatedPanel
     bool CalculateObjectProperties(int objId, float timeIndex, AnimatedPanelKeyframe& result);
 
     void Read(TextReader* reader);
-    void Write(TextFileWriter* writer);
 };
 
 // AnimatedPanelObject

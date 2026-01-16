@@ -144,7 +144,6 @@ class AITarget : public Building
     double GetRange();
 
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 };
 
 class AISpawnPoint : public Building
@@ -171,7 +170,6 @@ class AISpawnPoint : public Building
     bool Advance() override;
 
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 
     int GetBuildingLink() override;
     void SetBuildingLink(int _buildingId) override;

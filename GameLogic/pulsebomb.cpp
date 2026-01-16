@@ -6,7 +6,6 @@
 #include "resource.h"
 #include "shape.h"
 #include "text_renderer.h"
-#include "text_file_writer.h"
 #include "text_stream_readers.h"
 #include "pulsebomb.h"
 #include "controlstation.h"
@@ -355,14 +354,6 @@ void PulseBomb::Read(TextReader* _in, bool _dynamic)
   Building::Read(_in, _dynamic);
   m_startTime = atof(_in->GetNextToken());
   while (_in->TokenAvailable()) { SetBuildingLink(atoi(_in->GetNextToken())); }
-}
-
-void PulseBomb::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-  _out->printf("%-6.2f  ", m_startTime);
-  for (int i = 0; i < m_links.Size(); ++i)
-    _out->printf("%-4d", m_links[i]);
 }
 
 bool PulseBomb::DoesRayHit(const Vector3& _rayStart, const Vector3& _rayDir, double _rayLen, Vector3* _pos, Vector3* norm)

@@ -1,14 +1,7 @@
 #ifndef INCLUDED_PREFERENCES_H
 #define INCLUDED_PREFERENCES_H
 
-#include <string>
-
-#include "hash_table.h"
-#include "fast_darray.h"
 #include "unicode_string.h"
-#include "unicode_text_file_writer.h"
-#include <map>
-#include <list>
 
 class PrefsItem;
 
@@ -18,47 +11,42 @@ class PrefsItem;
 
 class PrefsManager
 {
-private:
-	typedef std::map<UnicodeString, PrefsItem> PrefsItemMap;
-	typedef std::list<UnicodeString> FileTextList;
+  using PrefsItemMap = std::map<UnicodeString, PrefsItem>;
+  using FileTextList = std::list<UnicodeString>;
 
-	PrefsItemMap m_items;
-	FileTextList m_fileText;
-	
-    char *m_filename;
+  PrefsItemMap m_items;
+  FileTextList m_fileText;
 
-	bool IsLineEmpty(UnicodeString const &_line);
-	void SaveItem(UnicodeTextFileWriter& out, PrefsItem &_item);
+  char* m_filename;
 
-    void CreateDefaultValues();
+  bool IsLineEmpty(const UnicodeString& _line);
 
-public:
-	PrefsManager(char const *_filename);
-	PrefsManager(std::string const &_filename);
-	~PrefsManager();
+  void CreateDefaultValues();
 
-	void Load		(char const *_filename=NULL); // If filename is NULL, then m_filename is used
-	void Save		();
+  public:
+    PrefsManager(const char* _filename);
+    PrefsManager(const std::string& _filename);
+    ~PrefsManager();
 
-	void Clear		();
+    void Load(const char* _filename = nullptr); // If filename is NULL, then m_filename is used
 
-	char const* GetString			(char const *_key, char const *_default=NULL) const;
-	UnicodeString GetUnicodeString	(char const *_key, UnicodeString const &_default) const;
-	float GetFloat					(char const *_key, float _default=-1.0f) const;
-	int	  GetInt					(char const *_key, int _default=-1) const;
+    void Clear();
 
-	// Set functions update existing PrefsItems or create new ones if key doesn't yet exist
-	void SetString  (char const *_key, UnicodeString const &_val);
-	void SetFloat	(char const *_key, float _val);
-	void SetInt		(char const *_key, int _val);
-    
-    void AddLine    (UnicodeString _line);
+    const char* GetString(const char* _key, const char* _default = nullptr) const;
+    UnicodeString GetUnicodeString(const char* _key, const UnicodeString& _default) const;
+    float GetFloat(const char* _key, float _default = -1.0f) const;
+    int GetInt(const char* _key, int _default = -1) const;
 
-    bool DoesKeyExist(char const *_key) const;
+    // Set functions update existing PrefsItems or create new ones if key doesn't yet exist
+    void SetString(const char* _key, const UnicodeString& _val);
+    void SetFloat(const char* _key, float _val);
+    void SetInt(const char* _key, int _val);
+
+    void AddLine(UnicodeString _line);
+
+    bool DoesKeyExist(const char* _key) const;
 };
 
-
-extern PrefsManager *g_prefsManager;
-
+extern PrefsManager* g_prefsManager;
 
 #endif

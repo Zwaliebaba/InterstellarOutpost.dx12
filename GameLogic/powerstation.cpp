@@ -1,21 +1,11 @@
 #include "pch.h"
-
-#include <math.h>
-
-
-#include "text_file_writer.h"
-#include "profiler.h"
 #include "resource.h"
-#include "shape.h"
 #include "text_stream_readers.h"
-
 #include "app.h"
 #include "location.h"
-
 #include "building.h"
 #include "laserfence.h"
 #include "powerstation.h"
-
 
 // ****************************************************************************
 // Class Powerstation
@@ -23,80 +13,52 @@
 
 // *** Constructor
 Powerstation::Powerstation()
-:   Building(),
+  : Building(),
     m_linkedBuildingId(-1)
 {
-    m_type = Building::TypePowerstation;
-	SetShape( g_app->m_resource->GetShape("powerstation.shp") );
+  m_type = TypePowerstation;
+  SetShape(g_app->m_resource->GetShape("powerstation.shp"));
 }
-
 
 // *** Initialise
-void Powerstation::Initialise( Building *_template )
+void Powerstation::Initialise(Building* _template)
 {
-    Building::Initialise( _template );
-	DEBUG_ASSERT(_template->m_type == Building::TypePowerstation);
-    m_linkedBuildingId = ((Powerstation *) _template)->m_linkedBuildingId;
+  Building::Initialise(_template);
+  DEBUG_ASSERT(_template->m_type == Building::TypePowerstation);
+  m_linkedBuildingId = static_cast<Powerstation*>(_template)->m_linkedBuildingId;
 }
-
 
 // *** Advance
 bool Powerstation::Advance()
 {
-	Building *b = g_app->m_location->GetBuilding(m_linkedBuildingId);
-	if (b->m_type == Building::TypeLaserFence)
-    {
-        LaserFence *fence = (LaserFence *) b;
-        if( !fence->IsEnabled() && GetNumPorts() == GetNumPortsOccupied() )
-        {
-            fence->Enable();
-        }
+  Building* b = g_app->m_location->GetBuilding(m_linkedBuildingId);
+  if (b->m_type == TypeLaserFence)
+  {
+    auto fence = static_cast<LaserFence*>(b);
+    if (!fence->IsEnabled() && GetNumPorts() == GetNumPortsOccupied())
+      fence->Enable();
 
-        if( fence->IsEnabled() && GetNumPortsOccupied() <= GetNumPorts() * 3.0/4.0 )
-        {
-            fence->Disable();
-        }
-    }
+    if (fence->IsEnabled() && GetNumPortsOccupied() <= GetNumPorts() * 3.0 / 4.0)
+      fence->Disable();
+  }
 
-    return Building::Advance();
+  return Building::Advance();
 }
-
 
 // *** Render
-void Powerstation::Render( double predictionTime )
-{
-	Building::Render(predictionTime);
-}
-
+void Powerstation::Render(double predictionTime) { Building::Render(predictionTime); }
 
 // *** GetBuildingLink
-int Powerstation::GetBuildingLink()
-{
-    return m_linkedBuildingId;
-}
-
+int Powerstation::GetBuildingLink() { return m_linkedBuildingId; }
 
 // *** SetBuildingLink
-void Powerstation::SetBuildingLink( int _buildingId )
-{
-    m_linkedBuildingId = _buildingId;
-}
-
+void Powerstation::SetBuildingLink(int _buildingId) { m_linkedBuildingId = _buildingId; }
 
 // *** Read
-void Powerstation::Read( TextReader *_in, bool _dynamic )
+void Powerstation::Read(TextReader* _in, bool _dynamic)
 {
-    Building::Read( _in, _dynamic );
+  Building::Read(_in, _dynamic);
 
-    char *word = _in->GetNextToken();  
-    m_linkedBuildingId = atoi(word);    
-}
-
-
-// *** Write
-void Powerstation::Write( TextWriter *_out )
-{
-    Building::Write( _out );
-
-    _out->printf( "%-8d", m_linkedBuildingId);
+  char* word = _in->GetNextToken();
+  m_linkedBuildingId = atoi(word);
 }

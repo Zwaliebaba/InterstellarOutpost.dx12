@@ -2,12 +2,10 @@
 #include "math_utils.h"
 #include "resource.h"
 #include "text_stream_readers.h"
-#include "text_file_writer.h"
 #include "app.h"
 #include "location.h"
 #include "main.h"
 #include "entity_grid.h"
-#include "soundsystem.h"
 #include "jumppad.h"
 #include "darwinian.h"
 
@@ -126,13 +124,6 @@ void JumpPad::RenderAlphas(double _predictionTime)
   glLineWidth(1.0);
   glDisable(GL_POLYGON_OFFSET_FILL);
   glEnable(GL_DEPTH_TEST);
-}
-
-void JumpPad::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-  _out->printf("%-2.2f ", m_force);
-  _out->printf("%-2.2f ", m_angle);
 }
 
 void JumpPad::Read(TextReader* _in, bool _dynamic)

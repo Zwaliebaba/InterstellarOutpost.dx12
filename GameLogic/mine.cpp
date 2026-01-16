@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "text_stream_readers.h"
 #include "shape.h"
-#include "text_file_writer.h"
 #include "resource.h"
 #include "profiler.h"
 #include "text_renderer.h"
@@ -355,13 +354,6 @@ bool MineBuilding::Advance()
   return Building::Advance();
 }
 
-void MineBuilding::ListSoundEvents(LList<char*>* _list)
-{
-  Building::ListSoundEvents(_list);
-
-  _list->PutData("CogTurn");
-}
-
 void MineBuilding::TriggerCart(MineCart* _cart, double _initValue)
 {
   _cart->m_progress = _initValue;
@@ -402,12 +394,6 @@ void MineBuilding::Read(TextReader* _in, bool _dynamic)
 {
   Building::Read(_in, _dynamic);
   m_trackLink = atoi(_in->GetNextToken());
-}
-
-void MineBuilding::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-  _out->printf("%-8d", m_trackLink);
 }
 
 int MineBuilding::GetBuildingLink() { return m_trackLink; }
@@ -569,14 +555,6 @@ void TrackJunction::Read(TextReader* _in, bool _dynamic)
   }
 }
 
-void TrackJunction::Write(TextWriter* _out)
-{
-  MineBuilding::Write(_out);
-
-  for (int i = 0; i < m_trackLinks.Size(); ++i)
-    _out->printf("%-4d", m_trackLinks[i]);
-}
-
 // ****************************************************************************
 // Class TrackStart
 // ****************************************************************************
@@ -639,13 +617,6 @@ void TrackStart::Read(TextReader* _in, bool _dynamic)
   MineBuilding::Read(_in, _dynamic);
 
   m_reqBuildingId = atoi(_in->GetNextToken());
-}
-
-void TrackStart::Write(TextWriter* _out)
-{
-  MineBuilding::Write(_out);
-
-  _out->printf("%-8d", m_reqBuildingId);
 }
 
 TrackEnd::TrackEnd()
@@ -718,13 +689,6 @@ void TrackEnd::Read(TextReader* _in, bool _dynamic)
   MineBuilding::Read(_in, _dynamic);
 
   m_reqBuildingId = atoi(_in->GetNextToken());
-}
-
-void TrackEnd::Write(TextWriter* _out)
-{
-  MineBuilding::Write(_out);
-
-  _out->printf("%-8d", m_reqBuildingId);
 }
 
 // ****************************************************************************

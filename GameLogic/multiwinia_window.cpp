@@ -27,7 +27,6 @@ class CreateMapButton : public GameMenuButton
       reader = new TextFileReader(filename);
 
       if (DoesFileExist(filename))
-      //if( reader )
       {
         delete reader;
         parent->CreateErrorDialogue(LANGUAGEPHRASE("multiwinia_editor_mapexists"));
@@ -38,8 +37,6 @@ class CreateMapButton : public GameMenuButton
       sprintf(levelFile.m_mapFilename, "%s", parent->m_mapFilename.Get());
       sprintf(levelFile.m_missionFilename, "null");
       strlwr(levelFile.m_mapFilename);
-
-      levelFile.Save();
 
       UnicodeString message = LANGUAGEPHRASE("multiwinia_editor_mapcreated");
       message.ReplaceStringFlag('F', parent->m_mapFilename.Get());

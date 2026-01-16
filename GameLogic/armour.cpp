@@ -1527,66 +1527,6 @@ void Armour::GetEntrance(Vector3& _exitPos, Vector3& _exitDir)
   _exitDir = entranceMat.f;
 }
 
-void Armour::ListSoundEvents(LList<char*>* _list)
-{
-  Entity::ListSoundEvents(_list);
-
-  _list->PutData("LoadDarwinian");
-  _list->PutData("UnloadDarwinian");
-  _list->PutData("SetOrders");
-}
-
-/*
-void Armour::SetMissileTarget( Vector3 const &_startRay, Vector3 const &_rayDir )
-{
-    //
-    // Look for enemy entities
-
-    WorldObjectId id = g_app->m_location->GetEntityId( _startRay, _rayDir, 1 );
-    Entity *entity = g_app->m_location->GetEntity( id );
-    if( entity )
-    {
-        m_missileTarget = entity->m_pos+entity->m_centrePos;
-        return;
-    }
-
-
-    //
-    // Hit against the landscape
-
-    Vector3 landscapeHit;
-    bool hit = g_app->m_location->m_landscape.RayHit( _startRay, _rayDir, &landscapeHit );
-    if( hit )
-    {
-        m_missileTarget = landscapeHit;
-        return;
-    }
-}
-
-
-Vector3 Armour::GetMissileTarget()
-{
-    return m_missileTarget;
-}
-
-
-void Armour::LaunchMissile()
-{
-    Missile *missile = new Missile();
-    missile->m_pos = m_pos + Vector3(0,30,0);    
-    
-    Vector3 front = (m_front + m_up).Normalise();
-    Vector3 right = front ^ g_upVector;
-    Vector3 up = (right ^ front).Normalise();
-    front = (up ^ right).Normalise();
-    missile->m_front = front;
-    missile->m_up = up;
-    missile->m_vel = front * 200.0;
-    missile->m_tankId = m_id;
-    missile->m_target = m_missileTarget;
-    g_app->m_location->m_effects.PutData( missile );
-}*/
-
 void Armour::Render(double _predictionTime)
 {
   if (m_dead)

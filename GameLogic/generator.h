@@ -1,19 +1,13 @@
-
 #ifndef _included_generator_h
 #define _included_generator_h
 
 #include "building.h"
 
-
-class TextWriter;
-
-
 struct PowerSurge
 {
-    int     m_teamId;
-    double   m_percent;
+  int m_teamId;
+  double m_percent;
 };
-
 
 // ****************************************************************************
 // Class PowerBuilding
@@ -21,36 +15,31 @@ struct PowerSurge
 
 class PowerBuilding : public Building
 {
-protected:
-    int             m_powerLink;
-    ShapeMarker     *m_powerLocation;
+  protected:
+    int m_powerLink;
+    ShapeMarker* m_powerLocation;
 
-    LList           <PowerSurge *> m_surges;
+    LList<PowerSurge*> m_surges;
 
-public:
+  public:
     PowerBuilding();
-	~PowerBuilding();
-    
-    void Initialise     ( Building *_template );    
-    bool Advance        ();
-    void Render         ( double _predictionTime );
-    void RenderAlphas   ( double _predictionTime );
+    ~PowerBuilding() override;
 
-    bool IsInView       ();
+    void Initialise(Building* _template) override;
+    bool Advance() override;
+    void Render(double _predictionTime) override;
+    void RenderAlphas(double _predictionTime) override;
+
+    bool IsInView() override;
     Vector3 GetPowerLocation();
-    
-    virtual void TriggerSurge ( double _initValue, int teamId=255 );
 
-    void ListSoundEvents( LList<char *> *_list );
+    virtual void TriggerSurge(double _initValue, int teamId = 255);
 
-    void Read   ( TextReader *_in, bool _dynamic );     
-    void Write  ( TextWriter *_out );							
-    
-    int  GetBuildingLink();                             
-    void SetBuildingLink( int _buildingId );            
+    void Read(TextReader* _in, bool _dynamic) override;
+
+    int GetBuildingLink() override;
+    void SetBuildingLink(int _buildingId) override;
 };
-
-
 
 // ****************************************************************************
 // Class Generator
@@ -58,32 +47,27 @@ public:
 
 class Generator : public PowerBuilding
 {
-protected:
-    ShapeMarker *m_counter;
+  protected:
+    ShapeMarker* m_counter;
 
-    double   m_timerSync;
-    int     m_numThisSecond;
-    bool    m_enabled;
+    double m_timerSync;
+    int m_numThisSecond;
+    bool m_enabled;
 
-public:
-    double   m_throughput;
+  public:
+    double m_throughput;
 
-public:
     Generator();
 
-    void TriggerSurge ( double _initValue, int teamId=255 );
+    void TriggerSurge(double _initValue, int teamId = 255) override;
 
-    void ReprogramComplete();
+    void ReprogramComplete() override;
 
-    void GetObjectiveCounter( UnicodeString& _dest );
+    void GetObjectiveCounter(UnicodeString& _dest) override;
 
-    void ListSoundEvents( LList<char *> *_list );
-
-    bool Advance();
-    void Render( double _predictionTime );
+    bool Advance() override;
+    void Render(double _predictionTime) override;
 };
-
-
 
 // ****************************************************************************
 // Class Pylon
@@ -91,11 +75,10 @@ public:
 
 class Pylon : public PowerBuilding
 {
-public:
+  public:
     Pylon();
-    bool Advance();
+    bool Advance() override;
 };
-
 
 // ****************************************************************************
 // Class PylonStart
@@ -103,34 +86,30 @@ public:
 
 class PylonStart : public PowerBuilding
 {
-public:
+  public:
     int m_reqBuildingId;
-    
-public:
+
     PylonStart();
-    
-    void Initialise     ( Building *_template );    
-    bool Advance        ();
-    void RenderAlphas   ( double _predictionTime );
 
-    void Read   ( TextReader *_in, bool _dynamic );     
-    void Write  ( TextWriter *_out );							
+    void Initialise(Building* _template) override;
+    bool Advance() override;
+    void RenderAlphas(double _predictionTime) override;
+
+    void Read(TextReader* _in, bool _dynamic) override;
 };
-
 
 // ****************************************************************************
 // Class PylonEnd
 // ****************************************************************************
 
 class PylonEnd : public PowerBuilding
-{    
-public:
+{
+  public:
     PylonEnd();
-        
-    void TriggerSurge   ( double _initValue, int teamId=255 );
-    void RenderAlphas   ( double _predictionTime );
-};
 
+    void TriggerSurge(double _initValue, int teamId = 255) override;
+    void RenderAlphas(double _predictionTime) override;
+};
 
 // ****************************************************************************
 // Class SolarPanel
@@ -141,57 +120,48 @@ public:
 
 class SolarPanel : public PowerBuilding
 {
-protected:
-    ShapeMarker *m_glowMarker   [SOLARPANEL_NUMGLOWS];
-    ShapeMarker *m_statusMarkers[SOLARPANEL_NUMSTATUSMARKERS];
-    
-    bool m_operating;
-    int  m_startingTeam;
+  protected:
+    ShapeMarker* m_glowMarker[SOLARPANEL_NUMGLOWS];
+    ShapeMarker* m_statusMarkers[SOLARPANEL_NUMSTATUSMARKERS];
 
-public:
+    bool m_operating;
+    int m_startingTeam;
+
+  public:
     SolarPanel();
 
-    void Initialise     ( Building *_template );
-    bool Advance        ();           
+    void Initialise(Building* _template) override;
+    bool Advance() override;
 
     void RecalculateOwnership();
-    
-    void Render         ( double _predictionTime );
-    void RenderPorts    ();
-    void RenderAlphas   ( double _predictionTime );
 
-    void ListSoundEvents( LList<char *> *_list );
+    void Render(double _predictionTime) override;
+    void RenderPorts() override;
+    void RenderAlphas(double _predictionTime) override;
 
-	bool IsOperating	();
+    bool IsOperating();
 };
-
-
 
 // ****************************************************************************
 // Class 
 // ****************************************************************************
 
 class PowerSplitter : public PowerBuilding
-{    
-public:
+{
+  public:
     LList<int> m_links;
 
-public:
     PowerSplitter();
 
-    void Initialise     ( Building *_template );
+    void Initialise(Building* _template) override;
 
-    void TriggerSurge   ( double _initValue, int teamId=255 );
-    
-    void RenderAlphas   ( double _predictionTime );
+    void TriggerSurge(double _initValue, int teamId = 255) override;
 
-    void SetBuildingLink( int _buildingId );            
+    void RenderAlphas(double _predictionTime) override;
 
-    void Read   ( TextReader *_in, bool _dynamic );     
-    void Write  ( TextWriter *_out );							
+    void SetBuildingLink(int _buildingId) override;
 
+    void Read(TextReader* _in, bool _dynamic) override;
 };
-
-
 
 #endif

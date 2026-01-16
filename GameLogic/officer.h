@@ -115,7 +115,6 @@ class Officer : public Entity
     bool IsThereATeleportClose(const Vector3& _orders);
 
     void CancelOrderSounds();
-    void ListSoundEvents(LList<char*>* _list) override;
 
     void CalculateBoundingSphere(Vector3& centre, double& radius);
     char* LogState(char* _message = nullptr) override;

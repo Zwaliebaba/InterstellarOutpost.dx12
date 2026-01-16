@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "text_file_writer.h"
 #include "math_utils.h"
 #include "resource.h"
 #include "shape.h"
@@ -9,7 +8,6 @@
 #include "app.h"
 #include "location.h"
 #include "global_world.h"
-#include "main.h"
 #include "soundsystem.h"
 
 DynamicBase::DynamicBase()
@@ -31,26 +29,11 @@ void DynamicBase::Render(double _predictionTime)
 
 bool DynamicBase::Advance() { return Building::Advance(); }
 
-void DynamicBase::ListSoundEvents(LList<char*>* _list)
-{
-  Building::ListSoundEvents(_list);
-
-  _list->PutData("TriggerSurge");
-}
-
 void DynamicBase::Read(TextReader* _in, bool _dynamic)
 {
   Building::Read(_in, _dynamic);
   m_buildingLink = atoi(_in->GetNextToken());
   SetShapeName(_in->GetNextToken());
-}
-
-void DynamicBase::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%-8d", m_buildingLink);
-  _out->printf("%s  ", m_shapeName);
 }
 
 int DynamicBase::GetBuildingLink() { return m_buildingLink; }
@@ -107,13 +90,6 @@ void DynamicHub::ReprogramComplete()
 {
   m_reprogrammed = true;
   g_app->m_soundSystem->TriggerBuildingEvent(this, "Enable");
-}
-
-void DynamicHub::ListSoundEvents(LList<char*>* _list)
-{
-  DynamicBase::ListSoundEvents(_list);
-
-  _list->PutData("Enable");
 }
 
 bool DynamicHub::Advance()
@@ -223,14 +199,6 @@ void DynamicHub::Read(TextReader* _in, bool _dynamic)
   m_requiredScore = atoi(_in->GetNextToken());
   m_currentScore = atoi(_in->GetNextToken());
   m_minActiveLinks = atoi(_in->GetNextToken());
-}
-
-void DynamicHub::Write(TextWriter* _out)
-{
-  DynamicBase::Write(_out);
-  _out->printf("%-8d", m_requiredScore);
-  _out->printf("%-8d", m_currentScore);
-  _out->printf("%-8d", m_minActiveLinks);
 }
 
 void DynamicHub::GetObjectiveCounter(UnicodeString& _dest)
@@ -345,13 +313,6 @@ bool DynamicNode::Advance()
 
 void DynamicNode::RenderAlphas(double _predictionTime) { DynamicBase::RenderAlphas(_predictionTime); }
 
-void DynamicNode::ListSoundEvents(LList<char*>* _list)
-{
-  DynamicBase::ListSoundEvents(_list);
-
-  _list->PutData("Operate");
-}
-
 void DynamicNode::ReprogramComplete()
 {
   if (GetNumPorts() == 0)
@@ -370,11 +331,4 @@ void DynamicNode::Read(TextReader* _in, bool _dynamic)
   DynamicBase::Read(_in, _dynamic);
   m_scoreValue = atoi(_in->GetNextToken());
   m_scoreSupplied = atoi(_in->GetNextToken());
-}
-
-void DynamicNode::Write(TextWriter* _out)
-{
-  DynamicBase::Write(_out);
-  _out->printf("%-8d", m_scoreValue);
-  _out->printf("%-8d", m_scoreSupplied);
 }

@@ -54,10 +54,7 @@ class MineBuilding : public Building
 
     virtual void TriggerCart(MineCart* _cart, double _initValue);
 
-    void ListSoundEvents(LList<char*>* _list) override;
-
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 
     int GetBuildingLink() override;
     void SetBuildingLink(int _buildingId) override;
@@ -105,7 +102,6 @@ class TrackJunction : public MineBuilding
     void SetBuildingLink(int _buildingId) override;
 
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 };
 
 // ****************************************************************************
@@ -123,7 +119,6 @@ class TrackStart : public MineBuilding
     bool Advance() override;
 
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 };
 
 // ****************************************************************************
@@ -141,7 +136,6 @@ class TrackEnd : public MineBuilding
     bool Advance() override;
 
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 };
 
 // ****************************************************************************

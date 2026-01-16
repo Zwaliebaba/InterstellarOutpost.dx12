@@ -54,8 +54,6 @@ class Centipede : public Entity
     void Attack(const Vector3& _pos) override;
 
     int GetSize();
-
-    void ListSoundEvents(LList<char*>* _list) override;
 };
 
 #endif

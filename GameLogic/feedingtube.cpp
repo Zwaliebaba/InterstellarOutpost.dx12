@@ -4,7 +4,6 @@
 #include "profiler.h"
 #include "resource.h"
 #include "shape.h"
-#include "text_file_writer.h"
 #include "text_stream_readers.h"
 #include "app.h"
 #include "camera.h"
@@ -243,16 +242,6 @@ Vector3 FeedingTube::GetStartPoint() { return GetDishPos(0.0); }
 
 Vector3 FeedingTube::GetEndPoint() { return GetDishPos(0.0) + (GetDishFront(0.0) * m_range); }
 
-void FeedingTube::ListSoundEvents(LList<char*>* _list)
-{
-  Building::ListSoundEvents(_list);
-
-  _list->PutData("BeginRotation");
-  _list->PutData("EndRotation");
-  _list->PutData("ConnectionEstablished");
-  _list->PutData("ConnectionLost");
-}
-
 bool FeedingTube::DoesSphereHit(const Vector3& _pos, double _radius)
 {
   // This method is overridden for Radar Dish in order to expand the number
@@ -285,14 +274,6 @@ void FeedingTube::Read(TextReader* _in, bool _dynamic)
   Building::Read(_in, _dynamic);
 
   m_receiverId = atoi(_in->GetNextToken());
-}
-
-// *** Write
-void FeedingTube::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%-8d", m_receiverId);
 }
 
 bool FeedingTube::IsInView()

@@ -28,7 +28,6 @@ class BlueprintBuilding : public Building
     Matrix34 GetMarker(double _predictionTime);
 
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 
     int GetBuildingLink() override;
     void SetBuildingLink(int _buildingId) override;
@@ -70,7 +69,6 @@ class BlueprintConsole : public BlueprintBuilding
     void RenderPorts() override;
 
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 };
 
 class BlueprintRelay : public BlueprintBuilding
@@ -86,7 +84,6 @@ class BlueprintRelay : public BlueprintBuilding
     bool Advance() override;
 
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 };
 
 #endif

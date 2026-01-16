@@ -1,10 +1,8 @@
 #include "pch.h"
-#include "text_file_writer.h"
 #include "math_utils.h"
 #include "resource.h"
 #include "shape.h"
 #include "text_stream_readers.h"
-
 #include "preferences.h"
 #include "language_table.h"
 #include "random_number.h"
@@ -13,7 +11,6 @@
 #include "location.h"
 #include "camera.h"
 #include "global_world.h"
-#include "main.h"
 #include "renderer.h"
 #include "soundsystem.h"
 
@@ -60,13 +57,6 @@ bool ReceiverBuilding::IsInView()
     return (g_app->m_camera->SphereInViewFrustum(midPoint, radius));
   }
   return Building::IsInView();
-}
-
-void ReceiverBuilding::ListSoundEvents(LList<char*>* _list)
-{
-  Building::ListSoundEvents(_list);
-
-  _list->PutData("TriggerSpirit");
 }
 
 void ReceiverBuilding::Render(double _predictionTime)
@@ -222,13 +212,6 @@ void ReceiverBuilding::Read(TextReader* _in, bool _dynamic)
 {
   Building::Read(_in, _dynamic);
   m_spiritLink = atoi(_in->GetNextToken());
-}
-
-void ReceiverBuilding::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%-8d", m_spiritLink);
 }
 
 int ReceiverBuilding::GetBuildingLink() { return m_spiritLink; }

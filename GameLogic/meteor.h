@@ -5,24 +5,20 @@
 
 class Meteor : public Entity
 {
-public:
+  public:
     Vector3 m_targetPos;
-    double   m_life;
-    bool    m_timeSlowTriggered;
+    double m_life;
+    bool m_timeSlowTriggered;
 
-public:
     Meteor();
-    ~Meteor();
+    ~Meteor() override;
 
-    void Begin          ();
+    void Begin() override;
 
-    bool Advance        ( Unit *_unit );
+    bool Advance(Unit* _unit) override;
     bool AdvanceToTarget();
 
-    void Render         ( double _predictionTime );
-
-    void    ListSoundEvents	( LList<char *> *_list );
+    void Render(double _predictionTime) override;
 };
-
 
 #endif

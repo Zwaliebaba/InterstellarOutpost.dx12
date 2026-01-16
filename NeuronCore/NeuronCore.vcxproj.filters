@@ -8,9 +8,6 @@
     <ClInclude Include="net_lib.h">
       <Filter>Network</Filter>
     </ClInclude>
-    <ClInclude Include="net_lib_apple.h">
-      <Filter>Network</Filter>
-    </ClInclude>
     <ClInclude Include="net_lib_win32.h">
       <Filter>Network</Filter>
     </ClInclude>
@@ -119,13 +116,7 @@
     <ClInclude Include="filesys_utils.h">
       <Filter>File</Filter>
     </ClInclude>
-    <ClInclude Include="text_file_writer.h">
-      <Filter>File</Filter>
-    </ClInclude>
     <ClInclude Include="text_stream_readers.h">
-      <Filter>File</Filter>
-    </ClInclude>
-    <ClInclude Include="unicode_text_file_writer.h">
       <Filter>File</Filter>
     </ClInclude>
     <ClInclude Include="ASyncLoader.h">
@@ -137,12 +128,6 @@
     <ClInclude Include="DeviceNotify.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Event.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="EventManager.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="FileSys.h">
       <Filter>Core</Filter>
     </ClInclude>
@@ -151,6 +136,24 @@
     </ClInclude>
     <ClInclude Include="random_number.h" />
     <ClInclude Include="filecrc.h" />
+    <ClInclude Include="DataReader.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="DataWriter.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Hash.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="MathCommon.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TimerCore.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="WndProcManager.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -229,23 +232,17 @@
     <ClCompile Include="filesys_utils.cpp">
       <Filter>File</Filter>
     </ClCompile>
-    <ClCompile Include="text_file_writer.cpp">
-      <Filter>File</Filter>
-    </ClCompile>
     <ClCompile Include="text_stream_readers.cpp">
       <Filter>File</Filter>
-    </ClCompile>
-    <ClCompile Include="unicode_text_file_writer.cpp">
-      <Filter>File</Filter>
-    </ClCompile>
-    <ClCompile Include="EventManager.cpp">
-      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="FileSys.cpp">
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="random_number.cpp" />
     <ClCompile Include="filecrc.cpp" />
+    <ClCompile Include="WndProcManager.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Project Files">

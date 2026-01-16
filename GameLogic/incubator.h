@@ -49,11 +49,8 @@ class Incubator : public Building
     int NumSpiritsInside();
 
     void Read(TextReader* _in, bool _dynamic) override;
-    void Write(TextWriter* _out) override;
 
     void GetDockPoint(Vector3& _pos, Vector3& _front);
-
-    void ListSoundEvents(LList<char*>* _list) override;
 };
 
 #endif

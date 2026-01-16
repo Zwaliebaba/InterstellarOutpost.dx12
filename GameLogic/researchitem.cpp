@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "text_file_writer.h"
 #include "resource.h"
 #include "shape.h"
 #include "text_stream_readers.h"
@@ -289,21 +288,6 @@ void ResearchItem::Read(TextReader* _in, bool _dynamic)
 
   if (_in->TokenAvailable())
     m_level = atoi(_in->GetNextToken());
-}
-
-void ResearchItem::Write(TextWriter* _out)
-{
-  Building::Write(_out);
-
-  _out->printf("%s ", GlobalResearch::GetTypeName(m_researchType));
-  _out->printf("%6d", m_level);
-}
-
-void ResearchItem::ListSoundEvents(LList<char*>* _list)
-{
-  Building::ListSoundEvents(_list);
-
-  _list->PutData("AquireResearch");
 }
 
 bool ResearchItem::DoesSphereHit(const Vector3& _pos, double _radius) { return false; }

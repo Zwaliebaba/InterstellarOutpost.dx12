@@ -97,8 +97,6 @@ class Squadie : public Entity
     bool HasSecondaryWeapon();
     void FireSecondaryWeapon(const Vector3& _pos);
 
-    void ListSoundEvents(LList<char*>* _list) override;
-
     Vector3 GetCameraFocusPoint() override;
 
     Vector3 GetSecondaryWeaponTarget();

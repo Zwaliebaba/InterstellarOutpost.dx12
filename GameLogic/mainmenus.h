@@ -1,11 +1,9 @@
-
 #ifndef _included_mainmenus_h
 #define _included_mainmenus_h
 
 #include "language_table.h"
 #include "darwinia_window.h"
 #include "game_menu.h"
-#include "GameMenuWindow.h"
 #include "app.h"
 #include "renderer.h"
 #include "soundsystem.h"
@@ -14,187 +12,175 @@
 
 class GameOptionsWindow : public DarwiniaWindow
 {
-public:
-    bool    m_renderRightBox;
-    bool    m_renderWholeScreen;
+  public:
+    bool m_renderRightBox;
+    bool m_renderWholeScreen;
 
-    UnicodeString   m_errorMessage;
-    bool            m_showingErrorDialogue;
-    bool            m_dialogueSuccessMessage;
+    UnicodeString m_errorMessage;
+    bool m_showingErrorDialogue;
+    bool m_dialogueSuccessMessage;
 
-public:
-    GameOptionsWindow(const char *_name );
-    void Create();
+    GameOptionsWindow(const char* _name);
+    void Create() override;
 
-    void Update();
-    void Render( bool _hasFocus );
-    GameMenuInputField *CreateMenuControl( 
-	        char const *name, int dataType, NetworkValue *value, int y, float change, 
-	        DarwiniaButton *callback, int x, int w, float fontSize );
+    void Update() override;
+    void Render(bool _hasFocus) override;
+    GameMenuInputField* CreateMenuControl(const char* name, int dataType, NetworkValue* value, int y, float change,
+                                          DarwiniaButton* callback, int x, int w, float fontSize);
 
-    void CreateErrorDialogue( UnicodeString _error, bool _success = false );
+    void CreateErrorDialogue(UnicodeString _error, bool _success = false);
     void RenderErrorDialogue();
 };
 
 class MainMenuWindow : public GameOptionsWindow
 {
-public:
+  public:
     MainMenuWindow();
 
-    void Create();
-	void Render( bool _hasFocus );
+    void Create() override;
+    void Render(bool _hasFocus) override;
 };
-
 
 class OptionsMenuWindow : public GameOptionsWindow
 {
-public:
+  public:
     OptionsMenuWindow();
 
-    void Create();
+    void Create() override;
 };
-
 
 class LocationWindow : public GameOptionsWindow
 {
-public:
+  public:
     LocationWindow();
-	~LocationWindow();
+    ~LocationWindow() override;
 
-    void Create();
+    void Create() override;
 };
-
 
 class ResetLocationWindow : public GameOptionsWindow
 {
-public:
+  public:
     ResetLocationWindow();
 
-    void Create();
-    void Render( bool _hasFocus );
+    void Create() override;
+    void Render(bool _hasFocus) override;
 };
-
 
 class AboutDarwiniaWindow : public DarwiniaWindow
 {
-public:
+  public:
     AboutDarwiniaWindow();
 
-    void Create();
-    void Render( bool _hasFocus );
+    void Create() override;
+    void Render(bool _hasFocus) override;
 };
 
 class ConfirmExitWindow : public GameOptionsWindow
 {
-public:
+  public:
     ConfirmExitWindow();
-    void Create();
+    void Create() override;
 };
 
 class ConfirmResetWindow : public GameOptionsWindow
 {
-public:
+  public:
     ConfirmResetWindow();
-    void Create();
+    void Create() override;
 };
 
-
-class MenuCloseButton   :   public GameMenuButton
+class MenuCloseButton : public GameMenuButton
 {
-public:
-    MenuCloseButton( char *_name )
-    :   GameMenuButton( _name )
+  public:
+    MenuCloseButton(char* _name)
+      : GameMenuButton(_name) {}
+
+    void MouseUp() override
     {
+      g_app->m_soundSystem->TriggerOtherEvent(nullptr, "MenuCancel", SoundSourceBlueprint::TypeMultiwiniaInterface);
+      g_app->m_renderer->InitialiseMenuTransition(1.0f, -1);
+      DebugTrace("Removing window %s\n", m_parent->m_name);
+      EclRemoveWindow(m_parent->m_name);
+      g_app->m_doMenuTransition = true;
     }
 
-    void MouseUp()
+    void Render(int realX, int realY, bool highlighted, bool clicked) override
     {
-        g_app->m_soundSystem->TriggerOtherEvent( NULL, "MenuCancel", SoundSourceBlueprint::TypeMultiwiniaInterface );
-        g_app->m_renderer->InitialiseMenuTransition(1.0f, -1);
-		DebugTrace("Removing window %s\n", m_parent->m_name);
-        EclRemoveWindow( m_parent->m_name );
-        g_app->m_doMenuTransition = true;
+      GameMenuButton::Render(realX, realY, highlighted, clicked);
+
+      if (g_inputManager->getInputMode() == INPUT_MODE_GAMEPAD)
+      {
+        float iconSize = m_fontSize;
+        float iconAlpha = 1.0f;
+        int xPos = realX + g_gameFont.GetTextWidth(m_caption.Length(), m_fontSize) + 60;
+        int yPos = realY + (m_h / 2.0f);
+
+        if (m_centered)
+          xPos += m_w / 2.0f;
+
+        auto iconCentre = Vector2(xPos, yPos);
+
+        // Render the icon
+
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("icons\\button_b.bmp"));
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        glColor4f(1.0f, 1.0f, 1.0f, iconAlpha);
+
+        float x = iconSize / 2;
+
+        glBegin(GL_QUADS);
+        glTexCoord2i(0, 1);
+        glVertex2f(iconCentre.x - x, iconCentre.y - iconSize / 2);
+        glTexCoord2i(1, 1);
+        glVertex2f(iconCentre.x + x, iconCentre.y - iconSize / 2);
+        glTexCoord2i(1, 0);
+        glVertex2f(iconCentre.x + x, iconCentre.y + iconSize / 2);
+        glTexCoord2i(0, 0);
+        glVertex2f(iconCentre.x - x, iconCentre.y + iconSize / 2);
+        glEnd();
+
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDisable(GL_TEXTURE_2D);
+      }
     }
-
-	void Render( int realX, int realY, bool highlighted, bool clicked )
-	{
-		GameMenuButton::Render( realX, realY, highlighted, clicked );
-
-		if( g_inputManager->getInputMode() == INPUT_MODE_GAMEPAD )
-		{
-			float iconSize = m_fontSize;
-			float iconGap = 10.0f;
-			float iconAlpha = 1.0f;
-			int xPos = realX + g_gameFont.GetTextWidth( m_caption.Length(), m_fontSize ) + 60;
-			int yPos = realY + (m_h / 2.0f);
-
-			if( m_centered )
-			{
-				xPos += m_w / 2.0f;
-			}
-
-			Vector2 iconCentre = Vector2(xPos, yPos);            
-
-			// Render the icon
-
-			glEnable        ( GL_TEXTURE_2D );
-			glBindTexture   ( GL_TEXTURE_2D, g_app->m_resource->GetTexture( "icons\\button_b.bmp" ) );
-			glBlendFunc     ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-	        
-			glColor4f   ( 1.0f, 1.0f, 1.0f, iconAlpha );
-
-			float x = iconSize/2;
-
-			glBegin( GL_QUADS );
-				glTexCoord2i( 0, 1 );           glVertex2f( iconCentre.x - x, iconCentre.y - iconSize/2 );
-				glTexCoord2i( 1, 1 );           glVertex2f( iconCentre.x + x, iconCentre.y - iconSize/2 );
-				glTexCoord2i( 1, 0 );           glVertex2f( iconCentre.x + x, iconCentre.y + iconSize/2 );
-				glTexCoord2i( 0, 0 );           glVertex2f( iconCentre.x - x, iconCentre.y + iconSize/2 );
-			glEnd();
-
-			glBlendFunc     ( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-			glDisable       ( GL_TEXTURE_2D );
-		}
-	}
 };
 
 class MenuGameExitButton : public GameMenuButton
 {
-public:
+  public:
     MenuGameExitButton()
-    : GameMenuButton( LANGUAGEPHRASE("dialog_leavedarwinia") )
-    {
-    }
+      : GameMenuButton(LANGUAGEPHRASE("dialog_leavedarwinia")) {}
 
-    void MouseUp()
+    void MouseUp() override
     {
-        g_app->m_atMainMenu = true;
-        g_app->m_renderer->StartFadeOut();
+      g_app->m_atMainMenu = true;
+      g_app->m_renderer->StartFadeOut();
     }
 };
 
 class HelpAndOptionsButton : public GameMenuButton
 {
-public:
+  public:
     HelpAndOptionsButton();
-    void MouseUp();
+    void MouseUp() override;
 };
 
 class AchievementsButton : public GameMenuButton
 {
-public:
+  public:
     AchievementsButton()
-    : GameMenuButton( "multiwinia_menu_achievements" )
-    {
-    }
+      : GameMenuButton("multiwinia_menu_achievements") {}
 };
 
 class ConfirmResetButton : public GameMenuButton
 {
-public:
+  public:
     ConfirmResetButton();
 
-    void MouseUp();
+    void MouseUp() override;
 };
 
 #endif
