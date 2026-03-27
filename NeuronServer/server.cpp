@@ -20,7 +20,10 @@
 #include "clienttoserver.h"
 #include "network_defines.h"
 #include "ftp_manager.h"
-#include "soundsystem.h"
+// TODO(migration): server.cpp still depends on g_app (app.h), team.h, multiwinia.h,
+// clienttoserver.h, servertoclient.h, servertoclientletter.h, generic.h, ftp_manager.h
+// via upward include paths into NeuronClient, InterstellarOutpost, and GameLogic.
+// These should be decoupled in Wave 5 (Split App) and Wave 6 (Split mixed files).
 
 // ****************************************************************************
 // Class ServerTeam

@@ -154,6 +154,11 @@
     <ClInclude Include="WndProcManager.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="bandwidth.h" />
+    <ClInclude Include="globals.h" />
+    <ClInclude Include="network_defines.h" />
+    <ClInclude Include="worldobject.h" />
+    <ClInclude Include="TeamControls.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -243,6 +248,8 @@
     <ClCompile Include="WndProcManager.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="bandwidth.cpp" />
+    <ClCompile Include="TeamControls.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Project Files">

@@ -75,30 +75,23 @@
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
 
-#include <winrt/Windows.ApplicationModel.Core.h>
 #include <winrt/Windows.Data.Json.h>
-#include <winrt/Windows.Devices.Enumeration.h>
-#include <winrt/Windows.Devices.Input.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Globalization.h>
-#include <winrt/Windows.Graphics.Display.h>
 #include <winrt/Windows.Networking.Connectivity.h>
 #include <winrt/Windows.Networking.Sockets.h>
 #include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Windows.System.Threading.Core.h>
 #include <winrt/Windows.System.UserProfile.h>
 #include <winrt/Windows.System.h>
-#include <winrt/Windows.UI.Core.h>
-#include <winrt/Windows.UI.Input.Core.h>
-#include <winrt/Windows.UI.Popups.h>
 
+// TODO(migration): Remove 'using namespace winrt;' from this shared header.
+// Deferred because qualifying every winrt:: usage across all projects is a large mechanical change.
 using namespace winrt;
 
 #include "Debug.h"
 #include "FileSys.h"
 #include "NeuronHelper.h"
-
-#include "DirectXHelper.h"
 
 using namespace Neuron;
 

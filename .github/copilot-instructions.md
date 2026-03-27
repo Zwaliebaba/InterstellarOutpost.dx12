@@ -16,6 +16,7 @@ These instructions make AI coding agents productive in this Windows/MSVC C++23 g
 | `NeuronCore/` | Platform abstractions, math, file I/O, OpenGL→DX12 translation layer | `g_prefsManager`,`g_windowManager` |
 | `NeuronClient/` | Input, sound, networking, Eclipse UI framework | `g_inputManager`, `g_eventHandler` |
 | `GameLogic/` | Game entities (`Entity`, `Building`, `WorldObject` hierarchies), AI, UI windows | — |
+| `GameRenderer/` | Client render logic, responsible for rendering game entities and scenes | — |
 | `InterstellarOutpost/` | Main application loop, renderer, camera, location management | `g_app` (singleton `App*`) |
 
 ### Data Flow
@@ -29,6 +30,7 @@ Enforced via `.editorconfig`:
 - **Indent:** 2 spaces for C++ files
 - **Line length:** 140 max
 - **Braces:** same-line for simple blocks
+- **New file names:** `UpperCamelCase` (e.g., `TeamControls.h`, `GameRenderer.cpp`). Legacy `snake_case` files are not renamed, but all newly created files must use `UpperCamelCase`.
 
 ## Patterns to Follow
 - **RAII everywhere**: `std::unique_ptr` for exclusive, `std::shared_ptr` for shared, `winrt::com_ptr` for DX/COM
@@ -51,6 +53,7 @@ Enforced via `.editorconfig`:
 | `NeuronCore/Debug.h` | `DebugTrace`, `DEBUG_ASSERT`, `Fatal` |
 | `NeuronCore/NeuronCore.h` | Master PCH, WinRT imports, STL includes |
 | `GameLogic/entity.h`, `building.h` | Entity/building type hierarchies |
+| `GameRenderer/` | Client render logic and rendering architecture |
 
 ## Build & Run
 ```
@@ -74,3 +77,6 @@ Assets in `InterstellarOutpost/Assets/` are deployed to output alongside the exe
 - RAII and smart-pointer correctness
 - Exception safety (`noexcept` where appropriate)
 - Test coverage for public interfaces
+
+## Client Render Logic Migration
+- Migrate client render logic from `GameLogic` into `GameRenderer` to maintain separation of concerns and improve modularity.

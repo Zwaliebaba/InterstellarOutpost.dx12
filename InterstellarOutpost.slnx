@@ -3,9 +3,12 @@
     <Platform Name="x64" />
   </Configurations>
   <Project Path="GameLogic/GameLogic.vcxproj" Id="8745d382-d397-4c95-a7ed-056babe65c86" />
+  <Project Path="GameRenderer/GameRenderer.vcxproj" Id="17173726-1ea9-4621-a502-6beba797ac7d" />
   <Project Path="InterstellarOutpost/InterstellarOutpost.vcxproj" Id="7b949831-624f-4cb0-81fc-2d4bd51b8cba">
     <Deploy />
   </Project>
   <Project Path="NeuronClient/NeuronClient.vcxproj" Id="964cc713-5bc0-45ea-b245-e0a88d088cb3" />
   <Project Path="NeuronCore/NeuronCore.vcxproj" Id="c12f6993-c2f2-4c93-a966-737ee0d71674" />
+  <Project Path="NeuronServer/NeuronServer.vcxproj" Id="4b5743f0-5f8a-417c-abad-4d307559e335" />
+  <Project Path="Server/Server.vcxproj" Id="7973f819-2e43-4511-bdb3-89e1a2183540" />
 </Solution>

@@ -8,6 +8,7 @@
 #include "worldobject.h"
 #include "entity.h"
 #include "taskmanager.h"
+#include "TeamControls.h"
 
 class Unit;
 class InsertionSquad;
@@ -149,49 +150,6 @@ class Team
     void Eliminate(); // wipes all of this teams active units and entities
 };
 
-// ****************************************************************************
-//  Class TeamControls
-//
-//   capture all the control information necessary to send
-//   over the network for "remote" control of units
-// ****************************************************************************
-
-class TeamControls
-{
-  public:
-    TeamControls();
-
-    unsigned short GetFlags() const;
-    void SetFlags(unsigned short _flags);
-    void ClearFlags();
-    void Advance();
-    void Clear();
-
-    void Pack(char* _data, int& _length) const;
-    void Unpack(const char* _data, int _length);
-
-    Vector3 m_mousePos;
-
-    // Be sure to update GetFlags, SetFlags, ZeroFlags if you change these flags
-    // Also, NetworkUpdate::GetByteStream and NetworkUpdate::ReadByteStream
-    // if you use more than 8 bits
-
-    unsigned int m_unitMove : 1;
-    unsigned int m_primaryFireTarget : 1;
-    unsigned int m_secondaryFireTarget : 1;
-    unsigned int m_targetDirected : 1;
-    unsigned int m_secondaryFireDirected : 1;
-    unsigned int m_cameraEntityTracking : 1;
-    unsigned int m_directUnitMove : 1;
-    unsigned int m_unitSecondaryMode : 1;
-    unsigned int m_endSetTarget : 1;
-    unsigned int m_consoleController : 1;
-    unsigned int m_leftButtonPressed : 1;
-
-    short m_directUnitMoveDx;
-    short m_directUnitMoveDy;
-    short m_directUnitTargetDx;
-    short m_directUnitTargetDy;
-};
+// TeamControls is now in NeuronCore/TeamControls.h (shared network contract)
 
 #endif

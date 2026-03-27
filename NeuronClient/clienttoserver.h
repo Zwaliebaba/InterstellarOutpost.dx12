@@ -7,7 +7,7 @@
 #include "network_defines.h"
 #include "unicode_string.h"
 #include "vector3.h"
-#include "team.h"
+#include "TeamControls.h"
 
 class NetLib;
 class NetMutex;

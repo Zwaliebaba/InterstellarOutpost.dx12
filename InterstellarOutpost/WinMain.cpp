@@ -1,0 +1,36 @@
+#include "pch.h"
+#include "GameApp.h"
+#include "main.h"
+#include "window_manager.h"
+#include "window_manager_directx.h"
+
+int WINAPI wWinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance, LPWSTR _cmdLine, int _iCmdShow)
+{
+#if defined(_DEBUG)
+  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
+  wchar_t filename[MAX_PATH];
+  GetModuleFileNameW(nullptr, filename, MAX_PATH);
+  auto path = std::wstring(filename);
+  path = path.substr(0, path.find_last_of('\\'));
+
+  FileSys::SetHomeDirectory(path);
+
+  constexpr Windows::Foundation::Size size = {1024, 768};
+
+  ClientEngine::Startup(L"Interstellar Outpost", size, _hInstance, _iCmdShow);
+
+  g_windowManager = NEW WindowManagerDirectX();
+  Initialise();
+
+  auto main = winrt::make_self<GameApp>();
+  ClientEngine::StartGame(main);
+
+  AppMain();
+
+  ClientEngine::Shutdown();
+  main = nullptr;
+
+  return WM_QUIT;
+}

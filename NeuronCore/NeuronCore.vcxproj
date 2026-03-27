@@ -86,6 +86,7 @@
     <ClInclude Include="ASyncLoader.h" />
     <ClInclude Include="auto_vector.h" />
     <ClInclude Include="binary_stream_readers.h" />
+    <ClInclude Include="bandwidth.h" />
     <ClInclude Include="bitmap.h" />
     <ClInclude Include="bounded_array.h" />
     <ClInclude Include="btree.h" />
@@ -102,6 +103,7 @@
     <ClInclude Include="filesys_utils.h" />
     <ClInclude Include="FixedPipeline.h" />
     <ClInclude Include="float_vector3.h" />
+    <ClInclude Include="globals.h" />
     <ClInclude Include="Hash.h" />
     <ClInclude Include="hash_map_darwin.h" />
     <ClInclude Include="hash_table.h" />
@@ -123,6 +125,7 @@
     <ClInclude Include="net_socket_session.h" />
     <ClInclude Include="net_thread.h" />
     <ClInclude Include="net_udp_packet.h" />
+    <ClInclude Include="network_defines.h" />
     <ClInclude Include="NeuronCore.h" />
     <ClInclude Include="NeuronHelper.h" />
     <ClInclude Include="ogl_extensions.h" />
@@ -151,6 +154,7 @@
     <ClInclude Include="string_utils.h" />
     <ClInclude Include="system_info.h" />
     <ClInclude Include="targetcursor.h" />
+    <ClInclude Include="TeamControls.h" />
     <ClInclude Include="texture.h" />
     <ClInclude Include="texture_uv.h" />
     <ClInclude Include="text_renderer.h" />
@@ -165,9 +169,11 @@
     <ClInclude Include="window_manager_directx.h" />
     <ClInclude Include="WndProcManager.h" />
     <ClInclude Include="work_queue.h" />
+    <ClInclude Include="worldobject.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="3d_sprite.cpp" />
+    <ClCompile Include="bandwidth.cpp" />
     <ClCompile Include="binary_stream_readers.cpp" />
     <ClCompile Include="bitmap.cpp" />
     <ClCompile Include="directory.cpp" />
@@ -216,6 +222,7 @@
     <ClCompile Include="string_utils.cpp" />
     <ClCompile Include="system_info.cpp" />
     <ClCompile Include="targetcursor.cpp" />
+    <ClCompile Include="TeamControls.cpp" />
     <ClCompile Include="texture.cpp" />
     <ClCompile Include="texture_uv.cpp" />
     <ClCompile Include="text_renderer.cpp" />

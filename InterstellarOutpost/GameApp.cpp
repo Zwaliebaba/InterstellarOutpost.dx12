@@ -1,0 +1,595 @@
+#include "pch.h"
+#include "unicode_text_stream_reader.h"
+#include "clienttoserver.h"
+#include "language_table.h"
+#include "preferences.h"
+#include "resource.h"
+#include "system_info.h"
+#include "text_renderer.h"
+#include "filesys_utils.h"
+#include "prefs_other_window.h"
+#include "soundsystem.h"
+#include "sample_cache.h"
+#include "net_lib.h"
+#include "GameApp.h"
+#include "camera.h"
+#include "global_world.h"
+#include "location.h"
+#include "location_input.h"
+#include "particle_system.h"
+#include "renderer.h"
+#include "script.h"
+#include "user_input.h"
+#include "taskmanager_interface.h"
+#include "gamecursor.h"
+#include "level_file.h"
+#include "game_menu.h"
+#include "multiwinia.h"
+#include "shaman_interface.h"
+#include "explosion.h"
+#include "markersystem.h"
+#ifdef BENCHMARK_AND_FTP
+#include "benchmark.h"
+#endif
+#include "achievement_tracker.h"
+#include "loading_screen.h"
+#include "team.h"
+#include "mapdata.h"
+#include "GameMenuWindow.h"
+
+void SetPreferenceOverrides(); // See main.cpp
+
+GameApp* g_app = nullptr;
+
+GameApp::GameApp()
+  : m_userInput(nullptr),
+    m_resource(nullptr),
+    m_soundSystem(nullptr),
+    m_particleSystem(nullptr),
+    m_langTable(nullptr),
+    m_globalWorld(nullptr),
+    m_location(nullptr),
+    m_locationId(-1),
+    m_camera(nullptr),
+    m_server(nullptr),
+    m_clientToServer(nullptr),
+    m_mainThreadId(NetGetCurrentThreadId()),
+    m_renderer(nullptr),
+    m_locationInput(nullptr),
+    m_taskManagerInterface(nullptr),
+    m_script(nullptr),
+    m_startSequence(nullptr),
+    m_gameMenu(nullptr),
+    m_multiwinia(nullptr),
+    m_shamanInterface(nullptr),
+    m_difficultyLevel(0),
+    m_largeMenus(false),
+    m_usingFontCopies(false),
+    m_userRequestsPause(false),
+    m_requestedLocationId(-1),
+    m_requestQuit(false),
+    m_levelReset(false),
+    m_atMainMenu(true),
+    m_atLobby(false),
+    m_gameMode(GameModeNone),
+    m_loadingLocation(false),
+    m_spectator(false),
+    m_hideInterface(false),
+    m_soundsLoaded(false),
+    m_requireSoundsLoaded(false),
+    m_soundsWorkQueue(new WorkQueue)
+{
+  g_app = this;
+
+  m_netLib = NEW NetLib();
+  m_netLib->Initialise();
+
+  m_resource = NEW Resource();
+
+  g_prefsManager = NEW PrefsManager(GetPreferencesPath());
+  SetPreferenceOverrides();
+
+  m_renderer = NEW Renderer();
+  m_renderer->Initialise();
+  m_renderer->SetOpenGLState();
+
+#ifdef SPECTATOR_ONLY
+  m_spectator = true;
+#endif
+}
+
+GameApp::~GameApp()
+{
+#ifdef BENCHMARK_AND_FTP
+  SAFE_DELETE(m_benchMark);
+#endif
+  SAFE_DELETE(m_gameMenu);
+  SAFE_DELETE(m_multiwinia);
+  SAFE_DELETE(m_globalWorld);
+  SAFE_DELETE(m_langTable);
+  SAFE_DELETE(m_taskManagerInterface);
+  SAFE_DELETE(m_shamanInterface);
+  SAFE_DELETE(m_script);
+  SAFE_DELETE(m_particleSystem);
+  SAFE_DELETE(m_markerSystem);
+  SAFE_DELETE(m_camera);
+  SAFE_DELETE(m_userInput);
+  SAFE_DELETE(m_clientToServer);
+  SAFE_DELETE(m_soundSystem);
+  SAFE_DELETE(m_gameCursor);
+  SAFE_DELETE(m_renderer);
+  SAFE_DELETE(g_prefsManager);
+  SAFE_DELETE(m_soundsWorkQueue);
+  SAFE_DELETE(m_resource);
+  SAFE_DELETE(m_netLib);
+  SAFE_DELETE(m_achievementTracker);
+}
+
+void GameApp::Startup()
+{
+  strcpy(m_requestedMission, "null");
+  strcpy(m_requestedMap, "null");
+
+  // Load resources
+
+  InitLanguage();
+  
+  m_backgroundColour.Set(0, 0, 0, 0);
+
+  m_gameCursor = NEW GameCursor();
+  m_markerSystem = NEW MarkerSystem();
+  
+  m_soundSystem = NEW SoundSystem();
+  m_soundSystem->Initialise();
+
+  m_clientToServer = NEW ClientToServer();
+
+  m_clientToServer->OpenConnections();
+
+  m_userInput = NEW UserInput();
+  m_camera = NEW Camera();
+
+  strcpy(m_gameDataFile, "game.txt");
+
+  SetProfileName(g_prefsManager->GetString("UserProfile", "none"));
+
+  m_particleSystem = NEW ParticleSystem();
+
+  m_script = NEW Script();
+  m_shamanInterface = NEW ShamanInterface();
+
+  int menuOption = g_prefsManager->GetInt(OTHER_LARGEMENUS, 0);
+  if (menuOption == 2) // (todo) or is running in media center and tenFootMode == -1
+    m_largeMenus = true;
+
+  m_achievementTracker = NEW AchievementTracker();
+  m_multiwinia = NEW Multiwinia();
+  m_gameMenu = NEW GameMenu();
+
+#ifdef BENCHMARK_AND_FTP
+  m_benchMark = NEW BenchMark();
+  m_benchMark->RequestDXDiag();
+#endif
+
+  //
+  // Load save games
+
+  m_globalWorld = NEW GlobalWorld;
+
+  TaskManagerInterface::CreateTaskManager();
+}
+
+void GameApp::SetProfileName(const char* _profileName)
+{
+  strcpy(m_userProfileName, _profileName);
+
+  DebugTrace("Setting ProfileName to %s\n", _profileName);
+
+  if (stricmp(_profileName, "AttractMode") != 0)
+  {
+    g_prefsManager->SetString("UserProfile", m_userProfileName);
+  }
+}
+
+bool GameApp::LoadProfile()
+{
+  bool newProfile = m_globalWorld->m_loadingNewProfile;
+  if (stricmp(m_userProfileName, "AccessAllAreas") == 0)
+  {
+    // Cheat username that opens all locations
+    // aimed at beta testers who've completed the game already
+
+    if (m_globalWorld)
+    {
+      delete m_globalWorld;
+      m_globalWorld = nullptr;
+    }
+
+    m_globalWorld = NEW GlobalWorld();
+    m_globalWorld->m_loadingNewProfile = newProfile;
+    m_globalWorld->LoadGame("game_unlockall.txt");
+    for (int i = 0; i < m_globalWorld->m_buildings.Size(); ++i)
+    {
+      GlobalBuilding* building = m_globalWorld->m_buildings[i];
+      if (building && building->m_type == Building::TypeTrunkPort)
+        building->m_online = true;
+    }
+    for (int i = 0; i < m_globalWorld->m_locations.Size(); ++i)
+    {
+      GlobalLocation* loc = m_globalWorld->m_locations[i];
+      loc->m_available = true;
+    }
+  }
+  else
+  {
+    if (m_globalWorld)
+    {
+      delete m_globalWorld;
+      m_globalWorld = nullptr;
+    }
+
+    m_globalWorld = NEW GlobalWorld();
+    m_globalWorld->m_loadingNewProfile = newProfile;
+    DebugTrace("We are {}loading a new profile\n", newProfile ? "" : "not ");
+    m_globalWorld->LoadGame(m_gameDataFile);
+  }
+
+  return true;
+}
+
+void GameApp::ResetLevel(bool _global)
+{
+  if (m_location)
+  {
+    m_requestedLocationId = -1;
+    m_requestedMission[0] = '\0';
+    m_requestedMap[0] = '\0';
+
+    //
+    // Delete the saved mission file
+
+    char* missionFilename = m_location->m_levelFile->m_missionFilename;
+    char saveFilename[256];
+    sprintf(saveFilename, "%susers/%s/%s", GetProfileDirectory(), m_userProfileName, missionFilename);
+
+    DeleteThisFile(saveFilename);
+
+    m_levelReset = true;
+
+    //
+    // Delete the game file if required
+
+    if (_global)
+    {
+      sprintf(saveFilename, "%susers/%s/%s", GetProfileDirectory(), m_userProfileName, m_gameDataFile);
+
+      DeleteThisFile(saveFilename);
+
+      if (m_globalWorld)
+      {
+        delete m_globalWorld;
+        m_globalWorld = nullptr;
+      }
+
+      m_globalWorld = new GlobalWorld();
+      m_globalWorld->LoadGame(m_gameDataFile);
+    }
+  }
+}
+
+void GameApp::HandleDelayedJobs()
+{
+  if (m_delayedJobListMutex.TryLock())
+  {
+    DelayedJob* dJob = m_delayedJobs.GetData(0);
+
+    if (dJob && dJob->ReadyToRun())
+    {
+      dJob->Run();
+      m_delayedJobs.RemoveData(0);
+      delete dJob;
+    }
+    m_delayedJobListMutex.Unlock();
+  }
+}
+
+void GameApp::AddDelayedJob(DelayedJob* _dJob)
+{
+  m_delayedJobListMutex.Lock();
+  m_delayedJobs.PutDataAtEnd(_dJob);
+  m_delayedJobListMutex.Unlock();
+}
+
+void GameApp::StartNetwork(bool _iAmAServer, const char* _serverIp, int _serverPort)
+{
+  char serverIp[16];
+
+  if (_iAmAServer)
+  {
+    delete m_server;
+    m_server = new Server();
+    m_server->Initialise();
+    m_server->m_noAdvertise = true;
+
+    if (_serverPort != -1)
+    {
+      GetLocalHostIP(serverIp, sizeof(serverIp));
+      _serverIp = serverIp;
+      _serverPort = g_app->m_server->m_listener->GetPort();
+    }
+    else
+      _serverIp = "127.0.0.1";
+  }
+
+  m_clientToServer->ClientJoin(_serverIp, _serverPort);
+}
+
+HRESULT GameApp::StartMultiPlayerServer()
+{
+  DebugTrace("Starting multi-player server.\n");
+  m_multiwinia->m_aiType = Multiwinia::AITypeStandard;
+  g_app->StartNetwork(true, nullptr, NULL);
+  return 0; // = S_OK = success
+}
+
+void GameApp::ShutdownCurrentGame()
+{
+  g_explosionManager.Reset();
+
+  if (m_location)
+    m_globalWorld->TransferSpirits(m_locationId);
+
+  m_clientToServer->ClientLeave();
+
+  if (m_location)
+    m_location->Empty();
+
+  m_particleSystem->Empty();
+  m_markerSystem->ClearAllMarkers();
+
+  delete m_location;
+
+  m_location = nullptr;
+  m_locationId = -1;
+
+  delete m_locationInput;
+  m_locationInput = nullptr;
+
+  delete m_server;
+  m_server = nullptr;
+
+  m_multiwinia->Reset();
+
+  m_globalWorld->m_myTeamId = 255;
+  m_globalWorld->EvaluateEvents();
+
+  m_userRequestsPause = false;
+}
+
+std::string GameApp::GetFirstAvailableLanguage()
+{
+  auto files = g_app->m_resource->ListResources("%s\\language\\", "*.*", FileSys::GetHomeDirectoryA().c_str());
+  if (files.size() > 0)
+  {
+    std::string first = files[0];
+    return first.substr(0, first.find('.'));
+  }
+
+  return "unknown";
+}
+
+const char* GameApp::GetDefaultLanguage() { return g_systemInfo->m_localeInfo.m_language; }
+
+void GameApp::InitLanguage()
+{
+  std::list<std::string> languagePreference;
+
+  languagePreference.push_back(GetDefaultLanguage());
+  languagePreference.push_back("english");
+  languagePreference.push_back(GetFirstAvailableLanguage());
+
+  ASSERT_TEXT(languagePreference.end() != std::find_if(languagePreference.begin(), languagePreference.end(),
+                [this](const std::string& lang) { return this->TrySetLanguage(lang); }), "Failed to load language file");
+}
+
+void GameApp::SetLanguage(const char* _language, bool _test)
+{
+  DebugTrace("Setting language to {} (Test = {})\n", _language, _test);
+
+  //
+  // Load the language text file
+
+  char langFilename[256];
+  sprintf(langFilename, "language\\%s.txt", _language);
+
+  auto newLangTable = new LangTable(langFilename);
+
+  if (_test)
+    newLangTable->TestAgainstEnglish();
+
+  // Set the locale so that Uppercasing works correctly
+  setlocale(LC_CTYPE, _language);
+
+  DebugTrace("Loading fonts\n");
+
+  static bool initedFonts = false;
+  if (!initedFonts)
+  {
+    g_gameFont.Initialise("speccy");
+    g_editorFont.Initialise("editor");
+    g_titleFont.Initialise("square");
+
+    g_editorFont.SetHorizSpacingFactor(0.91f);
+    g_titleFont.SetHorizSpacingFactor(1.03f);
+
+    initedFonts = true;
+  }
+
+  if (strcmp(_language, "chinese-trad") == 0 || strcmp(_language, "chinese-simp") == 0 || strcmp(_language, "korean") == 0 ||
+    strcmp(_language, "japanese") == 0)
+  {
+    g_gameFont.SetHorizScaleFactor(1.0f);
+    g_editorFont.SetHorizScaleFactor(1.0f);
+    g_titleFont.SetHorizScaleFactor(1.0f);
+
+    g_oldEditorFont = g_editorFont;
+    g_oldGameFont = g_gameFont;
+
+    g_editorFont = g_titleFont;
+    g_gameFont = g_titleFont;
+    m_usingFontCopies = true;
+  }
+  else
+  {
+    if (m_usingFontCopies)
+      g_editorFont = g_oldEditorFont;
+    if (m_usingFontCopies)
+      g_gameFont = g_oldGameFont;
+
+    g_editorFont.SetHorizScaleFactor(0.6f);
+    g_gameFont.SetHorizScaleFactor(0.6f);
+    g_titleFont.SetHorizScaleFactor(0.6f);
+
+    m_usingFontCopies = false;
+  }
+
+  DebugTrace("Fonts loaded.\n");
+
+  if (g_inputManager)
+    newLangTable->RebuildTables();
+
+  m_langTable = newLangTable;
+}
+
+bool GameApp::TrySetLanguage(const std::string& _language)
+{
+  std::string languageFile = "language\\" + _language + ".txt";
+
+  if (!m_resource->FileExists(languageFile.c_str()))
+    return false;
+
+  const char* language = _language.c_str();
+  g_prefsManager->SetString("TextLanguage", language);
+
+  SetLanguage(language, g_prefsManager->GetInt("TextLanguageTest", 0));
+  return true;
+}
+
+bool GameApp::Multiplayer() { return g_app->m_gameMode == GameModeMultiwinia; }
+
+bool GameApp::IsSinglePlayer() { return (g_app->m_gameMode == GameModeCampaign || g_app->m_gameMode == GameModePrologue); }
+
+const char* GameApp::GetProfileDirectory() { return ""; }
+
+const char* GameApp::GetPreferencesPath()
+{
+  static char* path = nullptr;
+  if (path == nullptr)
+  {
+    const char* profileDir = GetProfileDirectory();
+    path = new char[strlen(profileDir) + 32];
+    sprintf(path, "%spreferences.txt", profileDir);
+  }
+
+  return path;
+}
+
+const char* GameApp::GetMapDirectory()
+{
+  static char* directory = nullptr;
+  if (!directory)
+  {
+    const char* profileDir = GetProfileDirectory();
+    directory = new char[strlen(profileDir) + 32];
+    sprintf(directory, "%smaps/", profileDir);
+  }
+
+  return directory;
+}
+
+bool GameApp::ToggleGamePaused()
+{
+  bool allowPause = true;
+  for (int i = 0; i < NUM_TEAMS; ++i)
+  {
+    if (m_multiwinia->m_teams[i].m_teamType == TeamTypeRemotePlayer)
+    {
+      allowPause = false;
+      break;
+    }
+  }
+  if (m_multiwinia->GameInGracePeriod() || m_multiwinia->GameOver())
+    allowPause = false;
+  if (allowPause)
+    m_clientToServer->RequestPause();
+
+  return allowPause;
+}
+
+bool GameApp::GamePaused() const
+{
+  return m_location && (g_gameTimer.IsPaused() || m_clientToServer->m_outOfSyncClients.Size() > 0);
+}
+
+bool GameApp::EarnedAchievement(int _achievementId) { return false; }
+
+void GameApp::GiveAchievement(int _achievementId)
+{
+  // achievements should only be available in games without AI players
+  if (_achievementId != DarwiniaAchievementMasterPlayer && _achievementId != DarwiniaAchievementCarnage && _achievementId !=
+    DarwiniaAchievementGenocide)
+  {
+    for (int i = 0; i < g_app->m_location->m_levelFile->m_numPlayers; ++i)
+    {
+      if (m_multiwinia->m_teams[i].m_teamType == TeamTypeCPU)
+        return;
+    }
+  }
+}
+
+int GameApp::GetMaxNumberofPlayers()
+{
+
+  int gameType = m_multiwinia->m_gameType;
+
+  // Determine how many players can join this game
+  if (gameType != -1 && m_requestedMap)
+  {
+    DArray<MapData*>& maps = m_gameMenu->m_maps[gameType];
+
+    for (int i = 0; i < maps.Size(); i++)
+    {
+      if (maps.ValidIndex(i))
+      {
+        MapData* m = maps[i];
+        if (stricmp(g_app->m_requestedMap, m->m_fileName) == 0)
+          return m->m_numPlayers;
+      }
+    }
+  }
+
+  return 0;
+}
+
+bool GameApp::UseChristmasMode()
+{
+  // Last 2 weeks in December only
+  // Also allow user to disable if he wishes
+
+  time_t now = time(nullptr);
+  tm* theTime = localtime(&now);
+
+#ifdef CHRISTMAS_DEMO
+  if (theTime->tm_mon == 10 && theTime->tm_mday >= 27)
+    return true; if (theTime->tm_mon == 11)
+    return true;
+#else
+  if (theTime->tm_mon == 11)
+  {
+    if (theTime->tm_mday == 24 || theTime->tm_mday == 25 || theTime->tm_mday == 26)
+      return true;
+  }
+#endif
+
+  return false;
+}
