@@ -114,7 +114,6 @@
     <ClInclude Include="egg.h" />
     <ClInclude Include="engineer.h" />
     <ClInclude Include="entity.h" />
-    <ClInclude Include="entity_leg.h" />
     <ClInclude Include="ErrorDialog.h" />
     <ClInclude Include="eruptionmarker.h" />
     <ClInclude Include="factory.h" />
@@ -257,7 +256,6 @@
     <ClCompile Include="egg.cpp" />
     <ClCompile Include="engineer.cpp" />
     <ClCompile Include="entity.cpp" />
-    <ClCompile Include="entity_leg.cpp" />
     <ClCompile Include="ErrorDialog.cpp" />
     <ClCompile Include="eruptionmarker.cpp" />
     <ClCompile Include="factory.cpp" />

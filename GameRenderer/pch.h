@@ -1,4 +1,4 @@
 #pragma once
 
+#include "NeuronClient.h"
 #include "GameRenderer.h"
-#include "DirectXHelper.h"

@@ -366,10 +366,15 @@ Use a small first batch that improves boundaries without forcing a large gamepla
 3. **Move obvious server-only code into `NeuronServer`** — *done*
    - ✅ `server.h` / `server.cpp` moved from `NeuronClient` to `NeuronServer`
    - ⬜ `server.cpp` still uses `g_app` (~10 call sites); NeuronServer still has inverted include paths in both configs
-4. **Stand up the `GameRenderer` boundary** — *done (first extraction)*
+4. **Stand up the `GameRenderer` boundary** — *done (5 extractions)*
    - ✅ `ShadowRenderer.h/.cpp` extracted from `GameLogic` into `GameRenderer` namespace
-   - ✅ `GameRenderer.vcxproj` is a static library referencing NeuronCore
-   - ⬜ `GameRenderer` still has broad include paths to NeuronClient, InterstellarOutpost, GameLogic
+   - ✅ `GameRenderer.vcxproj` is a static library referencing NeuronCore and NeuronClient
+   - ✅ `GameRenderer/pch.h` upgraded to include `NeuronClient.h` (client-side library)
+   - ✅ `entity_leg.h/.cpp` moved from `GameLogic` to `GameRenderer` (render helper, 3 consumers)
+   - ✅ `landscape_renderer.h/.cpp` moved from `InterstellarOutpost` to `GameRenderer` (terrain rendering, 4 consumers)
+   - ✅ `explosion.h/.cpp` moved from `InterstellarOutpost` to `GameRenderer` (visual effects, 37 consumers)
+   - ✅ `particle_system.h/.cpp` moved from `InterstellarOutpost` to `GameRenderer` (visual particles, 47 consumers)
+   - ⬜ `GameRenderer` still has broad include paths to InterstellarOutpost, GameLogic (needed by `g_app` usage in moved files)
 5. **Introduce a thin headless `server.exe` host** — *done*
    - ✅ `Server/Server.vcxproj` — console application linking NeuronCore + NeuronServer only
    - ✅ `Server/Server.cpp` — headless `main()` with 10 Hz tick loop, Ctrl+C signal handler, `--test` mode for CI
@@ -385,6 +390,10 @@ Use a small first batch that improves boundaries without forcing a large gamepla
 - `NeuronClient/clienttoserver.h` — ✅ now depends on `TeamControls.h` (NeuronCore)
 - `NeuronClient/NeuronClient.vcxproj` — ✅ now owns 48 relocated graphics/windowing files; Release include paths added
 - `GameRenderer/ShadowRenderer.h/.cpp` — ✅ first render-only extraction from `GameLogic`
+- `GameRenderer/entity_leg.h/.cpp` — ✅ render helper moved from `GameLogic`
+- `GameRenderer/landscape_renderer.h/.cpp` — ✅ terrain rendering moved from `InterstellarOutpost`
+- `GameRenderer/explosion.h/.cpp` — ✅ visual effects moved from `InterstellarOutpost`
+- `GameRenderer/particle_system.h/.cpp` — ✅ visual particles moved from `InterstellarOutpost`
 - `Server/Server.cpp` — ✅ headless host with `--test` mode
 - `Server/ServerStubs.cpp` — ✅ temporary linker stubs (delete after Wave 5)
 
@@ -405,7 +414,7 @@ Use a small first batch that improves boundaries without forcing a large gamepla
 | Graphics/windowing file relocation | **Done** | 48 files moved NeuronCore → NeuronClient | — |
 | Shared contract extraction | **Done** | `TeamControls.h/.cpp`, `bandwidth.h`, `globals.h`, `network_defines.h`, `worldobject.h`, `gametimer.h` | — |
 | Server code to NeuronServer | **Done** | `NeuronServer/server.h`, `NeuronServer/server.cpp` | `server.cpp` still uses `g_app` (~10 sites) |
-| GameRenderer boundary | **Done** (first file) | `GameRenderer/ShadowRenderer.h/.cpp` | More extractions needed |
+| GameRenderer boundary | **Done** (5 files) | `ShadowRenderer`, `entity_leg`, `landscape_renderer`, `explosion`, `particle_system` | More extractions needed; `g_app` coupling in moved files |
 | Headless server.exe | **Done** | `Server/Server.cpp`, `Server/ServerStubs.cpp` | Cannot instantiate `Server` class yet |
 
 ## Wave 2 Completion Summary
@@ -448,3 +457,55 @@ Use a small first batch that improves boundaries without forcing a large gamepla
 | GameRenderer builds without server-only dependencies | ✅ **Pass** |
 | server.exe launches headless | ⬜ Not re-verified (ServerStubs may need update) |
 | Client still renders and connects | ✅ **Pass** (build succeeds) |
+
+## Batch 2: Wave 6 — GameRenderer Render Infrastructure Extraction
+
+### Rationale
+Entity/building files in `GameLogic` all mix `Advance()` (simulation) with `Render()` (visual) in a single class. Splitting individual entity render methods is a deep refactoring task (deferred). The practical first step is relocating **whole render-infrastructure files** — files that are entirely about rendering, visual effects, or render helpers with no authoritative simulation ownership.
+
+### Files Moved: GameLogic → GameRenderer (1 pair)
+
+| File | Consumers | Rationale |
+|------|-----------|-----------|
+| `entity_leg.h/.cpp` | 3 (spider.cpp, tripod.cpp, entity_leg.cpp) | Render helper for entity leg IK/animation. Not part of entity type system. Uses `g_app->m_resource` for shape loading. |
+
+### Files Moved: InterstellarOutpost → GameRenderer (3 pairs)
+
+| File | Consumers | Rationale |
+|------|-----------|-----------|
+| `landscape_renderer.h/.cpp` | 4 (3 IO, 1 NC) | Pure terrain rendering. OpenGL vertex buffer, display list management. Uses `g_app` for resource/location. |
+| `explosion.h/.cpp` | 37 (31 GL, 5 IO, 1 main) | Visual-only explosion effects. Shape fragment tumbling, no authoritative state. Global `g_explosionManager`. |
+| `particle_system.h/.cpp` | 47 (34 GL, 11 IO, 1 NC) | Visual particle effects (fire, sparks, trails, etc.). Pure rendering pipeline component. |
+
+### Build-System Changes
+
+| File | Change |
+|------|--------|
+| `GameRenderer/GameRenderer.vcxproj` | Added 4 `ClInclude` + 4 `ClCompile` entries. Added NeuronClient project reference. |
+| `GameRenderer/pch.h` | Changed from `GameRenderer.h` + `DirectXHelper.h` to `NeuronClient.h` + `GameRenderer.h`. |
+| `GameLogic/GameLogic.vcxproj` | Removed `entity_leg.h` and `entity_leg.cpp` entries. |
+| `InterstellarOutpost/InterstellarOutpost.vcxproj` | Removed 3 `ClInclude` + 3 `ClCompile` entries (`landscape_renderer`, `explosion`, `particle_system`). Added `$(SolutionDir)GameRenderer` to Debug include paths. |
+| `NeuronClient/NeuronClient.vcxproj` | Added `$(SolutionDir)GameRenderer` to Debug and Release include paths. |
+
+### GameRenderer Current File Inventory (5 pairs + PCH)
+
+| File | Origin | Type |
+|------|--------|------|
+| `ShadowRenderer.h/.cpp` | Extracted from GameLogic | Entity shadow rendering (namespace `GameRenderer`) |
+| `entity_leg.h/.cpp` | GameLogic | Entity leg IK render helper |
+| `explosion.h/.cpp` | InterstellarOutpost | Visual explosion effects + `ExplosionManager` |
+| `landscape_renderer.h/.cpp` | InterstellarOutpost | Terrain rendering (vertex buffers, display lists) |
+| `particle_system.h/.cpp` | InterstellarOutpost | Visual particle system (17 particle types) |
+| `GameRenderer.h` | — | Umbrella header (includes `NeuronCore.h`) |
+| `pch.h` / `pch.cpp` | — | PCH (includes `NeuronClient.h` + `GameRenderer.h`) |
+
+### Remaining `g_app` Coupling in Moved Files
+
+All moved `.cpp` files still use `g_app` for resource/location/camera access. This is expected — decoupling `g_app` is Wave 5 work. The files are in the correct library boundary now; the coupling will be resolved when `App` is split into narrower service interfaces.
+
+| File | `g_app` usage |
+|------|---------------|
+| `entity_leg.cpp` | `g_app->m_resource->GetShape()`, `g_app->m_location->m_landscape` |
+| `landscape_renderer.cpp` | `g_app->m_resource`, `g_app->m_location`, `g_app->m_camera` |
+| `explosion.cpp` | `g_app->m_renderer`, `g_app->m_camera` |
+| `particle_system.cpp` | `g_app->m_resource`, `g_app->m_camera`, `g_app->m_location` |
