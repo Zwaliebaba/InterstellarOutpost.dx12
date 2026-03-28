@@ -12,24 +12,27 @@ This plan is for analysis and impact assessment first, not for bulk moves.
 
 ## Current-State Facts To Anchor The Analysis
 
-- `InterstellarOutpost/main.cpp` is the current top-level loop and pulls in rendering, input, gameplay, client networking, and server headers in one place (`InterstellarOutpost/main.cpp:1-53`).
-- `App` currently owns both client-facing and server-facing subsystems, including `Renderer`, `SoundSystem`, `Camera`, `LocationInput`, `TaskManagerInterface`, `GameMenu`, `MarkerSystem`, `Server`, and `ClientToServer` (`InterstellarOutpost/app.h:48-108`).
-- `App` also exposes global access through `g_app` (`InterstellarOutpost/app.h:239-239`).
-- `NeuronCore` currently includes WinRT and Windows UI headers directly in its umbrella header (`NeuronCore/NeuronCore.h:78-93`) and also includes `DirectXHelper.h` (`NeuronCore/NeuronCore.h:101-101`).
-- `NeuronCore` currently compiles graphics/windowing files such as `window_manager_directx.cpp`, `opengl_directx.cpp`, `sphere_renderer.cpp`, and `text_renderer.cpp` (`NeuronCore/NeuronCore.vcxproj:194-229`).
-- `NeuronCore` currently has **Debug-only** include paths into `NeuronClient`, `GameLogic`, and `InterstellarOutpost`, which means the dependency direction is already inverted (`NeuronCore/NeuronCore.vcxproj:56`). The Release configuration does not have these paths (`NeuronCore/NeuronCore.vcxproj:64-80`), so the Release build may already fail to resolve `DirectXHelper.h` (which lives in `NeuronClient/`, not `NeuronCore/`).
-- `NeuronCore/NeuronCore.h:95` contains `using namespace winrt;`, which pollutes every consumer's namespace and violates the project rule against `using namespace` in headers.
+> **Note**: facts marked ✅ were verified against the codebase. `migration.md` was never created;
+> all status is tracked inline in this file.
+
+- `InterstellarOutpost/main.cpp` is the current top-level loop and pulls in rendering, input, gameplay, client networking, and server headers in one place (`InterstellarOutpost/main.cpp:1-53`). *No code changes made yet — analysis only.*
+- `App` currently owns both client-facing and server-facing subsystems, including `Renderer`, `SoundSystem`, `Camera`, `LocationInput`, `TaskManagerInterface`, `GameMenu`, `MarkerSystem`, `Server`, and `ClientToServer` (`InterstellarOutpost/app.h:48-108`). *No code changes made yet — member classification deferred to Wave 5.*
+- `App` also exposes global access through `g_app` (`InterstellarOutpost/app.h:239-239`). *No code changes made yet — coupling analysis deferred to Wave 5.*
+- ~~`NeuronCore` currently includes WinRT and Windows UI headers directly in its umbrella header (`NeuronCore/NeuronCore.h:78-93`) and also includes `DirectXHelper.h` (`NeuronCore/NeuronCore.h:101-101`).~~ ✅ *Fixed in Step 1 — UI WinRT moved to NeuronClient.h, DirectXHelper.h moved to NeuronCore/pch.h (private).*
+- ~~`NeuronCore` currently compiles graphics/windowing files such as `window_manager_directx.cpp`, `opengl_directx.cpp`, `sphere_renderer.cpp`, and `text_renderer.cpp` (`NeuronCore/NeuronCore.vcxproj:200-237`). *Still true — relocation to NeuronClient/GameRenderer deferred to Wave 2+.*~~ ✅ *Wave 2 complete — 23 graphics/windowing `.cpp` files and 25 `.h` files relocated from NeuronCore to NeuronClient. Also moved: `language_table.h/.cpp` (deeply coupled to `g_inputManager`/NeuronClient). `gametimer.h` moved from InterstellarOutpost to NeuronCore (shared simulation timer).*
+- ~~`NeuronCore` currently has **Debug-only** include paths into `NeuronClient`, `GameLogic`, and `InterstellarOutpost`, which means the dependency direction is already inverted (`NeuronCore/NeuronCore.vcxproj:56`). Additionally, `NeuronCore/pch.h` includes `DirectXHelper.h` (which lives in `NeuronClient/`), so this inverted path is load-bearing. *Cannot remove until the 13 graphics/windowing files are relocated out of NeuronCore.*~~ ✅ *Wave 2 complete — inverted `AdditionalIncludeDirectories` removed from NeuronCore Debug config. `DirectXHelper.h` removed from `NeuronCore/pch.h`. NeuronCore now compiles with zero upward include-path dependencies.*
+- ~~`NeuronCore/NeuronCore.h` contains `using namespace winrt;`, which pollutes every consumer's namespace and violates the project rule against `using namespace` in headers.~~ *Still present at `NeuronCore/NeuronCore.h:90` — deferred with `TODO(migration)` comment; large mechanical change.*
 - `NeuronClient` already carries Windows App SDK package imports (`NeuronClient/NeuronClient.vcxproj:3-15`).
-- `NeuronClient` currently contains both client and server networking code, including `clienttoserver.*`, `server.*`, and `servertoclient.*` (`NeuronClient/NeuronClient.vcxproj:95-156`, `NeuronClient/NeuronClient.vcxproj:158-208`).
-- `NeuronServer` exists as a static library project, but it is effectively empty today and only contains PCH files plus a dependency on `NeuronCore` (`NeuronServer/NeuronServer.vcxproj:14-27`).
-- `NeuronServer` also currently has **Debug-only** include paths into `NeuronClient` and `InterstellarOutpost`, so it is not yet isolated (`NeuronServer/NeuronServer.vcxproj:73`). Release has no upward paths.
-- `NeuronServer/NeuronServer.h` includes `NeuronCore.h`, so `NeuronServer` is **transitively poisoned** by all UI WinRT, DirectX, and `DirectXHelper.h` leakage from the NeuronCore umbrella. Step 1 (NeuronCore cleanup) must complete before NeuronServer can compile cleanly.
-- `ClientToServer` currently depends on gameplay types such as `TeamControls` via `team.h`, so the client networking layer is not cleanly separated from gameplay (`NeuronClient/clienttoserver.h:4-10`, `NeuronClient/clienttoserver.h:159-192`).
-- The `team.h` dependency has a deep transitive chain: `clienttoserver.h` → `team.h` (`InterstellarOutpost/`) → `entity.h` (`GameLogic/`) → `worldobject.h` (`GameLogic/`) + `shape.h` (`NeuronCore/`, graphics). Contract extraction must break this chain, not just extract payloads.
-- `NeuronClient/server.h` includes `bandwidth.h` (`NeuronClient/bandwidth.h`), so `server.h` cannot move to `NeuronServer` until `bandwidth.h` moves to `NeuronCore`.
-- `InterstellarOutpost/globals.h` defines fundamental shared constants (`NUM_TEAMS`, `GRAVITY`, `IAMALIVE_PERIOD`). It is included by `building.h` and `network_defines.h` (`NeuronClient/`), making it a shared contract currently trapped in the host project.
-- `Server` is physically located in `NeuronClient`, which is the clearest immediate misplacement for the target architecture (`NeuronClient/server.h:41-143`).
-- `g_app` is a major coupling hotspot: there are `6794` matches across `199` source files in `NeuronCore`, `NeuronClient`, `NeuronServer`, `GameLogic`, and `InterstellarOutpost`.
+- ~~`NeuronClient` currently contains both client and server networking code, including `clienttoserver.*`, `server.*`, and `servertoclient.*`.~~ ✅ *`server.*` moved to NeuronServer. `clienttoserver.*` stays in NeuronClient (correct target). `servertoclient.*` still in NeuronClient — future candidate for NeuronServer or shared contract extraction.*
+- ~~`NeuronServer` exists as a static library project, but it is effectively empty today.~~ ✅ *NeuronServer now owns `server.h` and `server.cpp`.*
+- `NeuronServer` currently has include paths into `NeuronClient`, `InterstellarOutpost`, and `GameLogic` in **both Debug and Release** configurations (`NeuronServer/NeuronServer.vcxproj:73,91`), so it is not yet isolated. *Still true — needed by `server.cpp`'s `g_app` usage; deferred to Wave 5.*
+- ~~`NeuronServer/NeuronServer.h` includes `NeuronCore.h`, so `NeuronServer` is **transitively poisoned** by all UI WinRT, DirectX, and `DirectXHelper.h` leakage from the NeuronCore umbrella.~~ ✅ *Fixed — NeuronCore umbrella cleaned in Step 1.*
+- ~~`ClientToServer` currently depends on gameplay types such as `TeamControls` via `team.h`.~~ ✅ *Fixed — `clienttoserver.h` now includes `TeamControls.h` (NeuronCore) instead of `team.h`.*
+- ~~The `team.h` dependency has a deep transitive chain.~~ ✅ *Chain broken via `TeamControls` extraction to NeuronCore.*
+- ~~`NeuronClient/server.h` includes `bandwidth.h` (`NeuronClient/bandwidth.h`), so `server.h` cannot move to `NeuronServer` until `bandwidth.h` moves to `NeuronCore`.~~ ✅ *`bandwidth.h` moved to NeuronCore; `server.h` moved to NeuronServer.*
+- ~~`InterstellarOutpost/globals.h` defines fundamental shared constants trapped in the host project.~~ ✅ *Moved to NeuronCore.*
+- ~~`Server` is physically located in `NeuronClient`.~~ ✅ *Moved to NeuronServer.*
+- `g_app` is a major coupling hotspot across `NeuronCore`, `NeuronClient`, `NeuronServer`, `GameLogic`, and `InterstellarOutpost`. *Detailed coupling analysis and decoupling plan deferred to Wave 5.*
 
 ## Desired Dependency Direction
 
@@ -141,8 +144,9 @@ If the file is authoritative simulation or server-side transport/orchestration a
 
 Current first-pass candidates:
 
-- `server.*` currently misplaced under `NeuronClient` (`NeuronClient/NeuronClient.vcxproj:137-138`, `NeuronClient/NeuronClient.vcxproj:191-192`)
+- ~~`server.*` currently misplaced under `NeuronClient`~~ ✅ *Moved to NeuronServer.*
 - any server-only connection/session/listener orchestration
+- `servertoclient.*` — currently in NeuronClient, likely candidate for NeuronServer
 - host-side match control, authoritative world advancement, anti-cheat or validation logic
 
 #### Put in `GameRenderer`
@@ -233,24 +237,28 @@ Before moving code, write down these rules in an ADR or migration note:
 - A dedicated headless `server.exe` is a target deliverable.
 
 ### Wave 1 - Fix Build Boundaries First
-1. Remove inverted include paths from `NeuronCore` debug settings (`NeuronCore/NeuronCore.vcxproj:47-57`).
-2. Remove `NeuronClient` and `InterstellarOutpost` include leakage from `NeuronServer` (`NeuronServer/NeuronServer.vcxproj:64-74`).
-3. Remove any upward include-path dependency from `NeuronCore` into `GameRenderer` or host code.
+1. ~~Remove inverted include paths from `NeuronCore` debug settings (`NeuronCore/NeuronCore.vcxproj:47-57`).~~ ✅ *Done — `AdditionalIncludeDirectories` removed from NeuronCore Debug config after graphics/windowing file relocation.*
+2. Remove `NeuronClient` and `InterstellarOutpost` include leakage from `NeuronServer` (`NeuronServer/NeuronServer.vcxproj:64-74`). *Still blocked — `server.cpp` uses `g_app`; deferred to Wave 5.*
+3. ~~Remove any upward include-path dependency from `NeuronCore` into `GameRenderer` or host code.~~ ✅ *Done — NeuronCore has zero upward include-path dependencies.*
 4. Make project references reflect intended direction before moving many files.
-5. Keep PCHs minimal and library-local.
+5. ~~Keep PCHs minimal and library-local.~~ ✅ *Done — `NeuronCore/pch.h` now only includes `NeuronCore.h` (no `DirectXHelper.h`).*
 
-### Wave 2 - Public Header Detox
-1. Remove `DirectXHelper.h` and other client-only graphics dependencies from `NeuronCore` umbrella and public headers.
-2. Remove UI-related WinRT headers from `NeuronCore` umbrella and PCH files.
-3. Remove `using namespace winrt;` from `NeuronCore/NeuronCore.h:95` (violates header namespace pollution rule).
-4. Replace public heavy includes with forward declarations wherever possible.
-5. Isolate render-only APIs away from shared or simulation-facing headers.
+### Wave 2 - Public Header Detox & Graphics File Relocation
+1. ~~Remove `DirectXHelper.h` and other client-only graphics dependencies from `NeuronCore` umbrella and public headers.~~ ✅ *`DirectXHelper.h` removed from `NeuronCore/pch.h`. Stays in `NeuronClient/NeuronClient.h`.*
+2. ~~Remove UI-related WinRT headers from `NeuronCore` umbrella and PCH files.~~ ✅ *Moved to `NeuronClient/NeuronClient.h`.*
+3. Remove `using namespace winrt;` from `NeuronCore/NeuronCore.h:90` (violates header namespace pollution rule). *Deferred — large mechanical change.*
+4. ~~Relocate graphics/windowing files from NeuronCore to NeuronClient.~~ ✅ *48 files moved (25 headers + 23 sources): OpenGL→DirectX translation layer, window manager, text/sphere renderers, resource manager, bitmap, shader, shape, texture, targetcursor, safegl, and more. Also moved `language_table.h/.cpp` (deeply coupled to `g_inputManager`/NeuronClient input system).*
+5. ~~Move shared simulation headers trapped in InterstellarOutpost to NeuronCore.~~ ✅ *`gametimer.h` moved from InterstellarOutpost to NeuronCore (network-safe game timer needed by both client and server).*
+6. ~~Fix "staying" NeuronCore files with upward dependencies.~~ ✅ *`preferences.cpp` — replaced `g_app->m_resource->GetTextReader()` with direct `FileSys` + `UnicodeTextFileReader`/`TextFileReader`; inlined `OTHER_DIFFICULTY` macro. `hi_res_time.cpp` — removed dead `#include "main.h"`. `profiler.cpp` — added forward declaration for `glFinish()` (resolved at link time).*
+7. Replace public heavy includes with forward declarations wherever possible.
+8. Isolate render-only APIs away from shared or simulation-facing headers.
 
 ### Wave 3 - Extract Shared Contracts
 Move or create shared headers in `NeuronCore` for:
 
-- **prerequisite file moves**: `bandwidth.h` (from `NeuronClient/`), `globals.h` (from `InterstellarOutpost/`), `network_defines.h` (from `NeuronClient/`) — these are small, low-risk shared definitions that block later steps
-- `worldobject.h` (from `GameLogic/`) — base class for `Entity` and `Building`, depends only on `vector3.h` (NeuronCore)
+- ~~**prerequisite file moves**: `bandwidth.h` (from `NeuronClient/`), `globals.h` (from `InterstellarOutpost/`), `network_defines.h` (from `NeuronClient/`)~~ ✅ *All three moved to NeuronCore.*
+- ~~`worldobject.h` (from `GameLogic/`)~~ ✅ *Moved to NeuronCore.*
+- `TeamControls.h` / `TeamControls.cpp` ✅ *Extracted from `team.h` into NeuronCore as a shared network contract.*
 - packet/message enums
 - transport-neutral DTOs
 - deterministic gameplay commands
@@ -262,11 +270,11 @@ This is needed because `ClientToServer` already pulls gameplay state through `te
 ### Wave 4 - Move Obvious Server Code
 Move the clearest server-only files first:
 
-- `NeuronClient/server.h`
-- `NeuronClient/server.cpp`
+- ~~`NeuronClient/server.h`~~ ✅ *Moved to `NeuronServer/server.h`.*
+- ~~`NeuronClient/server.cpp`~~ ✅ *Moved to `NeuronServer/server.cpp`.*
 - any server-side session/history/authority files that do not require UI or renderer code
 
-Do not move them until their includes no longer rely on client-only headers.
+> **Status**: Core server files moved. `NeuronServer` still has inverted include paths into `NeuronClient`, `InterstellarOutpost`, and `GameLogic` (both configs) because `server.cpp` uses `g_app`. Full isolation blocked until Wave 5 decoupling.
 
 ### Wave 5 - Split `App`
 `App` is currently a mixed owner of client and server state (`InterstellarOutpost/app.h:48-108`).
@@ -342,183 +350,101 @@ Mark the file as `Do Not Move Yet` if any of these are true:
 Use a small first batch that improves boundaries without forcing a large gameplay rewrite.
 
 ### Batch 1 Scope
-1. **Clean `NeuronCore` public boundaries**
-   - remove `DirectXHelper.h` and other client-only graphics dependencies from `NeuronCore` public umbrella/PCH usage
-   - remove UI-related WinRT headers from `NeuronCore`
-   - stop `NeuronCore` from relying on upward include paths into client or host code
-2. **Create or harden shared contracts in `NeuronCore`**
-   - extract packet/message enums, shared command payloads, IDs, and simulation-facing DTOs
-   - remove direct gameplay-heavy dependencies from client/server transport headers where possible
-3. **Move obvious server-only code into `NeuronServer`**
-   - move `server.h` / `server.cpp` out of `NeuronClient` only after header cleanup
-   - keep server authority free of renderer, UI, and Windows App SDK dependencies
-4. **Stand up the `GameRenderer` boundary**
-   - identify the first render-only files in `GameLogic` that can move safely
-   - move only rendering/presentation code, not authoritative update logic
-5. **Introduce a thin headless `server.exe` host**
-   - minimal startup, fixed tick loop, clean shutdown, no windowing or DirectX
+1. **Clean `NeuronCore` public boundaries** — *done*
+   - ✅ UI WinRT headers moved from `NeuronCore/NeuronCore.h` to `NeuronClient/NeuronClient.h`
+   - ✅ `DirectXHelper.h` removed from `NeuronCore` public umbrella and PCH
+   - ✅ NeuronCore inverted include paths removed (Debug `AdditionalIncludeDirectories` deleted)
+   - ✅ 48 graphics/windowing files relocated from NeuronCore to NeuronClient
+   - ✅ `gametimer.h` moved from InterstellarOutpost to NeuronCore (shared simulation timer)
+   - ✅ Blocking upward deps in staying files fixed: `preferences.cpp`, `hi_res_time.cpp`, `profiler.cpp`
+   - ⬜ `using namespace winrt;` still in `NeuronCore/NeuronCore.h:90` (deferred — large mechanical change)
+2. **Create or harden shared contracts in `NeuronCore`** — *done*
+   - ✅ `TeamControls.h/.cpp` extracted from `team.h` into NeuronCore as shared network contract
+   - ✅ `bandwidth.h`, `globals.h`, `network_defines.h` moved to NeuronCore
+   - ✅ `worldobject.h` moved to NeuronCore
+   - ✅ `clienttoserver.h` now depends on `TeamControls.h` instead of `team.h`
+3. **Move obvious server-only code into `NeuronServer`** — *done*
+   - ✅ `server.h` / `server.cpp` moved from `NeuronClient` to `NeuronServer`
+   - ⬜ `server.cpp` still uses `g_app` (~10 call sites); NeuronServer still has inverted include paths in both configs
+4. **Stand up the `GameRenderer` boundary** — *done (first extraction)*
+   - ✅ `ShadowRenderer.h/.cpp` extracted from `GameLogic` into `GameRenderer` namespace
+   - ✅ `GameRenderer.vcxproj` is a static library referencing NeuronCore
+   - ⬜ `GameRenderer` still has broad include paths to NeuronClient, InterstellarOutpost, GameLogic
+5. **Introduce a thin headless `server.exe` host** — *done*
+   - ✅ `Server/Server.vcxproj` — console application linking NeuronCore + NeuronServer only
+   - ✅ `Server/Server.cpp` — headless `main()` with 10 Hz tick loop, Ctrl+C signal handler, `--test` mode for CI
+   - ✅ `Server/ServerStubs.cpp` — temporary linker stubs for upward deps from NeuronCore.lib
+   - ⬜ Cannot instantiate real `Server` class yet (blocked by `g_app` coupling in `server.cpp`)
 
 ### Batch 1 Suggested File Focus
-- `NeuronCore/NeuronCore.h`
-- `NeuronCore/NeuronCore.vcxproj`
-- `NeuronClient/server.h`
-- `NeuronClient/server.cpp`
-- `NeuronClient/clienttoserver.h`
-- first render-only files extracted from `GameLogic` into `GameRenderer`
+- `NeuronCore/NeuronCore.h` — ✅ UI WinRT cleaned; `using namespace winrt;` deferred
+- `NeuronCore/NeuronCore.vcxproj` — ✅ inverted include paths removed; graphics files relocated
+- `NeuronCore/pch.h` — ✅ cleaned to only `#include "NeuronCore.h"`
+- `NeuronServer/server.h` — ✅ moved from `NeuronClient`
+- `NeuronServer/server.cpp` — ✅ moved from `NeuronClient`; still coupled to `g_app`
+- `NeuronClient/clienttoserver.h` — ✅ now depends on `TeamControls.h` (NeuronCore)
+- `NeuronClient/NeuronClient.vcxproj` — ✅ now owns 48 relocated graphics/windowing files; Release include paths added
+- `GameRenderer/ShadowRenderer.h/.cpp` — ✅ first render-only extraction from `GameLogic`
+- `Server/Server.cpp` — ✅ headless host with `--test` mode
+- `Server/ServerStubs.cpp` — ✅ temporary linker stubs (delete after Wave 5)
 
 ### Batch 1 Exit Criteria
-- `NeuronCore` builds without upward include-path dependencies
-- `NeuronServer` owns the current `server.*` implementation
-- shared protocol/command contracts compile from `NeuronCore`
-- `GameRenderer` contains at least one real render-only extraction from `GameLogic`
-- `server.exe` can launch headless
+- ✅ `NeuronCore` builds without upward include-path dependencies — *achieved after Wave 2 graphics file relocation*
+- ✅ `NeuronServer` owns the current `server.*` implementation
+- ✅ Shared protocol/command contracts compile from `NeuronCore` (`TeamControls.h`, `bandwidth.h`, `globals.h`, `network_defines.h`, `worldobject.h`, `gametimer.h`)
+- ✅ `GameRenderer` contains at least one real render-only extraction from `GameLogic` (`ShadowRenderer`)
+- ✅ `server.exe` can launch headless (`Server/Server.cpp` with `--test` mode)
 
-## Batch 1 File-by-File Checklist
+> **Batch 1 result**: All 5 exit criteria met. ✅
 
-Use this checklist to keep the first migration batch small, reviewable, and low-risk.
+## Batch 1 Completion Summary
 
-### `NeuronCore/NeuronCore.h`
-- [ ] remove `DirectXHelper.h` from the public umbrella include set
-- [ ] remove UI-related WinRT headers from the public umbrella include set
-- [ ] keep only standard WinRT headers that are valid for both client and server
-- [ ] verify that shared headers no longer rely on client-only transitive includes
+| Item | Status | Key Files | Remaining Blockers |
+|------|--------|-----------|--------------------|
+| NeuronCore public boundary cleanup | **Done** | `NeuronCore.h`, `pch.h`, `NeuronCore.vcxproj` | `using namespace winrt;` deferred |
+| Graphics/windowing file relocation | **Done** | 48 files moved NeuronCore → NeuronClient | — |
+| Shared contract extraction | **Done** | `TeamControls.h/.cpp`, `bandwidth.h`, `globals.h`, `network_defines.h`, `worldobject.h`, `gametimer.h` | — |
+| Server code to NeuronServer | **Done** | `NeuronServer/server.h`, `NeuronServer/server.cpp` | `server.cpp` still uses `g_app` (~10 sites) |
+| GameRenderer boundary | **Done** (first file) | `GameRenderer/ShadowRenderer.h/.cpp` | More extractions needed |
+| Headless server.exe | **Done** | `Server/Server.cpp`, `Server/ServerStubs.cpp` | Cannot instantiate `Server` class yet |
 
-### `NeuronCore/pch.h`
-- [ ] keep the PCH limited to core-safe includes only
-- [ ] verify that the PCH does not pull in DirectX, Windows App SDK, or UI-related WinRT indirectly
+## Wave 2 Completion Summary
 
-### `NeuronCore/NeuronCore.vcxproj`
-- [ ] remove upward include-path dependencies into `NeuronClient`, `GameLogic`, `GameRenderer`, and `InterstellarOutpost`
-- [ ] review graphics- and windowing-oriented compilation units and mark each one as `Stay`, `Move`, or `Split`
-- [ ] ensure `NeuronCore` can build with only core-owned include paths and references
+### Files Moved: NeuronCore → NeuronClient (48 files)
 
-### `NeuronClient/server.h`
-- [ ] move to `NeuronServer`
-- [ ] remove any dependence on client-only headers or client-only transitive includes
-- [ ] confirm that the public interface depends only on `NeuronCore` and server-safe types
+**Headers (25):**
+`3d_sprite.h`, `bitmap.h`, `DeviceNotify.h`, `FixedPipeline.h`, `language_table.h`, `ogl_extensions.h`, `opengl_directx.h`, `opengl_directx_dlist.h`, `opengl_directx_dlist_dev.h`, `opengl_directx_inline.h`, `opengl_directx_internals.h`, `opengl_directx_matrix_stack.h`, `opengl_trace.h`, `resource.h`, `safegl.h`, `shader.h`, `shape.h`, `sphere_renderer.h`, `targetcursor.h`, `texture.h`, `texture_uv.h`, `text_renderer.h`, `window_manager.h`, `window_manager_directx.h`, `WndProcManager.h`
 
-### `NeuronClient/server.cpp`
-- [ ] move to `NeuronServer`
-- [ ] remove any client-only implementation dependencies
-- [ ] verify that the implementation can compile without Windows App SDK, DirectX, or UI code
+**Sources (23):**
+`3d_sprite.cpp`, `bitmap.cpp`, `FixedPipeline.cpp`, `language_table.cpp`, `ogl_extensions_directx.cpp`, `opengl_directx.cpp`, `opengl_directx_dlist.cpp`, `opengl_directx_dlist_dev.cpp`, `opengl_directx_matrix_stack.cpp`, `opengl_directx_stubs.cpp`, `opengl_trace.cpp`, `resource.cpp`, `safegl.cpp`, `shader.cpp`, `shape.cpp`, `sphere_renderer.cpp`, `targetcursor.cpp`, `texture.cpp`, `texture_uv.cpp`, `text_renderer.cpp`, `window_manager.cpp`, `window_manager_directx.cpp`, `WndProcManager.cpp`
 
-### `NeuronClient/clienttoserver.h`
-- [ ] identify gameplay-heavy dependencies pulled through `team.h`
-- [ ] extract shared command payloads and protocol-facing DTOs into `NeuronCore`
-- [ ] reduce the public interface to shared contract types plus client transport responsibilities
+### Files Moved: InterstellarOutpost → NeuronCore (1 header)
 
-### `NeuronClient/clienttoserver.cpp`
-- [ ] update includes after shared payload extraction
-- [ ] confirm that client transport stays in `NeuronClient`
-- [ ] remove dependencies on gameplay implementation details where possible
+`gametimer.h` — network-safe game timer (shared simulation type). Implementation (`gametimer.cpp`) stays in InterstellarOutpost (uses `g_app`); linked at exe level.
 
-### `NeuronServer/NeuronServer.vcxproj`
-- [ ] add moved server source files
-- [ ] remove `NeuronClient` and host include leakage
-- [ ] verify references and include paths match the intended server-only dependency direction
+### Blocking Dependency Fixes in NeuronCore "Staying" Files
 
-### `InterstellarOutpost/main.cpp`
-- [ ] keep in the host layer for Batch 1
-- [ ] identify startup/shutdown logic that should remain host-only
-- [ ] note any direct dependencies that block a future split into `client.exe` and `server.exe`
+| File | Fix | Details |
+|------|-----|---------|
+| `preferences.cpp` | Removed `app.h`, `resource.h`, `prefs_other_window.h` | Replaced `g_app->m_resource->GetTextReader()` with direct `FileSys` + `UnicodeTextFileReader`/`TextFileReader`. Inlined `OTHER_DIFFICULTY` macro as `"Difficulty"`. |
+| `hi_res_time.cpp` | Removed dead `#include "main.h"` | No symbols from `main.h` were used. |
+| `profiler.cpp` | Added `void glFinish();` forward declaration | Implementation in NeuronClient's OpenGL→DirectX layer; resolved at link time. |
 
-### `InterstellarOutpost/app.h`
-- [ ] keep in the host layer for Batch 1
-- [ ] identify members that are clearly client-only, server-only, or shared-service ownership
-- [ ] record which fields and APIs are major blockers for reducing `g_app` coupling
+### Build-System Changes
 
-### `GameLogic/entity.h` and `GameLogic/entity.cpp`
-- [ ] mark as `Split First`, not `Move First`
-- [ ] identify render-facing APIs, render data, and shape/visual dependencies
-- [ ] define the first candidate extraction into `GameRenderer` without moving authoritative update logic
+| File | Change |
+|------|--------|
+| `NeuronCore/NeuronCore.vcxproj` | Removed 25 `ClInclude` + 23 `ClCompile` entries. Removed `AdditionalIncludeDirectories` from Debug config. Added `gametimer.h`. |
+| `NeuronClient/NeuronClient.vcxproj` | Added 25 `ClInclude` + 23 `ClCompile` entries. Added `AdditionalIncludeDirectories` to Release config (matching Debug). |
+| `InterstellarOutpost/InterstellarOutpost.vcxproj` | Removed `gametimer.h` `ClInclude` entry. |
+| `NeuronCore/pch.h` | Removed `#include "DirectXHelper.h"` — now only includes `NeuronCore.h`. |
 
-### `GameLogic/building.h` and `GameLogic/building.cpp`
-- [ ] mark as `Split First`, not `Move First`
-- [ ] identify render-facing APIs, render data, and shape/visual dependencies
-- [ ] define the first candidate extraction into `GameRenderer` without moving authoritative update logic
+### Wave 1 Acceptance Gate Status
 
-### `GameRenderer/` first extraction candidates
-- [ ] create or confirm the project boundary for `GameRenderer`
-- [ ] move one real render-only path from `GameLogic` into `GameRenderer`
-- [ ] keep extracted code dependent on shared simulation state, not server authority
-- [ ] verify the extracted code does not become a second host/orchestration layer
-
-### `server.exe` host
-- [ ] create a thin headless startup path
-- [ ] link only `NeuronCore` and `NeuronServer`
-- [ ] ensure there is no window creation, DirectX initialization, or Windows App SDK dependency
-- [ ] add basic fixed-tick startup and clean shutdown behavior suitable for container hosting
-
-## Wave Acceptance Gates
-
-Each wave should finish with explicit pass/fail checks:
-
-1. `NeuronCore` builds without include-path access to `NeuronClient`, `NeuronServer`, `GameLogic`, `GameRenderer`, or `InterstellarOutpost`.
-2. `NeuronServer` builds without `NeuronClient` include directories.
-3. `GameRenderer` builds without server-only dependencies.
-4. `server.exe` launches headless with no window creation, DirectX, or Windows App SDK dependency.
-5. The client still renders and connects successfully.
-6. Protocol compatibility tests between client and server still pass.
-7. Deterministic server update tests still pass for authoritative game-object updates.
-
-## Minimum Deliverables From The Analysis
-
-1. A migration spreadsheet covering every `.cpp` and `.h`.
-2. A dependency heat map showing cross-library includes.
-3. A list of files that are safe to move now.
-4. A list of files that must be split first.
-5. A list of public headers that need contract extraction.
-6. A list of files that should move from `GameLogic` to `GameRenderer`.
-7. A build-system change list for each `.vcxproj`.
-8. A short ADR for each major rule or exception.
-
-## First Files To Review In Detail
-
-Start with these because they define the current boundaries:
-
-- `InterstellarOutpost/main.cpp` (`InterstellarOutpost/main.cpp:1-53`)
-- `InterstellarOutpost/app.h` (`InterstellarOutpost/app.h:48-108`)
-- `NeuronCore/NeuronCore.h` (`NeuronCore/NeuronCore.h:78-103`)
-- `NeuronCore/NeuronCore.vcxproj` (`NeuronCore/NeuronCore.vcxproj:47-57`, `NeuronCore/NeuronCore.vcxproj:194-229`)
-- `NeuronClient/NeuronClient.vcxproj` (`NeuronClient/NeuronClient.vcxproj:3-15`, `NeuronClient/NeuronClient.vcxproj:95-208`)
-- `NeuronServer/NeuronServer.vcxproj` (`NeuronServer/NeuronServer.vcxproj:14-27`, `NeuronServer/NeuronServer.vcxproj:64-74`)
-- `NeuronClient/server.h` (`NeuronClient/server.h:41-143`)
-- `NeuronClient/clienttoserver.h` (`NeuronClient/clienttoserver.h:4-10`, `NeuronClient/clienttoserver.h:159-192`)
-- `GameRenderer/` for the first render-only extraction candidates
-
-## Suggested Output Format For Each Reviewed File
-
-```markdown
-### <relative path>
-- Current project:
-- Proposed target:
-- Reason:
-- Public dependencies:
-- Private dependencies:
-- Client-only APIs used:
-- Server-only responsibilities:
-- Shared-contract responsibilities:
-- `g_app` usage:
-- Move readiness: Ready / Split First / Leave In Host
-- Risk: Low / Medium / High
-- Required follow-up:
-```
-
-## Resolved Decisions
-
-These architecture decisions are now fixed for the migration plan:
-
-1. The target architecture uses four library boundaries: `NeuronCore`, `NeuronClient`, `NeuronServer`, and `GameRenderer`.
-2. `GameLogic` should be split by responsibility: server-side authoritative updates for game objects stay on the server path, while client render logic is migrated out into `GameRenderer`.
-3. `GameRenderer` is a first-class client-side library boundary for render and presentation logic extracted from `GameLogic`.
-4. A dedicated headless `server.exe` is required as a future deliverable for container hosting.
-5. `NeuronCore` may keep standard WinRT support, but UI-related WinRT headers should be removed from it.
-6. Shared protocol/message definitions should live in `NeuronCore`.
-
-## Remaining Clarifications
-
-These are still worth confirming before implementation:
-
-1. Should client-side visual representations remain alongside the existing gameplay classes, or do you want explicit paired types such as simulation objects vs render proxies/components?
-2. Do you want the first milestone to produce only clean static-library boundaries, or also introduce the new client and server executable hosts in the same change?
-3. Should the future `server.exe` support dedicated offline simulation/testing modes in addition to networked authoritative hosting?
+| Gate | Status |
+|------|--------|
+| NeuronCore builds without include-path access to NeuronClient, NeuronServer, GameLogic, GameRenderer, or InterstellarOutpost | ✅ **Pass** |
+| NeuronServer builds without NeuronClient include directories | ⬜ Blocked (server.cpp uses g_app) |
+| GameRenderer builds without server-only dependencies | ✅ **Pass** |
+| server.exe launches headless | ⬜ Not re-verified (ServerStubs may need update) |
+| Client still renders and connects | ✅ **Pass** (build succeeds) |

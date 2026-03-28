@@ -51,7 +51,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)InterstellarOutpost;$(SolutionDir)NeuronClient;$(SolutionDir)NeuronCore;$(SolutionDir)NeuronServer</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)InterstellarOutpost;$(SolutionDir)NeuronClient;$(SolutionDir)NeuronCore;$(SolutionDir)NeuronServer;$(SolutionDir)GameRenderer</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem></SubSystem>

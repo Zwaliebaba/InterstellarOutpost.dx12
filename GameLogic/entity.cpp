@@ -50,6 +50,7 @@
 #include "tank.h"
 #include "spaceship.h"
 #include "dropship.h"
+#include "ShadowRenderer.h"
 
 // ****************************************************************************
 //  Class EntityBlueprint
@@ -544,74 +545,22 @@ Vector3 Entity::PushFromObstructions(const Vector3& pos, bool killem)
   return result;
 }
 
+// Shadow rendering — delegated to GameRenderer (extracted in Batch 1, Step 6)
 static double s_nearPlaneStart;
 
 void Entity::BeginRenderShadow()
 {
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, g_app->m_resource->GetTexture("textures\\glow.bmp"));
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glDisable(GL_CULL_FACE);
-  glDepthMask(false);
-
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
-  glColor4f(0.6, 0.6, 0.6, 0.0);
-
-  s_nearPlaneStart = g_app->m_renderer->GetNearPlane();
-  g_app->m_camera->SetupProjectionMatrix(s_nearPlaneStart * 1.05, g_app->m_renderer->GetFarPlane());
+  s_nearPlaneStart = GameRenderer::BeginShadowPass(*g_app->m_resource, *g_app->m_renderer, *g_app->m_camera);
 }
 
 void Entity::EndRenderShadow()
 {
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glDisable(GL_BLEND);
-
-  glDepthMask(true);
-  glEnable(GL_CULL_FACE);
-  glDisable(GL_TEXTURE_2D);
-
-  g_app->m_camera->SetupProjectionMatrix(s_nearPlaneStart, g_app->m_renderer->GetFarPlane());
+  GameRenderer::EndShadowPass(s_nearPlaneStart, *g_app->m_renderer, *g_app->m_camera);
 }
 
 void Entity::RenderShadow(const Vector3& _pos, double _size)
 {
-  Vector3 shadowPos = _pos;
-  auto shadowR = Vector3(_size, 0, 0);
-  auto shadowU = Vector3(0, 0, _size);
-
-  Vector3 posA = shadowPos - shadowR - shadowU;
-  Vector3 posB = shadowPos + shadowR - shadowU;
-  Vector3 posC = shadowPos + shadowR + shadowU;
-  Vector3 posD = shadowPos - shadowR + shadowU;
-
-  posA.y = g_app->m_location->m_landscape.m_heightMap->GetValue(posA.x, posA.z) + 0.9;
-  posB.y = g_app->m_location->m_landscape.m_heightMap->GetValue(posB.x, posB.z) + 0.9;
-  posC.y = g_app->m_location->m_landscape.m_heightMap->GetValue(posC.x, posC.z) + 0.9;
-  posD.y = g_app->m_location->m_landscape.m_heightMap->GetValue(posD.x, posD.z) + 0.9;
-
-  posA.y = max(posA.y, 1.0);
-  posB.y = max(posB.y, 1.0);
-  posC.y = max(posC.y, 1.0);
-  posD.y = max(posD.y, 1.0);
-
-  if (posA.y > _pos.y && posB.y > _pos.y && posC.y > _pos.y && posD.y > _pos.y)
-  {
-    // The object casting the shadow is beneath the ground
-    return;
-  }
-
-  glBegin(GL_QUADS);
-  glTexCoord2f(0.0, 0.0);
-  glVertex3dv(posA.GetData());
-  glTexCoord2f(1.0, 0.0);
-  glVertex3dv(posB.GetData());
-  glTexCoord2f(1.0, 1.0);
-  glVertex3dv(posC.GetData());
-  glTexCoord2f(0.0, 1.0);
-  glVertex3dv(posD.GetData());
-  glEnd();
+  GameRenderer::RenderEntityShadow(_pos, _size, *g_app->m_location->m_landscape.m_heightMap);
 }
 
 Entity* Entity::NewEntity(int _troopType)

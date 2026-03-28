@@ -120,7 +120,6 @@
     <ClInclude Include="entity_grid_cache.h" />
     <ClInclude Include="explosion.h" />
     <ClInclude Include="gamecursor.h" />
-    <ClInclude Include="gametimer.h" />
     <ClInclude Include="game_menu.h" />
     <ClInclude Include="global_internet.h" />
     <ClInclude Include="global_world.h" />
@@ -685,6 +684,9 @@
     </ProjectReference>
     <ProjectReference Include="..\NeuronServer\NeuronServer.vcxproj">
       <Project>{4b5743f0-5f8a-417c-abad-4d307559e335}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\GameRenderer\GameRenderer.vcxproj">
+      <Project>{17173726-1ea9-4621-a502-6beba797ac7d}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

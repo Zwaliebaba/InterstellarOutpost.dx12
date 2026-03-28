@@ -7,7 +7,6 @@
 
 #include "language_table.h"
 #include "resource.h"
-#include "text_renderer.h"
 #include "text_stream_readers.h"
 #include "unicode_text_stream_reader.h"
 #include "unicode_string.h"

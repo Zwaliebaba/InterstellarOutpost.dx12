@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.WindowsAppSDK.1.8.260317003\build\native\Microsoft.WindowsAppSDK.props" Condition="Exists('..\packages\Microsoft.WindowsAppSDK.1.8.260317003\build\native\Microsoft.WindowsAppSDK.props')" />
   <Import Project="..\packages\Microsoft.WindowsAppSDK.WinUI.1.8.260224000\build\native\Microsoft.WindowsAppSDK.WinUI.props" Condition="Exists('..\packages\Microsoft.WindowsAppSDK.WinUI.1.8.260224000\build\native\Microsoft.WindowsAppSDK.WinUI.props')" />
@@ -45,8 +45,10 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings"></ImportGroup>
-  <ImportGroup Label="Shared"></ImportGroup>
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -66,7 +68,8 @@
       <AdditionalIncludeDirectories>$(SolutionDir)NeuronCore;$(SolutionDir)GameLogic;$(SolutionDir)InterstellarOutpost;$(SolutionDir)NeuronServer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem></SubSystem>
+      <SubSystem>
+      </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -81,9 +84,11 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)NeuronCore;$(SolutionDir)GameLogic;$(SolutionDir)InterstellarOutpost;$(SolutionDir)NeuronServer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem></SubSystem>
+      <SubSystem>
+      </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -146,6 +151,31 @@
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="win32_eventhandler.h" />
     <ClInclude Include="win32_eventproc.h" />
+    <ClInclude Include="3d_sprite.h" />
+    <ClInclude Include="bitmap.h" />
+    <ClInclude Include="DeviceNotify.h" />
+    <ClInclude Include="FixedPipeline.h" />
+    <ClInclude Include="language_table.h" />
+    <ClInclude Include="ogl_extensions.h" />
+    <ClInclude Include="opengl_directx.h" />
+    <ClInclude Include="opengl_directx_dlist.h" />
+    <ClInclude Include="opengl_directx_dlist_dev.h" />
+    <ClInclude Include="opengl_directx_inline.h" />
+    <ClInclude Include="opengl_directx_internals.h" />
+    <ClInclude Include="opengl_directx_matrix_stack.h" />
+    <ClInclude Include="opengl_trace.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="safegl.h" />
+    <ClInclude Include="shader.h" />
+    <ClInclude Include="shape.h" />
+    <ClInclude Include="sphere_renderer.h" />
+    <ClInclude Include="targetcursor.h" />
+    <ClInclude Include="texture.h" />
+    <ClInclude Include="texture_uv.h" />
+    <ClInclude Include="text_renderer.h" />
+    <ClInclude Include="window_manager.h" />
+    <ClInclude Include="window_manager_directx.h" />
+    <ClInclude Include="WndProcManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="clienttoserver.cpp" />
@@ -196,6 +226,29 @@
     <ClCompile Include="InputTransform.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="win32_eventhandler.cpp" />
+    <ClCompile Include="3d_sprite.cpp" />
+    <ClCompile Include="bitmap.cpp" />
+    <ClCompile Include="FixedPipeline.cpp" />
+    <ClCompile Include="language_table.cpp" />
+    <ClCompile Include="ogl_extensions_directx.cpp" />
+    <ClCompile Include="opengl_directx.cpp" />
+    <ClCompile Include="opengl_directx_dlist.cpp" />
+    <ClCompile Include="opengl_directx_dlist_dev.cpp" />
+    <ClCompile Include="opengl_directx_matrix_stack.cpp" />
+    <ClCompile Include="opengl_directx_stubs.cpp" />
+    <ClCompile Include="opengl_trace.cpp" />
+    <ClCompile Include="resource.cpp" />
+    <ClCompile Include="safegl.cpp" />
+    <ClCompile Include="shader.cpp" />
+    <ClCompile Include="shape.cpp" />
+    <ClCompile Include="sphere_renderer.cpp" />
+    <ClCompile Include="targetcursor.cpp" />
+    <ClCompile Include="texture.cpp" />
+    <ClCompile Include="texture_uv.cpp" />
+    <ClCompile Include="text_renderer.cpp" />
+    <ClCompile Include="window_manager.cpp" />
+    <ClCompile Include="window_manager_directx.cpp" />
+    <ClCompile Include="WndProcManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NeuronCore\NeuronCore.vcxproj">

@@ -1,9 +1,7 @@
 #include "pch.h"
-#include "app.h"
 #include "preferences.h"
-#include "resource.h"
 #include "text_stream_readers.h"
-#include "prefs_other_window.h"
+#include "filesys_utils.h"
 #include "unicode_text_stream_reader.h"
 
 PrefsManager* g_prefsManager = nullptr;
@@ -350,13 +348,20 @@ void PrefsManager::CreateDefaultValues()
   AddLine("UserProfile = AccessAllAreas");
   AddLine("ScreenOverscan = 0");
   AddLine("RenderSpecialLighting = 0");
-  AddLine(OTHER_DIFFICULTY " = 1");
+  AddLine("Difficulty" " = 1");
 #endif
 
-  // Override the defaults above with stuff from a default preferences file
-  if (g_app && g_app->m_resource)
+  // Override the defaults above with stuff from a default preferences file.
+  // Read directly using NeuronCore file utilities instead of g_app->m_resource.
+  auto defaultPrefsPath = std::string(FileSys::GetHomeDirectoryA()) + "default_preferences.txt";
+  if (DoesFileExist(defaultPrefsPath.c_str()))
   {
-    TextReader* reader = g_app->m_resource->GetTextReader("default_preferences.txt");
+    TextReader* reader = new UnicodeTextFileReader(defaultPrefsPath.c_str());
+    if (reader && !reader->IsUnicode())
+    {
+      delete reader;
+      reader = new TextFileReader(defaultPrefsPath.c_str());
+    }
     if (reader && reader->IsOpen())
     {
       s_overwrite = true;

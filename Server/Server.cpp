@@ -1,20 +1,125 @@
-// Server.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// Server.cpp — Headless dedicated server host for Interstellar Outpost.
 //
+// This executable is the entry point for the dedicated server. It links
+// NeuronCore + NeuronServer and runs without any windowing, DirectX, or
+// Windows App SDK dependency.
+//
+// Current status (Batch 1, Step 4):
+//   - Host structure and tick loop are in place.
+//   - NeuronCore systems (preferences, logging) initialize correctly.
+//   - The Server class (server.h) cannot be instantiated yet
+//     because server.cpp still has ~10 g_app call sites and link-time
+//     dependencies on NeuronClient and InterstellarOutpost symbols.
+//   - Full isolation requires g_app decoupling (Wave 5 in server.md).
+//
+// TODO(migration): Once g_app coupling is removed from server.cpp:
+//   1. #include "server.h"
+//   2. Create and initialise the Server instance in RunServer().
+//   3. Call server->AdvanceIfNecessary(GetHighResTime()) each tick.
+//   4. Remove the NeuronClient/GameLogic/InterstellarOutpost link deps
+//      from NeuronServer.vcxproj include paths.
 
+// STL headers required by NeuronCore headers (no PCH in this project).
+#include <list>
+#include <map>
+#include <string>
+
+#include "preferences.h"
+#include "hi_res_time.h"
+
+#include <atomic>
+#include <chrono>
 #include <iostream>
+#include <thread>
+#include <csignal>
 
-int main()
+// ---------------------------------------------------------------------------
+// Globals
+// ---------------------------------------------------------------------------
+
+// g_prefsManager is defined in NeuronCore/preferences.cpp; we just use the extern.
+
+static std::atomic<bool> s_running{true};
+
+// ---------------------------------------------------------------------------
+// Signal handler — Ctrl+C triggers a clean shutdown.
+// ---------------------------------------------------------------------------
+
+static void SignalHandler(int signal)
 {
-    std::cout << "Hello World!\n";
+  if (signal == SIGINT || signal == SIGTERM)
+  {
+    s_running.store(false, std::memory_order_relaxed);
+  }
 }
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
+// ---------------------------------------------------------------------------
+// Server tick loop
+// ---------------------------------------------------------------------------
 
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
+static constexpr const char* kServerVersion = "dev";
+static constexpr double kServerTickRate = 0.1; // 100 ms per tick (10 Hz)
+
+static void RunServer()
+{
+  std::cout << "[server] Entering tick loop (10 Hz). Press Ctrl+C to stop.\n";
+
+  double nextTickTime = GetHighResTime() + kServerTickRate;
+
+  while (s_running.load(std::memory_order_relaxed))
+  {
+    double now = GetHighResTime();
+    if (now >= nextTickTime)
+    {
+      // TODO(migration): server->AdvanceIfNecessary(now);
+      nextTickTime += kServerTickRate;
+
+      // Prevent spiral-of-death if we fall behind.
+      if (nextTickTime < now)
+        nextTickTime = now + kServerTickRate;
+    }
+
+    // Sleep briefly to avoid busy-spinning.
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
+
+  std::cout << "[server] Tick loop stopped.\n";
+}
+
+// ---------------------------------------------------------------------------
+// Entry point
+// ---------------------------------------------------------------------------
+
+int main(int argc, char* argv[])
+{
+  std::signal(SIGINT, SignalHandler);
+  std::signal(SIGTERM, SignalHandler);
+
+  // --test flag: initialise, print status, exit immediately (for CI/smoke tests).
+  bool testMode = false;
+  for (int i = 1; i < argc; ++i)
+  {
+    if (std::string_view(argv[i]) == "--test")
+      testMode = true;
+  }
+
+  std::cout << "[server] Interstellar Outpost Dedicated Server — " << kServerVersion << std::endl;
+
+  // --- Initialise NeuronCore systems ---
+  g_prefsManager = new PrefsManager("server_preferences.txt");
+  g_prefsManager->Load();
+  std::cout << "[server] Preferences loaded." << std::endl;
+
+  // --- Run ---
+  if (testMode)
+    std::cout << "[server] --test mode: skipping tick loop." << std::endl;
+  else
+    RunServer();
+
+  // --- Shutdown ---
+  std::cout << "[server] Shutting down." << std::endl;
+  delete g_prefsManager;
+  g_prefsManager = nullptr;
+
+  return 0;
+}

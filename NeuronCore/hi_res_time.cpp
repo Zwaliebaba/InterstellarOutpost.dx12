@@ -4,7 +4,6 @@
 #include <Windows.h>
 
 #include <math.h>
-#include "main.h"
 
 #include "hi_res_time.h"
 

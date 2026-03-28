@@ -7,6 +7,10 @@
 #include "profiler.h"
 #include "hi_res_time.h"
 
+// Forward declaration — implementation lives in the OpenGL→DirectX translation layer (NeuronClient).
+// Resolved at link time by the client executable.
+void glFinish();
+
 #pragma warning( disable : 4189 )
 
 #define PROFILE_HISTORY_LENGTH  10

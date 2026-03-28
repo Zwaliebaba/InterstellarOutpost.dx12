@@ -53,7 +53,6 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)NeuronClient;$(SolutionDir)GameLogic;$(SolutionDir)InterstellarOutpost</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -82,12 +81,10 @@
   <ItemGroup>
     <ClInclude Include="2d_array.h" />
     <ClInclude Include="2d_surface_map.h" />
-    <ClInclude Include="3d_sprite.h" />
     <ClInclude Include="ASyncLoader.h" />
     <ClInclude Include="auto_vector.h" />
     <ClInclude Include="binary_stream_readers.h" />
     <ClInclude Include="bandwidth.h" />
-    <ClInclude Include="bitmap.h" />
     <ClInclude Include="bounded_array.h" />
     <ClInclude Include="btree.h" />
     <ClInclude Include="bytestream.h" />
@@ -95,20 +92,17 @@
     <ClInclude Include="DataReader.h" />
     <ClInclude Include="DataWriter.h" />
     <ClInclude Include="Debug.h" />
-    <ClInclude Include="DeviceNotify.h" />
     <ClInclude Include="directory.h" />
     <ClInclude Include="fast_darray.h" />
     <ClInclude Include="filecrc.h" />
     <ClInclude Include="FileSys.h" />
     <ClInclude Include="filesys_utils.h" />
-    <ClInclude Include="FixedPipeline.h" />
     <ClInclude Include="float_vector3.h" />
     <ClInclude Include="globals.h" />
     <ClInclude Include="Hash.h" />
     <ClInclude Include="hash_map_darwin.h" />
     <ClInclude Include="hash_table.h" />
     <ClInclude Include="hi_res_time.h" />
-    <ClInclude Include="language_table.h" />
     <ClInclude Include="llist.h" />
     <ClInclude Include="map_utils.h" />
     <ClInclude Include="MathCommon.h" />
@@ -128,36 +122,19 @@
     <ClInclude Include="network_defines.h" />
     <ClInclude Include="NeuronCore.h" />
     <ClInclude Include="NeuronHelper.h" />
-    <ClInclude Include="ogl_extensions.h" />
-    <ClInclude Include="opengl_directx.h" />
-    <ClInclude Include="opengl_directx_dlist.h" />
-    <ClInclude Include="opengl_directx_dlist_dev.h" />
-    <ClInclude Include="opengl_directx_inline.h" />
-    <ClInclude Include="opengl_directx_internals.h" />
-    <ClInclude Include="opengl_directx_matrix_stack.h" />
-    <ClInclude Include="opengl_trace.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="plane.h" />
     <ClInclude Include="preferences.h" />
     <ClInclude Include="preference_names.h" />
     <ClInclude Include="profiler.h" />
     <ClInclude Include="random_number.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="rgb_colour.h" />
     <ClInclude Include="runnable.h" />
-    <ClInclude Include="safegl.h" />
-    <ClInclude Include="shader.h" />
-    <ClInclude Include="shape.h" />
     <ClInclude Include="slice_darray.h" />
     <ClInclude Include="sorting_hash_table.h" />
-    <ClInclude Include="sphere_renderer.h" />
     <ClInclude Include="string_utils.h" />
     <ClInclude Include="system_info.h" />
-    <ClInclude Include="targetcursor.h" />
     <ClInclude Include="TeamControls.h" />
-    <ClInclude Include="texture.h" />
-    <ClInclude Include="texture_uv.h" />
-    <ClInclude Include="text_renderer.h" />
     <ClInclude Include="text_stream_readers.h" />
     <ClInclude Include="TimerCore.h" />
     <ClInclude Include="unicode_string.h" />
@@ -165,24 +142,18 @@
     <ClInclude Include="user_info.h" />
     <ClInclude Include="vector2.h" />
     <ClInclude Include="vector3.h" />
-    <ClInclude Include="window_manager.h" />
-    <ClInclude Include="window_manager_directx.h" />
-    <ClInclude Include="WndProcManager.h" />
     <ClInclude Include="work_queue.h" />
     <ClInclude Include="worldobject.h" />
+    <ClInclude Include="gametimer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="3d_sprite.cpp" />
     <ClCompile Include="bandwidth.cpp" />
     <ClCompile Include="binary_stream_readers.cpp" />
-    <ClCompile Include="bitmap.cpp" />
     <ClCompile Include="directory.cpp" />
     <ClCompile Include="filecrc.cpp" />
     <ClCompile Include="FileSys.cpp" />
     <ClCompile Include="filesys_utils.cpp" />
-    <ClCompile Include="FixedPipeline.cpp" />
     <ClCompile Include="hi_res_time.cpp" />
-    <ClCompile Include="language_table.cpp" />
     <ClCompile Include="math_utils.cpp" />
     <ClCompile Include="matrix33.cpp" />
     <ClCompile Include="matrix34.cpp" />
@@ -197,13 +168,6 @@
     <ClCompile Include="net_socket_session.cpp" />
     <ClCompile Include="net_thread_win32.cpp" />
     <ClCompile Include="net_udp_packet.cpp" />
-    <ClCompile Include="ogl_extensions_directx.cpp" />
-    <ClCompile Include="opengl_directx.cpp" />
-    <ClCompile Include="opengl_directx_dlist.cpp" />
-    <ClCompile Include="opengl_directx_dlist_dev.cpp" />
-    <ClCompile Include="opengl_directx_matrix_stack.cpp" />
-    <ClCompile Include="opengl_directx_stubs.cpp" />
-    <ClCompile Include="opengl_trace.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -212,29 +176,17 @@
     <ClCompile Include="preferences.cpp" />
     <ClCompile Include="profiler.cpp" />
     <ClCompile Include="random_number.cpp" />
-    <ClCompile Include="resource.cpp" />
     <ClCompile Include="rgb_colour.cpp" />
     <ClCompile Include="runnable.cpp" />
-    <ClCompile Include="safegl.cpp" />
-    <ClCompile Include="shader.cpp" />
-    <ClCompile Include="shape.cpp" />
-    <ClCompile Include="sphere_renderer.cpp" />
     <ClCompile Include="string_utils.cpp" />
     <ClCompile Include="system_info.cpp" />
-    <ClCompile Include="targetcursor.cpp" />
     <ClCompile Include="TeamControls.cpp" />
-    <ClCompile Include="texture.cpp" />
-    <ClCompile Include="texture_uv.cpp" />
-    <ClCompile Include="text_renderer.cpp" />
     <ClCompile Include="text_stream_readers.cpp" />
     <ClCompile Include="unicode_string.cpp" />
     <ClCompile Include="unicode_text_stream_reader.cpp" />
     <ClCompile Include="user_info.cpp" />
     <ClCompile Include="vector2.cpp" />
     <ClCompile Include="vector3.cpp" />
-    <ClCompile Include="window_manager.cpp" />
-    <ClCompile Include="window_manager_directx.cpp" />
-    <ClCompile Include="WndProcManager.cpp" />
     <ClCompile Include="work_queue.cpp" />
   </ItemGroup>
   <ItemGroup>
