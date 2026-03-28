@@ -9,21 +9,22 @@
 #include "hi_res_time.h"
 #include "profiler.h"
 #include "preferences.h"
-#include "app.h"
 #include "globals.h"
-#include "team.h"
-#include "multiwinia.h"
+#include "TeamTypes.h"
 #include "generic.h"
 #include "server.h"
+#include "IServerHost.h"
 #include "servertoclient.h"
 #include "servertoclientletter.h"
-#include "clienttoserver.h"
 #include "network_defines.h"
 #include "ftp_manager.h"
-// TODO(migration): server.cpp still depends on g_app (app.h), team.h, multiwinia.h,
-// clienttoserver.h, servertoclient.h, servertoclientletter.h, generic.h, ftp_manager.h
-// via upward include paths into NeuronClient, InterstellarOutpost, and GameLogic.
-// These should be decoupled in Wave 5 (Split App) and Wave 6 (Split mixed files).
+// TODO(migration): server.cpp still depends on servertoclient.h, servertoclientletter.h,
+// generic.h, ftp_manager.h via upward include paths into NeuronClient.
+// These files are candidates for relocation to NeuronServer in a future wave.
+
+// File-static Server instance pointer for the listen callback.
+// Set in Server::Initialise(), cleared in ~Server().
+static Server* s_serverInstance = nullptr;
 
 // ****************************************************************************
 // Class ServerTeam
@@ -43,7 +44,7 @@ static NetCallBackRetType ServerListenCallback(NetUdpPacket* udpdata)
   if (!udpdata)
     return 0;
 
-  Server* server = g_app->m_server;
+  Server* server = s_serverInstance;
 
   if (!server)
   {
@@ -86,6 +87,8 @@ Server::Server()
 Server::~Server()
 {
   DebugTrace("Shutting down server\n");
+
+  s_serverInstance = nullptr;
 
   m_listener->StopListening();
   delete m_listener;
@@ -144,6 +147,7 @@ static int GenSyncRandSeed(double _startTime, unsigned _random)
 
 void Server::Initialise()
 {
+  s_serverInstance = this;
   m_iClientCount = 0;
 
   m_inboxMutex = new NetMutex();
@@ -295,9 +299,9 @@ void Server::SendClientId(int _clientId)
 
     // At this point I am going to decide to make the player a spectator or not based on the fill status of the server
 
-    if (g_app->GetMaxNumberofPlayers())
+    if (m_host)
     {
-      int iTotalPlayers = g_app->GetMaxNumberofPlayers();
+      int iTotalPlayers = m_host->GetMaxNumberOfPlayers();
 
       // We want to reject the player if the server is full
       if (iTotalPlayers != 0)
@@ -386,7 +390,7 @@ void Server::RemoveClient(int _clientId, int _reason)
         //
         // Remove his teams if we're in the lobby
 
-        if (g_app->m_multiwinia->GameInLobby())
+        if (m_host && m_host->IsGameInLobby())
         {
           for (int j = 0; j < m_teams.Size(); j++)
           {
@@ -439,7 +443,7 @@ void Server::RegisterNewTeam(int _clientId, int _teamType, int _desiredTeamId)
     }
 
     // Single player
-    if (g_app->m_clientToServer->GetServerPort() == -1)
+    if (m_host && m_host->IsLocalSinglePlayer())
     {
       int nbPlayerTeams = 0;
       for (int i = 0; i < m_teams.Size(); ++i)
@@ -460,7 +464,8 @@ void Server::RegisterNewTeam(int _clientId, int _teamType, int _desiredTeamId)
       }
     }
 
-    if (m_teams.NumUsed() >= g_app->GetMaxNumberofPlayers() && (g_app->GetMaxNumberofPlayers() != 0))
+    int maxPlayers = m_host ? m_host->GetMaxNumberOfPlayers() : 0;
+    if (m_teams.NumUsed() >= maxPlayers && (maxPlayers != 0))
     {
       // Remove the client
       RemoveClient(_clientId, Disconnect_ServerFull);
@@ -470,7 +475,8 @@ void Server::RegisterNewTeam(int _clientId, int _teamType, int _desiredTeamId)
   else if (_teamType == TeamTypeCPU)
   {
     // If the server is full then reject
-    if (m_teams.NumUsed() >= g_app->GetMaxNumberofPlayers())
+    int maxPlayers = m_host ? m_host->GetMaxNumberOfPlayers() : 0;
+    if (maxPlayers != 0 && m_teams.NumUsed() >= maxPlayers)
       return;
   }
   else
@@ -491,8 +497,8 @@ void Server::RegisterNewTeam(int _clientId, int _teamType, int _desiredTeamId)
     }
 
     // If single player or the server is full then reject
-    if (g_app->m_clientToServer->GetServerPort() == -1 || (m_teams.NumUsed() >= g_app->GetMaxNumberofPlayers() && (g_app->
-      GetMaxNumberofPlayers() != 0)))
+    int maxPlayers = m_host ? m_host->GetMaxNumberOfPlayers() : 0;
+    if ((m_host && m_host->IsLocalSinglePlayer()) || (m_teams.NumUsed() >= maxPlayers && (maxPlayers != 0)))
     {
       // Remove the client
       RemoveClient(_clientId, Disconnect_ServerFull);
@@ -564,7 +570,7 @@ void Server::AdvanceIfNecessary(double _timeNow)
 {
   if (_timeNow > m_nextServerAdvanceTime)
   {
-    g_app->m_server->Advance();
+    Advance();
     m_nextServerAdvanceTime += 0.1f;
   }
 }
@@ -584,9 +590,9 @@ void Server::AdvanceSender()
 
     // Send directly to locally connected client without passing through
     // the socket system
-    if (g_app->m_clientToServer->m_clientId == letter->m_receiverId)
+    if (m_host && m_host->GetLocalClientId() == letter->m_receiverId)
     {
-      g_app->m_clientToServer->ReceiveLetter(letter->m_data);
+      m_host->DeliverToLocalClient(letter->m_data);
       letter->m_data = nullptr;
       delete letter;
     }
@@ -817,20 +823,22 @@ void Server::Advance()
       }
 
       // If single player then reject
-      if (g_app->m_clientToServer->GetServerPort() == -1)
+      if (m_host && m_host->IsLocalSinglePlayer())
       {
         // Remove the client
         RemoveClient(clientId, Disconnect_ServerFull);
         return;
       }
 
-      // BYRON TODO: Move this into ClientToServer::RequestSpectator method
-      // Send a assign letter
-      auto letter = new Directory();
-      letter->CreateData(NET_DARWINIA_COMMAND, NET_DARWINIA_ASSIGN_SPECTATOR);
-      letter->CreateData(NET_DARWINIA_TEAMID, teamId);
-      letter->CreateData(NET_DARWINIA_CLIENTID, clientId);
-      g_app->m_clientToServer->SendLetter(letter);
+      // Send a spectator assign letter via local client
+      if (m_host)
+      {
+        auto letter = new Directory();
+        letter->CreateData(NET_DARWINIA_COMMAND, NET_DARWINIA_ASSIGN_SPECTATOR);
+        letter->CreateData(NET_DARWINIA_TEAMID, teamId);
+        letter->CreateData(NET_DARWINIA_CLIENTID, clientId);
+        m_host->SendFromLocalClient(letter);
+      }
     }
     else if (strcmp(cmd, NET_DARWINIA_SYNCHRONISE) == 0)
     {
@@ -1405,3 +1413,5 @@ void Server::KickClient(int _clientId)
 UnicodeString& Server::GetPassword() { return m_serverPassword; }
 
 void Server::SetPassword(UnicodeString& _password) { m_serverPassword = _password; }
+
+void Server::SetHost(IServerHost* _host) { m_host = _host; }

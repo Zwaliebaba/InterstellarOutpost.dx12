@@ -12,6 +12,7 @@ class ServerToClient;
 class ServerToClientLetter;
 class Directory;
 class IQNetPlayer;
+class IServerHost;
 
 #define UDP_HEADER_SIZE     32           // 12 bytes for UDP header, 20 bytes for IP header
 
@@ -44,7 +45,8 @@ class Server
   time_t m_startTimeActual;
   double m_startTime;
   double m_nextServerAdvanceTime;
-  unsigned m_random;
+  unsigned m_random;  
+  IServerHost* m_host = nullptr;
   int m_syncRandSeed;
 
   bool m_gameStartMsgReceived;
@@ -139,6 +141,8 @@ class Server
     int GetLocalPort();
 
     void StartListening();
+
+    void SetHost(IServerHost* _host);
 
 };
 

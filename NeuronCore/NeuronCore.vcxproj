@@ -135,6 +135,7 @@
     <ClInclude Include="string_utils.h" />
     <ClInclude Include="system_info.h" />
     <ClInclude Include="TeamControls.h" />
+    <ClInclude Include="TeamTypes.h" />
     <ClInclude Include="text_stream_readers.h" />
     <ClInclude Include="TimerCore.h" />
     <ClInclude Include="unicode_string.h" />
@@ -145,9 +146,14 @@
     <ClInclude Include="work_queue.h" />
     <ClInclude Include="worldobject.h" />
     <ClInclude Include="gametimer.h" />
+    <ClInclude Include="ftp_manager.h" />
+    <ClInclude Include="generic.h" />
+    <ClInclude Include="servertoclientletter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bandwidth.cpp" />
+    <ClCompile Include="ftp_manager.cpp" />
+    <ClCompile Include="generic.cpp" />
     <ClCompile Include="binary_stream_readers.cpp" />
     <ClCompile Include="directory.cpp" />
     <ClCompile Include="filecrc.cpp" />

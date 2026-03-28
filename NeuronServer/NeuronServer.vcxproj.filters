@@ -3,9 +3,12 @@
   <ItemGroup>
     <ClInclude Include="NeuronServer.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="server.h" />
+    <ClInclude Include="IServerHost.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="server.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

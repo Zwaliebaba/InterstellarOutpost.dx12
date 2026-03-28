@@ -4,20 +4,19 @@
 // NeuronCore + NeuronServer and runs without any windowing, DirectX, or
 // Windows App SDK dependency.
 //
-// Current status (Batch 1, Step 4):
+// Current status (Wave 5 complete):
 //   - Host structure and tick loop are in place.
 //   - NeuronCore systems (preferences, logging) initialize correctly.
-//   - The Server class (server.h) cannot be instantiated yet
-//     because server.cpp still has ~10 g_app call sites and link-time
-//     dependencies on NeuronClient and InterstellarOutpost symbols.
-//   - Full isolation requires g_app decoupling (Wave 5 in server.md).
+//   - server.cpp is decoupled from g_app via IServerHost interface.
+//   - NeuronServer include paths reduced to NeuronCore + NeuronClient only.
 //
-// TODO(migration): Once g_app coupling is removed from server.cpp:
-//   1. #include "server.h"
-//   2. Create and initialise the Server instance in RunServer().
-//   3. Call server->AdvanceIfNecessary(GetHighResTime()) each tick.
-//   4. Remove the NeuronClient/GameLogic/InterstellarOutpost link deps
-//      from NeuronServer.vcxproj include paths.
+// TODO(migration): Wire up real Server instance:
+//   1. #include "server.h" and "IServerHost.h"
+//   2. Implement a headless IServerHost (no g_app, no client subsystems).
+//   3. Create Server, call SetHost(), Initialise(), then AdvanceIfNecessary()
+//      each tick.
+//   4. Remove NeuronClient from NeuronServer include paths once
+//      servertoclient.h / ftp_manager.h / generic.h are relocated.
 
 // STL headers required by NeuronCore headers (no PCH in this project).
 #include <list>

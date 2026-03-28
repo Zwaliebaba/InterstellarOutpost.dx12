@@ -36,8 +36,41 @@
 #include "team.h"
 #include "mapdata.h"
 #include "GameMenuWindow.h"
+#include "IServerHost.h"
 
 void SetPreferenceOverrides(); // See main.cpp
+
+// AppServerHost — IServerHost implementation that bridges Server to App's subsystems.
+// Defined here (file-local) because it only needs to exist where Server is created.
+namespace
+{
+  class AppServerHost final : public IServerHost
+  {
+  public:
+    int GetMaxNumberOfPlayers() override { return g_app->GetMaxNumberofPlayers(); }
+    bool IsGameInLobby() override { return g_app->m_multiwinia && g_app->m_multiwinia->GameInLobby(); }
+    bool IsLocalSinglePlayer() override { return g_app->m_clientToServer && g_app->m_clientToServer->GetServerPort() == -1; }
+    int GetLocalClientId() override { return g_app->m_clientToServer ? g_app->m_clientToServer->m_clientId : -1; }
+
+    void DeliverToLocalClient(Directory* _data) override
+    {
+      if (g_app->m_clientToServer)
+        g_app->m_clientToServer->ReceiveLetter(_data);
+      else
+        delete _data;
+    }
+
+    void SendFromLocalClient(Directory* _data) override
+    {
+      if (g_app->m_clientToServer)
+        g_app->m_clientToServer->SendLetter(_data);
+      else
+        delete _data;
+    }
+  };
+
+  AppServerHost s_appServerHost;
+} // anonymous namespace
 
 App* g_app = nullptr;
 
@@ -264,6 +297,7 @@ void App::StartNetwork(bool _iAmAServer, const char* _serverIp, int _serverPort)
   {
     delete m_server;
     m_server = new Server();
+    m_server->SetHost(&s_appServerHost);
     m_server->Initialise();
     m_server->m_noAdvertise = true;
 

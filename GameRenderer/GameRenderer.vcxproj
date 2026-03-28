@@ -14,22 +14,30 @@
   <ItemGroup>
     <ClInclude Include="GameRenderer.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="animatedpanel.h" />
+    <ClInclude Include="animatedpanel_renderer.h" />
     <ClInclude Include="entity_leg.h" />
     <ClInclude Include="explosion.h" />
     <ClInclude Include="landscape_renderer.h" />
     <ClInclude Include="particle_system.h" />
+    <ClInclude Include="rocket_status_panel.h" />
     <ClInclude Include="ShadowRenderer.h" />
+    <ClInclude Include="startsequence.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="animatedpanel.cpp" />
+    <ClCompile Include="animatedpanel_renderer.cpp" />
     <ClCompile Include="entity_leg.cpp" />
     <ClCompile Include="explosion.cpp" />
     <ClCompile Include="landscape_renderer.cpp" />
     <ClCompile Include="particle_system.cpp" />
+    <ClCompile Include="rocket_status_panel.cpp" />
     <ClCompile Include="ShadowRenderer.cpp" />
+    <ClCompile Include="startsequence.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NeuronCore\NeuronCore.vcxproj">

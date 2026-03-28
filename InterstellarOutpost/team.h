@@ -9,20 +9,12 @@
 #include "entity.h"
 #include "taskmanager.h"
 #include "TeamControls.h"
+#include "TeamTypes.h"
 
 class Unit;
 class InsertionSquad;
 class IFrame;
 class SyncDiff;
-
-enum
-{
-  TeamTypeUnused = -1,
-  TeamTypeLocalPlayer,
-  TeamTypeRemotePlayer,
-  TeamTypeCPU,
-  TeamTypeSpectator,
-};
 
 // ****************************************************************************
 //  Class LobbyTeam

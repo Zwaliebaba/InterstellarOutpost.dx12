@@ -131,6 +131,7 @@
     <ClInclude Include="worldobject.h" />
     <ClInclude Include="TeamControls.h" />
     <ClInclude Include="gametimer.h" />
+    <ClInclude Include="TeamTypes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -197,7 +198,6 @@
     <ClCompile Include="filecrc.cpp" />
     <ClCompile Include="bandwidth.cpp" />
     <ClCompile Include="TeamControls.cpp" />
-    <ClCompile Include="language_table.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Project Files">

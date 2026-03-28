@@ -106,8 +106,6 @@
     <ClInclude Include="eclwindow.h" />
     <ClInclude Include="eventhandler.h" />
     <ClInclude Include="file_paths.h" />
-    <ClInclude Include="ftp_manager.h" />
-    <ClInclude Include="generic.h" />
     <ClInclude Include="GraphicsCore.h" />
     <ClInclude Include="iframe.h" />
     <ClInclude Include="input.h" />
@@ -133,8 +131,6 @@
     <ClInclude Include="NeuronClient.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="sample_cache.h" />
-    <ClInclude Include="servertoclient.h" />
-    <ClInclude Include="servertoclientletter.h" />
     <ClInclude Include="soundsystem.h" />
     <ClInclude Include="sound_filter.h" />
     <ClInclude Include="sound_instance.h" />
@@ -185,8 +181,6 @@
     <ClCompile Include="eclwindow.cpp" />
     <ClCompile Include="eventhandler.cpp" />
     <ClCompile Include="file_paths.cpp" />
-    <ClCompile Include="ftp_manager.cpp" />
-    <ClCompile Include="generic.cpp" />
     <ClCompile Include="GraphicsCore.cpp" />
     <ClCompile Include="iframe.cpp" />
     <ClCompile Include="input.cpp" />
@@ -210,7 +204,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="sample_cache.cpp" />
-    <ClCompile Include="servertoclient.cpp" />
     <ClCompile Include="soundsystem.cpp" />
     <ClCompile Include="sound_filter.cpp" />
     <ClCompile Include="sound_instance.cpp" />
