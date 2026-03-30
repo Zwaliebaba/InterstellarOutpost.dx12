@@ -11,4 +11,7 @@
   <Project Path="NeuronCore/NeuronCore.vcxproj" Id="c12f6993-c2f2-4c93-a966-737ee0d71674" />
   <Project Path="NeuronServer/NeuronServer.vcxproj" Id="4b5743f0-5f8a-417c-abad-4d307559e335" />
   <Project Path="Server/Server.vcxproj" Id="7973f819-2e43-4511-bdb3-89e1a2183540" />
+  <Project Path="Tests/NeuronCore.Tests/NeuronCore.Tests.vcxproj" Id="a1b2c3d4-e5f6-7890-abcd-ef1234567801" />
+  <Project Path="Tests/GameLogic.Tests/GameLogic.Tests.vcxproj" Id="b2c3d4e5-f6a7-8901-bcde-f12345678902" />
+  <Project Path="Tests/Integration/Integration.Tests.vcxproj" Id="c3d4e5f6-a7b8-9012-cdef-123456789003" />
 </Solution>
